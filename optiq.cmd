@@ -1,6 +1,7 @@
 model optiq.mod;
-data optiq.dat;
+data optiq_5D_256.dat;
 option solver snopt;
 solve;
-display Demand;
-display Flow;
+display _ampl_elapsed_time;
+#display Demand;
+#display Flow;

@@ -18,11 +18,13 @@ int compute_nid(int num_dims, int *coord, int *size) {
 }
 
 int check_existing(int num_neighbors, int *neighbors, int nid) {
-    for(int i = 0; i < num_neighbors; i++)
-        if(neighbors[i] == nid)
-            return true;
+    for(int i = 0; i < num_neighbors; i++) {
+        if(neighbors[i] == nid) {
+            return 0;
+	}
+    }
 
-    return false;
+    return 1;
 }
 
 int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
@@ -33,15 +35,19 @@ int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
         if(coord[i] - 1 >= 0) {
             coord[i]--;
             nid = compute_nid(num_dims, coord, size);
-            neighbors[num_neighbors] = nid;
-            num_neighbors++;
+	    if(check_existing(num_neighbors, neighbors, nid) != 0) {
+		neighbors[num_neighbors] = nid;
+		num_neighbors++;
+            }
             coord[i]++;
         }
         if(coord[i] + 1 < size[i]) {
             coord[i]++;
             nid = compute_nid(num_dims, coord, size);
-            neighbors[num_neighbors] = nid;
-            num_neighbors++;
+	    if(check_existing(num_neighbors, neighbors, nid) != 0) {
+		neighbors[num_neighbors] = nid;
+		num_neighbors++;
+            }
             coord[i]--;
         }
 
@@ -50,7 +56,7 @@ int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
             if(coord[i] == 0) {
                 coord[i] = size[i]-1;
                 nid = compute_nid(num_dims, coord, size);
-                if(!check_existing(num_neighbors, neighbors, nid)) {
+                if(check_existing(num_neighbors, neighbors, nid) != 0) {
                     neighbors[num_neighbors] = nid;
                     num_neighbors++;
                 }
@@ -60,7 +66,7 @@ int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
             if(coord[i] == size[i]-1) {
                 coord[i] = 0;
                 nid = compute_nid(num_dims, coord, size);
-                if(!check_existing(num_neighbors, neighbors, nid)) {
+                if(check_existing(num_neighbors, neighbors, nid) != 0) {
                     neighbors[num_neighbors] = nid;
                     num_neighbors++;
                 }
@@ -113,11 +119,11 @@ void main(int argc, char **argv) {
     int num_dims = 5;
     int size[5];
 
-    size[0] = 2;
-    size[1] = 2;
-    size[2] = 2;
-    size[3] = 2;
-    size[4] = 2;
+    size[0] = atoi(argv[1]);
+    size[1] = atoi(argv[2]);
+    size[2] = atoi(argv[3]);
+    size[3] = atoi(argv[4]);
+    size[4] = atoi(argv[5]);
 
     int num_nodes = 1;
     for(int i = 0; i < num_dims; i++)
@@ -138,7 +144,10 @@ void main(int argc, char **argv) {
     printArcs(num_dims, size, cap);
     printf(";\n\n");
 
+    double demand = 2048.0;
     printf("param: JobID: Source Destination Demand :=\n");
-
+    for(int i = 0; i < num_nodes/8; i++) {
+	printf("%d %d %d %8.1f\n", i, i, num_nodes-num_nodes/8+i, demand);
+    }
     printf(";");
 }
