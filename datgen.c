@@ -118,12 +118,15 @@ void printArcs(int num_dims, int *size, double cap) {
 void main(int argc, char **argv) {
     int num_dims = 5;
     int size[5];
+    int num_sources = 0;
 
     size[0] = atoi(argv[1]);
     size[1] = atoi(argv[2]);
     size[2] = atoi(argv[3]);
     size[3] = atoi(argv[4]);
     size[4] = atoi(argv[5]);
+
+    num_sources = atoi(argv[6]);
 
     int num_nodes = 1;
     for(int i = 0; i < num_dims; i++)
@@ -146,8 +149,8 @@ void main(int argc, char **argv) {
 
     double demand = 2048.0;
     printf("param: JobID: Source Destination Demand :=\n");
-    for(int i = 0; i < num_nodes/8; i++) {
-	printf("%d %d %d %8.1f\n", i, i, num_nodes-num_nodes/8+i, demand);
+    for(int i = 0; i < num_sources; i++) {
+	printf("%d %d %d %8.1f\n", i, i, num_nodes-num_sources+i, demand);
     }
     printf(";");
 }
