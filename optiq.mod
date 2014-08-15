@@ -7,6 +7,7 @@ param Capacity {Arcs} >= 0 default Infinity;
 param Source {Jobs};
 param Destination {Jobs} default 0;
 param Demand {Jobs} default 0;
+param Class {Jobs} default 0;
 
 var Flow {Jobs, Arcs} >= 0;
 var Z >= 0;
