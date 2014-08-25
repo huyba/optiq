@@ -1,6 +1,5 @@
-shape	    #nodes	#sources    #dests solved_time(s)   #iters
-2x2x2x2x2   32		4	    4	    0.00617385	    114
-2x2x2x4x2   64		8	    8	    0.0134201	    612
-2x2x4x4x2   128		16	    16	    0.0692029	    6738
-2x4x4x4x2   256         32          32	    0.403659	    893
-4x4x4x4x2   512		64	    64	    
+shape	    #nodes	#sources    #dests solved_time(s)  (ms) 		#iters
+2x2x2x2x2   32		4	    4	    0.00617385	    6.17385			114
+2x2x2x4x2   64		8	    8	    0.0134201	   13.4201 			612
+2x2x4x4x2   128		16	    16	    0.0692029	   69.2029 			6738
+2x4x4x4x2   256     32      32	    0.403659	  403.659 			893
