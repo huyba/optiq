@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include "topology.h"
 
+#ifdef __bgq__
 #include <spi/include/kernel/location.h>
 #include <spi/include/kernel/process.h>
 #include <firmware/include/personality.h>
+#endif
 
 #define INFINITY (8*1024*1024)
 
@@ -121,6 +123,7 @@ void printArcs(int num_dims, int *size, double cap)
 
 void getTopology(int *coord, int *size, int *bridge, int *bridgeId)
 {
+#ifdef __bgq__
     Personality_t personality;
 
     Kernel_GetPersonality(&personality, sizeof(personality));
@@ -150,6 +153,7 @@ void getTopology(int *coord, int *size, int *bridge, int *bridgeId)
  * */
 
     *bridgeId = bridge[4] + bridge[3]*size[4] + bridge[2]*size[3]*size[4] + bridge[1]*size[2]*size[3]*size[4] + bridge[0]*size[1]*size[2]*size[3]*size[4];
+#endif
 }
 
 void generateData(int num_dims, int *size, int num_sources, int factor)
@@ -213,6 +217,11 @@ void generateDataIO(int num_dims, int *size, int num_sources, int factor, int nu
     }
     printf(";\n\n");
 
+    printf("set Types :=\n");
+    printf("IO\n");
+    printf("COMM\n");
+    printf(";\n\n");
+
     cap = 2048.0;
     printf("param Capacity :=\n");
     printArcs(num_dims, size, cap);
@@ -220,21 +229,26 @@ void generateDataIO(int num_dims, int *size, int num_sources, int factor, int nu
         printf("%d ION_%d %8.1f\n", bridgeIds[i], i/2, cap);
     }
     for (int i = 0; i < num_bridges/2; i++) {
-        printf("ION_%d SuperION %d", i, INFINITY);
+        printf("ION_%d SuperION %d\n", i, INFINITY);
     }
+    printf(";\n\n");
+
+    printf("param Weight:=\n");
+    printf("IO 0.5\n");
+    printf("COMM 0.5\n");
     printf(";\n\n");
 
     double demand = 2048.0;
     int jobId = 0;
-    printf("param: Jobs: Source Destination Demand :=\n");
+    printf("param: Jobs: Source Destination Demand Types :=\n");
     for (int i = 0; i < num_sources; i++) {
         for (int j = 0; j < factor; j++) {
-            printf("%d %d %d %8.1f\n", jobId, i, num_nodes-num_sources*factor+i*factor+j, demand);
+            printf("%d %d %d %8.1f COMM\n", jobId, i, num_nodes-num_sources*factor+i*factor+j, demand);
 	    jobId++;
         }
     }
     for (int i = 0 ; i < num_sources; i++) {
-	printf("%d %d SuperION %8.1f\n", jobId, i, demand);
+	printf("%d %d SuperION %8.1f IO\n", jobId, i, demand);
     }
     printf(";");
 }
