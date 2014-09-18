@@ -1,18 +1,8 @@
 /* C++ program for implementation of Ford Fulkerson algorithm*/
-#include "mfbgq.h"
+#include "maxflow.h"
+#include "topology.h"
 
 using namespace std;
-
-void getTopologyInfo(int *coord, int *size) {
-    Personality_t pers;
-    Kernel_GetPersonality(&pers, sizeof(pers));
-
-    size[0] = pers.Network_Config.Anodes; coord[0] = pers.Network_Config.Acoord;
-    size[1] = pers.Network_Config.Bnodes; coord[1] = pers.Network_Config.Bcoord;
-    size[2] = pers.Network_Config.Cnodes; coord[2] = pers.Network_Config.Ccoord;
-    size[3] = pers.Network_Config.Dnodes; coord[3] = pers.Network_Config.Dcoord;
-    size[4] = pers.Network_Config.Enodes; coord[4] = pers.Network_Config.Ecoord;
-}
 
 /* Returns true if there is a path from source 's' to sink 't' in
    residual graph. Also fills parent[] to store the path */
@@ -134,87 +124,6 @@ int fordFulkerson(int V, int **graph, int *sources, int n, int t, multipath_t *m
 
     /* Return the overall flow */
     return max_flow;
-}
-
-int compute_nid(int num_dims, int *coord, int *size)
-{
-    int nid = coord[num_dims-1];
-    int  pre_size = 1;
-
-    for(int i = num_dims-2; i >= 0; i--)
-    {
-	for(int j = i+1; j < num_dims; j++)
-	    pre_size *= size[j];
-
-	nid += coord[i]*pre_size;
-	pre_size = 1;
-    }
-
-    return nid;
-}
-
-int check_existing(int num_neighbors, int *neighbors, int nid)
-{
-    for(int i = 0; i < num_neighbors; i++)
-	if(neighbors[i] == nid)
-	    return true;
-
-    return false;
-}
-
-int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors)
-{
-    int num_neighbors = 0;
-    int nid = 0;
-
-    for(int i = 0; i < num_dims; i++)
-    {
-	if(coord[i] - 1 >= 0)
-	{
-	    coord[i]--;
-	    nid = compute_nid(num_dims, coord, size);
-	    neighbors[num_neighbors] = nid;
-	    num_neighbors++;
-	    coord[i]++;
-	}
-	if(coord[i] + 1 < size[i])
-	{
-	    coord[i]++;
-	    nid = compute_nid(num_dims, coord, size);
-	    neighbors[num_neighbors] = nid;
-	    num_neighbors++;
-	    coord[i]--;
-	}
-
-	/*Torus neighbors*/
-	for(int i = 0; i < num_dims; i++)
-	{
-	    if(coord[i] == 0)
-	    {
-		coord[i] = size[i]-1;
-		nid = compute_nid(num_dims, coord, size);
-		if(!check_existing(num_neighbors, neighbors, nid))
-		{
-		    neighbors[num_neighbors] = nid;
-		    num_neighbors++;
-		}
-		coord[i] = 0;
-	    }
-
-	    if(coord[i] == size[i]-1)
-	    {
-		coord[i] = 0;
-		nid = compute_nid(num_dims, coord, size);
-		if(!check_existing(num_neighbors, neighbors, nid))
-		{
-		    neighbors[num_neighbors] = nid;
-		    num_neighbors++;
-		}
-		coord[i] = size[i]-1;
-	    }
-	}
-    }
-    return num_neighbors;
 }
 
 int compute_max_flow(int num_dims, int * size, int *sourceId, int nsources, int *destId, int ndests, multipath_t *mp)

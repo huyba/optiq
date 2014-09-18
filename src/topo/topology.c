@@ -121,6 +121,20 @@ void printArcs(int num_dims, int *size, double cap)
     }
 }
 
+void getTopologyInfo(int *coord, int *size) 
+{
+#ifdef __bgq__
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
+
+    size[0] = pers.Network_Config.Anodes; coord[0] = pers.Network_Config.Acoord;
+    size[1] = pers.Network_Config.Bnodes; coord[1] = pers.Network_Config.Bcoord;
+    size[2] = pers.Network_Config.Cnodes; coord[2] = pers.Network_Config.Ccoord;
+    size[3] = pers.Network_Config.Dnodes; coord[3] = pers.Network_Config.Dcoord;
+    size[4] = pers.Network_Config.Enodes; coord[4] = pers.Network_Config.Ecoord;
+#endif
+}
+
 void getTopology(int *coord, int *size, int *bridge, int *bridgeId)
 {
 #ifdef __bgq__
