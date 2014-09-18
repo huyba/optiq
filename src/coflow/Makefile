@@ -45,4 +45,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 flowcpy:
-	cp coflow.x /gpfs/vesta-fs0/projects/Performance/abui/microbm/coupling/coflow/
+	cp coflow.x /gpfs/mira-fs0/projects/Performance/abui/microbm/coupling/coflow/
