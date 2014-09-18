@@ -14,7 +14,7 @@ endif
 
 LD      = mpixlc_r
 
-TOPO   = ../topo
+TOPO   = ../../topo
 
 CFLAGS  = $(COPT) -I. -I$(TOPO)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib 
@@ -23,7 +23,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 obj = $(TOPO)/topology.o
 
-all: rm $(obj) flow flowcpy
+all: rm flow flowcpy
 
 rm:
 	rm -f *.o
