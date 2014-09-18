@@ -71,12 +71,15 @@ int main(int argc, char **argv) {
 	}
     }
 
+    /*Do warm up - 100 times comm and 5 times I/O*/
+    
+
     struct timespec start, end;
 
     /*Test 1: Comm only*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-	printf("Test 1: Comm only between center and its neighbors\n");
+	printf("\nTest 1: Comm only between center and its neighbors\n\n");
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -110,26 +113,30 @@ int main(int argc, char **argv) {
 
     
     double elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
+    elapsed = elapsed/iters;
+
     double max_elapsed;
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
-    double bw = (double)send_count/1024/1024/max_elapsed*1e6;
+    double bw = 0;
 
     if (myId == centerId) {
-        printf("Comm Flow Only: Elapsed time at receiving side = %8.0f bw = %8.4f\n", max_elapsed, bw);
+	bw = (double)send_count/1024/1024/max_elapsed;
+        printf("Comm Flow Only: Elapsed time at receiving side = %8.6f bw = %8.4f\n", max_elapsed, bw);
     }
 
     for (int i = 0; i < num_neighbors; i++) {
         if  (myId == neighbors[i]) {
-            bw = (double)send_count/1024/1024/elapsed*1e6;
-            printf("Neighbor %d Comm Flow Only: Elapsed time = %8.0f bw = %8.4f\n", myId, elapsed, bw);
+            bw = (double)send_count/1024/1024/elapsed;
+            printf("Neighbor %d Comm Flow Only: Elapsed time = %8.6f bw = %8.4f\n", myId, elapsed, bw);
         }
     }
 
     /*Test 2: I/O only*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-	printf("Test 2: I/O only from center.");
+	printf("\nTest 2: I/O only from center.\n");
     }
+    MPI_Barrier(MPI_COMM_WORLD);
     
     MPI_File_open(MPI_COMM_WORLD, fileName, MPI_MODE_RDWR | MPI_MODE_CREATE | MPI_MODE_DELETE_ON_CLOSE, MPI_INFO_NULL, &fh);
     MPIO_Request *write_requests = (MPIO_Request*)malloc(sizeof(MPIO_Request)*iters);
@@ -151,18 +158,19 @@ int main(int argc, char **argv) {
     clock_gettime(CLOCK_REALTIME, &end);
 
     elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
-    max_elapsed;
+    elapsed = elapsed/iters;
+
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
-    bw = (double)send_count/1024/1024/max_elapsed*1e6;
 
     if (myId == centerId) {
-        printf("I/O Flow Only: Elapsed time = %8.0f bw = %8.4f\n", max_elapsed, bw);
+	bw = (double)send_count/1024/1024/max_elapsed;
+        printf("I/O Flow Only: Elapsed time = %8.6f bw = %8.4f\n", max_elapsed, bw);
     }
 
     /*Test 3: Post Isend, I/O, Waitall for Isend*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-        printf("Test 3: Post Isend, I/O, Waitall for Isend");
+        printf("\nTest 3: Post Isend, I/O, Waitall for Isend\n");
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -202,23 +210,25 @@ int main(int argc, char **argv) {
     MPI_File_close(&fh);
 
     elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
+    elapsed = elapsed/iters;
+
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
-    bw = (double)send_count/1024/1024/max_elapsed*1e6;
 
     if (myId == centerId) {
-	printf("CoFlow - Comm first: Elapsed time at receiving side = %8.0f bw = %8.4f\n", max_elapsed, bw);
+	bw = (double)send_count/1024/1024/max_elapsed;
+	printf("CoFlow - Comm first: Elapsed time at receiving side = %8.6f bw = %8.4f\n", max_elapsed, bw);
     }
 
     for	(int i = 0; i < num_neighbors; i++) {
 	if  (myId == neighbors[i]) {
-	    bw = (double)send_count/1024/1024/elapsed*1e6;
-	    printf("Neighbor %d CoFlow - Comm first: Elapsed time = %8.0f bw = %8.4f\n", myId, elapsed, bw);
+	    bw = (double)send_count/1024/1024/elapsed;
+	    printf("Neighbor %d CoFlow - Comm first: Elapsed time = %8.6f bw = %8.4f\n", myId, elapsed, bw);
 	}
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-	printf("\nTest 4: iwrite, isend, wait all iwrite, wait all isend");
+	printf("\nTest 4: iwrite, isend, wait all iwrite, wait all isend\n");
     }
     MPI_File_open(MPI_COMM_WORLD, fileName, MPI_MODE_RDWR | MPI_MODE_CREATE | MPI_MODE_DELETE_ON_CLOSE, MPI_INFO_NULL, &fh);
 
@@ -263,23 +273,25 @@ int main(int argc, char **argv) {
     MPI_File_close(&fh);
 
     elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
+    elapsed = elapsed/iters;
+
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
-    bw = (double)send_count/1024/1024/max_elapsed*1e6;
     
     if (myId == centerId) {
-        printf("CoFlow - I/O first: Elapsed time at receiving side = %8.0f bw = %8.4f\n", max_elapsed, bw);
+	bw = (double)send_count/1024/1024/max_elapsed;
+        printf("CoFlow - I/O first: Elapsed time at receiving side = %8.6f bw = %8.4f\n", max_elapsed, bw);
     }
 
     for (int i = 0; i < num_neighbors; i++) {
         if (myId == neighbors[i]) {
-            bw = (double)send_count/1024/1024/elapsed*1e6;
-            printf("Neighbor %d CoFlow - I/O first: Elapsed time = %8.0f bw = %8.4f\n", myId, elapsed, bw);
+            bw = (double)send_count/1024/1024/elapsed;
+            printf("Neighbor %d CoFlow - I/O first: Elapsed time = %8.6f bw = %8.4f\n", myId, elapsed, bw);
         }
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-        printf("\nTest 5: isend, iwrite, wait all isend, wait all iwrite");
+        printf("\nTest 5: isend, iwrite, wait all isend, wait all iwrite\n");
     }
     MPI_File_open(MPI_COMM_WORLD, fileName, MPI_MODE_RDWR | MPI_MODE_CREATE | MPI_MODE_DELETE_ON_CLOSE, MPI_INFO_NULL, &fh);
 
@@ -324,18 +336,19 @@ int main(int argc, char **argv) {
     MPI_File_close(&fh);
 
     elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
+    elapsed = elapsed/iters;
 
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
-    bw = (double)send_count/1024/1024/max_elapsed*1e6;
+    bw = (double)send_count/1024/1024/max_elapsed;
 
     if (myId == centerId) {
-        printf("CoFlow: Isend, iwrite, wait isend, wait i/0 time = %8.0f bw = %8.4f\n", max_elapsed, bw);
+        printf("CoFlow: Isend, iwrite, wait isend, wait i/0 time = %8.6f bw = %8.4f\n", max_elapsed, bw);
     }
 
     for (int i = 0; i < num_neighbors; i++) {
         if (myId == neighbors[i]) {
-            bw = (double)send_count/1024/1024/elapsed*1e6;
-            printf("Neighbor %d isend, iwrite, wait isend, wait i/o: Elapsed time = %8.0f bw = %8.4f\n", myId, elapsed, bw);
+            bw = (double)send_count/1024/1024/elapsed;
+            printf("Neighbor %d isend, iwrite, wait isend, wait i/o: Elapsed time = %8.6f bw = %8.4f\n", myId, elapsed, bw);
         }
     }
     MPI_Finalize();
