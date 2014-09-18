@@ -1,4 +1,10 @@
-#include "mfbgq.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "stddef.h"
+
+#include <hwi/include/bqc/A2_inlines.h>
+
+#include "topology.h"
 
 #include "mpi.h"
 
