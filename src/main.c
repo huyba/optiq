@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     fprintf(stderr, "Rank %d: [%d, %d, %d, %d, %d], bridge  %d: [%d, %d, %d, %d, %d]\n", world_rank, coord[0], coord[1], coord[2], coord[3], coord[4], bridgeId, bridge[0], bridge[1], bridge[2], bridge[3], bridge[4]);
 
     int num_dims = 5;
-    int num_sources = 32;
+    int num_sources = atoi(argv[1]);
     int factor = 1;
 
     int *allBridges = (int *) malloc(sizeof(int) * world_size);
