@@ -1,12 +1,11 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "stddef.h"
-
-#include <hwi/include/bqc/A2_inlines.h>
-
-#include "topology.h"
+#include "time.h"
 
 #include "mpi.h"
+
+#define BILLION  1000000000L;
 
 int main(int argc, char **argv) {
     int myrank, numprocs;
@@ -15,25 +14,21 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
-    int num_dims = 5;
-    int coord[5];
-    int size[5];
+    int num_dims = 3;
+    int coord[3];
+    int size[3];
 
-    getTopologyInfo(coord, size);
+    int myId = myrank;
+    int centerId = numprocs/2;
 
-    int myId = compute_nid(num_dims, coord, size);
-
-    int center[5];
-    int centerId;
-    center[0] = 2;
-    center[1] = 2;
-    center[2] = 2;
-    center[3] = 2;
-    center[4] = 0;
-    centerId = compute_nid(num_dims, center, size);
-
-    int neighbors[10];
-    int num_neighbors = compute_neighbors(num_dims, center, size, neighbors);
+    int neighbors[16];
+    int num_neighbors = 15;
+    for (int i = 0; i < numprocs/2; i ++) {
+	neighbors[i] = i;
+    }
+    for (int i = numprocs/2; i < numprocs-1; i ++) {
+        neighbors[i] = i+1;
+    }
 
     MPI_File fh;
     char fileName[] = "temp_test";
@@ -76,6 +71,8 @@ int main(int argc, char **argv) {
 	}
     }
 
+    struct timespec start, end;
+
     /*Test 1: Comm only*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
@@ -99,7 +96,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    uint64_t start = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &start);
 
     for (int i = 0; i < iters; i++) {
         for(int j = 0; j < num_neighbors; j++) {
@@ -109,9 +106,10 @@ int main(int argc, char **argv) {
         }
     }
 
-    uint64_t end = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &end);
 
-    double elapsed = (double)(end-start)/1.6e3/iters;
+    
+    double elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
     double max_elapsed;
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
     double bw = (double)send_count/1024/1024/max_elapsed*1e6;
@@ -139,7 +137,7 @@ int main(int argc, char **argv) {
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    start = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &start);
 
     if (myId == centerId)
     {
@@ -150,9 +148,9 @@ int main(int argc, char **argv) {
         }
     }
 
-    end = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &end);
 
-    elapsed = (double)(end-start)/1.6e3/iters;
+    elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
     max_elapsed;
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
     bw = (double)send_count/1024/1024/max_elapsed*1e6;
@@ -189,7 +187,7 @@ int main(int argc, char **argv) {
 	}
     }
 
-    start = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &start);
 
     for (int i = 0; i < iters; i++) {
 	for(int j = 0; j < num_neighbors; j++) {
@@ -199,11 +197,11 @@ int main(int argc, char **argv) {
 	}
     }
 
-    end = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &end);
     
     MPI_File_close(&fh);
 
-    elapsed = (double)(end-start)/1.6e3/iters;
+    elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
     bw = (double)send_count/1024/1024/max_elapsed*1e6;
 
@@ -250,7 +248,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    start = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &start);
 
     for (int i = 0; i < iters; i++) {
         for (int j = 0; j < num_neighbors; j++) {
@@ -260,11 +258,11 @@ int main(int argc, char **argv) {
         }
     }
 
-    end = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &end);
 
     MPI_File_close(&fh);
 
-    elapsed = (double)(end-start)/1.6e3/iters;
+    elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
     bw = (double)send_count/1024/1024/max_elapsed*1e6;
     
@@ -311,7 +309,7 @@ int main(int argc, char **argv) {
 	MPI_Waitall(iters, write_requests, write_status);
     }
 
-    start = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &start);
 
     for (int i = 0; i < iters; i++) {
         for (int j = 0; j < num_neighbors; j++) {
@@ -321,10 +319,11 @@ int main(int argc, char **argv) {
         }
     }
 
-    end = GetTimeBase();
+    clock_gettime(CLOCK_REALTIME, &end);
+
     MPI_File_close(&fh);
 
-    elapsed = (double)(end-start)/1.6e3/iters;
+    elapsed = (end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)BILLION;
 
     MPI_Reduce(&elapsed, &max_elapsed, 1, MPI_DOUBLE, MPI_MAX, centerId, MPI_COMM_WORLD);
     bw = (double)send_count/1024/1024/max_elapsed*1e6;
