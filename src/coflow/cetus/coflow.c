@@ -130,8 +130,9 @@ int main(int argc, char **argv) {
     /*Test 2: I/O only*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-	printf("Test 2: I/O only from center.");
+	printf("Test 2: I/O only from center.\n");
     }
+    MPI_Barrier(MPI_COMM_WORLD);
     
     MPI_File_open(MPI_COMM_WORLD, fileName, MPI_MODE_RDWR | MPI_MODE_CREATE | MPI_MODE_DELETE_ON_CLOSE, MPI_INFO_NULL, &fh);
     MPIO_Request *write_requests = (MPIO_Request*)malloc(sizeof(MPIO_Request)*iters);
@@ -164,7 +165,7 @@ int main(int argc, char **argv) {
     /*Test 3: Post Isend, I/O, Waitall for Isend*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-        printf("Test 3: Post Isend, I/O, Waitall for Isend");
+        printf("Test 3: Post Isend, I/O, Waitall for Isend\n");
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
