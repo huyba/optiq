@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     /*Test 1: Comm only*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-	printf("Test 1: Comm only between center and its neighbors\n");
+	printf("\nTest 1: Comm only between center and its neighbors\n");
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
     /*Test 2: I/O only*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-	printf("Test 2: I/O only from center.\n");
+	printf("\nTest 2: I/O only from center.\n");
     }
     MPI_Barrier(MPI_COMM_WORLD);
     
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
     /*Test 3: Post Isend, I/O, Waitall for Isend*/
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-        printf("Test 3: Post Isend, I/O, Waitall for Isend\n");
+        printf("\nTest 3: Post Isend, I/O, Waitall for Isend\n");
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
 
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-	printf("\nTest 4: iwrite, isend, wait all iwrite, wait all isend");
+	printf("\nTest 4: iwrite, isend, wait all iwrite, wait all isend\n");
     }
     MPI_File_open(MPI_COMM_WORLD, fileName, MPI_MODE_RDWR | MPI_MODE_CREATE | MPI_MODE_DELETE_ON_CLOSE, MPI_INFO_NULL, &fh);
 
@@ -282,7 +282,7 @@ int main(int argc, char **argv) {
 
     MPI_Barrier(MPI_COMM_WORLD);
     if (myId == 0) {
-        printf("\nTest 5: isend, iwrite, wait all isend, wait all iwrite");
+        printf("\nTest 5: isend, iwrite, wait all isend, wait all iwrite\n");
     }
     MPI_File_open(MPI_COMM_WORLD, fileName, MPI_MODE_RDWR | MPI_MODE_CREATE | MPI_MODE_DELETE_ON_CLOSE, MPI_INFO_NULL, &fh);
 
