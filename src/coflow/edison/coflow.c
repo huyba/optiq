@@ -5,6 +5,8 @@
 
 #include "mpi.h"
 
+#include "topology.h"
+
 #define BILLION  1000000000L;
 
 int main(int argc, char **argv) {
@@ -17,12 +19,18 @@ int main(int argc, char **argv) {
     int num_dims = 3;
     int coord[3];
     int size[3];
+    int nid;
+
+    GetCoordinates(coord, &nid);
+
+    printf("Rank: %d coord[%d, %d, %d], nid = %d\n", myrank, coord[0], coord[1], coord[2], nid);
 
     int myId = myrank;
     int centerId = numprocs/2;
 
-    int neighbors[16];
-    int num_neighbors = 15;
+    int num_neighbors = numprocs - 1;
+    int *neighbors = (int *) malloc(sizeof(int) * num_neighbors);
+
     for (int i = 0; i < numprocs/2; i ++) {
 	neighbors[i] = i;
     }
@@ -121,7 +129,7 @@ int main(int argc, char **argv) {
 
     if (myId == centerId) {
 	bw = (double)send_count/1024/1024/max_elapsed;
-        printf("Comm Flow Only: Elapsed time at receiving side = %8.6f bw = %8.4f\n", max_elapsed, bw);
+        printf("Comm Flow Only: Elapsed time at center side = %8.6f bw = %8.4f\n", max_elapsed, bw);
     }
 
     for (int i = 0; i < num_neighbors; i++) {
@@ -154,6 +162,8 @@ int main(int argc, char **argv) {
 	    offset += write_count;
         }
     }
+
+    MPI_File_close(&fh);
 
     clock_gettime(CLOCK_REALTIME, &end);
 
@@ -216,7 +226,7 @@ int main(int argc, char **argv) {
 
     if (myId == centerId) {
 	bw = (double)send_count/1024/1024/max_elapsed;
-	printf("CoFlow - Comm first: Elapsed time at receiving side = %8.6f bw = %8.4f\n", max_elapsed, bw);
+	printf("CoFlow - Comm first: Elapsed time at center side = %8.6f bw = %8.4f\n", max_elapsed, bw);
     }
 
     for	(int i = 0; i < num_neighbors; i++) {
@@ -279,7 +289,7 @@ int main(int argc, char **argv) {
     
     if (myId == centerId) {
 	bw = (double)send_count/1024/1024/max_elapsed;
-        printf("CoFlow - I/O first: Elapsed time at receiving side = %8.6f bw = %8.4f\n", max_elapsed, bw);
+        printf("CoFlow - I/O first: Elapsed time at ceter side = %8.6f bw = %8.4f\n", max_elapsed, bw);
     }
 
     for (int i = 0; i < num_neighbors; i++) {

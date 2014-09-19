@@ -8,6 +8,15 @@
 #include <firmware/include/personality.h>
 #endif
 
+#ifndef CRAY_XC30
+#define CRAY_XC30
+#endif
+
+#ifdef CRAY_XC30
+#include <pmi.h>
+#include <rca_lib.h>
+#endif
+
 #define INFINITY (8*1024*1024)
 
 int compute_nid(int num_dims, int *coord, int *size) {
@@ -119,6 +128,40 @@ void printArcs(int num_dims, int *size, double cap)
             }
         }
     }
+}
+
+void GetCoordinates(int *coords, int *nid)
+{
+#ifdef CRAY_XC30 
+        int rc, rank;
+        PMI_BOOL initialized;
+        rc = PMI_Initialized(&initialized);
+        if (rc!=PMI_SUCCESS)
+                PMI_Abort(rc,"PMI_Initialized failed");
+
+        if (initialized != PMI_TRUE)
+        {
+                int spawned;
+                rc = PMI_Init(&spawned);
+                if (rc!=PMI_SUCCESS)
+                        PMI_Abort(rc,"PMI_Init failed");
+        }
+
+        rc = PMI_Get_rank(&rank);
+        if (rc!=PMI_SUCCESS)
+                PMI_Abort(rc,"PMI_Get_rank failed");
+
+        /*Get the coordinates of compute nodes*/
+        rc = PMI_Get_nid(rank, nid);
+        pmi_mesh_coord_t xyz;
+        PMI_Get_meshcoord( (uint16_t) *nid, &xyz);
+
+        coords[0] = (int)xyz.mesh_x;
+        coords[1] = (int)xyz.mesh_y;
+        coords[2] = (int)xyz.mesh_z;
+
+        PMI_Finalize();
+#endif
 }
 
 void getTopologyInfo(int *coord, int *size) 

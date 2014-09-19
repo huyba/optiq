@@ -1,4 +1,4 @@
-CC      = cc 
+CC      = CC 
 COPT    = -g -O2 -std=gnu99
 FOPT    = -g -O2
 
@@ -10,7 +10,9 @@ UDREG_PATH=/opt/cray/udreg/default
 PMI_PATH=/opt/cray/pmi/default
 KRCA_PATH=/opt/cray/krca/default
 
-INCLUDE = -I$(DMAPP_PATH)/include -I$(KRCA_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include
+TOPO=../../topo
+
+INCLUDE = -I$(DMAPP_PATH)/include -I$(KRCA_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include -I$(TOPO)/
 LIBS    = -L$(DMAPP_PATH)/lib64   -L$(UDREG_PATH)/lib64   -L$(UGNI_PATH)/lib64   -L$(PMI_PATH)/lib64 -ldmapp -ludreg -lugni -lpmi
 
 CFLAGS  = $(COPT) $(INCLUDE)
@@ -30,7 +32,7 @@ rm:
 tests: $(TESTS)
 
 %.x: %.o
-	$(LD) $(LDFLAGS) $< $(LIBS) -o $@
+	$(LD) $(LDFLAGS) $(TOPO)/topology.o $< $(LIBS) -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

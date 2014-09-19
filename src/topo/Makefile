@@ -1,41 +1,43 @@
-ifndef COMPILER
-  COMPILER = XL
-endif
+CC      = CC
+COPT    = -g -O2
+FOPT    = -g -O2
 
-ifeq ($(COMPILER),GNU)
-  CC      = mpicc
-  COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
-endif
+# CSCS paths
+DMAPP_PATH=/opt/cray/dmapp/default
+GNIH_PATH=/opt/cray/gni-headers/default
+UGNI_PATH=/opt/cray/ugni/default
+UDREG_PATH=/opt/cray/udreg/default
+PMI_PATH=/opt/cray/pmi/default
 
-ifeq ($(COMPILER),XL)
-  CC      = mpicxx
-  COPT    = -g -O3
-endif
+INCLUDE = -I$(DMAPP_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include
+LIBS    = -L$(DMAPP_PATH)/lib64   -L$(UDREG_PATH)/lib64   -L$(UGNI_PATH)/lib64   -L$(PMI_PATH)/lib64 -ldmapp -ludreg -lugni -lpmi
 
-LD      = mpixlc_r
+CFLAGS  = $(COPT) $(INCLUDE)
 
-CFLAGS  = $(COPT) -I.
-LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
+LD      = $(CC)
+LDFLAGS = $(COPT)
 
-CFLAGS += -DPROGRESS_THREAD
+TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
+OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
+ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
-obj = topology.o  maxflow.o
+all: tests
 
-all: rm $(obj)
+tests: topology.o maxflow.o
 
-rm:
-	rm -f *.o
+%.x: %.o
+	$(LD) $(LDFLAGS) $< $(LIBS) -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.x: %.o $(obj)
-	$(LD) $< $(obj) -o $@ $(LDFLAGS)
+%.s: %.c
+	$(CC) $(CFLAGS) -S $< -o $@
 
 clean:
-	$(RM) $(RMFLAGS) *.o
-	$(RM) $(RMFLAGS) *.lst
+	$(RM) $(RMFLAGS) $(OBJ)
 
 realclean: clean
-	$(RM) $(RMFLAGS) *.x
-	$(RM) $(RMFLAGS) core.*
+	$(RM) $(RMFLAGS) $(TESTS)
+	$(RM) $(RMFLAGS) $(ASM)
+

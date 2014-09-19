@@ -1,6 +1,7 @@
 #ifndef TOPOLOGY_H
 #define TOPOLOGY_H
 
+void GetCoordinates(int * coords, int *nid);
 void getTopologyInfo(int *coord, int *size);
 void getTopology(int *coord, int *size, int *bridge, int *bridgeId);
 void generateData(int num_dims, int *size, int num_sources, int factor);
