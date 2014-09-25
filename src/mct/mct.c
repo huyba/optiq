@@ -83,10 +83,54 @@ void compute_routing_order(int num_dims, int *size, int *order)
     }
 }
 
-void reconstruct_path(int num_dims, int *source, int *dest, int *order, int **nodes)
+void move_along_one_dimension(int num_dims, int *size, int *source, int routing_dimension, int num_hops, int direction, int **path) 
 {
+    int dimension_value = source[routing_dimension];
+    for (int i = 0; i < num_hops; i++) {
+	for (int d = 0; d < num_dims; d++) {
+	    if (d != routing_dimension) {
+		path[i][d] = source[d];
+	    } else {
+		dimension_value = (dimension_value + direction + size[d]) % size[d];
+		path[i][d] = dimension_value;
+	    }
+	}
+    }
+}
+
+void reconstruct_path(int num_dims, int *size, int *source, int *dest, int *order, int *torus, int **path)
+{
+    int immediate_node[5];
+
+    /*Add source node*/
     for (int i = 0; i < num_dims; i++) {
-	
+	path[0][i] = source[i];
+	immediate_node[i] = source[i];
+    }
+
+    /*Add intermedidate nodes*/
+    int num_nodes = 1, direction = 0;
+    int routing_dimension, num_hops;
+
+    for (int i = 0; i < num_dims; i++) {
+	routing_dimension = order[i];
+	num_hops = abs(dest[routing_dimension]-source[routing_dimension]);
+	if (num_hops == 0) {
+	    continue;
+	}
+	direction = (dest[routing_dimension] - source[routing_dimension])/num_hops;
+
+	/*If there is torus link, the direction may change*/
+	if (torus[routing_dimension] == 1) {
+	    if (num_hops > size[routing_dimension]/2) {
+		direction *= -1;
+	    }
+	}
+
+	move_along_one_dimension(num_dims, size, immediate_node, routing_dimension, num_hops, direction, &path[num_nodes]);
+
+	immediate_node[routing_dimension] = source[routing_dimension];
+	num_nodes += num_hops;
     }
 }
 
@@ -123,14 +167,14 @@ int main(int argc, char **argv)
     compute_routing_order(num_dims, size, order);
     rank_to_coord(size, dest, dest_coord);
 
-    int num_hops, **nodes;
+    int num_hops, **path;
     if (nodeType == ATM || nodeType == OCN) {
 	num_hops = compute_num_hops(num_dims, coord, dest_coord);
-	nodes = (int **)malloc(sizeof(int*) * (num_hops - 1));
-	for (int i = 0; i < (num_hops - 1); i++) {
-	    nodes[i] = (int*) malloc(sizeof(int) * num_dims);
+	path = (int **)malloc(sizeof(int*) * (num_hops + 1));
+	for (int i = 0; i < (num_hops + 1); i++) {
+	    path[i] = (int*) malloc(sizeof(int) * num_dims);
 	}
-	reconstruct_path(num_dims, coord, dest_coord, order, nodes);
+	reconstruct_path(num_dims, size, coord, dest_coord, order, torus, path);
     }
 
     uint64_t start = GetTimeBase();
