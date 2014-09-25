@@ -2,7 +2,12 @@
 #include "stdlib.h"
 #include "stddef.h"
 
+#ifdef __bgq__
 #include <hwi/include/bqc/A2_inlines.h>
+#include <spi/include/kernel/location.h>
+#include <spi/include/kernel/process.h>
+#include <firmware/include/personality.h>
+#endif
 
 #include "topology.h"
 
@@ -41,9 +46,10 @@ int get_node_type(int world_rank, int phase, int *nodeType, int *dest)
     }
 }
 
-void rank_to_coord(int *size, int rank, int *coord)
+void map_ranks_to_coords(BG_CoordinateMapping_t *all_coord, int nranks)
 {
-
+    uint64_t numentries;
+    Kernel_RanksToCoords(sizeof(BG_CoordinateMapping_t)*nranks, all_coord, &numentries);
 }
 
 int compute_num_hops(int num_dims, int *source, int *dest) 
@@ -161,20 +167,32 @@ int main(int argc, char **argv)
     MPI_Request *request = (MPI_Request *)malloc(2 * sizeof(MPI_Request) * module_size);
 
     int num_dims = 5;
-    int coord[5], size[5], torus[5], dest_coord[5], order[5];
+    int source_coord[5], size[5], torus[5], dest_coord[5], order[5];
 
-    getTopologyInfo(coord, size, torus);
+    getTopologyInfo(source_coord, size, torus);
+
+    BG_CoordinateMapping_t *all_coords = (BG_CoordinateMapping_t *) malloc(sizeof(BG_CoordinateMapping_t)*world_size);
+    map_ranks_to_coords(all_coords, world_size);
+
+    dest_coord[0] = all_coords[dest].a;
+    dest_coord[1] = all_coords[dest].b;
+    dest_coord[2] = all_coords[dest].c;
+    dest_coord[3] = all_coords[dest].d;
+    dest_coord[4] = all_coords[dest].e;
+
     compute_routing_order(num_dims, size, order);
-    rank_to_coord(size, dest, dest_coord);
 
     int num_hops, **path;
     if (nodeType == ATM || nodeType == OCN) {
-	num_hops = compute_num_hops(num_dims, coord, dest_coord);
+	num_hops = compute_num_hops(num_dims, source_coord, dest_coord);
 	path = (int **)malloc(sizeof(int*) * (num_hops + 1));
 	for (int i = 0; i < (num_hops + 1); i++) {
 	    path[i] = (int*) malloc(sizeof(int) * num_dims);
 	}
-	reconstruct_path(num_dims, size, coord, dest_coord, order, torus, path);
+	reconstruct_path(num_dims, size, source_coord, dest_coord, order, torus, path);
+	for (int i = 0; i < num_hops; i ++) {
+	    printf("Path from rank %d to %d: [%d, %d, %d, %d, %d]\n", world_rank, dest, path[i][0], path[i][1], path[i][2], path[i][3], path[i][4]);
+	}
     }
 
     uint64_t start = GetTimeBase();
