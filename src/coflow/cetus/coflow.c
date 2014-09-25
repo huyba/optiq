@@ -151,6 +151,8 @@ int main(int argc, char **argv) {
         }
     }
 
+    MPI_File_close(&fh);
+
     end = GetTimeBase();
 
     elapsed = (double)(end-start)/1.6e3/iters;
