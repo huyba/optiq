@@ -14,7 +14,7 @@ endif
 
 LD      = mpixlc_r
 
-TOPO   = ../../topo
+TOPO   = ../topo
 
 CFLAGS  = $(COPT) -I. -I$(TOPO)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib 

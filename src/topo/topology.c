@@ -9,7 +9,7 @@
 #endif
 
 #ifndef CRAY_XC30
-#define CRAY_XC30
+//#define CRAY_XC30
 #endif
 
 #ifdef CRAY_XC30
@@ -175,6 +175,27 @@ void getTopologyInfo(int *coord, int *size)
     size[2] = pers.Network_Config.Cnodes; coord[2] = pers.Network_Config.Ccoord;
     size[3] = pers.Network_Config.Dnodes; coord[3] = pers.Network_Config.Dcoord;
     size[4] = pers.Network_Config.Enodes; coord[4] = pers.Network_Config.Ecoord;
+#endif
+}
+
+void getTopologyInfo(int *coord, int *size, int *torus) 
+{
+#ifdef __bgq__
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
+
+    size[0] = pers.Network_Config.Anodes; coord[0] = pers.Network_Config.Acoord;
+    size[1] = pers.Network_Config.Bnodes; coord[1] = pers.Network_Config.Bcoord;
+    size[2] = pers.Network_Config.Cnodes; coord[2] = pers.Network_Config.Ccoord;
+    size[3] = pers.Network_Config.Dnodes; coord[3] = pers.Network_Config.Dcoord;
+    size[4] = pers.Network_Config.Enodes; coord[4] = pers.Network_Config.Ecoord;
+
+    uint64_t Nflags = pers.Network_Config.NetFlags;
+    if (Nflags & ND_ENABLE_TORUS_DIM_A) torus[0] = 1; else torus[0] = 0;
+    if (Nflags & ND_ENABLE_TORUS_DIM_B) torus[1] = 1; else torus[1] = 0;
+    if (Nflags & ND_ENABLE_TORUS_DIM_C) torus[2] = 1; else torus[2] = 0;
+    if (Nflags & ND_ENABLE_TORUS_DIM_D) torus[3] = 1; else torus[3] = 0;
+    if (Nflags & ND_ENABLE_TORUS_DIM_E) torus[4] = 1; else torus[4] = 0;
 #endif
 }
 
