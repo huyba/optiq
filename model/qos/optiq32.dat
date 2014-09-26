@@ -4384,8 +4384,8 @@ IO 0.5
 COMM 0.5
 ;
 
-param: Jobs: Source Destination Demand Types :=
-0 0 224   2048.0 COMM
+param: Jobs: Source Destination:=
+0 0 224
 1 1 225   2048.0 COMM
 2 2 226   2048.0 COMM
 3 3 227   2048.0 COMM
@@ -4450,3 +4450,7 @@ param: Jobs: Source Destination Demand Types :=
 32 30 SuperION   2048.0 IO
 32 31 SuperION   2048.0 IO
 ;
+
+param: Jobs: Demand Types := 
+0 2048.0 IO
+
