@@ -19,9 +19,9 @@ int main(int argc, char **argv) {
     int coord[5];
     int size[5];
 
-    getTopologyInfo(coord, size);
+    optiq_get_topology_info(coord, size);
 
-    int myId = compute_nid(num_dims, coord, size);
+    int myId = optiq_compute_nid(num_dims, coord, size);
 
     int center[5];
     int centerId;
@@ -30,10 +30,10 @@ int main(int argc, char **argv) {
     center[2] = 2;
     center[3] = 2;
     center[4] = 0;
-    centerId = compute_nid(num_dims, center, size);
+    centerId = optiq_compute_nid(num_dims, center, size);
 
     int neighbors[10];
-    int num_neighbors = compute_neighbors(num_dims, center, size, neighbors);
+    int num_neighbors = optiq_compute_neighbors(num_dims, center, size, neighbors);
 
     MPI_File fh;
     char fileName[] = "temp_test";
