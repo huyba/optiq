@@ -40,7 +40,7 @@ void optiq_print_arcs(int num_dims, int *size, double cap)
     }
 }
 
-void optiq_generate_data(int num_dims, int *size)
+void optiq_generate_mct_data(int num_dims, int *size, int problem_size)
 {
     int num_nodes = 1;
     for (int i = 0; i < num_dims; i++) {
@@ -66,13 +66,16 @@ void optiq_generate_data(int num_dims, int *size)
     double demand = 2048.0;
     printf("param: Jobs: Source Destination Demand :=\n");
     int jobId = 0;
-    for (int i = 0; i < 32; i++) {
-	printf("%d %d %d %8.1f\n", jobId, i, i+64, demand);
-	jobId++;
-    }
-    for (int i = 32; i < 64; i++) {
-	printf("%d %d %d %8.1f\n", jobId, i, i+32, demand);
-	jobId++;
+
+    if (problem_size == 96) {
+	for (int i = 0; i < 32; i++) {
+	    printf("%d %d %d %8.1f\n", jobId, i, i+64, demand);
+	    jobId++;
+	}
+	for (int i = 32; i < 64; i++) {
+	    printf("%d %d %d %8.1f\n", jobId, i, i+32, demand);
+	    jobId++;
+	}
     }
     printf(";");
 }

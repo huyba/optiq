@@ -4,6 +4,7 @@
 #include <mpi.h>
 
 #include "topology.h"
+#include "datagen.h"
 
 int main(int argc, char **argv) 
 {
@@ -16,7 +17,7 @@ int main(int argc, char **argv)
 
     int coord[5], size[5], bridge[5], bridgeId;
 
-    getTopology(coord, size, bridge, &bridgeId);
+    optiq_get_topology(coord, size, bridge, &bridgeId);
 
     if (world_rank == 0) {
 	fprintf(stderr, "Torus dimension %d x %d x %d x %d x %d\n", size[0], size[1], size[2], size[3], size[4]);
@@ -36,14 +37,14 @@ int main(int argc, char **argv)
     bridges[0] = allBridges[0];
     int i = 0, j = 1;
     for (i = 1; i < world_size; i++) {
-	if (!check_existing(j, bridges, allBridges[i])) {
+	if (!optiq_check_existing(j, bridges, allBridges[i])) {
 	    bridges[j] = allBridges[i];
 	    j++;
 	}
     } 
     
     if (world_rank == 0) {
-	generateDataIO(num_dims, size, num_sources, factor, num_bridges, bridges);
+	optiq_generate_dataIO(num_dims, size, num_sources, factor, num_bridges, bridges);
     }
 
     MPI_Finalize();

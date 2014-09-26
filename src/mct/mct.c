@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 	    }
 	}
 
-	optiq_generate_data(num_dims, size);
+	optiq_generate_mct_data(num_dims, size, 96);
     }
 
     uint64_t start = GetTimeBase();

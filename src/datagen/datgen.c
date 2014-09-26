@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include <topology.h>
+#include <datagen.h>
 
 int main(int argc, char **argv) {
     int num_dims = 5;
@@ -33,12 +34,12 @@ int main(int argc, char **argv) {
 
     printf("set Arcs :=\n");
     double cap = -1.0;
-    printArcs(num_dims, size, cap);
+    optiq_print_arcs(num_dims, size, cap);
     printf(";\n\n");
 
     cap = 2048.0;
     printf("param Capacity :=\n");
-    printArcs(num_dims, size, cap);
+    optiq_print_arcs(num_dims, size, cap);
     printf(";\n\n");
 
     double demand = 2048.0;
