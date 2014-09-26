@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 	printf("Size: %d x %d x %d x %d x %d Torus: %d %d %d %d %d\n", size[0], size[1], size[2], size[3], size[4], torus[0], torus[1], torus[2], torus[3], torus[4]);
     }
 
-    printf("Rank %d coord [%d, %d, %d, %d, %d]\n", world_rank, source_coord[0], source_coord[1], source_coord[2], source_coord[3], source_coord[4]);
+    /*printf("Rank %d coord [%d, %d, %d, %d, %d]\n", world_rank, source_coord[0], source_coord[1], source_coord[2], source_coord[3], source_coord[4]);*/
 
     BG_CoordinateMapping_t *all_coords = (BG_CoordinateMapping_t *) malloc(sizeof(BG_CoordinateMapping_t)*world_size);
     map_ranks_to_coords(all_coords, world_size);
@@ -214,7 +214,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < (num_hops + 1); i ++) {
 	    coord_to_nodeId(num_dims, size, path[i], &nodes_on_path[i]);
 	    //printf("Path from rank %d to %d node %d/%d: [%d, %d, %d, %d, %d]\n", world_rank, dest, i, num_hops + 1, path[i][0], path[i][1], path[i][2], path[i][3], path[i][4]);
-	    printf("Path from rank %d to %d node %d/%d: %d\n", world_rank, dest, i, num_hops + 1, nodes_on_path[i]);
+	    /*printf("Path from rank %d to %d node %d/%d: %d\n", world_rank, dest, i, num_hops + 1, nodes_on_path[i]);*/
 	}
     }
 
@@ -265,10 +265,12 @@ int main(int argc, char **argv)
 	for (int i = 0; i < world_size; i++) {
 	    for (int j = 0; j < world_size; j++) {
 		if (link_contention[i][j] != 0) {
-		    printf("%d->%d : %d\n", i, j, link_contention[i][j]);
+		    //printf("%d->%d : %d\n", i, j, link_contention[i][j]);
 		}
 	    }
 	}
+
+	generate_data(num_dims, size);
     }
 
     uint64_t start = GetTimeBase();

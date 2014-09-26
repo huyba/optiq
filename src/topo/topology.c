@@ -234,7 +234,7 @@ void getTopology(int *coord, int *size, int *bridge, int *bridgeId)
 #endif
 }
 
-void generateData(int num_dims, int *size, int num_sources, int factor)
+void generate_data(int num_dims, int *size)
 {
     int num_nodes = 1;
     for (int i = 0; i < num_dims; i++) {
@@ -259,10 +259,14 @@ void generateData(int num_dims, int *size, int num_sources, int factor)
 
     double demand = 2048.0;
     printf("param: Jobs: Source Destination Demand :=\n");
-    for (int i = 0; i < num_sources; i++) {
-        for (int j = 0; j < factor; j++) {
-            printf("%d %d %d %8.1f\n", i*factor+j, i, num_nodes-num_sources*factor+i*factor+j, demand);
-        }
+    int jobId = 0;
+    for (int i = 0; i < 32; i++) {
+        printf("%d %d %d %8.1f\n", jobId, i, i+64, demand);
+	jobId++;
+    }
+    for (int i = 32; i < 63; i++) {
+        printf("%d %d %d %8.1f\n", jobId, i, i+32, demand);
+	jobId++;
     }
     printf(";");
 }
