@@ -104,6 +104,20 @@ void move_along_one_dimension(int num_dims, int *size, int *source, int routing_
     }
 }
 
+void coord_to_nodeId(int num_dims, int *size, int *coord, int *nodeId)
+{
+    int temp;
+    *nodeId = 0;
+    for (int i = 0; i < num_dims; i++) {
+	temp = 1;
+	for (int j = i+1; j < num_dims; j++) {
+	    temp *= size[j];
+	}
+	temp = coord[i]*temp;
+	*nodeId += temp;
+    }
+}
+
 void reconstruct_path(int num_dims, int *size, int *source, int *dest, int *order, int *torus, int **path)
 {
     int immediate_node[5];
@@ -135,7 +149,7 @@ void reconstruct_path(int num_dims, int *size, int *source, int *dest, int *orde
 
 	move_along_one_dimension(num_dims, size, immediate_node, routing_dimension, num_hops, direction, &path[num_nodes]);
 
-	immediate_node[routing_dimension] = source[routing_dimension];
+	immediate_node[routing_dimension] = dest[routing_dimension];
 	num_nodes += num_hops;
     }
 }
@@ -170,6 +184,11 @@ int main(int argc, char **argv)
     int source_coord[5], size[5], torus[5], dest_coord[5], order[5];
 
     getTopologyInfo(source_coord, size, torus);
+    if (world_rank == 0) {
+	printf("Size: %d x %d x %d x %d x %d Torus: %d %d %d %d %d\n", size[0], size[1], size[2], size[3], size[4], torus[0], torus[1], torus[2], torus[3], torus[4]);
+    }
+
+    printf("Rank %d coord [%d, %d, %d, %d, %d]\n", world_rank, source_coord[0], source_coord[1], source_coord[2], source_coord[3], source_coord[4]);
 
     BG_CoordinateMapping_t *all_coords = (BG_CoordinateMapping_t *) malloc(sizeof(BG_CoordinateMapping_t)*world_size);
     map_ranks_to_coords(all_coords, world_size);
@@ -182,16 +201,73 @@ int main(int argc, char **argv)
 
     compute_routing_order(num_dims, size, order);
 
-    int num_hops, **path;
+    int num_hops = 0, **path, *nodes_on_path;
+    char str[1024];
     if (nodeType == ATM || nodeType == OCN) {
 	num_hops = compute_num_hops(num_dims, source_coord, dest_coord);
 	path = (int **)malloc(sizeof(int*) * (num_hops + 1));
+	nodes_on_path = (int *)malloc(sizeof(int) * (num_hops + 1));
 	for (int i = 0; i < (num_hops + 1); i++) {
 	    path[i] = (int*) malloc(sizeof(int) * num_dims);
 	}
 	reconstruct_path(num_dims, size, source_coord, dest_coord, order, torus, path);
-	for (int i = 0; i < num_hops; i ++) {
-	    printf("Path from rank %d to %d: [%d, %d, %d, %d, %d]\n", world_rank, dest, path[i][0], path[i][1], path[i][2], path[i][3], path[i][4]);
+	for (int i = 0; i < (num_hops + 1); i ++) {
+	    coord_to_nodeId(num_dims, size, path[i], &nodes_on_path[i]);
+	    //printf("Path from rank %d to %d node %d/%d: [%d, %d, %d, %d, %d]\n", world_rank, dest, i, num_hops + 1, path[i][0], path[i][1], path[i][2], path[i][3], path[i][4]);
+	    printf("Path from rank %d to %d node %d/%d: %d\n", world_rank, dest, i, num_hops + 1, nodes_on_path[i]);
+	}
+    }
+
+    int *all_hops = (int*)malloc(sizeof(int)*world_size);
+    MPI_Allgather(&num_hops, 1, MPI_INT, all_hops, 1, MPI_INT, MPI_COMM_WORLD);
+    int num_paths = 0;
+    for (int i = 1; i < world_size; i++) {
+	if(all_hops[i] != 0) {
+	    num_paths++;
+	}
+    }
+
+    if (num_hops != 0 && world_rank != 0) {
+	MPI_Send(nodes_on_path, num_hops+1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+    }
+
+    if (world_rank == 0) {
+	int *path_length = (int *)malloc(sizeof(int) * num_paths);
+	int **all_paths = (int **)malloc(sizeof(int*) * num_paths);
+	MPI_Request *requests = (MPI_Request *)malloc(sizeof(MPI_Request) * num_paths);
+	MPI_Status *status = (MPI_Status *)malloc(sizeof(MPI_Status) * num_paths);
+	int j = 0;
+	for (int i = 1; i < world_size; i++) {
+	    if (all_hops[i] != 0) {
+		path_length[j] = all_hops[i] + 1;
+		all_paths[j] = (int *)malloc(sizeof(int) * path_length[j]);
+		MPI_Irecv(all_paths[j], path_length[j], MPI_INT, i, 0, MPI_COMM_WORLD, &requests[j]);
+		j++;
+	    }
+	}
+
+	MPI_Waitall(num_paths, requests, status);
+
+	int **link_contention  = (int **)malloc(sizeof(int*) * world_size);
+	for (int i = 0; i < world_size; i++) {
+	    link_contention[i] = (int *)malloc(sizeof(int) * world_size);
+	    for (int j = 0; j < world_size; j++) {
+		link_contention[i][j] = 0;
+	    }
+	}
+
+	for (int i = 0; i < num_paths; i++) {
+	    for(int j = 0; j < path_length[i] - 1; j++) {
+		link_contention[all_paths[i][j]][all_paths[i][j+1]]++;
+	    }
+	}
+
+	for (int i = 0; i < world_size; i++) {
+	    for (int j = 0; j < world_size; j++) {
+		if (link_contention[i][j] != 0) {
+		    printf("%d->%d : %d\n", i, j, link_contention[i][j]);
+		}
+	    }
 	}
     }
 
