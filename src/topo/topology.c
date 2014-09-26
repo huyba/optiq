@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include "topology.h"
 
-#ifdef __bgq__
-#include <spi/include/kernel/location.h>
-#include <spi/include/kernel/process.h>
-#include <firmware/include/personality.h>
-#endif
-
 #ifndef CRAY_XC30
 //#define CRAY_XC30
 #endif
@@ -19,7 +13,7 @@
 
 #define INFINITY (8*1024*1024)
 
-int compute_nid(int num_dims, int *coord, int *size) {
+int optiq_compute_nid(int num_dims, int *coord, int *size) {
     int nid = coord[num_dims-1];
     int  pre_size = 1;
 
@@ -35,7 +29,118 @@ int compute_nid(int num_dims, int *coord, int *size) {
     return nid;
 }
 
-int check_existing(int num_neighbors, int *neighbors, int nid) {
+void optiq_coord_to_nodeId(int num_dims, int *size, int *coord, int *nodeId)
+{
+    int temp;
+    *nodeId = 0;
+    for (int i = 0; i < num_dims; i++) {
+        temp = 1;
+        for (int j = i+1; j < num_dims; j++) {
+            temp *= size[j];
+        }
+        temp = coord[i]*temp;
+        *nodeId += temp;
+    }
+}
+
+void optiq_move_along_one_dimension(int num_dims, int *size, int *source, int routing_dimension, int num_hops, int direction, int **path)
+{
+    int dimension_value = source[routing_dimension];
+    for (int i = 0; i < num_hops; i++) {
+        for (int d = 0; d < num_dims; d++) {
+            if (d != routing_dimension) {
+                path[i][d] = source[d];
+            } else {
+                dimension_value = (dimension_value + direction + size[d]) % size[d];
+                path[i][d] = dimension_value;
+            }
+        }
+    }
+}
+
+void optiq_reconstruct_path(int num_dims, int *size, int *source, int *dest, int *order, int *torus, int **path)
+{
+    int immediate_node[5];
+
+    /*Add source node*/
+    for (int i = 0; i < num_dims; i++) {
+        path[0][i] = source[i];
+        immediate_node[i] = source[i];
+    }
+
+    /*Add intermedidate nodes*/
+    int num_nodes = 1, direction = 0;
+    int routing_dimension, num_hops;
+
+    for (int i = 0; i < num_dims; i++) {
+        routing_dimension = order[i];
+        num_hops = abs(dest[routing_dimension]-source[routing_dimension]);
+        if (num_hops == 0) {
+            continue;
+        }
+        direction = (dest[routing_dimension] - source[routing_dimension])/num_hops;
+
+        /*If there is torus link, the direction may change*/
+        if (torus[routing_dimension] == 1) {
+            if (num_hops > size[routing_dimension]/2) {
+                direction *= -1;
+            }
+        }
+
+        optiq_move_along_one_dimension(num_dims, size, immediate_node, routing_dimension, num_hops, direction, &path[num_nodes]);
+
+        immediate_node[routing_dimension] = dest[routing_dimension];
+        num_nodes += num_hops;
+    }
+}
+
+int optiq_compute_num_hops(int num_dims, int *source, int *dest)
+{
+    int num_hops = 0;
+    for (int i = 0; i < num_dims; i++) {
+        num_hops += abs(source[i] - dest[i]);
+    }
+    return num_hops;
+}
+
+void optiq_compute_routing_order(int num_dims, int *size, int *order)
+{
+    int num_nodes = 1, dims[5];
+    for (int i = 0; i < num_dims; i++) {
+        num_nodes *= size[i];
+        dims[i] = size[i];
+    }
+
+    int longest_dimension, length;
+    for (int i = 0; i < num_dims; i++) {
+        longest_dimension = i;
+        length = dims[i];
+        for (int j = 0; j < num_dims; j++) {
+            if(dims[j] > length) {
+                longest_dimension = j;
+                length = dims[j];
+            }
+        }
+
+        if ((longest_dimension == 0) && (dims[0] == dims[1]) && (num_nodes == 128 || num_nodes == 256)) {
+            longest_dimension = 1;
+        }
+
+        order[i] = longest_dimension;
+        dims[longest_dimension] = -1;
+    }
+}
+
+void optiq_map_ranks_to_coords(BG_CoordinateMapping_t *all_coord, int nranks)
+{
+#ifdef __bgq__
+    uint64_t numentries;
+    Kernel_RanksToCoords(sizeof(BG_CoordinateMapping_t)*nranks, all_coord, &numentries);
+#endif
+}
+
+int optiq_check_existing(int num_neighbors, int *neighbors, int nid) 
+{
     for (int i = 0; i < num_neighbors; i++) {
         if (neighbors[i] == nid) {
             return 1;
@@ -45,15 +150,15 @@ int check_existing(int num_neighbors, int *neighbors, int nid) {
     return 0;
 }
 
-int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
+int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
     int num_neighbors = 0;
     int nid = 0;
 
     for (int i = 0; i < num_dims; i++) {
         if (coord[i] - 1 >= 0) {
             coord[i]--;
-            nid = compute_nid(num_dims, coord, size);
-            if (check_existing(num_neighbors, neighbors, nid) != 1) {
+            nid = optiq_compute_nid(num_dims, coord, size);
+            if (optiq_check_existing(num_neighbors, neighbors, nid) != 1) {
                 neighbors[num_neighbors] = nid;
                 num_neighbors++;
             }
@@ -61,8 +166,8 @@ int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
         }
         if (coord[i] + 1 < size[i]) {
             coord[i]++;
-            nid = compute_nid(num_dims, coord, size);
-            if (check_existing(num_neighbors, neighbors, nid) != 1) {
+            nid = optiq_compute_nid(num_dims, coord, size);
+            if (optiq_check_existing(num_neighbors, neighbors, nid) != 1) {
                 neighbors[num_neighbors] = nid;
                 num_neighbors++;
             }
@@ -73,8 +178,8 @@ int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
         for (int i = 0; i < num_dims; i++) {
             if (coord[i] == 0) {
                 coord[i] = size[i]-1;
-                nid = compute_nid(num_dims, coord, size);
-                if (check_existing(num_neighbors, neighbors, nid) != 1) {
+                nid = optiq_compute_nid(num_dims, coord, size);
+                if (optiq_check_existing(num_neighbors, neighbors, nid) != 1) {
                     neighbors[num_neighbors] = nid;
                     num_neighbors++;
                 }
@@ -83,8 +188,8 @@ int compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
 
             if (coord[i] == size[i]-1) {
                 coord[i] = 0;
-                nid = compute_nid(num_dims, coord, size);
-                if (check_existing(num_neighbors, neighbors, nid) != 1) {
+                nid = optiq_compute_nid(num_dims, coord, size);
+                if (optiq_check_existing(num_neighbors, neighbors, nid) != 1) {
                     neighbors[num_neighbors] = nid;
                     num_neighbors++;
                 }
@@ -113,8 +218,8 @@ void printArcs(int num_dims, int *size, double cap)
                     for (int ed = 0; ed < size[4]; ed++) {
                         coord[4] = ed;
                         num_neighbors = 0;
-                        nid = compute_nid(num_dims, coord, size);
-                        num_neighbors = compute_neighbors(num_dims, coord, size, neighbors);
+                        nid = optiq_compute_nid(num_dims, coord, size);
+                        num_neighbors = optiq_compute_neighbors(num_dims, coord, size, neighbors);
                         for (int i = 0; i < num_neighbors; i++) {
                             if (cap < 0.0) {
                                 printf("%d %d\n", nid, neighbors[i]);
@@ -130,7 +235,7 @@ void printArcs(int num_dims, int *size, double cap)
     }
 }
 
-void GetCoordinates(int *coords, int *nid)
+void optiq_get_coordinates(int *coords, int *nid)
 {
 #ifdef CRAY_XC30 
         int rc, rank;
@@ -164,7 +269,7 @@ void GetCoordinates(int *coords, int *nid)
 #endif
 }
 
-void getTopologyInfo(int *coord, int *size) 
+void optiq_get_topology_info(int *coord, int *size) 
 {
 #ifdef __bgq__
     Personality_t pers;
@@ -178,7 +283,7 @@ void getTopologyInfo(int *coord, int *size)
 #endif
 }
 
-void getTopologyInfo(int *coord, int *size, int *torus) 
+void optiq_get_topology_info(int *coord, int *size, int *torus) 
 {
 #ifdef __bgq__
     Personality_t pers;
@@ -199,7 +304,7 @@ void getTopologyInfo(int *coord, int *size, int *torus)
 #endif
 }
 
-void getTopology(int *coord, int *size, int *bridge, int *bridgeId)
+void optiq_get_topology(int *coord, int *size, int *bridge, int *bridgeId)
 {
 #ifdef __bgq__
     Personality_t personality;
@@ -234,7 +339,7 @@ void getTopology(int *coord, int *size, int *bridge, int *bridgeId)
 #endif
 }
 
-void generate_data(int num_dims, int *size)
+void optiq_generate_data(int num_dims, int *size)
 {
     int num_nodes = 1;
     for (int i = 0; i < num_dims; i++) {
@@ -264,14 +369,14 @@ void generate_data(int num_dims, int *size)
         printf("%d %d %d %8.1f\n", jobId, i, i+64, demand);
 	jobId++;
     }
-    for (int i = 32; i < 63; i++) {
+    for (int i = 32; i < 64; i++) {
         printf("%d %d %d %8.1f\n", jobId, i, i+32, demand);
 	jobId++;
     }
     printf(";");
 }
 
-void generateDataIO(int num_dims, int *size, int num_sources, int factor, int num_bridges,  int *bridgeIds)
+void optiq_generate_dataIO(int num_dims, int *size, int num_sources, int factor, int num_bridges,  int *bridgeIds)
 {
     int num_nodes = 1;
     for (int i = 0; i < num_dims; i++) {

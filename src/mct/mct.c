@@ -46,114 +46,6 @@ int get_node_type(int world_rank, int phase, int *nodeType, int *dest)
     }
 }
 
-void map_ranks_to_coords(BG_CoordinateMapping_t *all_coord, int nranks)
-{
-    uint64_t numentries;
-    Kernel_RanksToCoords(sizeof(BG_CoordinateMapping_t)*nranks, all_coord, &numentries);
-}
-
-int compute_num_hops(int num_dims, int *source, int *dest) 
-{
-    int num_hops = 0;
-    for (int i = 0; i < num_dims; i++) {
-	num_hops += abs(source[i] - dest[i]);
-    }
-    return num_hops;
-}
-
-void compute_routing_order(int num_dims, int *size, int *order)
-{
-    int num_nodes = 1, dims[5];
-    for (int i = 0; i < num_dims; i++) {
-	num_nodes *= size[i];
-	dims[i] = size[i];
-    }
-
-    int longest_dimension, length;
-    for (int i = 0; i < num_dims; i++) {
-	longest_dimension = i;
-	length = dims[i];
-	for (int j = 0; j < num_dims; j++) {
-	    if(dims[j] > length) {
-		longest_dimension = j;
-		length = dims[j];
-	    } 
-	}
-
-	if ((longest_dimension == 0) && (dims[0] == dims[1]) && (num_nodes == 128 || num_nodes == 256)) {
-	    longest_dimension = 1;  
-	}
-
-	order[i] = longest_dimension;
-	dims[longest_dimension] = -1;
-    }
-}
-
-void move_along_one_dimension(int num_dims, int *size, int *source, int routing_dimension, int num_hops, int direction, int **path) 
-{
-    int dimension_value = source[routing_dimension];
-    for (int i = 0; i < num_hops; i++) {
-	for (int d = 0; d < num_dims; d++) {
-	    if (d != routing_dimension) {
-		path[i][d] = source[d];
-	    } else {
-		dimension_value = (dimension_value + direction + size[d]) % size[d];
-		path[i][d] = dimension_value;
-	    }
-	}
-    }
-}
-
-void coord_to_nodeId(int num_dims, int *size, int *coord, int *nodeId)
-{
-    int temp;
-    *nodeId = 0;
-    for (int i = 0; i < num_dims; i++) {
-	temp = 1;
-	for (int j = i+1; j < num_dims; j++) {
-	    temp *= size[j];
-	}
-	temp = coord[i]*temp;
-	*nodeId += temp;
-    }
-}
-
-void reconstruct_path(int num_dims, int *size, int *source, int *dest, int *order, int *torus, int **path)
-{
-    int immediate_node[5];
-
-    /*Add source node*/
-    for (int i = 0; i < num_dims; i++) {
-	path[0][i] = source[i];
-	immediate_node[i] = source[i];
-    }
-
-    /*Add intermedidate nodes*/
-    int num_nodes = 1, direction = 0;
-    int routing_dimension, num_hops;
-
-    for (int i = 0; i < num_dims; i++) {
-	routing_dimension = order[i];
-	num_hops = abs(dest[routing_dimension]-source[routing_dimension]);
-	if (num_hops == 0) {
-	    continue;
-	}
-	direction = (dest[routing_dimension] - source[routing_dimension])/num_hops;
-
-	/*If there is torus link, the direction may change*/
-	if (torus[routing_dimension] == 1) {
-	    if (num_hops > size[routing_dimension]/2) {
-		direction *= -1;
-	    }
-	}
-
-	move_along_one_dimension(num_dims, size, immediate_node, routing_dimension, num_hops, direction, &path[num_nodes]);
-
-	immediate_node[routing_dimension] = dest[routing_dimension];
-	num_nodes += num_hops;
-    }
-}
-
 int main(int argc, char **argv) 
 {
     int world_rank, world_size;
@@ -183,7 +75,7 @@ int main(int argc, char **argv)
     int num_dims = 5;
     int source_coord[5], size[5], torus[5], dest_coord[5], order[5];
 
-    getTopologyInfo(source_coord, size, torus);
+    optiq_get_topology_info(source_coord, size, torus);
     if (world_rank == 0) {
 	printf("Size: %d x %d x %d x %d x %d Torus: %d %d %d %d %d\n", size[0], size[1], size[2], size[3], size[4], torus[0], torus[1], torus[2], torus[3], torus[4]);
     }
@@ -191,7 +83,7 @@ int main(int argc, char **argv)
     /*printf("Rank %d coord [%d, %d, %d, %d, %d]\n", world_rank, source_coord[0], source_coord[1], source_coord[2], source_coord[3], source_coord[4]);*/
 
     BG_CoordinateMapping_t *all_coords = (BG_CoordinateMapping_t *) malloc(sizeof(BG_CoordinateMapping_t)*world_size);
-    map_ranks_to_coords(all_coords, world_size);
+    optiq_map_ranks_to_coords(all_coords, world_size);
 
     dest_coord[0] = all_coords[dest].a;
     dest_coord[1] = all_coords[dest].b;
@@ -199,20 +91,20 @@ int main(int argc, char **argv)
     dest_coord[3] = all_coords[dest].d;
     dest_coord[4] = all_coords[dest].e;
 
-    compute_routing_order(num_dims, size, order);
+    optiq_compute_routing_order(num_dims, size, order);
 
     int num_hops = 0, **path, *nodes_on_path;
     char str[1024];
     if (nodeType == ATM || nodeType == OCN) {
-	num_hops = compute_num_hops(num_dims, source_coord, dest_coord);
+	num_hops = optiq_compute_num_hops(num_dims, source_coord, dest_coord);
 	path = (int **)malloc(sizeof(int*) * (num_hops + 1));
 	nodes_on_path = (int *)malloc(sizeof(int) * (num_hops + 1));
 	for (int i = 0; i < (num_hops + 1); i++) {
 	    path[i] = (int*) malloc(sizeof(int) * num_dims);
 	}
-	reconstruct_path(num_dims, size, source_coord, dest_coord, order, torus, path);
+	optiq_reconstruct_path(num_dims, size, source_coord, dest_coord, order, torus, path);
 	for (int i = 0; i < (num_hops + 1); i ++) {
-	    coord_to_nodeId(num_dims, size, path[i], &nodes_on_path[i]);
+	    optiq_coord_to_nodeId(num_dims, size, path[i], &nodes_on_path[i]);
 	    //printf("Path from rank %d to %d node %d/%d: [%d, %d, %d, %d, %d]\n", world_rank, dest, i, num_hops + 1, path[i][0], path[i][1], path[i][2], path[i][3], path[i][4]);
 	    /*printf("Path from rank %d to %d node %d/%d: %d\n", world_rank, dest, i, num_hops + 1, nodes_on_path[i]);*/
 	}
@@ -270,7 +162,7 @@ int main(int argc, char **argv)
 	    }
 	}
 
-	generate_data(num_dims, size);
+	optiq_generate_data(num_dims, size);
     }
 
     uint64_t start = GetTimeBase();
