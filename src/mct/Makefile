@@ -21,7 +21,7 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = $(TOPO)/topology.o
+obj = $(TOPO)/topology.o $(TOPO)/datagen.o
 
 all: rm flow flowcpy
 

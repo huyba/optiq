@@ -11,8 +11,6 @@
 #include <rca_lib.h>
 #endif
 
-#define INFINITY (8*1024*1024)
-
 int optiq_compute_nid(int num_dims, int *coord, int *size) {
     int nid = coord[num_dims-1];
     int  pre_size = 1;
@@ -337,105 +335,4 @@ void optiq_get_topology(int *coord, int *size, int *bridge, int *bridgeId)
 
     *bridgeId = bridge[4] + bridge[3]*size[4] + bridge[2]*size[3]*size[4] + bridge[1]*size[2]*size[3]*size[4] + bridge[0]*size[1]*size[2]*size[3]*size[4];
 #endif
-}
-
-void optiq_generate_data(int num_dims, int *size)
-{
-    int num_nodes = 1;
-    for (int i = 0; i < num_dims; i++) {
-        num_nodes *= size[i];
-    }
-
-    printf("set Nodes :=\n");
-    for (int i = 0; i < num_nodes; i++) {
-        printf("%d\n", i);
-    }
-    printf(";\n\n");
-
-    printf("set Arcs :=\n");
-    double cap = -1.0;
-    printArcs(num_dims, size, cap);
-    printf(";\n\n");
-
-    cap = 2048.0;
-    printf("param Capacity :=\n");
-    printArcs(num_dims, size, cap);
-    printf(";\n\n");
-
-    double demand = 2048.0;
-    printf("param: Jobs: Source Destination Demand :=\n");
-    int jobId = 0;
-    for (int i = 0; i < 32; i++) {
-        printf("%d %d %d %8.1f\n", jobId, i, i+64, demand);
-	jobId++;
-    }
-    for (int i = 32; i < 64; i++) {
-        printf("%d %d %d %8.1f\n", jobId, i, i+32, demand);
-	jobId++;
-    }
-    printf(";");
-}
-
-void optiq_generate_dataIO(int num_dims, int *size, int num_sources, int factor, int num_bridges,  int *bridgeIds)
-{
-    int num_nodes = 1;
-    for (int i = 0; i < num_dims; i++) {
-        num_nodes *= size[i];
-    }
-
-    printf("set Nodes :=\n");
-    for (int i = 0; i < num_nodes; i++) {
-        printf("%d\n", i);
-    }
-    for (int i = 0; i < num_bridges/2; i++) {
-	printf("ION_%d\n", i);
-    }
-    printf("SuperION\n");
-    printf(";\n\n");
-
-    printf("set Arcs :=\n");
-    double cap = -1.0;
-    printArcs(num_dims, size, cap);
-    for	(int i = 0; i < num_bridges; i++) {
-	printf("%d ION_%d\n", bridgeIds[i], i/2);
-    }
-    for (int i = 0; i < num_bridges/2; i++) {
-        printf("ION_%d SuperION\n", i);
-    }
-    printf(";\n\n");
-
-    printf("set Types :=\n");
-    printf("IO\n");
-    printf("COMM\n");
-    printf(";\n\n");
-
-    cap = 2048.0;
-    printf("param Capacity :=\n");
-    printArcs(num_dims, size, cap);
-    for (int i = 0; i < num_bridges; i++) {
-        printf("%d ION_%d %8.1f\n", bridgeIds[i], i/2, cap);
-    }
-    for (int i = 0; i < num_bridges/2; i++) {
-        printf("ION_%d SuperION %d\n", i, INFINITY);
-    }
-    printf(";\n\n");
-
-    printf("param Weight:=\n");
-    printf("IO 0.5\n");
-    printf("COMM 0.5\n");
-    printf(";\n\n");
-
-    double demand = 2048.0;
-    int jobId = 0;
-    printf("param: Jobs: Source Destination Demand Types :=\n");
-    for (int i = 0; i < num_sources; i++) {
-        for (int j = 0; j < factor; j++) {
-            printf("%d %d %d %8.1f COMM\n", jobId, i, num_nodes-num_sources*factor+i*factor+j, demand);
-	    jobId++;
-        }
-    }
-    for (int i = 0 ; i < num_sources; i++) {
-	printf("%d %d SuperION %8.1f IO\n", jobId, i, demand);
-    }
-    printf(";");
 }

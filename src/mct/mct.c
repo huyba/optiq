@@ -10,6 +10,7 @@
 #endif
 
 #include "topology.h"
+#include "datagen.h"
 
 #include "mpi.h"
 
