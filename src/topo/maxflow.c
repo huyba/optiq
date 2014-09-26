@@ -194,8 +194,8 @@ int compute_max_flow(int num_dims, int * size, int *sourceId, int nsources, int 
 		    {
 			coord[4] = ed;
 			num_neighbors = 0;
-			nid = compute_nid(num_dims, coord, size);
-			num_neighbors = compute_neighbors(num_dims, coord, size, neighbors);
+			nid = optiq_compute_nid(num_dims, coord, size);
+			num_neighbors = optiq_compute_neighbors(num_dims, coord, size, neighbors);
 			for(int i = 0; i < num_neighbors; i++)
 			{
 			    graph[nid][neighbors[i]] = BW;
