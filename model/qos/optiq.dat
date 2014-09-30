@@ -7,11 +7,13 @@ set Nodes :=
 
 set Arcs :=
 0 1
+1 2
 2 3
 ;
 
 param Capacity :=
 0 1     100
+1 2	100
 2 3     100
 ;
 
@@ -26,8 +28,7 @@ COMM 0.6
 ;
 
 param: Jobs: Source Destination :=
-0 0 1
-1 2 3
+0 0 3
 ;
 
 param Demand :=
