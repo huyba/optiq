@@ -1,0 +1,36 @@
+set Nodes :=
+0
+1
+2
+3
+;
+
+set Arcs :=
+0 1
+2 3
+;
+
+param Capacity :=
+0 1     2048
+2 3     2048
+;
+
+set Types :=
+IO
+COMM
+;
+
+param Weight:=
+IO 0.5
+COMM 0.5
+;
+
+set Jobs :=
+0 1
+2 3
+;
+
+param Demand :=
+0 1 COMM 2048.0
+2 3 IO 2048.0
+;
