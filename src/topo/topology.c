@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include "topology.h"
 
-#ifndef CRAY_XC30
-//#define CRAY_XC30
+#ifndef __cray__
+#define __cray__
 #endif
 
-#ifdef CRAY_XC30
+#ifdef __cray__
 #include <pmi.h>
 #include <rca_lib.h>
 #endif
@@ -129,13 +129,13 @@ void optiq_compute_routing_order(int num_dims, int *size, int *order)
     }
 }
 
+#ifdef __bgq__
 void optiq_map_ranks_to_coords(BG_CoordinateMapping_t *all_coord, int nranks)
 {
-#ifdef __bgq__
     uint64_t numentries;
     Kernel_RanksToCoords(sizeof(BG_CoordinateMapping_t)*nranks, all_coord, &numentries);
-#endif
 }
+#endif
 
 int optiq_check_existing(int num_neighbors, int *neighbors, int nid) 
 {
@@ -235,7 +235,7 @@ void printArcs(int num_dims, int *size, double cap)
 
 void optiq_get_coordinates(int *coords, int *nid)
 {
-#ifdef CRAY_XC30 
+#ifdef __cray__
         int rc, rank;
         PMI_BOOL initialized;
         rc = PMI_Initialized(&initialized);
