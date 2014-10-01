@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include "topology.h"
 
-#ifndef __cray__
-#define __cray__
-#endif
-
-#ifdef __cray__
+#ifdef _CRAYC
 #include <pmi.h>
 #include <rca_lib.h>
 #endif
@@ -235,7 +231,7 @@ void printArcs(int num_dims, int *size, double cap)
 
 void optiq_get_coordinates(int *coords, int *nid)
 {
-#ifdef __cray__
+#ifdef _CRAYC
         int rc, rank;
         PMI_BOOL initialized;
         rc = PMI_Initialized(&initialized);

@@ -20,28 +20,28 @@
 #define OCN 4
 #define CPL 5
 
-int get_node_type(int world_rank, int phase, int *nodeType, int *dest) 
+int get_node_type(int world_rank, int problem_size, int phase, int *nodeType, int *dest) 
 {
     if (phase == 0) {
-	if (world_rank >= 0 && world_rank <= 31) {
+	if (world_rank >= 0 && world_rank < problem_size/3) {
 	    *nodeType = ATM;
 	}
-	*dest = world_rank + 64;
+	*dest = world_rank + problem_size*2/3;
     } else if (phase == 1) {
-	if (world_rank >= 0 && world_rank <= 15) {
+	if (world_rank >= 0 && world_rank < problem_size/6) {
             *nodeType = LND;
-        } else if (world_rank >= 16 && world_rank <= 31){
+        } else if (world_rank >= problem_size/6 && world_rank < problem_size/3){
 	    *nodeType = ICE;
 	}
-	*dest = world_rank + 64;
+	*dest = world_rank + problem_size*2/3;
     }
 
-    if (world_rank >= 32 && world_rank <= 63) {
+    if (world_rank >= problem_size/3 && world_rank < problem_size*2/3) {
 	*nodeType = OCN;
-	*dest = world_rank + 32;
+	*dest = world_rank + problem_size/3;
     }
 
-    if (world_rank >= 64 && world_rank <= 95) {
+    if (world_rank >= problem_size*2/3 && world_rank < problem_size) {
         *nodeType = CPL;
 	*dest = world_rank;
     }
@@ -58,7 +58,8 @@ int main(int argc, char **argv)
     int phase = 0;
     int dest = 0;
     int nodeType = 0;
-    get_node_type(world_rank, phase, &nodeType, &dest);
+    int problem_size = world_size;
+    get_node_type(world_rank, problem_size, phase, &nodeType, &dest);
 
     int iters = 30;
 
@@ -69,7 +70,7 @@ int main(int argc, char **argv)
     char *recv_buf1 = (char*)malloc(buf1_size);
     char *recv_buf2 = (char*)malloc(buf2_size);
 
-    int module_size = 32;
+    int module_size = world_size/3;
     MPI_Status *status = (MPI_Status *)malloc(2 * sizeof(MPI_Status) * module_size);
     MPI_Request *request = (MPI_Request *)malloc(2 * sizeof(MPI_Request) * module_size);
 
@@ -177,8 +178,8 @@ int main(int argc, char **argv)
     }
 
     if (nodeType == CPL) {
-	int source1 = world_rank - 64;
-	int source2 = world_rank - 32;
+	int source1 = world_rank - world_size*2/3;
+	int source2 = world_rank - world_size/3;
 	for (int i = 0; i < iters; i++) {
 	    MPI_Irecv(recv_buf1, count, MPI_BYTE, source1, 0, MPI_COMM_WORLD, &request[i * 2]);
 	    MPI_Irecv(recv_buf2, count, MPI_BYTE, source2, 0, MPI_COMM_WORLD, &request[i * 2 + 1]);
