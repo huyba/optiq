@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     int nid, coords[3];
     optiq_get_coordinates(coords, &nid);
 
-    printf("Rank: %d, nid %d, coord[%d, %d, %d]\n", world_rank, nid, coords[0], coords[1], coords[2]);
+    printf("Rank: %d nid %d coord[ %d %d %d ]\n", world_rank, nid, coords[0], coords[1], coords[2]);
 
     MPI_Finalize();
 }
