@@ -67,16 +67,15 @@ void optiq_generate_mct_data(int num_dims, int *size, int problem_size)
     printf("param: Jobs: Source Destination Demand :=\n");
     int jobId = 0;
 
-    if (problem_size == 96) {
-	for (int i = 0; i < 32; i++) {
-	    printf("%d %d %d %8.1f\n", jobId, i, i+64, demand);
-	    jobId++;
-	}
-	for (int i = 32; i < 64; i++) {
-	    printf("%d %d %d %8.1f\n", jobId, i, i+32, demand);
-	    jobId++;
-	}
+    for (int i = 0; i < problem_size/3; i++) {
+	printf("%d %d %d %8.1f\n", jobId, i, i+problem_size*2/3, demand);
+	jobId++;
     }
+    for (int i = problem_size/3; i < problem_size*2/3; i++) {
+	printf("%d %d %d %8.1f\n", jobId, i, i + problem_size/3, demand);
+	jobId++;
+    }
+
     printf(";");
 }
 void optiq_generate_dataIO(int num_dims, int *size, int num_sources, int factor, int num_bridges,  int *bridgeIds)
