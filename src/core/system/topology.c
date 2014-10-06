@@ -189,6 +189,54 @@ int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors)
     return num_neighbors;
 }
 
+void optiq_compute_neighbors(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords) {
+#ifdef _CRAYC
+    int num_dims = 3;
+
+    int current_distance[6];
+    int max_dis = 1000000;
+    for (int i = 0; i < 6; i++) {
+        current_distance[i] = max_dis;
+        neighbors_coords[i][0] = -1;
+        neighbors_coords[i][1] = -1;
+        neighbors_coords[i][2] = -1;
+    }
+
+    /*Find the nearest node on a dimension*/
+    for (int i = 0; i < all_ranks; i++) {
+        /*Neighbor in X+ direction*/
+        if ((coord[0] < all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
+            compare_and_replace(coord, neighbor_coords[0], &current_distance[0], all_coords[i], num_dims);
+        }
+
+        /*Neighbor in X- direction*/
+        if ((coord[0] > all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
+            compare_and_replace(coord, neighbors_coords[1], &current_distance[1], all_coords[i], num_dims);
+        }
+
+        /*Neighbor in Y+ direction*/
+        if ((coord[0] == all_coords[i][0]) && (coord[1] < all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
+            compare_and_replace(coord, neighbors_coords[2], &current_distance[2], all_coords[i], num_dims);
+        }
+
+        /*Neighbor in Y- direction*/
+        if ((coord[0] == all_coords[i][0]) && (coord[1] > all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
+            compare_and_replace(coord, neighbors_coords[3], &current_distance[3], all_coords[i], num_dims);
+        }
+
+        /*Neighbor in Z+ direction*/
+        if ((coord[0] == all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] < all_coords[i][2])) {
+            compare_and_replace(coord, neighbors_coords[4], &current_distance[4], all_coords[i], num_dims);
+        }
+
+        /*Neighbor in Z- direction*/
+        if ((coord[0] == all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] > all_coords[i][2])) {
+            compare_and_replace(coord, neighbors_coords[5], &current_distance[5], all_coords[i], num_dims);
+	}
+    }
+#endif
+}
+
 void printArcs(int num_dims, int *size, double cap) 
 {
     int num_neighbors = 0;
