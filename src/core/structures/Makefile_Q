@@ -1,0 +1,42 @@
+ifndef COMPILER
+  COMPILER = XL
+endif
+
+ifeq ($(COMPILER),GNU)
+  CC      = mpicc
+  COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
+endif
+
+ifeq ($(COMPILER),XL)
+  CC      = mpicxx
+  COPT    = -g -O3
+endif
+
+LD      = mpixlc_r
+
+SYSTEM	= ../system
+CFLAGS  = $(COPT) -I. -I$(SYSTEM)
+LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
+
+CFLAGS += -DPROGRESS_THREAD
+
+obj = $(SYSTEM)/topology.o
+
+all: rm graph.o
+
+rm:
+	rm -f *.o
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.x: %.o $(obj)
+	$(LD) $< $(obj) -o $@ $(LDFLAGS)
+
+clean:
+	$(RM) $(RMFLAGS) *.o
+	$(RM) $(RMFLAGS) *.lst
+
+realclean: clean
+	$(RM) $(RMFLAGS) *.x
+	$(RM) $(RMFLAGS) core.*

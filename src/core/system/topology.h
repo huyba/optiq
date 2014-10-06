@@ -12,13 +12,14 @@
 #include <rca_lib.h>
 #endif
 
-typedef struct {
+struct topology {
     int num_dims;
     int *size;
     int *coord;
+    int num_ranks;
     int *all_coords;
     int *routing_order;
-} topology;
+};
 
 
 int optiq_compute_nid(int num_dims, int *coord, int *size);
