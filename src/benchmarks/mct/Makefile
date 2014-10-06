@@ -14,14 +14,15 @@ endif
 
 LD      = mpixlc_r
 
-TOPO   = ../topo
+TOPO   = ../../core/system/
+DATA_GEN = ../datagen/
 
-CFLAGS  = $(COPT) -I. -I$(TOPO)
+CFLAGS  = $(COPT) -I. -I$(TOPO) -I$(DATA_GEN)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib 
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = $(TOPO)/topology.o $(TOPO)/datagen.o
+obj = $(TOPO)/topology.o $(DATA_GEN)/datagen.o
 
 all: rm flow flowcpy
 
@@ -45,4 +46,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 flowcpy:
-	cp mct.x /gpfs/mira-fs0/projects/Performance/abui/microbm/optiq/mct/
+	cp mct.x /gpfs/mira-fs0/projects/Performance/abui/optiq/mct/

@@ -2,13 +2,6 @@
 #include "stdlib.h"
 #include "stddef.h"
 
-#ifdef __bgq__
-#include <hwi/include/bqc/A2_inlines.h>
-#include <spi/include/kernel/location.h>
-#include <spi/include/kernel/process.h>
-#include <firmware/include/personality.h>
-#endif
-
 #include "topology.h"
 #include "datagen.h"
 

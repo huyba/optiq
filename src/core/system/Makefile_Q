@@ -19,7 +19,7 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = topology.o datagen.o maxflow.o
+obj = topology.o
 
 all: rm $(obj)
 

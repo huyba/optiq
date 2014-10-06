@@ -7,6 +7,11 @@
 #include <firmware/include/personality.h>
 #endif
 
+#ifdef _CRAYC
+#include <pmi.h>
+#include <rca_lib.h>
+#endif
+
 typedef struct {
     int num_dims;
     int *size;

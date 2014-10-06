@@ -23,7 +23,7 @@ ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
 all: tests
 
-tests: topology.o maxflow.o
+tests: topology.o
 
 %.x: %.o
 	$(LD) $(LDFLAGS) $< $(LIBS) -o $@

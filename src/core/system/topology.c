@@ -2,11 +2,6 @@
 #include <stdlib.h>
 #include "topology.h"
 
-#ifdef _CRAYC
-#include <pmi.h>
-#include <rca_lib.h>
-#endif
-
 int optiq_compute_nid(int num_dims, int *coord, int *size) {
     int nid = coord[num_dims-1];
     int  pre_size = 1;

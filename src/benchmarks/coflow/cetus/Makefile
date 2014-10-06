@@ -14,7 +14,7 @@ endif
 
 LD      = mpixlc_r
 
-TOPO   = ../../topo
+TOPO   = ../../../core/system
 
 CFLAGS  = $(COPT) -I. -I$(TOPO)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib 
@@ -45,4 +45,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 flowcpy:
-	cp coflow.x /gpfs/mira-fs0/projects/Performance/abui/microbm/coupling/coflow/
+	cp coflow.x /gpfs/mira-fs0/projects/Performance/abui/optiq/coflow/
