@@ -12,6 +12,8 @@
 #include <rca_lib.h>
 #endif
 
+#include <stdint.h>
+
 struct topology {
     int rank;
     int num_ranks;
