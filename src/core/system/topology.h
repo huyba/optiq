@@ -15,12 +15,15 @@
 struct topology {
     int num_dims;
     int *size;
-    int *coord;
+    int *routing_order;
     int num_ranks;
     int *all_coords;
-    int *routing_order;
+    int *all_nids;
 };
 
+void read_topology_from_file(char *fileName, struct topology *topo);
+
+void get_topology_at_runtime(struct topology *topo);
 
 int optiq_compute_nid(int num_dims, int *coord, int *size);
 void optiq_coord_to_nodeId(int num_dims, int *size, int *coord, int *nodeId);

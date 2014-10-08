@@ -189,6 +189,14 @@ int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors)
     return num_neighbors;
 }
 
+void read_topology_from_file(char *fileName, struct topology *topo) {
+    
+}
+
+void get_topology_at_runtime(struct topology *topo) {
+
+}
+
 void optiq_compute_neighbors(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords) {
 #ifdef _CRAYC
     int num_dims = 3;
