@@ -13,15 +13,18 @@
 #endif
 
 struct topology {
+    int rank;
+    int num_ranks;
+    uint16_t nic_id;
+    int *coord;
     int num_dims;
     int *size;
     int *routing_order;
-    int num_ranks;
     int **all_coords;
-    int *all_nids;
+    int *all_nic_ids;
 };
 
-void read_topology_from_file(char *fileName, struct topology *topo);
+void optiq_read_topology_from_file(char *fileName, struct topology *topo);
 
 int optiq_compute_nid(int num_dims, int *coord, int *size);
 void optiq_coord_to_nodeId(int num_dims, int *size, int *coord, int *nodeId);
@@ -36,13 +39,17 @@ void optiq_map_ranks_to_coords(BG_CoordinateMapping_t *all_coord, int nranks);
 
 int optiq_check_existing(int num_neighbors, int *neighbors, int nid);
 
-int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors);
-void optiq_compute_neighbors(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords);
+int optiq_compute_neighbors_bgq(int num_dims, int *coord, int *size, int *neighbors);
+void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords);
 
-void optiq_get_coordinate(int *coord);
-void optiq_get_nic_id(int *nid);
+void optiq_init();
+void optiq_finalize();
+void optiq_get_coord(int *coord);
+void optiq_get_nic_id(uint16_t *nic_id);
 void optiq_get_size(int *size);
 void optiq_get_torus(int *torus);
 void optiq_get_bridge(int *bridge_coord, int *bridge_id);
+void optiq_get_all_coords(int **all_coords, int num_ranks);
+void optiq_get_all_nic_ids(int *all_nic_ids, int num_ranks);
 void optiq_get_topology(struct topology *topo);
 #endif

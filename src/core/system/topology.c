@@ -94,6 +94,7 @@ int optiq_compute_num_hops(int num_dims, int *source, int *dest)
 
 void optiq_compute_routing_order(int num_dims, int *size, int *order)
 {
+#ifdef __bgq__
     int num_nodes = 1, dims[5];
     for (int i = 0; i < num_dims; i++) {
         num_nodes *= size[i];
@@ -118,6 +119,7 @@ void optiq_compute_routing_order(int num_dims, int *size, int *order)
         order[i] = longest_dimension;
         dims[longest_dimension] = -1;
     }
+#endif
 }
 
 #ifdef __bgq__
@@ -139,7 +141,7 @@ int optiq_check_existing(int num_neighbors, int *neighbors, int nid)
     return 0;
 }
 
-int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors) {
+int optiq_compute_neighbors_bgq(int num_dims, int *coord, int *size, int *neighbors) {
     int num_neighbors = 0;
     int nid = 0;
 
@@ -223,18 +225,18 @@ void optiq_read_topology_from_file(char *filePath, struct topology *topo) {
     for (int i = 0; i < topo->num_ranks; i++) {
 	topo->all_coords[i] = (int *) malloc(sizeof(int) * topo->num_dims);
     }
-    topo->all_nids = (int *) malloc(sizeof(int) * topo->num_ranks);
+    topo->all_nic_ids = (int *) malloc(sizeof(int) * topo->num_ranks);
     
     int coord[5], nid, rank;
     while ((read = getline(&line, &len, fp)) != -1) {
 	if (topo->num_dims == 3) {
-	    sscanf(line, "Rank: %d nid %d coord[ %d %d %d ]", rank, nid, &coord[0], &coord[1], &coord[2]);
+	    sscanf(line, "Rank: %d nid %d coord[ %d %d %d ]", &rank, &nid, &coord[0], &coord[1], &coord[2]);
 	}
 	if (topo->num_dims == 5) {
-            sscanf(line, "Rank: %d nid %d coord[ %d %d %d ]", rank, nid, &coord[0], &coord[1], &coord[2], &coord[3], &coord[4]);
+            sscanf(line, "Rank: %d nid %d coord[ %d %d %d %d %d ]", &rank, &nid, &coord[0], &coord[1], &coord[2], &coord[3], &coord[4]);
         }
 
-	topo->all_nids[rank] = nid;
+	topo->all_nic_ids[rank] = nid;
 	for (int i = 0; i < topo->num_dims; i++) {
 	    topo->all_coords[rank][i] = coord[i];
 	}
@@ -243,11 +245,7 @@ void optiq_read_topology_from_file(char *filePath, struct topology *topo) {
     fclose(fp);
 }
 
-void optiq_get_topology(struct topology *topo) {
-
-}
-
-void optiq_compute_neighbors(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords) {
+void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords) {
 #ifdef _CRAYC
     int num_dims = 3;
 
@@ -314,7 +312,7 @@ void printArcs(int num_dims, int *size, double cap)
                         coord[4] = ed;
                         num_neighbors = 0;
                         nid = optiq_compute_nid(num_dims, coord, size);
-                        num_neighbors = optiq_compute_neighbors(num_dims, coord, size, neighbors);
+                        num_neighbors = optiq_compute_neighbors_bgq(num_dims, coord, size, neighbors);
                         for (int i = 0; i < num_neighbors; i++) {
                             if (cap < 0.0) {
                                 printf("%d %d\n", nid, neighbors[i]);
@@ -349,24 +347,39 @@ void optiq_init() {
 #endif
 }
 
-void optiq_get_nic_id(int *nid) {
+void optiq_get_rank(int *rank) {
     optiq_init();
 #ifdef _CRAYC
     int rc, rank;
     rc = PMI_Get_rank(&rank);
     if (rc!=PMI_SUCCESS) {
-	PMI_Abort(rc,"PMI_Get_rank failed");
+        PMI_Abort(rc,"PMI_Get_rank failed");
     }
+#endif
+}
 
+void optiq_get_num_ranks(int *num_ranks) {
+    optiq_init();
+#ifdef _CRAYC
+    int rc, num_ranks;
+    rc = PMI_Get_rank(&num_ranks);
+    if (rc!=PMI_SUCCESS) {
+        PMI_Abort(rc,"PMI_Get_rank failed");
+    }
+#endif
+}
+
+void optiq_get_nic_id(uint16_t *nid) {
+    int rc, rank;
+    optiq_get_rank(&rank);
+#ifdef _CRAYC
     /*Get the coordinates of compute nodes*/
     rc = PMI_Get_nid(rank, nid);
 #endif
 }
 
-void optiq_get_coordinates(int *coord)
+void optiq_get_coord(int *coord)
 {
-    optiq_init();
-
     uint16_t nid;
     optiq_get_nic_id(&nid);
 
@@ -446,8 +459,55 @@ void optiq_get_bridge(int *bridge_coord, int *brige_id) {
 #endif
 }
 
+void optiq_get_all_coords(int **all_coords, int num_ranks) {
+#ifdef __bgq__
+    BG_CoordinateMapping_t *coord = (BG_CoordinateMapping_t *) malloc(sizeof(BG_CoordinateMapping_t)*num_ranks);
+    
+    optiq_map_ranks_to_coords(coord, num_ranks);
+    for (int i = 0; i < num_ranks; i++) {
+	all_coords[i][0] = coord[i].a;
+	all_coords[i][1] = coord[i].b;
+	all_coords[i][2] = coord[i].c;
+	all_coords[i][3] = coord[i].d;
+	all_coords[i][4] = coord[i].e;
+    }
+
+    free(coord);
+#endif
+}
+
+void optiq_get_all_nic_ids(int *all_nic_ids, int num_ranks) {
+
+}
+
 void optiq_get_topology(struct topology *topo) {
 #ifdef __bgq__
-    
+    topo->num_dims = 5;
 #endif
+
+#ifdef _CRAYC
+    topo->num_dims = 3;
+#endif
+
+    optiq_get_rank(&topo->rank);
+    optiq_get_num_ranks(&topo->num_ranks);
+    optiq_get_nic_id(&topo->nic_id);
+
+    topo->coord = (int *)malloc(sizeof(int)*topo->num_dims);
+    optiq_get_coord(topo->coord);
+
+    topo->size = (int *)malloc(sizeof(int)*topo->num_dims);
+    optiq_get_size(topo->size);
+
+    topo->routing_order = (int *)malloc(sizeof(int)*topo->num_dims);
+    optiq_compute_routing_order(topo->num_dims, topo->size, topo->routing_order);
+
+    topo->all_coords = (int **)malloc(sizeof(int *) * topo->num_ranks);
+    for (int i = 0; i < topo->num_ranks; i++) {
+	topo->all_coords[i] = (int *)malloc(sizeof(int) * topo->num_dims);
+    }
+    optiq_get_all_coords(topo->all_coords, topo->num_ranks);
+
+    topo->all_nic_ids = (int *) malloc(sizeof(int) * topo->num_ranks);
+    optiq_get_all_nic_ids(topo->all_nic_ids, topo->num_ranks);
 }
