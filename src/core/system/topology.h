@@ -17,7 +17,7 @@ struct topology {
     int *size;
     int *routing_order;
     int num_ranks;
-    int *all_coords;
+    int **all_coords;
     int *all_nids;
 };
 

@@ -189,8 +189,58 @@ int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors)
     return num_neighbors;
 }
 
-void read_topology_from_file(char *fileName, struct topology *topo) {
+void read_topology_from_file(char *filePath, struct topology *topo) {
+    FILE *fp;
+    char line[256];
+    size_t len = 0;
+    ssize_t read;
+
+    fp = fopen(filePath, "r");
+    if (fp == NULL) {
+	exit(EXIT_FAILURE);
+    }
+
+    /*Skip the first 3 lines*/
+    for (int i = 0; i < 3; i++) {
+	read = getline(&line, &len, fp);
+    }
+
+    getline(&line, &len, fp);
+    sscanf(line, "num_dims: %d", &topo->num_dims);
+
+    topo->size = (int *)malloc(sizeof(int) * topo->num_dims);
+    getline(&line, &len, fp);
+    if (topo->num_dims == 3) {
+	sscanf(line, "size: %d x %d x %d", &topo->size[0], &topo->size[1], &topo->size[2]);
+    } else if (topo->num_dims == 5) {
+	sscanf(line, "size: %d x %d x %d x %d x %d", &topo->size[0], &topo->size[1], &topo->size[2],  &topo->size[3], &topo->size[4]);
+    }
+
+    getline(&line, &len, fp);
+    sscanf(line, "num_ranks: %d", &topo->num_ranks);
+
+    topo->all_coords = (int **)malloc(sizeof(int *) * topo->num_ranks);
+    for (int i = 0; i < topo->num_ranks; i++) {
+	topo->all_coords[i] = (int *) malloc(sizeof(int) * topo->num_dims);
+    }
+    topo->all_nids = (int *) malloc(sizeof(int) * topo->num_ranks);
     
+    int coord[5], nid, rank;
+    while ((read = getline(&line, &len, fp)) != -1) {
+	if (topo->num_dims == 3) {
+	    sscanf(line, "Rank: %d nid %d coord[ %d %d %d ]", rank, nid, &coord[0], &coord[1], &coord[2]);
+	}
+	if (topo->num_dims == 5) {
+            sscanf(line, "Rank: %d nid %d coord[ %d %d %d ]", rank, nid, &coord[0], &coord[1], &coord[2], &coord[3], &coord[4]);
+        }
+
+	topo->all_nids[rank] = nid;
+	for (int i = 0; i < topo->num_dims; i++) {
+	    topo->all_coords[rank][i] = coord[i];
+	}
+    }
+
+    fclose(fp);
 }
 
 void get_topology_at_runtime(struct topology *topo) {
