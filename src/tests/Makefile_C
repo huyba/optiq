@@ -24,7 +24,7 @@ TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
 OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
 ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
-all: rm readtopo.x copy
+all: rm $(TOPO)/topology.o readtopo.x copy
 
 rm:
 	#rm -f *.x
@@ -48,4 +48,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) $(ASM)
 
 copy:
-	cp readtopo.x /scratch2/scratchdirs/huybui/optiq/readtopo/
+	cp readtopo.x /scratch2/scratchdirs/huybui/optiq/tests/readtopo/

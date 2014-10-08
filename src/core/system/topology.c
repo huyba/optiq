@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+
 #include "topology.h"
 
 int optiq_compute_nid(int num_dims, int *coord, int *size) {
