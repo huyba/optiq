@@ -4,5 +4,5 @@
 
 void construct_graph(struct topology topo)
 {
-
+    
 }
