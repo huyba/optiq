@@ -1,3 +1,9 @@
+machine_name: Hopper
+machine_type: Cray XE6
+topology: 3D
+num_dims: 3
+size: 17 x 8 x 24 
+num_ranks: 128
 Rank: 0 nid 816 coord[ 15 1 23 ]
 Rank: 16 nid 1659 coord[ 13 2 13 ]
 Rank: 65 nid 1393 coord[ 14 2 23 ]

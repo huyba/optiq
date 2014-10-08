@@ -1,0 +1,10 @@
+Here is the format of a machine topology:
+
+machine_name: XXX - can be Mira, Hopper, Edison - not important.
+machine_type: XXX - can be BG/Q, Cray XE6, XC30 - not important.
+topology: XXX - can be 3D, 5D, Dragonfly - not important.
+num_dims: X - can be 3 or 5 .. - is important.
+size: Y x Y x Y - can be 17 x 8 x 24 or 4 x 4 x 4 x 4 x 2 - is important.
+num_ranks: X - can be 128, 256, 512... - is important.
+Rank: X nid X coord[ X X X X X ] can be Rank 0: nid 0 coord[ 0 0 0 ]  - is important
+
