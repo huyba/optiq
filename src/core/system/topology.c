@@ -191,7 +191,7 @@ int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors)
 
 void read_topology_from_file(char *filePath, struct topology *topo) {
     FILE *fp;
-    char line[256];
+    char *line = (char *) malloc(256);;
     size_t len = 0;
     ssize_t read;
 
