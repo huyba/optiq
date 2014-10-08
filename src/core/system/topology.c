@@ -189,7 +189,7 @@ int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors)
     return num_neighbors;
 }
 
-void read_topology_from_file(char *filePath, struct topology *topo) {
+void optiq_read_topology_from_file(char *filePath, struct topology *topo) {
     FILE *fp;
     char *line = (char *) malloc(256);;
     size_t len = 0;
@@ -243,7 +243,7 @@ void read_topology_from_file(char *filePath, struct topology *topo) {
     fclose(fp);
 }
 
-void get_topology_at_runtime(struct topology *topo) {
+void optiq_get_topology(struct topology *topo) {
 
 }
 
@@ -330,65 +330,93 @@ void printArcs(int num_dims, int *size, double cap)
     }
 }
 
-void optiq_get_coordinates(int *coords, int *nid)
-{
+void optiq_init() {
 #ifdef _CRAYC
-        int rc, rank;
-        PMI_BOOL initialized;
-        rc = PMI_Initialized(&initialized);
-        if (rc!=PMI_SUCCESS)
-                PMI_Abort(rc,"PMI_Initialized failed");
+    int rc;
+    PMI_BOOL initialized;
+    rc = PMI_Initialized(&initialized);
+    if (rc!=PMI_SUCCESS) {
+	PMI_Abort(rc,"PMI_Initialized failed");
+    }
 
-        if (initialized != PMI_TRUE)
-        {
-                int spawned;
-                rc = PMI_Init(&spawned);
-                if (rc!=PMI_SUCCESS)
-                        PMI_Abort(rc,"PMI_Init failed");
+    if (initialized != PMI_TRUE) {
+	int spawned;
+	rc = PMI_Init(&spawned);
+	if (rc!=PMI_SUCCESS) {
+	    PMI_Abort(rc,"PMI_Init failed");
         }
-
-        rc = PMI_Get_rank(&rank);
-        if (rc!=PMI_SUCCESS)
-                PMI_Abort(rc,"PMI_Get_rank failed");
-
-        /*Get the coordinates of compute nodes*/
-        rc = PMI_Get_nid(rank, nid);
-        pmi_mesh_coord_t xyz;
-        PMI_Get_meshcoord( (uint16_t) *nid, &xyz);
-
-        coords[0] = (int)xyz.mesh_x;
-        coords[1] = (int)xyz.mesh_y;
-        coords[2] = (int)xyz.mesh_z;
-
-        PMI_Finalize();
+    }
 #endif
 }
 
-void optiq_get_topology_info(int *coord, int *size) 
+void optiq_get_nic_id(int *nid) {
+    optiq_init();
+#ifdef _CRAYC
+    int rc, rank;
+    rc = PMI_Get_rank(&rank);
+    if (rc!=PMI_SUCCESS) {
+	PMI_Abort(rc,"PMI_Get_rank failed");
+    }
+
+    /*Get the coordinates of compute nodes*/
+    rc = PMI_Get_nid(rank, nid);
+#endif
+}
+
+void optiq_get_coordinates(int *coord)
 {
+    optiq_init();
+
+    uint16_t nid;
+    optiq_get_nic_id(&nid);
+
+#ifdef _CRAYC
+    /*Get the coordinates of compute nodes*/
+    pmi_mesh_coord_t xyz;
+    PMI_Get_meshcoord(nid, &xyz);
+
+    coord[0] = (int)xyz.mesh_x;
+    coord[1] = (int)xyz.mesh_y;
+    coord[2] = (int)xyz.mesh_z;
+#endif
+
 #ifdef __bgq__
     Personality_t pers;
     Kernel_GetPersonality(&pers, sizeof(pers));
 
-    size[0] = pers.Network_Config.Anodes; coord[0] = pers.Network_Config.Acoord;
-    size[1] = pers.Network_Config.Bnodes; coord[1] = pers.Network_Config.Bcoord;
-    size[2] = pers.Network_Config.Cnodes; coord[2] = pers.Network_Config.Ccoord;
-    size[3] = pers.Network_Config.Dnodes; coord[3] = pers.Network_Config.Dcoord;
-    size[4] = pers.Network_Config.Enodes; coord[4] = pers.Network_Config.Ecoord;
+    coord[0] = pers.Network_Config.Acoord;
+    coord[1] = pers.Network_Config.Bcoord;
+    coord[2] = pers.Network_Config.Ccoord;
+    coord[3] = pers.Network_Config.Dcoord;
+    coord[4] = pers.Network_Config.Ecoord;
+#endif
+
+    optiq_finalize();
+}
+
+void optiq_finalize() {
+#ifdef _CRAYC
+    PMI_Finalize();
 #endif
 }
 
-void optiq_get_topology_info(int *coord, int *size, int *torus) 
-{
+void optiq_get_size(int *size) {
 #ifdef __bgq__
     Personality_t pers;
     Kernel_GetPersonality(&pers, sizeof(pers));
 
-    size[0] = pers.Network_Config.Anodes; coord[0] = pers.Network_Config.Acoord;
-    size[1] = pers.Network_Config.Bnodes; coord[1] = pers.Network_Config.Bcoord;
-    size[2] = pers.Network_Config.Cnodes; coord[2] = pers.Network_Config.Ccoord;
-    size[3] = pers.Network_Config.Dnodes; coord[3] = pers.Network_Config.Dcoord;
-    size[4] = pers.Network_Config.Enodes; coord[4] = pers.Network_Config.Ecoord;
+    size[0] = pers.Network_Config.Anodes;
+    size[1] = pers.Network_Config.Bnodes;
+    size[2] = pers.Network_Config.Cnodes;
+    size[3] = pers.Network_Config.Dnodes;
+    size[4] = pers.Network_Config.Enodes;
+#endif
+}
+
+void optiq_get_torus(int *torus) {
+#ifdef __bgq__
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
 
     uint64_t Nflags = pers.Network_Config.NetFlags;
     if (Nflags & ND_ENABLE_TORUS_DIM_A) torus[0] = 1; else torus[0] = 0;
@@ -399,37 +427,27 @@ void optiq_get_topology_info(int *coord, int *size, int *torus)
 #endif
 }
 
-void optiq_get_topology(int *coord, int *size, int *bridge, int *bridgeId)
-{
+void optiq_get_bridge(int *bridge_coord, int *brige_id) {
 #ifdef __bgq__
-    Personality_t personality;
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
 
-    Kernel_GetPersonality(&personality, sizeof(personality));
+    bridge_coord[0] = personality.Network_Config.cnBridge_A;
+    bridge_coord[1] = personality.Network_Config.cnBridge_B;
+    bridge_coord[2] = personality.Network_Config.cnBridge_C;
+    bridge_coord[3] = personality.Network_Config.cnBridge_D;
+    bridge_coord[4] = personality.Network_Config.cnBridge_E;
 
-    coord[0]  = personality.Network_Config.Acoord;
-    coord[1]  = personality.Network_Config.Bcoord;
-    coord[2]  = personality.Network_Config.Ccoord;
-    coord[3]  = personality.Network_Config.Dcoord;
-    coord[4]  = personality.Network_Config.Ecoord;
+    int size[5];
+    optiq_get_size(size);
 
-    size[0]  = personality.Network_Config.Anodes;
-    size[1]  = personality.Network_Config.Bnodes;
-    size[2]  = personality.Network_Config.Cnodes;
-    size[3]  = personality.Network_Config.Dnodes;
-    size[4]  = personality.Network_Config.Enodes;
+    *bridge_id = bridge[4] + bridge[3]*size[4] + bridge[2]*size[3]*size[4] + bridge[1]*size[2]*size[3]*size[4] + bridge[0]*size[1]*size[2]*size[3]*size[4];
+    
+#endif
+}
 
-    bridge[0] = personality.Network_Config.cnBridge_A;
-    bridge[1] = personality.Network_Config.cnBridge_B;
-    bridge[2] = personality.Network_Config.cnBridge_C;
-    bridge[3] = personality.Network_Config.cnBridge_D;
-    bridge[4] = personality.Network_Config.cnBridge_E;
-
-/*
- * * This is the bridge node, numbered in ABCDE order, E increments first.
- * * It is considered the unique "io node route identifer" because each
- * * bridge node only has one torus link to one io node.
- * */
-
-    *bridgeId = bridge[4] + bridge[3]*size[4] + bridge[2]*size[3]*size[4] + bridge[1]*size[2]*size[3]*size[4] + bridge[0]*size[1]*size[2]*size[3]*size[4];
+void optiq_get_topology(struct topology *topo) {
+#ifdef __bgq__
+    
 #endif
 }

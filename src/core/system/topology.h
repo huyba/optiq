@@ -23,8 +23,6 @@ struct topology {
 
 void read_topology_from_file(char *fileName, struct topology *topo);
 
-void get_topology_at_runtime(struct topology *topo);
-
 int optiq_compute_nid(int num_dims, int *coord, int *size);
 void optiq_coord_to_nodeId(int num_dims, int *size, int *coord, int *nodeId);
 void optiq_move_along_one_dimension(int num_dims, int *size, int *source, int routing_dimension, int num_hops, int direction, int **path);
@@ -37,11 +35,14 @@ void optiq_map_ranks_to_coords(BG_CoordinateMapping_t *all_coord, int nranks);
 #endif
 
 int optiq_check_existing(int num_neighbors, int *neighbors, int nid);
+
 int optiq_compute_neighbors(int num_dims, int *coord, int *size, int *neighbors);
 void optiq_compute_neighbors(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords);
-void optiq_get_coordinates(int *coords, int *nid);
-void optiq_get_topology_info(int *coord, int *size);
-void optiq_get_topology_info(int *coord, int *size, int *torus);
-void optiq_get_topology(int *coord, int *size, int *bridge, int *bridgeId);
 
+void optiq_get_coordinate(int *coord);
+void optiq_get_nic_id(int *nid);
+void optiq_get_size(int *size);
+void optiq_get_torus(int *torus);
+void optiq_get_bridge(int *bridge_coord, int *bridge_id);
+void optiq_get_topology(struct topology *topo);
 #endif
