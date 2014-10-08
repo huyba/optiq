@@ -3,7 +3,7 @@
 
 #include <topology.h>
 
-void main(int argc, char **argv) {
+int main(int argc, char **argv) {
 
     char *filePath = "../benchmarks/data/topo_128_hopper";   
 

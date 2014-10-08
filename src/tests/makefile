@@ -10,7 +10,7 @@ UDREG_PATH=/opt/cray/udreg/default
 PMI_PATH=/opt/cray/pmi/default
 KRCA_PATH=/opt/cray/krca/default
 
-TOPO=../../../core/system
+TOPO=../core/system
 
 INCLUDE = -I$(DMAPP_PATH)/include -I$(KRCA_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include -I$(TOPO)/
 LIBS    = -L$(DMAPP_PATH)/lib64   -L$(UDREG_PATH)/lib64   -L$(UGNI_PATH)/lib64   -L$(PMI_PATH)/lib64 -ldmapp -ludreg -lugni -lpmi
@@ -24,7 +24,7 @@ TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
 OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
 ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
-all: rm coflow.x copy
+all: rm readtopo.x copy
 
 rm:
 	#rm -f *.x
@@ -48,4 +48,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) $(ASM)
 
 copy:
-	cp coflow.x /scratch2/scratchdirs/huybui/optiq/coflow/
+	cp readtopo.x /scratch2/scratchdirs/huybui/optiq/readtopo/
