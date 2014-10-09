@@ -54,4 +54,6 @@ void optiq_get_bridge(int *bridge_coord, int *bridge_id);
 void optiq_get_all_coords(int **all_coords, int num_ranks);
 void optiq_get_all_nic_ids(int *all_nic_ids, int num_ranks);
 void optiq_get_topology(struct topology *topo);
+
+void optiq_compare_and_replace(int *coord, int *current_neighbor, int *current_distance, int *potential_neighbor, int num_dims);
 #endif

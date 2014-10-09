@@ -252,8 +252,6 @@ void optiq_read_topology_from_file(char *filePath, struct topology *topo)
 
 void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords) 
 {
-    int num_dims = 3;
-
     int current_distance[6];
     int max_dis = 1000000;
     for (int i = 0; i < 6; i++) {
@@ -528,4 +526,16 @@ void optiq_get_topology(struct topology *topo)
 
     topo->all_nic_ids = (int *) malloc(sizeof(int) * topo->num_ranks);
     optiq_get_all_nic_ids(topo->all_nic_ids, topo->num_ranks);
+}
+
+void optiq_compare_and_replace(int *coord, int *current_neighbor, int *current_distance, int *potential_neighbor, int num_dims)
+{
+    int potential_distance = optiq_compute_num_hops(num_dims, coord, potential_neighbor);
+
+    if (potential_distance < *current_distance) {
+	*current_distance = potential_distance;
+	for (int i = 0; i < num_dims; i++) {
+	    current_neighbor[i] = potential_neighbor[i];
+	}
+    }
 }
