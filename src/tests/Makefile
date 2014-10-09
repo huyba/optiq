@@ -27,7 +27,7 @@ ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
 OPTIQ_OBJS = $(OPTIQ_SYSTEM)/topology.o $(OPTIQ_STRUCTURE)/graph.o
 
-all: rm $(OPTIQ_OBJS) readtopo.x creategraph.x copy
+all: rm $(OPTIQ_OBJS) readtopo.x generategraph.x copy
 
 rm:
 	#rm -f *.x
@@ -52,4 +52,4 @@ realclean: clean
 
 copy:
 	cp readtopo.x /scratch2/scratchdirs/huybui/optiq/tests/readtopo/
-	cp creategraph.x /scratch2/scratchdirs/huybui/optiq/tests/creategraph/
+	cp generategraph.x /scratch2/scratchdirs/huybui/optiq/tests/generategraph/
