@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <graph.h>
-
 #include <topology.h>
+
+#include <graph.h>
 
 void construct_graph(struct topology topo) 
 {

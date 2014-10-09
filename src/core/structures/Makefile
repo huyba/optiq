@@ -10,8 +10,8 @@ UDREG_PATH=/opt/cray/udreg/default
 PMI_PATH=/opt/cray/pmi/default
 
 
-OPTIQ_TOPO = ../system
-INCLUDE = -I$(DMAPP_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include -I$(OPTIQ_TOPO) -I.
+OPTIQ_SYSTEM = ../system
+INCLUDE = -I$(DMAPP_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include -I$(OPTIQ_SYSTEM)/ -I.
 LIBS    = -L$(DMAPP_PATH)/lib64   -L$(UDREG_PATH)/lib64   -L$(UGNI_PATH)/lib64   -L$(PMI_PATH)/lib64 -ldmapp -ludreg -lugni -lpmi
 
 CFLAGS  = $(COPT) $(INCLUDE)
