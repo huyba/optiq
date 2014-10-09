@@ -14,5 +14,11 @@ int main(int argc, char **argv) {
 
     optiq_read_topology_from_file(filePath, topo);
 
-    construct_graph(*topo);
+    float **graph = (float **)malloc(sizeof(float *) * topo->num_ranks);
+
+    for (int i = 0; i < topo->num_ranks; i++) {
+	graph[i] = (float *)malloc(sizeof(float) * topo->num_ranks);	
+    }
+
+    construct_graph(*topo, graph);
 }

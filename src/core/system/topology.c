@@ -265,7 +265,7 @@ void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, in
     for (int i = 0; i < all_ranks; i++) {
         /*Neighbor in X+ direction*/
         if ((coord[0] < all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
-            optiq_compare_and_replace(coord, neighbor_coords[0], &current_distance[0], all_coords[i], num_dims);
+            optiq_compare_and_replace(coord, neighbors_coords[0], &current_distance[0], all_coords[i], num_dims);
         }
 
         /*Neighbor in X- direction*/
