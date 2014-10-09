@@ -1,5 +1,5 @@
 CC      = CC 
-COPT    = -g -O2 -std=gnu99
+COPT    = -g -O2 #-std=gnu99
 FOPT    = -g -O2
 
 # CSCS paths
@@ -25,9 +25,9 @@ TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
 OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
 ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
-OPTIQ_OBJS = $(OPTIQ_SYSTEM)/topology.o $(OPTIQ_STRUCTURE)/graph.o
+OPTIQ_OBJS := $(OPTIQ_SYSTEM)/topology.o $(OPTIQ_STRUCTURE)/graph.o
 
-all: rm $(OPTIQ_OBJS) readtopo.x generategraph.x copy
+all: rm ../core/system/topology.o ../core/structures/graph.o readtopo.x generategraph.x copy
 
 rm:
 	#rm -f *.x

@@ -377,6 +377,9 @@ void optiq_get_nic_id(uint16_t *nid) {
 #ifdef _CRAYC
     /*Get the coordinates of compute nodes*/
     rc = PMI_Get_nid(rank, nid);
+    if (rc!=PMI_SUCCESS) {
+        PMI_Abort(rc,"PMI_Get_nid failed");
+    }
 #endif
 }
 

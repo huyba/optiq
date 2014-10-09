@@ -1,5 +1,5 @@
 CC      = CC 
-COPT    = -g -O2 -std=gnu99
+COPT    = -g -O2 #-std=gnu99
 FOPT    = -g -O2
 
 # CSCS paths
@@ -24,7 +24,7 @@ TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
 OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
 ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
-all: rm coflow.x copy
+all: rm $(TOPO)/topology.o coflow.x copy
 
 rm:
 	#rm -f *.x

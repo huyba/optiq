@@ -16,12 +16,11 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
-    int num_dims = 3;
     int coord[3];
-    int size[3];
-    int nid;
+    uint16_t nid;
 
-    GetCoordinates(coord, &nid);
+    optiq_get_coord(coord);
+    optiq_get_nic_id(&nid);
 
     printf("Rank: %d coord[%d, %d, %d], nid = %d\n", myrank, coord[0], coord[1], coord[2], nid);
 
