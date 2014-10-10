@@ -250,47 +250,61 @@ void optiq_read_topology_from_file(char *filePath, struct topology *topo)
     fclose(fp);
 }
 
-void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords) 
+void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, struct optiq_neighbor *neighbors, int num_neighbors) 
 {
-    int current_distance[6];
     int max_dis = 1000000;
-    for (int i = 0; i < 6; i++) {
-        current_distance[i] = max_dis;
-        neighbors_coords[i][0] = -1;
-        neighbors_coords[i][1] = -1;
-        neighbors_coords[i][2] = -1;
+    for (int i = 0; i < num_dims * 2; i++) {
+        neighbors[i].node.coord[0] = -1;
+	neighbors[i].node.coord[1] = -1;
+	neighbors[i].node.coord[2] = -1;
+	neighbors[i].distance = max_dis;
+	neighbors[i].link_capacity = 0;
+	neighbors[i].direction = MIXED;
     }
+
+    struct optiq_neighbor potential_neighbor;
 
     /*Find the nearest node on a dimension*/
     for (int i = 0; i < all_ranks; i++) {
+	potential_neighbor.node.rank = i;
+	for (int j = 0; j < num_dims; j++) {
+	    potential_neighbor.node.coord[i] = all_coords[i][j];
+	}
+
         /*Neighbor in X+ direction*/
         if ((coord[0] < all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
-            optiq_compare_and_replace(coord, neighbors_coords[0], &current_distance[0], all_coords[i], num_dims);
+	    potential_neighbor.direction = X_P;
+            optiq_compare_and_replace(coord, &neighbors[0], potential_neighbor, num_dims);
         }
 
         /*Neighbor in X- direction*/
         if ((coord[0] > all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
-            optiq_compare_and_replace(coord, neighbors_coords[1], &current_distance[1], all_coords[i], num_dims);
+	    potential_neighbor.direction = X_M;
+            optiq_compare_and_replace(coord, &neighbors[1], potential_neighbor, num_dims);
         }
 
         /*Neighbor in Y+ direction*/
         if ((coord[0] == all_coords[i][0]) && (coord[1] < all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
-            optiq_compare_and_replace(coord, neighbors_coords[2], &current_distance[2], all_coords[i], num_dims);
+	    potential_neighbor.direction = Y_P;
+            optiq_compare_and_replace(coord, &neighbors[2], potential_neighbor, num_dims);
         }
 
         /*Neighbor in Y- direction*/
         if ((coord[0] == all_coords[i][0]) && (coord[1] > all_coords[i][1]) && (coord[2] == all_coords[i][2])) {
-            optiq_compare_and_replace(coord, neighbors_coords[3], &current_distance[3], all_coords[i], num_dims);
+	    potential_neighbor.direction = Y_M;
+            optiq_compare_and_replace(coord, &neighbors[3], potential_neighbor, num_dims);
         }
 
         /*Neighbor in Z+ direction*/
         if ((coord[0] == all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] < all_coords[i][2])) {
-            optiq_compare_and_replace(coord, neighbors_coords[4], &current_distance[4], all_coords[i], num_dims);
+	    potential_neighbor.direction = Z_P;
+            optiq_compare_and_replace(coord, &neighbors[4], potential_neighbor, num_dims);
         }
 
         /*Neighbor in Z- direction*/
         if ((coord[0] == all_coords[i][0]) && (coord[1] == all_coords[i][1]) && (coord[2] > all_coords[i][2])) {
-            optiq_compare_and_replace(coord, neighbors_coords[5], &current_distance[5], all_coords[i], num_dims);
+	    potential_neighbor.direction = Z_M;
+            optiq_compare_and_replace(coord, &neighbors[5], potential_neighbor, num_dims);
 	}
     }
 }
@@ -528,14 +542,14 @@ void optiq_get_topology(struct topology *topo)
     optiq_get_all_nic_ids(topo->all_nic_ids, topo->num_ranks);
 }
 
-void optiq_compare_and_replace(int *coord, int *current_neighbor, int *current_distance, int *potential_neighbor, int num_dims)
+void optiq_compare_and_replace(int *coord, struct optiq_neighbor *current_neighbor, struct optiq_neighbor potential_neighbor, int num_dims)
 {
-    int potential_distance = optiq_compute_num_hops(num_dims, coord, potential_neighbor);
+    int potential_distance = optiq_compute_num_hops(num_dims, coord, potential_neighbor.node.coord);
 
-    if (potential_distance < *current_distance) {
-	*current_distance = potential_distance;
+    if (potential_distance < current_neighbor->distance) {
+	current_neighbor->distance = potential_distance;
 	for (int i = 0; i < num_dims; i++) {
-	    current_neighbor[i] = potential_neighbor[i];
+	    current_neighbor->node.coord[i] = potential_neighbor.node.coord[i];
 	}
     }
 }

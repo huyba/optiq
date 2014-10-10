@@ -26,6 +26,39 @@ struct topology {
     int *all_nic_ids;
 };
 
+struct optiq_node {
+    int rank;
+    int nic_id;
+    int *coord;
+};
+
+enum optiq_direction {
+    A_P = 1,
+    A_M = -1,
+    B_P = 2,
+    B_M = -2,
+    C_P = 3,
+    C_M = -3,
+    D_P = 4,
+    D_M = -4,
+    E_P = 5,
+    E_M = -5,
+    X_P = 1,
+    X_M = -1,
+    Y_P = 2,
+    Y_M = -2,
+    Z_P = 3,
+    Z_M = -3,
+    MIXED = 1000
+};
+
+struct optiq_neighbor {
+    struct optiq_node node;
+    int distance;
+    float link_capacity;
+    enum optiq_direction direction;
+};
+
 void optiq_read_topology_from_file(char *fileName, struct topology *topo);
 
 int optiq_compute_nid(int num_dims, int *coord, int *size);
@@ -42,7 +75,7 @@ void optiq_map_ranks_to_coords(BG_CoordinateMapping_t *all_coord, int nranks);
 int optiq_check_existing(int num_neighbors, int *neighbors, int nid);
 
 int optiq_compute_neighbors_bgq(int num_dims, int *coord, int *size, int *neighbors);
-void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, int **neighbors_coords);
+void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, struct optiq_neighbor *neighbors, int num_neighbors);
 
 void optiq_init();
 void optiq_finalize();
@@ -55,5 +88,5 @@ void optiq_get_all_coords(int **all_coords, int num_ranks);
 void optiq_get_all_nic_ids(int *all_nic_ids, int num_ranks);
 void optiq_get_topology(struct topology *topo);
 
-void optiq_compare_and_replace(int *coord, int *current_neighbor, int *current_distance, int *potential_neighbor, int num_dims);
+void optiq_compare_and_replace(int *coord, struct optiq_neighbor *current_neighbor, struct optiq_neighbor potential_neighbor, int num_dims);
 #endif
