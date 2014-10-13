@@ -230,7 +230,7 @@ void optiq_read_topology_from_file(char *filePath, struct topology *topo)
     for (int i = 0; i < topo->num_ranks; i++) {
 	topo->all_coords[i] = (int *) malloc(sizeof(int) * topo->num_dims);
     }
-    topo->all_nic_ids = (int *) malloc(sizeof(int) * topo->num_ranks);
+    topo->all_nic_ids = (uint16_t *) malloc(sizeof(uint16_t) * topo->num_ranks);
     
     int coord[5], nid, rank;
     while ((read = getline(&line, &len, fp)) != -1) {
@@ -250,7 +250,7 @@ void optiq_read_topology_from_file(char *filePath, struct topology *topo)
     fclose(fp);
 }
 
-void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, struct optiq_neighbor *neighbors, int num_neighbors) 
+void optiq_compute_neighbors_cray(int num_dims, int *coord, int **all_coords, int all_ranks, struct optiq_neighbor *neighbors) 
 {
     int max_dis = 1000000;
     for (int i = 0; i < num_dims * 2; i++) {
@@ -504,13 +504,14 @@ void optiq_get_all_coords(int **all_coords, int num_ranks)
 #endif
 }
 
-void optiq_get_all_nic_ids(int *all_nic_ids, int num_ranks) 
+void optiq_get_all_nic_ids(uint16_t *all_nic_ids, int num_ranks) 
 {
 
 }
 
 void optiq_get_topology(struct topology *topo) 
 {
+    topo = (struct topology *)malloc(sizeof(struct topology));
 #ifdef __bgq__
     topo->num_dims = 5;
 #endif
@@ -519,12 +520,7 @@ void optiq_get_topology(struct topology *topo)
     topo->num_dims = 3;
 #endif
 
-    optiq_get_rank(&topo->rank);
     optiq_get_num_ranks(&topo->num_ranks);
-    optiq_get_nic_id(&topo->nic_id);
-
-    topo->coord = (int *)malloc(sizeof(int)*topo->num_dims);
-    optiq_get_coord(topo->coord);
 
     topo->size = (int *)malloc(sizeof(int)*topo->num_dims);
     optiq_get_size(topo->size);
@@ -538,8 +534,18 @@ void optiq_get_topology(struct topology *topo)
     }
     optiq_get_all_coords(topo->all_coords, topo->num_ranks);
 
-    topo->all_nic_ids = (int *) malloc(sizeof(int) * topo->num_ranks);
+    topo->all_nic_ids = (uint16_t *) malloc(sizeof(uint16_t) * topo->num_ranks);
     optiq_get_all_nic_ids(topo->all_nic_ids, topo->num_ranks);
+}
+
+void optiq_get_node(struct optiq_node *node, int num_dims)
+{
+    node = (struct optiq_node *)malloc(sizeof(struct optiq_node));
+
+    optiq_get_rank(&node->rank);
+    optiq_get_nic_id(&node->nic_id);
+    node->coord = (int *)malloc(sizeof(int) * num_dims);
+    optiq_get_coord(node->coord);
 }
 
 void optiq_compare_and_replace(int *coord, struct optiq_neighbor *current_neighbor, struct optiq_neighbor potential_neighbor, int num_dims)

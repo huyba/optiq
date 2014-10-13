@@ -7,12 +7,20 @@
 
 void construct_graph(struct topology topo, float **graph) 
 {
+    printf("Start constructing graph\n");
+
     struct optiq_neighbor *neighbors = (struct optiq_neighbor *)malloc(sizeof(struct optiq_neighbor) * topo.num_dims * 2);
+
+    for (int i = 0; i < topo.num_dims * 2; i++) {
+	neighbors[i].node.coord = (int *)malloc(sizeof(int) * topo.num_dims);
+    }
+
+    printf("Init the neighbors\n");
 
     int num_neighbors = 0;
 
     for (int i = 0; i < topo.num_ranks; i++) {
-	optiq_compute_neighbors_cray(topo.num_dims, topo.all_coords[i], topo.all_coords, topo.num_ranks, neighbors, num_neighbors);
+	optiq_compute_neighbors_cray(topo.num_dims, topo.all_coords[i], topo.all_coords, topo.num_ranks, neighbors);
 
 	num_neighbors = 0;
 	for (int j = 0; j < topo.num_dims * 2; j++) {
