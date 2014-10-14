@@ -18,7 +18,7 @@ void optiq_topology_init(struct topology *self, enum machine_type machine)
     } else {
 	/*self->topo_impl = &topology_user_defined;*/
     }
-    self->topo_impl->optiq_topology_init();
+    self->topo_impl->optiq_topology_init(self);
 }
 
 void optiq_topology_get_rank(struct topology *self, int *rank)
@@ -36,7 +36,7 @@ void optiq_topology_get_nic_id(struct topology *self, uint16_t *nid)
 
 void optiq_topology_get_coord(struct topology *self, int *coord)
 {
-    self->topo_impl->optiq_topology_get_coord(coord);
+    self->topo_impl->optiq_topology_get_coord(self, coord);
 }
 
 void optiq_topology_get_all_coords(struct topology *self, int **all_coords)               
@@ -66,7 +66,7 @@ void optiq_topology_get_node_id(struct topology *self, int *coord, int *node_id)
     self->topo_impl->optiq_topology_get_node_id(self, coord, node_id);
 }
 
-int optiq_topology_compute_neighbors(struct topology *self, int *coord, struct optiq_neighbor *neighbors, int num_neighbors) 
+void optiq_topology_get_neighbors(struct topology *self, int *coord, struct optiq_neighbor *neighbors, int num_neighbors) 
 {
     
 }

@@ -27,7 +27,7 @@ struct topology_interface topology_xc30 =
     .optiq_topology_finalize = optiq_topology_finalize_xc30
 }
 
-void optiq_topology_init_xc30()
+void optiq_topology_init_xc30(struct topology *self)
 {
     int rc;
     PMI_BOOL initialized;
@@ -164,7 +164,7 @@ void optiq_topology_get_topology_from_file_xc30(struct topology *self, char *fil
     fclose(fp);
 }
 
-void optiq_topology_compute_neighbors_xc30(struct topology *self, int *coord, struct optiq_neighbor *neighbors, int *num_neighbors) 
+void optiq_topology_get_neighbors_xc30(struct topology *self, int *coord, struct optiq_neighbor *neighbors, int *num_neighbors) 
 {
     int num_dims = self->num_dims;
     int *coord = self->coord;

@@ -27,7 +27,7 @@ struct topology_interface topology_bgq =
     .optiq_topology_finalize = optiq_topology_finalize_bgq
 }
 
-void optiq_topology_init_bgq()
+void optiq_topology_init_bgq(struct topology *self)
 {
 }
 
@@ -140,7 +140,7 @@ void optiq_topology_get_node_id_bgq(struct topology *self, int *coord, int *node
     }
 }
 
-void optiq_topology_compute_neighbors_bgq(struct topology *self, int *coord, optiq_neighbor *neighbors, int *num_neighbors) 
+void optiq_topology_get_neighbors_bgq(struct topology *self, int *coord, optiq_neighbor *neighbors, int *num_neighbors) 
 {
 
     *num_neighbors = 0;
