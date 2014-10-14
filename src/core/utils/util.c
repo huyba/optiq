@@ -32,3 +32,14 @@ int optiq_check_existing(int num_elements, int *list, int element)
     return 0;
 }
 
+int optiq_check_existing_neighbor(int num_neighbors, optiq_neighbor *neighbors, int nid)
+{
+    for (int i = 0; i < num_neighbors; i++) {
+        if (neighbors[i].node.rank == nid) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
