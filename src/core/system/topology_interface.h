@@ -22,7 +22,7 @@ struct topology_interface {
     void (*optiq_topology_get_topology)(struct topology *self);
     void (*optiq_topology_get_node)(struct topology *self, struct optiq_node *node, int num_dims);
 
-    int optiq_compute_nid(struct topology *self, , int *coord);
+    void optiq_topology_get_node_id(struct topology *self, , int *coord, int *node_id);
     void optiq_coord_to_nodeId(struct topology *self, int *coord, int *nodeId);
     void optiq_topology_reconstruct_path(struct topology *self, int *source, int *dest, int **path);
     void optiq_toplogy_compute_routing_order(struct topology *self, int *order);

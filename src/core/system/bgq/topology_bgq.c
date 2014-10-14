@@ -19,7 +19,7 @@ struct topology_interface topology_bgq =
     .optiq_topology_get_size = optiq_topology_get_size_bgq,
     .optiq_topology_get_torus = optiq_topology_get_torus_bgq,
     .optiq_topology_get_bridge = optiq_topology_get_bridge_bgq,
-    .optiq_topology_compute_nid = optiq_topology_compute_nid_bgq,
+    .optiq_topology_get_node_id = optiq_topology_get_node_id_bgq,
     .optiq_topology_compute_neighbors = optiq_topology_compute_neighbors_bgq,
     .optiq_topology_read_topology_from_file = optiq_topology_read_topology_from_file_bgq,
     .optiq_topology_get_topology = optiq_topology_get_topology_bgq,
@@ -123,9 +123,11 @@ void optiq_topology_get_bridge_bgq(struct topology *self, int *bridge_coord, int
     *bridge_id = bridge[4] + bridge[3]*size[4] + bridge[2]*size[3]*size[4] + bridge[1]*size[2]*size[3]*size[4] + bridge[0]*size[1]*size[2]*size[3]*size[4];
 }
 
-int optiq_topology_compute_nid_bgq(int num_dims, int *coord, int *size) 
+void optiq_topology_get_node_id_bgq(struct topology *self, int *coord, int *node_id) 
 {
-    int nid = coord[num_dims-1];
+    int num_dims = self->num_dims;
+
+    *node_id = coord[num_dims-1];
     int  pre_size = 1;
 
     for (int i = num_dims-2; i >= 0; i--) {
@@ -133,11 +135,9 @@ int optiq_topology_compute_nid_bgq(int num_dims, int *coord, int *size)
 	    pre_size *= size[j];
 	}
 
-	nid += coord[i]*pre_size;
+	*node_id += coord[i]*pre_size;
 	pre_size = 1;
     }
-
-    return nid;
 }
 
 void optiq_topology_compute_neighbors_bgq(struct topology *self, int *coord, optiq_neighbor *neighbors, int *num_neighbors) 
