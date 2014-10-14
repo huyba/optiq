@@ -21,8 +21,8 @@ struct topology_interface topology_xc30 =
     .optiq_topology_get_bridge = optiq_topology_get_bridge_xc30,
     .optiq_topology_get_node_id = optiq_topology_get_node_id_xc30,
     .optiq_topology_compute_neighbors = optiq_topology_compute_neighbors_xc30,
-    .optiq_topology_read_topology_from_file = optiq_topology_read_topology_from_file_xc30,
-    .optiq_topology_get_topology = optiq_topology_get_topology_xc30,
+    .optiq_topology_get_topology_from_file = optiq_topology_get_topology_from_file_xc30,
+    .optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtime_xc30,
     .optiq_topology_get_node = optiq_topology_get_node_xc30,
     .optiq_topology_finalize = optiq_topology_finalize_xc30
 }
@@ -118,7 +118,7 @@ void optiq_topology_get_bridge_xc30(struct topology *self)
 
 }
 
-void optiq_topology_read_topology_from_file_xc30(struct topology *self, char *filePath) 
+void optiq_topology_get_topology_from_file_xc30(struct topology *self, char *filePath) 
 {
     FILE *fp;
     char *line = (char *) malloc(256);;
@@ -228,7 +228,7 @@ void optiq_topology_compute_neighbors_xc30(struct topology *self, int *coord, st
     }
 }
 
-void optiq_topology_get_topology_xc30(struct topology *self) 
+void optiq_topology_get_topology_at_runtime_xc30(struct topology *self) 
 {
     topo = (struct topology *)malloc(sizeof(struct topology));
     self->num_dims = 3;

@@ -21,7 +21,7 @@ struct topology_interface {
     void (*optiq_topology_get_bridge)(truct topology *self, nt *bridge_coord, int *bridge_id);
     void (*optiq_topology_map_ranks_coords)(struct topology *self, int **all_coords, int num_ranks);
     void (*optiq_topology_get_all_nic_ids)(struct topology *self, uint16_t *all_nic_ids, int num_ranks);
-    void (*optiq_topology_get_topology)(struct topology *self);
+    void (*optiq_topology_get_topology_at_runtime)(struct topology *self);
     void (*optiq_topology_get_node)(struct topology *self, struct optiq_node *node, int num_dims);
 
     void optiq_topology_get_node_id(struct topology *self, , int *coord, int *node_id);
@@ -33,7 +33,7 @@ struct topology_interface {
     void optiq_move_along_one_dimension(struct topology *self, int *source, int routing_dimension, int num_hops, int dir
 ection, int **path);
 
-    void optiq_read_topology_from_file(struct topology *self, har *fileName, struct topology *topo);
+    void optiq_get_topology_from_file(struct topology *self, har *fileName);
 
     int optiq_compute_num_hops(int num_dims, int *source, int *dest);
     int optiq_check_existing(int num_neighbors, int *neighbors, int nid);

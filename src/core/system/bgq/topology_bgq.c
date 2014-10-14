@@ -21,8 +21,8 @@ struct topology_interface topology_bgq =
     .optiq_topology_get_bridge = optiq_topology_get_bridge_bgq,
     .optiq_topology_get_node_id = optiq_topology_get_node_id_bgq,
     .optiq_topology_compute_neighbors = optiq_topology_compute_neighbors_bgq,
-    .optiq_topology_read_topology_from_file = optiq_topology_read_topology_from_file_bgq,
-    .optiq_topology_get_topology = optiq_topology_get_topology_bgq,
+    .optiq_topology_get_topology_from_file = optiq_topology_get_topology_from_file_bgq,
+    .optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtimebgq,
     .optiq_topology_get_node = optiq_topology_get_node_bgq,
     .optiq_topology_finalize = optiq_topology_finalize_bgq
 }
@@ -194,7 +194,7 @@ void optiq_topology_compute_neighbors_bgq(struct topology *self, int *coord, opt
     return num_neighbors;
 }
 
-void optiq_topology_read_topology_from_file_bgq(struct topology *self, char *filePath) 
+void optiq_topology_get_topology_from_file_bgq(struct topology *self, char *filePath) 
 {
     FILE *fp;
     char *line = (char *) malloc(256);;
@@ -240,7 +240,7 @@ void optiq_topology_read_topology_from_file_bgq(struct topology *self, char *fil
     fclose(fp);
 }
 
-void optiq_topology_get_topology_bgq(struct topology *self)
+void optiq_topology_get_topology_at_runtime_bgq(struct topology *self)
 {
     self = (struct topology *)malloc(sizeof(struct topology));
     self->num_dims = 5;
