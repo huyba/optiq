@@ -1,5 +1,5 @@
-#ifndef TOPOLOGY_XE6_H
-#define TOPOLOGY_XE6_H
+#ifndef OPTIQ_TOPOLOGY_XE6_H
+#define OPTIQ_TOPOLOGY_XE6_H
 
 #ifdef _CRAYC
 #include <pmi.h>

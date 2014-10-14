@@ -1,5 +1,5 @@
-#ifndef TOPOLOGY_BGQ_H
-#define TOPOLOGY_BGQ_H
+#ifndef OPTIQ_TOPOLOGY_BGQ_H
+#define OPTIQ_TOPOLOGY_BGQ_H
 
 #ifdef __bgq__
 #include <spi/include/kernel/location.h>

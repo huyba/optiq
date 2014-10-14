@@ -1,5 +1,5 @@
-#ifndef TOPOLOGY_H
-#define TOPOLOGY_H
+#ifndef OPTIQ_TOPOLOGY_H
+#define OPTIQ_TOPOLOGY_H
 
 #include "topology_interface.h"
 
@@ -15,7 +15,7 @@ struct topology {
     int **all_coords;
     uint16_t *all_nic_ids;
 
-    struct topology_inteface *topo_impl;
+    struct topology_interface *topo_impl;
 };
 
 struct optiq_node {

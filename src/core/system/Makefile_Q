@@ -15,8 +15,8 @@ endif
 LD      = mpixlc_r
 
 TOPO   = .
-
-CFLAGS  = $(COPT) -I. -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30
+UTILS  = ../utils
+CFLAGS  = $(COPT) -I. -I$(UTILS) -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
