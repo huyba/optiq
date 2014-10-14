@@ -14,14 +14,14 @@ endif
 
 LD      = mpixlc_r
 
-TOPO   = ../../core/system
+TOPO   = ../core/system
 
-CFLAGS  = $(COPT) -I. -I$(TOPO)
+CFLAGS  = $(COPT) -I. -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = $(TOPO)/topology.o $(TOPO)/topology_bgq.o
+obj = $(TOPO)/topology.o $(TOPO)/bgq/topology_bgq.o
 
 all: $(obj)  mpi copy
 

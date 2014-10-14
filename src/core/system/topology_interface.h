@@ -1,7 +1,7 @@
 #ifndef TOPOLOGY_IMPL_H
 #define TOPOLOGY_IMPL_H
 
-#include "../util/util.h"
+#include "../utils/util.h"
 
 enum machine_type {
     BGQ = 1,
@@ -21,8 +21,8 @@ struct topology_interface {
     void (*optiq_topology_get_all_nic_ids)(struct topology *self, uint16_t *all_nic_ids);
     void (*optiq_topology_get_size)(struct topology *self, int *size);
     void (*optiq_topology_get_torus)(struct topology *self, int *torus);
-    void (*optiq_topology_get_bridge)(truct topology *self, int *bridge_coord, int *bridge_id);
-    void (*optiq_topology_get_node_id)(struct topology *self, , int *coord, int *node_id);
+    void (*optiq_topology_get_bridge)(struct topology *self, int *bridge_coord, int *bridge_id);
+    void (*optiq_topology_get_node_id)(struct topology *self, int *coord, int *node_id);
     void (*optiq_topology_compute_neighbors)(struct topology *self, int *coord, struct optiq_neighbor *neighbors, int num_neighbors);
     void (*optiq_topology_get_topology_at_runtime)(struct topology *self);
     void (*optiq_topology_get_topology_from_file)(struct topology *self, char *fileName);

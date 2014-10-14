@@ -14,17 +14,18 @@ endif
 
 LD      = mpixlc_r
 
-CFLAGS  = $(COPT) -I.
+TOPO   = .
+
+CFLAGS  = $(COPT) -I. -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = topology.o
+obj = $(TOPO)/topology.o $(TOPO)/bgq/topology_bgq.o
 
-all: rm $(obj)
+all: $(obj)
 
-rm:
-	rm -f *.o
+mpi: test_topo_bgq.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -39,3 +40,6 @@ clean:
 realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
+
+copy:
+	cp test_topo_bgq.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/topo/
