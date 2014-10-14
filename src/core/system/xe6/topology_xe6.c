@@ -118,11 +118,6 @@ void optiq_topology_get_bridge_xe6(struct topology *self)
 
 }
 
-void optiq_topology_get_node_id_xe6(struct topology *self)
-{
-
-}
-
 void optiq_topology_read_topology_from_file_xe6(struct topology *self, char *filePath) 
 {
     FILE *fp;
@@ -145,12 +140,8 @@ void optiq_topology_read_topology_from_file_xe6(struct topology *self, char *fil
 
     self->size = (int *)malloc(sizeof(int) * self->num_dims);
     getline(&line, &len, fp);
-    if (self->num_dims == 3) {
-	sscanf(line, "size: %d x %d x %d", &self->size[0], &self->size[1], &self->size[2]);
-    } else if (self->num_dims == 5) {
-	sscanf(line, "size: %d x %d x %d x %d x %d", &self->size[0], &self->size[1], &self->size[2],  &self->size[3], &self->size[4]);
-    }
-
+    sscanf(line, "size: %d x %d x %d", &self->size[0], &self->size[1], &self->size[2]);
+ 
     getline(&line, &len, fp);
     sscanf(line, "num_ranks: %d", &self->num_ranks);
 
@@ -162,12 +153,7 @@ void optiq_topology_read_topology_from_file_xe6(struct topology *self, char *fil
     
     int coord[5], nid, rank;
     while ((read = getline(&line, &len, fp)) != -1) {
-	if (self->num_dims == 3) {
-	    sscanf(line, "Rank: %d nid %d coord[ %d %d %d ]", &rank, &nid, &coord[0], &coord[1], &coord[2]);
-	}
-	if (self->num_dims == 5) {
-            sscanf(line, "Rank: %d nid %d coord[ %d %d %d %d %d ]", &rank, &nid, &coord[0], &coord[1], &coord[2], &coord[3], &coord[4]);
-        }
+	sscanf(line, "Rank: %d nid %d coord[ %d %d %d ]", &rank, &nid, &coord[0], &coord[1], &coord[2]);
 
 	self->all_nic_ids[rank] = nid;
 	for (int i = 0; i < self->num_dims; i++) {

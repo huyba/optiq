@@ -1,6 +1,8 @@
 #ifndef TOPOLOGY_IMPL_H
 #define TOPOLOGY_IMPL_H
 
+#include "../util/util.h"
+
 enum machine_type {
     BGQ = 1,
     XE6 = 2,
