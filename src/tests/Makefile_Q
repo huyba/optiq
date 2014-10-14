@@ -1,23 +1,37 @@
-CC      = CC
-COPT    = -g -Wall -std=gnu99
+ifndef COMPILER
+  COMPILER = XL
+endif
 
-LD      = CC
+ifeq ($(COMPILER),GNU)
+  CC      = mpicc
+  COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
+endif
 
-TOPO   = ../core/system
+ifeq ($(COMPILER),XL)
+  CC      = mpicxx
+  COPT    = -g -O3
+endif
+
+LD      = mpixlc_r
+
+TOPO   = ../../core/system
 
 CFLAGS  = $(COPT) -I. -I$(TOPO)
+LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
-obj = $(TOPO)/topology.o
+CFLAGS += -DPROGRESS_THREAD
 
-all: $(obj)  tests copy
+obj = $(TOPO)/topology.o $(TOPO)/topology_bgq.o
 
-tests: readtopo.x
+all: $(obj)  mpi copy
+
+mpi: test_topo_bgq.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o $(obj)
-	$(LD) $< $(obj) -o $@
+	$(LD) $< $(obj) -o $@ $(LDFLAGS)
 
 clean:
 	$(RM) $(RMFLAGS) *.o
@@ -26,3 +40,6 @@ clean:
 realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
+
+copy:
+	cp test_topo_bgq.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/topo/
