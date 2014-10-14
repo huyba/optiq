@@ -2,10 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "topology_interface.h"
-#include "topology_bgq.h"
-#include "topology_xe6.h"
-#include "topoloy_xc30.h"
 #include "topology.h"
 
 void optiq_topology_init(struct topology *self, enum machine_type machine)

@@ -1,6 +1,12 @@
 #ifndef TOPOLOGY_H
 #define TOPOLOGY_H
 
+#include "topology_interface.h"
+
+#include "topology_bgq.h"
+#include "topology_xe6.h"
+#include "topoloy_xc30.h"
+
 struct topology {
     int num_ranks;
     int num_dims;
