@@ -230,8 +230,6 @@ void optiq_topology_get_neighbors_xc30(struct topology_info *topo_info, int *coo
 
 void optiq_topology_get_topology_at_runtime_xc30(struct topology_info *topo_info) 
 {
-    topo = (struct topology_info *)malloc(sizeof(struct topology));
-    topo_info->num_dims = 3;
     optiq_topology_get_num_ranks_xc30(&topo_info->num_ranks);
 
     topo_info->all_coords = (int **)malloc(sizeof(int *) * topo_info->num_ranks);

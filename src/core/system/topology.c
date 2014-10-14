@@ -6,14 +6,16 @@
 
 void optiq_topology_init(struct topology *self, enum machine_type machine)
 {
+    self->topo_info = (struct topology_info*)malloc(sizeof(struct topology_info));
+
     if (machine == BGQ) {
-	self->num_dims = 5;
+	self->topo_info->num_dims = 5;
 	self->topo_impl = &topology_bgq;
     } else if (machine == XE6) {
-	self->num_dims = 3;
+	self->topo_info->num_dims = 3;
 	self->topo_impl = &topology_xe6;
     } else if (machine == XC30) {
-	self->num_dims = 3;
+	self->topo_info->num_dims = 3;
 	self->topo_impl = &topology_xc30;
     } else {
 	/*self->topo_impl = &topology_user_defined;*/

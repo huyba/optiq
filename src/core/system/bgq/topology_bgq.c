@@ -223,8 +223,6 @@ void optiq_topology_get_topology_from_file_bgq(struct topology_info *topo_info, 
 
 void optiq_topology_get_topology_at_runtime_bgq(struct topology_info *topo_info)
 {
-    topo_info = (struct topology_info *)malloc(sizeof(struct topology));
-    topo_info->num_dims = 5;
     optiq_topology_get_num_ranks_bgq(topo_info, &topo_info->num_ranks);
 
     topo_info->size = (int *)malloc(sizeof(int)*topo_info->num_dims);
