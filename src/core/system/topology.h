@@ -10,13 +10,7 @@
 #include "topology_xc30.h"
 
 struct topology {
-    int num_ranks;
-    int num_dims;
-    int *size;
-    int *routing_order;
-    int **all_coords;
-    uint16_t *all_nic_ids;
-
+    struct topology_info *topo_info;
     struct topology_interface *topo_impl;
 };
 

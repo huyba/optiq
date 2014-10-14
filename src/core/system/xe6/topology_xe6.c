@@ -27,7 +27,7 @@ struct topology_interface topology_xe6 =
     .optiq_topology_finalize = optiq_topology_finalize_xe6
 };
 
-void optiq_topology_init_xe6(struct topology *self)
+void optiq_topology_init_xe6(struct topology_info *topo_info)
 {
     int rc;
     PMI_BOOL initialized;
@@ -45,7 +45,7 @@ void optiq_topology_init_xe6(struct topology *self)
     }
 }
 
-void optiq_topology_get_rank_xe6(struct topology *self, int *rank)
+void optiq_topology_get_rank_xe6(struct topology_info *topo_info, int *rank)
 {
     optiq_topology_init_xe6();
     int rc, rank;
@@ -55,7 +55,7 @@ void optiq_topology_get_rank_xe6(struct topology *self, int *rank)
     }
 }
 
-void optiq_topology_get_num_ranks_xe6(struct topology *self, int *num_ranks)
+void optiq_topology_get_num_ranks_xe6(struct topology_info *topo_info, int *num_ranks)
 {
     optiq_topology_init_xe6();
     int rc, num_ranks;
@@ -65,7 +65,7 @@ void optiq_topology_get_num_ranks_xe6(struct topology *self, int *num_ranks)
     }
 }
 
-void optiq_topology_get_nic_id_xe6(struct topology *self, uint16_t *nid)
+void optiq_topology_get_nic_id_xe6(struct topology_info *topo_info, uint16_t *nid)
 {
     int rc, rank;
     optiq_topology_get_rank_xe6(&rank);
@@ -77,7 +77,7 @@ void optiq_topology_get_nic_id_xe6(struct topology *self, uint16_t *nid)
     }
 }
 
-void optiq_topology_get_coord_xe6(struct topology *self, int *coord)
+void optiq_topology_get_coord_xe6(struct topology_info *topo_info, int *coord)
 {
     uint16_t nid;
     optiq_topology_get_nic_id_xe6(&nid);
@@ -91,34 +91,34 @@ void optiq_topology_get_coord_xe6(struct topology *self, int *coord)
     coord[2] = (int)xyz.mesh_z;
 }
 
-void optiq_topology_get_node_id_xe6(struct topology *self, int *coord, int *node_id)
+void optiq_topology_get_node_id_xe6(struct topology_info *topo_info, int *coord, int *node_id)
 {
 }
 
-void optiq_topology_get_all_coords_xe6(struct topology *self, int **all_coords, int num_ranks)
-{
-
-}
-
-void optiq_topology_get_all_nic_ids_xe6(struct topology *self, int *all_nic_ids, int num_ranks)
+void optiq_topology_get_all_coords_xe6(struct topology_info *topo_info, int **all_coords, int num_ranks)
 {
 
 }
 
-void optiq_topology_get_size_xe6(struct topology *self, int *size)
-{
-}
-
-void optiq_topology_get_torus_xe6(struct topology *self, int *torus)
-{
-}
-
-void optiq_topology_get_bridge_xe6(struct topology *self)
+void optiq_topology_get_all_nic_ids_xe6(struct topology_info *topo_info, int *all_nic_ids, int num_ranks)
 {
 
 }
 
-void optiq_topology_get_topology_from_file_xe6(struct topology *self, char *filePath) 
+void optiq_topology_get_size_xe6(struct topology_info *topo_info, int *size)
+{
+}
+
+void optiq_topology_get_torus_xe6(struct topology_info *topo_info, int *torus)
+{
+}
+
+void optiq_topology_get_bridge_xe6(struct topology_info *topo_info)
+{
+
+}
+
+void optiq_topology_get_topology_from_file_xe6(struct topology_info *topo_info, char *filePath) 
 {
     FILE *fp;
     char *line = (char *) malloc(256);;
@@ -136,40 +136,40 @@ void optiq_topology_get_topology_from_file_xe6(struct topology *self, char *file
     }
 
     getline(&line, &len, fp);
-    sscanf(line, "num_dims: %d", &self->num_dims);
+    sscanf(line, "num_dims: %d", &topo_info->num_dims);
 
-    self->size = (int *)malloc(sizeof(int) * self->num_dims);
+    topo_info->size = (int *)malloc(sizeof(int) * topo_info->num_dims);
     getline(&line, &len, fp);
-    sscanf(line, "size: %d x %d x %d", &self->size[0], &self->size[1], &self->size[2]);
+    sscanf(line, "size: %d x %d x %d", &topo_info->size[0], &topo_info->size[1], &topo_info->size[2]);
  
     getline(&line, &len, fp);
-    sscanf(line, "num_ranks: %d", &self->num_ranks);
+    sscanf(line, "num_ranks: %d", &topo_info->num_ranks);
 
-    self->all_coords = (int **)malloc(sizeof(int *) * self->num_ranks);
-    for (int i = 0; i < self->num_ranks; i++) {
-	self->all_coords[i] = (int *) malloc(sizeof(int) * self->num_dims);
+    topo_info->all_coords = (int **)malloc(sizeof(int *) * topo_info->num_ranks);
+    for (int i = 0; i < topo_info->num_ranks; i++) {
+	topo_info->all_coords[i] = (int *) malloc(sizeof(int) * topo_info->num_dims);
     }
-    self->all_nic_ids = (uint16_t *) malloc(sizeof(uint16_t) * self->num_ranks);
+    topo_info->all_nic_ids = (uint16_t *) malloc(sizeof(uint16_t) * topo_info->num_ranks);
     
     int coord[5], nid, rank;
     while ((read = getline(&line, &len, fp)) != -1) {
 	sscanf(line, "Rank: %d nid %d coord[ %d %d %d ]", &rank, &nid, &coord[0], &coord[1], &coord[2]);
 
-	self->all_nic_ids[rank] = nid;
-	for (int i = 0; i < self->num_dims; i++) {
-	    self->all_coords[rank][i] = coord[i];
+	topo_info->all_nic_ids[rank] = nid;
+	for (int i = 0; i < topo_info->num_dims; i++) {
+	    topo_info->all_coords[rank][i] = coord[i];
 	}
     }
 
     fclose(fp);
 }
 
-void optiq_topology_get_neighbors_xe6(struct topology *self, int *coord, struct optiq_neighbor *neighbors, int *num_neighbors) 
+void optiq_topology_get_neighbors_xe6(struct topology_info *topo_info, int *coord, struct optiq_neighbor *neighbors, int *num_neighbors) 
 {
-    int num_dims = self->num_dims;
-    int *coord = self->coord;
-    int **all_coords = self->all_coord;
-    int all_ranks = self->num_ranks;
+    int num_dims = topo_info->num_dims;
+    int *coord = topo_info->coord;
+    int **all_coords = topo_info->all_coord;
+    int all_ranks = topo_info->num_ranks;
 
     int max_dis = 1000000;
     for (int i = 0; i < num_dims * 2; i++) {
@@ -228,25 +228,25 @@ void optiq_topology_get_neighbors_xe6(struct topology *self, int *coord, struct 
     }
 }
 
-void optiq_topology_get_topology_at_runtime_xe6(struct topology *self) 
+void optiq_topology_get_topology_at_runtime_xe6(struct topology_info *topo_info) 
 {
-    topo = (struct topology *)malloc(sizeof(struct topology));
-    self->num_dims = 3;
-    optiq_topology_get_num_ranks_xe6(&self->num_ranks);
+    topo = (struct topology_info *)malloc(sizeof(struct topology));
+    topo_info->num_dims = 3;
+    optiq_topology_get_num_ranks_xe6(&topo_info->num_ranks);
 
-    self->all_coords = (int **)malloc(sizeof(int *) * self->num_ranks);
-    for (int i = 0; i < self->num_ranks; i++) {
-	self->all_coords[i] = (int *)malloc(sizeof(int) * self->num_dims);
+    topo_info->all_coords = (int **)malloc(sizeof(int *) * topo_info->num_ranks);
+    for (int i = 0; i < topo_info->num_ranks; i++) {
+	topo_info->all_coords[i] = (int *)malloc(sizeof(int) * topo_info->num_dims);
     }
-    optiq_topology_get_all_coords_xe6(self->all_coords, self->num_ranks);
+    optiq_topology_get_all_coords_xe6(topo_info->all_coords, topo_info->num_ranks);
 
-    self->all_nic_ids = (uint16_t *) malloc(sizeof(uint16_t) * self->num_ranks);
-    optiq_topology_get_all_nic_ids_xe6(self->all_nic_ids, self->num_ranks);
+    topo_info->all_nic_ids = (uint16_t *) malloc(sizeof(uint16_t) * topo_info->num_ranks);
+    optiq_topology_get_all_nic_ids_xe6(topo_info->all_nic_ids, topo_info->num_ranks);
 }
 
-void optiq_topology_get_node_xe6(struct topology *self, struct optiq_node *node)
+void optiq_topology_get_node_xe6(struct topology_info *topo_info, struct optiq_node *node)
 {
-    int num_dims = self->num_dims;
+    int num_dims = topo_info->num_dims;
     node = (struct optiq_node *)malloc(sizeof(struct optiq_node));
 
     optiq_topology_get_rank_xe6(&node->rank);
@@ -255,7 +255,7 @@ void optiq_topology_get_node_xe6(struct topology *self, struct optiq_node *node)
     optiq_topology_get_coord_xe6(node->coord);
 }
 
-void optiq_topology_finalize_xe6(struct topology *self)
+void optiq_topology_finalize_xe6(struct topology_info *topo_info)
 {
 }
 
