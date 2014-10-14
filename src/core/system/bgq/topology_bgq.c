@@ -45,7 +45,7 @@ void optiq_topology_get_nic_id_bgq(struct topology *sefl, uint16_t *nid)
 
 }
 
-void optiq_topology_get_coord_bgq(int *coord)
+void optiq_topology_get_coord_bgq(struct topology *sefl, int *coord)
 {
     Personality_t pers;
     Kernel_GetPersonality(&pers, sizeof(pers));
@@ -57,12 +57,13 @@ void optiq_topology_get_coord_bgq(int *coord)
     coord[4] = pers.Network_Config.Ecoord;
 }
 
-void optiq_topology_get_all_coords_bgq(int **all_coords, int num_ranks)
+void optiq_topology_get_all_coords_bgq(struct topology *sefl, int **all_coords)
 {
+    int num_ranks = self->num_ranks;
     BG_CoordinateMapping_t *coord = (BG_CoordinateMapping_t *) malloc(sizeof(BG_CoordinateMapping_t)*num_ranks);
 
     uint64_t numentries;
-    Kernel_RanksToCoords(sizeof(BG_CoordinateMapping_t)*nranks, all_coord, &numentries);
+    Kernel_RanksToCoords(sizeof(BG_CoordinateMapping_t)*num_ranks, all_coord, &numentries);
 
     optiq_map_ranks_to_coords(coord, num_ranks);
     for (int i = 0; i < num_ranks; i++) {
@@ -262,8 +263,9 @@ void optiq_topology_get_topology_at_runtime_bgq(struct topology *self)
     optiq_topology_get_all_nic_ids_bgq(self->all_nic_ids, self->num_ranks);
 }
 
-void optiq_topology_get_node_bgq(struct optiq_node *node, int num_dims)
+void optiq_topology_get_node_bgq(struct topology *self, struct optiq_node *node)
 {
+    int num_dims = self->num_dims;
     node = (struct optiq_node *)malloc(sizeof(struct optiq_node));
 
     optiq_topology_get_rank_bgq(&node->rank);
@@ -399,7 +401,7 @@ void optiq_topology_print_arcs_bgq(struct topology *self, double cap)
     }
 }
 
-void optiq_topology_finalize_bgq()
+void optiq_topology_finalize_bgq(struct topology *sefl)
 {
 }
 

@@ -244,8 +244,9 @@ void optiq_topology_get_topology_at_runtime_xc30(struct topology *self)
     optiq_topology_get_all_nic_ids_xc30(self->all_nic_ids, self->num_ranks);
 }
 
-void optiq_topology_get_node_xc30(struct topology *self, struct optiq_node *node, int num_dims)
+void optiq_topology_get_node_xc30(struct topology *self, struct optiq_node *node)
 {
+    int num_dims = self->num_dims;
     node = (struct optiq_node *)malloc(sizeof(struct optiq_node));
 
     optiq_topology_get_rank_xc30(&node->rank);
