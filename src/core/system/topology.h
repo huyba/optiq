@@ -1,6 +1,8 @@
 #ifndef OPTIQ_TOPOLOGY_H
 #define OPTIQ_TOPOLOGY_H
 
+#include <stdint.h>
+
 #include "topology_interface.h"
 
 #include "topology_bgq.h"

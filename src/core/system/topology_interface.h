@@ -28,6 +28,6 @@ struct topology_interface {
     void (*optiq_topology_get_topology_from_file)(struct topology *self, char *fileName);
     void (*optiq_topology_get_node)(struct topology *self, struct optiq_node *node);
     void (*optiq_topology_finalize)(struct topology *self);
-}
+};
 
 #endif

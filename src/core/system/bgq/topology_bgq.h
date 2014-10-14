@@ -11,4 +11,9 @@
 
 extern struct topology_interface topology_bgq;
 
+void optiq_topology_print_arcs_bgq(struct topology *self, double cap);
+void optiq_topology_compute_routing_order_bgq(struct topology *self, int *order);
+void optiq_topology_reconstruct_path_bgq(struct topology *self, int *source, int *dest, int **path);
+void optiq_topology_move_along_one_dimension_bgq(struct topology *self, int *source, int routing_dimension, int num_hops, int direction, int **path);
+
 #endif

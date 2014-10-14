@@ -17,7 +17,7 @@ LD      = mpixlc_r
 TOPO   = ../../core/system/
 DATA_GEN = ../datagen/
 
-CFLAGS  = $(COPT) -I. -I$(TOPO) -I$(DATA_GEN)
+CFLAGS  = $(COPT) -I. -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30 -I$(DATA_GEN)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib 
 
 CFLAGS += -DPROGRESS_THREAD

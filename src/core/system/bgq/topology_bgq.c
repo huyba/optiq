@@ -25,7 +25,7 @@ struct topology_interface topology_bgq =
     .optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtimebgq,
     .optiq_topology_get_node = optiq_topology_get_node_bgq,
     .optiq_topology_finalize = optiq_topology_finalize_bgq
-}
+};
 
 void optiq_topology_init_bgq(struct topology *self)
 {

@@ -25,7 +25,7 @@ struct topology_interface topology_xe6 =
     .optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtime_xe6,
     .optiq_topology_get_node = optiq_topology_get_node_xe6,
     .optiq_topology_finalize = optiq_topology_finalize_xe6
-}
+};
 
 void optiq_topology_init_xe6(struct topology *self)
 {
