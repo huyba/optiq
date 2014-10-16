@@ -5,35 +5,23 @@
 
 #include <graph.h>
 
-void construct_graph(struct topology topo, float **graph) 
+void optiq_graph_init(struct graph *self) 
 {
-    printf("Start constructing graph\n");
+    machine_type machine = self->topo_info->machine;
 
-    struct optiq_neighbor *neighbors = (struct optiq_neighbor *)malloc(sizeof(struct optiq_neighbor) * topo.num_dims * 2);
-
-    for (int i = 0; i < topo.num_dims * 2; i++) {
-	neighbors[i].node.coord = (int *)malloc(sizeof(int) * topo.num_dims);
+    if (machine == BGQ) {
+        self->graph_impl = &graph_bgq;
+    } else if (machine == XE6) {
+        self->graph_impl = &graph_xe6;
+    } else if (machine == XC30) {
+        self->graph_impl = &graph_xc30;
+    } else {
+        /*self->topo_impl = &topology_user_defined;*/
     }
+    self->graph_impl->optiq_graph_init(self->topo_info);
+}
 
-    printf("Init the neighbors\n");
-
-    int num_neighbors = 0;
-
-    for (int i = 0; i < topo.num_ranks; i++) {
-	optiq_compute_neighbors_cray(topo.num_dims, topo.all_coords[i], topo.all_coords, topo.num_ranks, neighbors);
-
-	num_neighbors = 0;
-	for (int j = 0; j < topo.num_dims * 2; j++) {
-	    if (neighbors[j].node.coord[0] != -1) {
-		printf("Rank %d [ %d %d %d ] has neighbor [ %d %d %d ]\n", i, topo.all_coords[i][0], topo.all_coords[i][1], topo.all_coords[i][2], neighbors[j].node.coord[0], neighbors[j].node.coord[1], neighbors[j].node.coord[2]);
-		num_neighbors++;
-	    }
-	}
-
-	if (num_neighbors == 0) {
-	    printf("Rank %d [ %d %d %d ] is isolated\n", i, topo.all_coords[i][0], topo.all_coords[i][1], topo.all_coords[i][2]);
-	}
-
-	printf("\n");
-    }
+void optiq_graph_construct(struct graph *self, float **graph) 
+{
+    self->graph_impl->optiq_graph_contruct(self->topo_info, graph);
 }

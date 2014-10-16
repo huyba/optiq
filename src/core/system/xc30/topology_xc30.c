@@ -94,7 +94,10 @@ void optiq_topology_get_coord_xc30(struct topology_info *topo_info, int *coord)
 
 void optiq_topology_get_physical_location_xc30(struct topology_info *topo_info, int *coord, physical_location *pl)
 {
-
+    pl->group_id = coord[0];
+    pl->cabinet_id = coord[1]/3;
+    pl->chasis_id = coord[1]%3;
+    pl->blade = coord[2];
 }
 
 void optiq_topology_get_node_id_xc30(struct topology_info *topo_info, int *coord, int *node_id)
