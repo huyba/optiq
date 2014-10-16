@@ -6,28 +6,6 @@
 
 #include "topology_xe6.h"
 
-struct topology_interface topology_xe6 =
-{
-    .machine = XE6,
-    .optiq_topology_init = optiq_topology_init_xe6,
-    .optiq_topology_get_rank = optiq_topology_get_rank_xe6,
-    .optiq_topology_get_num_ranks = optiq_topology_get_num_ranks_xe6,
-    .optiq_topology_get_nic_id = optiq_topology_get_nic_id_xe6,
-    .optiq_topology_get_coord = optiq_topology_get_coord_xe6,
-    .optiq_topology_get_physical_location = optiq_topology_get_physical_location_xe6,
-    .optiq_topology_get_all_coords = optiq_topology_get_all_coords_xe6,
-    .optiq_topology_get_all_nic_ids = optiq_topology_get_all_nic_ids_xe6,
-    .optiq_topology_get_size = optiq_topology_get_size_xe6,
-    .optiq_topology_get_torus = optiq_topology_get_torus_xe6,
-    .optiq_topology_get_bridge = optiq_topology_get_bridge_xe6,
-    .optiq_topology_get_node_id = optiq_topology_get_node_id_xe6,
-    .optiq_topology_compute_neighbors = optiq_topology_compute_neighbors_xe6,
-    .optiq_topology_get_topology_from_file = optiq_topology_get_topology_from_file_xe6,
-    .optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtime_xe6,
-    .optiq_topology_get_node = optiq_topology_get_node_xe6,
-    .optiq_topology_finalize = optiq_topology_finalize_xe6
-};
-
 void optiq_topology_init_xe6(struct topology_info *topo_info)
 {
     int rc;
@@ -262,5 +240,27 @@ void optiq_topology_get_node_xe6(struct topology_info *topo_info, struct optiq_n
 void optiq_topology_finalize_xe6(struct topology_info *topo_info)
 {
 }
+
+struct topology_interface topology_xe6 =
+{
+    .machine = XE6,
+    .optiq_topology_init = optiq_topology_init_xe6,
+    .optiq_topology_get_rank = optiq_topology_get_rank_xe6,
+    .optiq_topology_get_num_ranks = optiq_topology_get_num_ranks_xe6,
+    .optiq_topology_get_nic_id = optiq_topology_get_nic_id_xe6,
+    .optiq_topology_get_coord = optiq_topology_get_coord_xe6,
+    .optiq_topology_get_physical_location = optiq_topology_get_physical_location_xe6,
+    .optiq_topology_get_all_coords = optiq_topology_get_all_coords_xe6,
+    .optiq_topology_get_all_nic_ids = optiq_topology_get_all_nic_ids_xe6,
+    .optiq_topology_get_size = optiq_topology_get_size_xe6,
+    .optiq_topology_get_torus = optiq_topology_get_torus_xe6,
+    .optiq_topology_get_bridge = optiq_topology_get_bridge_xe6,
+    .optiq_topology_get_node_id = optiq_topology_get_node_id_xe6,
+    .optiq_topology_compute_neighbors = optiq_topology_compute_neighbors_xe6,
+    .optiq_topology_get_topology_from_file = optiq_topology_get_topology_from_file_xe6,
+    .optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtime_xe6,
+    .optiq_topology_get_node = optiq_topology_get_node_xe6,
+    .optiq_topology_finalize = optiq_topology_finalize_xe6
+};
 
 #endif
