@@ -33,9 +33,14 @@ void optiq_topology_get_num_ranks(struct topology *self, int *num_ranks)
     self->topo_impl->optiq_topology_get_num_ranks(self->topo_info, num_ranks);
 }
 
-void optiq_topology_get_nic_id(struct topology *self, uint16_t *nid)
+void optiq_topology_get_node_id(struct topology *self, int *nid)
 {
-    self->topo_impl->optiq_topology_get_nic_id(self->topo_info, nid);
+    self->topo_impl->optiq_topology_get_node_id(self->topo_info, nid);
+}
+
+void optiq_topology_get_node_id_from_coord(struct topology *self, int *coord, int *nid)
+{
+    self->topo_impl->optiq_topology_get_node_id_from_coord(self->topo_info, coord, nid);
 }
 
 void optiq_topology_get_coord(struct topology *self, int *coord)
@@ -53,9 +58,9 @@ void optiq_topology_get_all_coords(struct topology *self, int **all_coords)
     self->topo_impl->optiq_topology_get_all_coords(self->topo_info, all_coords);
 }
 
-void optiq_topology_get_all_nic_ids(struct topology *self, uint16_t *all_nic_ids)
+void optiq_topology_get_all_node_ids(struct topology *self, int *all_node_ids)
 {
-    self->topo_impl->optiq_topology_get_all_nic_ids(self->topo_info, all_nic_ids);
+    self->topo_impl->optiq_topology_get_all_node_ids(self->topo_info, all_node_ids);
 }
 
 void optiq_topology_get_size(struct topology *self, int *size)
@@ -73,12 +78,7 @@ void optiq_topology_get_bridge(struct topology *self, int *bridge_coord, int *br
     self->topo_impl->optiq_topology_get_bridge(self->topo_info, bridge_coord, brige_id);
 }
 
-void optiq_topology_get_node_id(struct topology *self, int *coord, int *node_id)
-{
-    self->topo_impl->optiq_topology_get_node_id(self->topo_info, coord, node_id);
-}
-
-void optiq_topology_get_neighbors(struct topology *self, int *coord, struct optiq_neighbor *neighbors, int num_neighbors) 
+void optiq_topology_get_neighbors(struct topology *self, int *coord, struct optiq_neighbor *neighbors, int *num_neighbors) 
 {
     self->topo_impl->optiq_topology_get_neighbors(self->topo_info, coord, neighbors, num_neighbors);
 }

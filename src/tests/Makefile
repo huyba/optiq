@@ -19,13 +19,13 @@ LIBS    = -L$(DMAPP_PATH)/lib64   -L$(UDREG_PATH)/lib64   -L$(UGNI_PATH)/lib64  
 CFLAGS  = $(COPT) $(INCLUDE)
 
 LD      = $(CC)
-LDFLAGS = $(COPT)
+LDFLAGS = $(COPT) $(INCLUDE)
 
 TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
 OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
 ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
-OPTIQ_OBJS := $(OPTIQ_SYSTEM)/topology.o
+OPTIQ_OBJS := $(OPTIQ_SYSTEM)/topology.o  $(OPTIQ_SYSTEM)/xc30/topology_xc30.o $(OPTIQ_SYSTEM)/xe6/topology_xe6.o
 
 all: rm ../core/system/topology.o test_topo_xc30.x copy
 

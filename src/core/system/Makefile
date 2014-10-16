@@ -9,7 +9,7 @@ UGNI_PATH=/opt/cray/ugni/default
 UDREG_PATH=/opt/cray/udreg/default
 PMI_PATH=/opt/cray/pmi/default
 
-INCLUDE = -I$(DMAPP_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include
+INCLUDE = -I. -I$(DMAPP_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include
 LIBS    = -L$(DMAPP_PATH)/lib64   -L$(UDREG_PATH)/lib64   -L$(UGNI_PATH)/lib64   -L$(PMI_PATH)/lib64 -ldmapp -ludreg -lugni -lpmi
 
 CFLAGS  = $(COPT) $(INCLUDE)
@@ -23,10 +23,12 @@ ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
 all: tests
 
-tests: topology.o xc30/topology_xc30.o xe6/topology_xe6.o
+tests: xc30/topology_xc30.o xe6/topology_xe6.o topology.o
+
+OPTIQ_OJB:= xc30/topology_xc30.o xe6/topology_xe6.o
 
 %.x: %.o
-	$(LD) $(LDFLAGS) $< $(LIBS) -o $@
+	$(LD) $(OPTIQ_OJB)  $(LDFLAGS) $< $(LIBS) -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
