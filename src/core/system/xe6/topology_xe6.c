@@ -243,7 +243,7 @@ void optiq_topology_finalize_xe6(struct topology_info *topo_info)
 
 struct topology_interface topology_xe6 =
 {
-    .machine = XC30,
+    .machine = XE6,
     .optiq_topology_init = optiq_topology_init_xe6,
     .optiq_topology_get_rank = optiq_topology_get_rank_xe6,
     .optiq_topology_get_num_ranks = optiq_topology_get_num_ranks_xe6,
