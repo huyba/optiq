@@ -23,7 +23,7 @@ ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
 all: tests
 
-tests: topology.o
+tests: topology.o xc30/topology_xc30.o xe6/topology_xe6.o
 
 %.x: %.o
 	$(LD) $(LDFLAGS) $< $(LIBS) -o $@

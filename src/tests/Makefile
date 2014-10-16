@@ -25,9 +25,9 @@ TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
 OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
 ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
-OPTIQ_OBJS := $(OPTIQ_SYSTEM)/topology.o $(OPTIQ_STRUCTURE)/graph.o
+OPTIQ_OBJS := $(OPTIQ_SYSTEM)/topology.o
 
-all: rm ../core/system/topology.o ../core/structures/graph.o readtopo.x generategraph.x copy
+all: rm ../core/system/topology.o test_topo_xc30.x copy
 
 rm:
 	#rm -f *.x
@@ -51,5 +51,5 @@ realclean: clean
 	$(RM) $(RMFLAGS) $(ASM)
 
 copy:
-	cp readtopo.x /scratch2/scratchdirs/huybui/optiq/tests/readtopo/
-	cp generategraph.x /scratch2/scratchdirs/huybui/optiq/tests/generategraph/
+	#cp readtopo.x /scratch2/scratchdirs/huybui/optiq/tests/readtopo/
+	#cp generategraph.x /scratch2/scratchdirs/huybui/optiq/tests/generategraph/

@@ -70,7 +70,7 @@ struct topology_interface {
     void (*optiq_topology_get_num_ranks)(struct topology_info *topo, int *num_ranks);
     void (*optiq_topology_get_nic_id)(struct topology_info *topo, uint16_t *nic_id);
     void (*optiq_topology_get_coord)(struct topology_info *topo, int *coord);
-    void (*optiq_topology_get_physical_location(struct topology_into *topo, int *coord, physical_location *pl);
+    void (*optiq_topology_get_physical_location)(struct topology_info *topo, int *coord, physical_location *pl);
     void (*optiq_topology_get_all_coords)(struct topology_info *topo, int **all_coords);
     void (*optiq_topology_get_all_nic_ids)(struct topology_info *topo, uint16_t *all_nic_ids);
     void (*optiq_topology_get_size)(struct topology_info *topo, int *size);
