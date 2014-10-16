@@ -19,6 +19,7 @@ void optiq_topology_get_rank(struct topology *self, int *rank);
 void optiq_topology_get_num_ranks(struct topology *self, int *num_ranks);
 void optiq_topology_get_nic_id(struct topology *self, uint16_t *nic_id);
 void optiq_topology_get_coord(struct topology *self, int *coord);
+void optiq_topology_get_physical_location(struct topology *self, int *coord, physical_location *pl);
 void optiq_topology_get_all_coords(struct topology *self, int **all_coords);
 void optiq_topology_get_all_nic_ids(struct topology *self, uint16_t *all_nic_ids);
 void optiq_topology_get_size(struct topology *self, int *size);

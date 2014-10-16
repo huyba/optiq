@@ -42,9 +42,18 @@ struct optiq_neighbor {
     enum optiq_direction direction;
 };
 
+struct physical_location {
+    int group_id;
+    int cabinet_id;
+    int chasis_id;
+    int blade_id;
+    int processor_id;
+};
+
 struct topology_info {
     int num_ranks;
     int num_dims;
+    int *physical_location;
     int *size;
     int *torus;
     int *routing_order;

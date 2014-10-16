@@ -37,6 +37,11 @@ void optiq_topology_get_coord_bgq(struct topology_info *topo_info, int *coord)
     coord[4] = pers.Network_Config.Ecoord;
 }
 
+void optiq_topology_get_physical_location_bgq(struct topology_info *topo_info, int *coord, physical_location *pl)
+{
+
+}
+
 void optiq_topology_get_all_coords_bgq(struct topology_info *topo_info, int **all_coords)
 {
     int num_ranks = topo_info->num_ranks;
@@ -390,6 +395,7 @@ struct topology_interface topology_bgq =
     .optiq_topology_get_num_ranks = optiq_topology_get_num_ranks_bgq,
     .optiq_topology_get_nic_id = optiq_topology_get_nic_id_bgq,
     .optiq_topology_get_coord = optiq_topology_get_coord_bgq,
+    .optiq_topology_get_physical_location = optiq_topology_get_physical_location_bgq,
     .optiq_topology_get_all_coords = optiq_topology_get_all_coords_bgq,
     .optiq_topology_get_all_nic_ids = optiq_topology_get_all_nic_ids_bgq,
     .optiq_topology_get_size = optiq_topology_get_size_bgq,

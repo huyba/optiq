@@ -14,6 +14,7 @@ struct topology_interface topology_xc30 =
     .optiq_topology_get_num_ranks = optiq_topology_get_num_ranks_xc30,
     .optiq_topology_get_nic_id = optiq_topology_get_nic_id_xc30,
     .optiq_topology_get_coord = optiq_topology_get_coord_xc30,
+    .optiq_topology_get_physical_location = optiq_topology_get_physical_location_xc30,
     .optiq_topology_get_all_coords = optiq_topology_get_all_coords_xc30,
     .optiq_topology_get_all_nic_ids = optiq_topology_get_all_nic_ids_xc30,
     .optiq_topology_get_size = optiq_topology_get_size_xc30,
@@ -89,6 +90,11 @@ void optiq_topology_get_coord_xc30(struct topology_info *topo_info, int *coord)
     coord[0] = (int)xyz.mesh_x;
     coord[1] = (int)xyz.mesh_y;
     coord[2] = (int)xyz.mesh_z;
+}
+
+void optiq_topology_get_physical_location_xc30(struct topology_info *topo_info, int *coord, physical_location *pl)
+{
+
 }
 
 void optiq_topology_get_node_id_xc30(struct topology_info *topo_info, int *coord, int *node_id)

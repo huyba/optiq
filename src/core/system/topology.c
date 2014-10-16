@@ -43,6 +43,11 @@ void optiq_topology_get_coord(struct topology *self, int *coord)
     self->topo_impl->optiq_topology_get_coord(self->topo_info, coord);
 }
 
+void optiq_topology_get_physical_location(struct topology, *self, int *coord, physical_location *pl)
+{
+    self->topo_impl->optiq_topology_get_physical_location(self->topo_info, coord, pl);
+}
+
 void optiq_topology_get_all_coords(struct topology *self, int **all_coords)               
 {
     self->topo_impl->optiq_topology_get_all_coords(self->topo_info, all_coords);
