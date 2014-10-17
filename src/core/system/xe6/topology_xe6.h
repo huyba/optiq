@@ -1,10 +1,14 @@
 #ifndef OPTIQ_TOPOLOGY_XE6_H
 #define OPTIQ_TOPOLOGY_XE6_H
 
-//#ifdef _CRAYC
+//#ifndef __CRAYXE
+//#define __CRAYXE
+//#endif
+
+#ifdef __CRAYXE
 #include <pmi.h>
 #include <rca_lib.h>
-//#endif
+#endif
 
 #include "../topology_interface.h"
 
