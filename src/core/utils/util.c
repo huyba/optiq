@@ -1,3 +1,4 @@
+#include "stdlib.h"
 #include "util.h"
 
 int optiq_compute_num_hops(int num_dims, int *source, int *dest)

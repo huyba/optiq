@@ -16,7 +16,7 @@ void optiq_topology_init(struct topology *self, enum machine_type machine)
 	self->topo_impl = &topology_xe6;
     } else if (machine == XC30) {
 	self->topo_info->num_dims = 3;
-	//self->topo_impl = &topology_xc30;
+	self->topo_impl = &topology_xc30;
     } else {
 	/*self->topo_impl = &topology_user_defined;*/
     }

@@ -9,12 +9,6 @@ enum machine_type {
     XC30 = 3
 };
 
-struct optiq_node {
-    int rank;
-    int node_id;
-    int *coord;
-};
-
 enum optiq_direction {
     A_P = 1,
     A_M = -1,
@@ -35,19 +29,26 @@ enum optiq_direction {
     MIXED = 1000
 };
 
-struct optiq_neighbor {
-    struct optiq_node node;
-    int distance;
-    float link_capacity;
-    enum optiq_direction direction;
-};
-
 struct physical_location {
     int group_id;
     int cabinet_id;
     int chasis_id;
     int blade_id;
     int processor_id;
+};
+
+struct optiq_node {
+    int rank;
+    int node_id;
+    int *coord;
+    physical_location *pl;
+};
+
+struct optiq_neighbor {
+    struct optiq_node node;
+    int distance;
+    float link_capacity;
+    enum optiq_direction direction;
 };
 
 struct topology_info {

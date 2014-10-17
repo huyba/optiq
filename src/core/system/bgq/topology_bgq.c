@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#ifdef __bgq__
-
 #include "topology_bgq.h"
 
 void optiq_topology_init_bgq(struct topology_info *topo_info)
@@ -22,6 +20,7 @@ void optiq_topology_get_num_ranks_bgq(struct topology_info *topo_info, int *num_
 
 void optiq_topology_get_coord_bgq(struct topology_info *topo_info, int *coord)
 {
+#ifdef __bgq__
     Personality_t pers;
     Kernel_GetPersonality(&pers, sizeof(pers));
 
@@ -30,6 +29,7 @@ void optiq_topology_get_coord_bgq(struct topology_info *topo_info, int *coord)
     coord[2] = pers.Network_Config.Ccoord;
     coord[3] = pers.Network_Config.Dcoord;
     coord[4] = pers.Network_Config.Ecoord;
+#endif
 }
 
 void optiq_topology_get_physical_location_bgq(struct topology_info *topo_info, int *coord, physical_location *pl)
@@ -39,6 +39,7 @@ void optiq_topology_get_physical_location_bgq(struct topology_info *topo_info, i
 
 void optiq_topology_get_all_coords_bgq(struct topology_info *topo_info, int **all_coords)
 {
+#ifdef __bgq__
     int num_ranks = topo_info->num_ranks;
     BG_CoordinateMapping_t *coord = (BG_CoordinateMapping_t *) malloc(sizeof(BG_CoordinateMapping_t)*num_ranks);
 
@@ -54,6 +55,7 @@ void optiq_topology_get_all_coords_bgq(struct topology_info *topo_info, int **al
     }
 
     free(coord);
+#endif
 }
 
 void optiq_topology_get_all_node_ids_bgq(struct topology_info *topo_info, int *all_node_ids)
@@ -63,6 +65,7 @@ void optiq_topology_get_all_node_ids_bgq(struct topology_info *topo_info, int *a
 
 void optiq_topology_get_size_bgq(struct topology_info *topo_info, int *size)
 {
+#ifdef __bgq__
     Personality_t pers;
     Kernel_GetPersonality(&pers, sizeof(pers));
 
@@ -71,10 +74,12 @@ void optiq_topology_get_size_bgq(struct topology_info *topo_info, int *size)
     size[2] = pers.Network_Config.Cnodes;
     size[3] = pers.Network_Config.Dnodes;
     size[4] = pers.Network_Config.Enodes;
+#endif
 }
 
 void optiq_topology_get_torus_bgq(struct topology_info *topo_info, int *torus)
 {
+#ifdef __bgq__
     Personality_t pers;
     Kernel_GetPersonality(&pers, sizeof(pers));
 
@@ -84,10 +89,12 @@ void optiq_topology_get_torus_bgq(struct topology_info *topo_info, int *torus)
     if (Nflags & ND_ENABLE_TORUS_DIM_C) torus[2] = 1; else torus[2] = 0;
     if (Nflags & ND_ENABLE_TORUS_DIM_D) torus[3] = 1; else torus[3] = 0;
     if (Nflags & ND_ENABLE_TORUS_DIM_E) torus[4] = 1; else torus[4] = 0;
+#endif
 }
 
 void optiq_topology_get_bridge_bgq(struct topology_info *topo_info, int *bridge_coord, int *bridge_id)
 {
+#ifdef __bgq__
     Personality_t personality;
     Kernel_GetPersonality(&personality, sizeof(personality));
 
@@ -101,9 +108,10 @@ void optiq_topology_get_bridge_bgq(struct topology_info *topo_info, int *bridge_
     optiq_topology_get_size_bgq(topo_info, size);
 
     *bridge_id = bridge_coord[4] + bridge_coord[3]*size[4] + bridge_coord[2]*size[3]*size[4] + bridge_coord[1]*size[2]*size[3]*size[4] + bridge_coord[0]*size[1]*size[2]*size[3]*size[4];
+#endif
 }
 
-void optiq_topology_get_node_id_bgq(struct topology_info *topo_info, int *coord, int *node_id)
+void optiq_topology_get_node_id_bgq(struct topology_info *topo_info, int *node_id)
 {
 }
 
@@ -250,9 +258,9 @@ void optiq_topology_get_node_bgq(struct topology_info *topo_info, struct optiq_n
     node = (struct optiq_node *)malloc(sizeof(struct optiq_node));
 
     optiq_topology_get_rank_bgq(topo_info, &node->rank);
-    optiq_topology_get_node_id_from_coord_bgq(topo_info, &node->node_id);
     node->coord = (int *)malloc(sizeof(int) * num_dims);
     optiq_topology_get_coord_bgq(topo_info, node->coord);
+    optiq_topology_get_node_id_from_coord_bgq(topo_info, node->coord, &node->node_id);
 }
 
 void optiq_topology_move_along_one_dimension_bgq(struct topology_info *topo_info, int *source, int routing_dimension, int num_hops, int direction, int **path)
@@ -385,8 +393,6 @@ void optiq_topology_print_arcs_bgq(struct topology_info *topo_info, double cap)
 void optiq_topology_finalize_bgq(struct topology_info *topo_info)
 {
 }
-
-#endif
 
 struct topology_interface topology_bgq =
 {

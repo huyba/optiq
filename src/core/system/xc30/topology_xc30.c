@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-//#ifdef _CRAYC
-
 #include "topology_xc30.h"
 
 void optiq_topology_init_xc30(struct topology_info *topo_info)
 {
+#ifdef __CRAYXC
     int rc;
     PMI_BOOL initialized;
     rc = PMI_Initialized(&initialized);
@@ -22,24 +21,29 @@ void optiq_topology_init_xc30(struct topology_info *topo_info)
             PMI_Abort(rc,"PMI_Init failed");
         }
     }
+#endif
 }
 
 void optiq_topology_get_rank_xc30(struct topology_info *topo_info, int *rank)
 {
+#ifdef __CRAYXC
     optiq_topology_init_xc30(topo_info);
     int rc = PMI_Get_rank(rank);
     if (rc!=PMI_SUCCESS) {
         PMI_Abort(rc,"PMI_Get_rank failed");
     }
+#endif
 }
 
 void optiq_topology_get_num_ranks_xc30(struct topology_info *topo_info, int *num_ranks)
 {
+#ifdef __CRAYXC
     optiq_topology_init_xc30(topo_info);
     int rc = PMI_Get_size(num_ranks);
     if (rc!=PMI_SUCCESS) {
         PMI_Abort(rc,"PMI_Get_rank failed");
     }
+#endif
 }
 
 void optiq_topology_get_node_id_from_coord_xc30(struct topology_info *topo_info, int *coord, int *nid)
@@ -48,6 +52,7 @@ void optiq_topology_get_node_id_from_coord_xc30(struct topology_info *topo_info,
 
 void optiq_topology_get_node_id_xc30(struct topology_info *topo_info, int *nid)
 {
+#ifdef __CRAYXC
     int rc, rank;
     optiq_topology_get_rank_xc30(topo_info, &rank);
 
@@ -56,10 +61,12 @@ void optiq_topology_get_node_id_xc30(struct topology_info *topo_info, int *nid)
     if (rc!=PMI_SUCCESS) {
         PMI_Abort(rc,"PMI_Get_nid failed");
     }
+#endif
 }
 
 void optiq_topology_get_coord_xc30(struct topology_info *topo_info, int *coord)
 {
+#ifdef __CRAYXC
     int nid;
     optiq_topology_get_node_id_xc30(topo_info, &nid);
 
@@ -70,6 +77,7 @@ void optiq_topology_get_coord_xc30(struct topology_info *topo_info, int *coord)
     coord[0] = (int)xyz.mesh_x;
     coord[1] = (int)xyz.mesh_y;
     coord[2] = (int)xyz.mesh_z;
+#endif
 }
 
 void optiq_topology_get_physical_location_xc30(struct topology_info *topo_info, int *coord, physical_location *pl)
