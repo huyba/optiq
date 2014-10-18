@@ -3,7 +3,7 @@
 \usepackage{fullpage}
 \usepackage{url}
 
-%\author{Huy Bui \\
+%\author{Huy Bui, Venkatram Vishwanath, Preeti Malakar, Eun-Sung Jung, Todd S. Muson, Sven Leyffer \\
 %unikey: \texttt{gwil0792}
 %}
 \title{OPTIQ: Problem Description, Approaches and Executing Steps}
@@ -44,6 +44,8 @@ There are 3 level of problem solving that we are aiming to:
 \item Level 3: Dynamic changes of data movement need at runtime with system capability of dynamic routing
 \end{itemize}
 
+In each level we can also choose to add more or less constraints leading to less or more time to run.
+
 In this project, we are aiming to solve the problem at Level 1 and Level 2.
 
 \section {Systems to explore}
@@ -68,7 +70,13 @@ The project includes the main following steps:
 \end{itemize}
 
 \subsection {AMPL model to capture all the }
-In this step, we need to create a model to capture the system's interconnection network characteristics and data movement need. We choose to model the proble
+We choose to model the problem as the single and multiple commodity flow.
+
+In this step, we need to create a model to capture the system's interconnection network characteristics and data movement need. 
+
+Single commodity: There are n sources that need to send a commodity/data to m nodes, but the commodity is the same or data is treat in the same way/considered no difference which ever destination nodes receive the data. This can be used for I/O data. As all the data receive will be treated in the same way i.e. write to disk. 
+
+However, with data that is communicated between compute nodes for the computational purposes, the need to be treated differently. There comes the multiple commodity flows. In general, each pair of source, destination that have data on it can be considered as a commodity. If it is one-to-all, then we can considered it a single commodity. So the problem of I/O is the single commodity flow problem and the problem of communication is likely the multiple commodity flow problem.
 
 \begin{itemize}
 \item AMPL model to capture system information, data movement need
@@ -90,7 +98,11 @@ Multiple commodity flow: In this model, we assume that there are various types o
 
 The question here is: is this different from the previous one? We still model it, solve the model and get a proportional bandwidth for each flow.
 
+Assume that we have 2 different flows but treat them as they are the same. 
+
 The optimization objective is still to minimize the data transferring time.
+
+For the current system, we aim to try with 2 classes of flow: IO and QoS.
 \begin{itemize}
 \item Input:
 \begin{itemize}
@@ -129,6 +141,16 @@ Given 2 partition P1 and P2, with P1 has m node, and p2 has n nodes with l links
 
 Each rack/group can be considered as a node. If exist a direct connection between 2 group, we create an arc that connect the 2 nodes preseting the 2 groups. The capacity of that arc is proportional bandwidth the the link. We compute the capacity of that arc based on the number of nodes given for each group.
 
+\subsection{Data movement optimization}
+We need to map between data movement requests of applications into the graph that we have generated above. As each 
+Distinguishing between rank, node, blade, network router.
+
+\subsubsection{Example of IBM Blue Gene/Q Mira' custom 5D interconnect network}
+
+\subsubsection{Example of Cray XC30 Edison's Dragonfly interconnect network}
+
+Each Aries is a node in the graph. At a node, there are 4 processors sharing that Aries. So every process/MPI\_Rank that have data transfer requests can be mapped to that same node. Each Aries has 48 routing tiles: 15 of them can be used to connect to 15 Aries in the same Chassis. 
+
 \subsection {Optimizing data movement need}
 Two optimization set of tools can be used here:
 \begin{itemize}
@@ -141,8 +163,16 @@ Input, output of this step:
 \item Output:
 \item The
 \end{itemize}
- 
+
+If the bandwidth allocation is generated in a file, we need to read that information from a file. If our framework generates it directly, we can use it directly. Eventually, every rank in the system has the information of the proportional bandwidth that it has for transferring data.
+
 \subsection{Time slice data movement implementation}
+\begin{itemize}
+\item Input: The proportional bandwidth of each job at each node.
+\item Output: All ranks that share a resource must share time. Each would get a period of time that is proportional to their bandwidth proportional.
+\end{itemize}
+
+Implementation idea: based on the hardware supported QoS concepts/implementation on Infiniband. We have 3 main classes: Service Level, Virtual Lane, and 
 
 \subsection{Microbenmark and Calibration}
 
