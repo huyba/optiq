@@ -28,18 +28,20 @@
 This is to help define the problem of data movement and optimization.
 
 \begin{itemize}
-\item Problem description: Given data movement need in a cluster, minimize the total data movement time.
+\item Problem description: Given data movement need at application level in a cluster, minimize the total data movement time. The data movement need at the application level is stated as: process X transfers Y amount of data to process Z (for data movement between processes), or process X writes Y amount of data to storage (I/O).
+\item Motivation: Data movement optimization is done separately at various levels (application, middleware, system routing). To improve the performance, we need to do it holistically i.e. taking all levels into consideration.
 \item Inputs: 
 \begin{itemize}
 \item Data movement need: Each data movement request is described by a triple of (source, destination, demand), where demand is an amount of data needs to be transferred. There is a set of data movement requests for a set of sources to another set of destinations.
 \item System information: compute/bridge/IO nodes coordination, IO nodes distribution, network routers location, bandwidth/capacity of each link in the system. 
 \end{itemize}
-\item Goal: To minimize the data tranferring time.
+\item Goal: To minimize the data transferring time.
+\item Approach: model the system information and data movement patterns using a mathematical modeling language, optimize the data movement using solvers and execute the flows of data movement produced by the solvers.
 \end{itemize}
 
 There are 3 level of problem solving that we are aiming to:
 \begin{itemize}
-\item Level 1: Current systems: to minize the time to solution
+\item Level 1: Current systems: to minimize the time to solution
 \item Level 2: Futuristic systems with hardware-supported QoS providing through software API: Given that the futuristic system may provide capability of QoS at each router i.e.
 \item Level 3: Dynamic changes of data movement need at runtime with system capability of dynamic routing
 \end{itemize}
@@ -70,9 +72,9 @@ The project includes the main following steps:
 \end{itemize}
 
 \subsection {AMPL model to capture all the }
-We choose to model the problem as the single and multiple commodity flow.
-
 In this step, we need to create a model to capture the system's interconnection network characteristics and data movement need. 
+
+We choose to model the problem as the single and multiple commodity flow.
 
 Single commodity: There are n sources that need to send a commodity/data to m nodes, but the commodity is the same or data is treat in the same way/considered no difference which ever destination nodes receive the data. This can be used for I/O data. As all the data receive will be treated in the same way i.e. write to disk. 
 
@@ -113,7 +115,7 @@ For the current system, we aim to try with 2 classes of flow: IO and QoS.
 \end{itemize}
 \end{itemize}
 
-\subsection {Interconnection networks  modeling}
+\subsection {Interconnection networks modeling}
 \begin{itemize}
 \item Input:
 \item Output:
@@ -184,5 +186,27 @@ We need to do microbenchmarks to see if our assumptions we made are valid or not
 \subsubsection{Our fantasy data movement with concurrent I/O and communication}
 
 \subsubsection{Experimental results and Evaluation}
+
+\section{API design}
+The API design needs to take the following into consideration:
+
+\begin{itemize}
+	\item Various systems can use this with system specific implementation, with different data movement libraries: mpi, tcp/ip, pami, ugni, pgas (upc, charm++)
+	\item The optimization can be done offline or online
+	\item System configuration can be read from files (either online or offline) or can be queried at runtime.
+\end{itemize}
+
+List of API functions:
+
+System's information collection:
+
+Graph's construction:
+
+Application's data movement patterns collection:
+
+Solving and collecting flows
+
+Data movement execution:
+
 
 \end{document}
