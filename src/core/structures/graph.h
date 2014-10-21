@@ -17,5 +17,7 @@ struct graph {
 
 void optiq_graph_init(struct graph *self);
 void optiq_graph_construct(struct graph *self, float **graph);
+void optiq_graph_coarsen(struct optiq_graph *graph);
+void optiq_graph_uncoarsen(struct optiq_graph *graph);
 
 #endif

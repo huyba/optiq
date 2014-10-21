@@ -3,7 +3,9 @@
 
 struct graph_interface {
     void (*optiq_graph_init)(struct topology_info *topo);
-    void (*optiq_graph_construct)(struct topology_info *topo, float **graph);
+    void (*optiq_graph_construct)(struct topology_info *topo, optiq_graph *graph);
+    void (*optiq_graph_coarsen)(struct optiq_graph *graph);
+    void (*optiq_graph_uncoarsen)(struct optiq_graph *graph);
 }
 
 #endif

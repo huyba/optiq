@@ -25,3 +25,14 @@ void optiq_graph_construct(struct graph *self, float **graph)
 {
     self->graph_impl->optiq_graph_contruct(self->topo_info, graph);
 }
+
+void optiq_graph_coarsen(struct optiq_graph *graph)
+{
+    self->graph_impl->optiq_graph_coarsen(graph);
+}
+
+void optiq_graph_uncoarsen(struct optiq_graph *graph)
+{
+    self->graph_impl->optiq_graph_uncoarsen(graph);
+}
+
