@@ -7,7 +7,6 @@ param Capacity {Arcs} >= 0 default Infinity;
 param Source {Jobs};
 param Destination {Jobs} default 0;
 param Demand {Jobs} default 0;
-param Class {Jobs} default 0;
 
 var Flow {Jobs, Arcs} >= 0;
 var Z >= 0;
@@ -24,3 +23,4 @@ if (i == Source[job]) then Demand[job]*Z else if (i == Destination[job]) then -D
 
 capacity {(i,j) in Arcs}:
 total_flow[i,j] <= Capacity[i,j];
+
