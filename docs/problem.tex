@@ -191,14 +191,23 @@ We need to do microbenchmarks to see if our assumptions we made are valid or not
 The API design needs to take the following into consideration:
 
 \begin{itemize}
-	\item Various systems can use this with system specific implementation, with different data movement libraries: mpi, tcp/ip, pami, ugni, pgas (upc, charm++)
-	\item The optimization can be done offline or online
+	\item Various systems can use this with system specific implementation, with different data movement libraries: MPI, TCP/IP, PAMI, uGNI, PGAS(UPC, Charm++).
+	\item The optimization can be done offline or online.
 	\item System configuration can be read from files (either online or offline) or can be queried at runtime.
 \end{itemize}
 
+All of API's functions and data structures need to start with optiq\_. If the functions/data structures are machine specific, then they need to end with \_machine\_code such as \_bgq, \_xc30, \_xe6.
+
 List of API functions:
 
+Initialization;
+optiq\_init(int *argc, char **argv, int optiq\_mode)
+
+in which optiq\_mode can be OPTIQ\_OFFLINE or OPTIQ\_ONLINE
+
 System's information collection:
+
+
 
 Graph's construction:
 
@@ -208,5 +217,17 @@ Solving and collecting flows
 
 Data movement execution:
 
+
+\subsection{Examples/Use cases of the API usage}
+
+Steps: collecting system information, data movement patterns, optimizing, reading flows, executing flow. While reading/executing the flows needs to be done at the runtime, all other steps can be done offline.
+
+\subsubsection{Online optimization/execution} with data patterns are input at the runtime. The patterns are known in advance: sources, destinations and data size. The applications compute on data while our framework optimizes data movement.
+
+
+
+\subsubsection{Offline optimization, online flow execution}
+
+\subsection{Hybrid mode}
 
 \end{document}
