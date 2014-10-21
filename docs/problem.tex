@@ -87,7 +87,8 @@ In our problem, we may have both I/O and communication between compute nodes hap
 In this step, we create a model in AMPL to capture general system's interconnection network characteristics and data movement patterns.
 
 \begin{itemize}
-\item Input:
+\item Input: An abstract description of system's interconnection network and data movement patterns.
+\item Output: A model.
 \begin{itemize}
 \item set Nodes: set of nodes.
 \item set Arcs: set of arcs = Node cross Node.
@@ -98,29 +99,31 @@ In this step, we create a model in AMPL to capture general system's interconnect
 \item constraint zero\_flow: 
 \item constraint longest\_hops: the maximum number of hops that a path can have. Any path that is longer than this will be discarded. I think that solvers will still look for paths with longer number of hops, after they're done searching, they simply use this constrant to discard the path. The solvers do not use this to limit the number of paths to be searched.
 \item constraint max\_capacity: sum of all flows on a link does not surpass its capacity.
+\item parameter Source of a job.
+\item parameter Destination of a job.
+\item parameter Demand of a job: a commodity that need to transfer from a Source to a Destination.
 \end{itemize}
-\item Output: the bandwith amount given for each job. The bandwidth is given for each job at the node that the job passes by. 
 \end{itemize}
 
-\subsection {Interconnection networks modeling}
+\subsection {Creating graphs representing interconnection networks}
 \begin{itemize}
-\item Input:
-\item Output:
+\item Input: network topology, coordinates of nodes that host processes, links between nodes and capacities on links.
+\item Output: a graph representation of communication on a system.
 \end{itemize}
 
 \subsubsection{Techniques for large interconnection networks modeling}
 \begin{itemize}
-\item Do not include the part of the graph that we do not expect them to be involve into communicatio: if the communication happend between nodes within a rack/group we do not involve nodes that outside of that rack/group to reduce the size problem.
-\item Graph partitioning technique: We partition a graph into subgraphs hierrachically.
+\item Do not include the part of the graph that we do not expect them to be involve into communication: if the number hops on a path exceed a predetermined number, we can discard that path. Or if the communication happens within a rack, we do not have to take other racks into consideration.
+\item Graph partitioning technique: We partition a graph into subgraphs hierarchically.
 \end{itemize}
 
-\subsubsection{k-D interconnection networks}
-There are 3D, 5D or even 6D interconnection network. In these interconnection networks, a compute node connects to its 6/10/12 (2k) neighbors. %This type of interconnection network does not scale well when the number of compute nodes increases the number of hops and links increase faster.
+\subsubsection{k-D (torus) interconnection networks}
+There are 3D, 5D or 6D (torus) interconnection network. In these interconnection networks, a compute node connects to its 6/10/12 (2k) neighbors. %This type of interconnection network does not scale well when the number of compute nodes increases the number of hops and links increase faster.
 
 We can divided the interconnection network into set of (k-i)D paritions with i = 0..k.
 
 \subsubsection{Hierarchical interconnection networks}
-There are for tree-like interconnection network such as Fat Tree interconnection network or Dragonfly interconnection network. 
+There are tree-like interconnection network such as Fat Tree interconnection network or Dragonfly interconnection network. 
 
 We can divide a parition of nodes into set of subgraphs based on the hierrachical structure of the network.
 
@@ -130,17 +133,17 @@ Given 2 partition P1 and P2, with P1 has m node, and p2 has n nodes with l links
 
 Each rack/group can be considered as a node. If exist a direct connection between 2 group, we create an arc that connect the 2 nodes preseting the 2 groups. The capacity of that arc is proportional bandwidth the the link. We compute the capacity of that arc based on the number of nodes given for each group.
 
-\subsection{Data movement optimization}
-We need to map between data movement requests of applications into the graph that we have generated above. As each 
-Distinguishing between rank, node, blade, network router.
-
 \subsubsection{Example of IBM Blue Gene/Q Mira' custom 5D interconnect network}
 
 \subsubsection{Example of Cray XC30 Edison's Dragonfly interconnect network}
 
-Each Aries is a node in the graph. At a node, there are 4 processors sharing that Aries. So every process/MPI\_Rank that have data transfer requests can be mapped to that same node. Each Aries has 48 routing tiles: 15 of them can be used to connect to 15 Aries in the same Chassis. 
+Each Aries is a node in the graph. At a node, there are 4 processors sharing that Aries. So every process/MPI\_Rank that have data transfer requests can be mapped to that same node. Each Aries has 48 routing tiles: 15 of them can be used to connect to 15 Aries in the same Chassis.
 
-\subsection {Optimizing data movement need}
+\subsection{Creating application data movement patterns on a graph}
+We need to map between data movement requests of applications into the graph that we have generated above. As each 
+Distinguishing between rank, node, blade, network router.
+
+\subsection {Optimization tools}
 Two optimization set of tools can be used here:
 \begin{itemize}
 \item Proprietary software tools: IBM solvers. Can not be used directly on supercomputer nodes, have to you run from MCS machines.
@@ -149,8 +152,8 @@ Two optimization set of tools can be used here:
 
 Input, output of this step:
 \begin{itemize}
-\item Output:
-\item The
+\item Input: the model and data.
+\item Output: The minimal time to transfer data and the proportional bandwidth given for each job to achieve that minimal transfer time.
 \end{itemize}
 
 If the bandwidth allocation is generated in a file, we need to read that information from a file. If our framework generates it directly, we can use it directly. Eventually, every rank in the system has the information of the proportional bandwidth that it has for transferring data.
@@ -158,8 +161,10 @@ If the bandwidth allocation is generated in a file, we need to read that informa
 \subsection{Time slice data movement implementation}
 \begin{itemize}
 \item Input: The proportional bandwidth of each job at each node.
-\item Output: All ranks that share a resource must share time. Each would get a period of time that is proportional to their bandwidth proportional.
+\item Output: All ranks that share a resource must share time. Each would get a period of time (window) that is proportional to their bandwidth proportional and transfer data within its given window.
 \end{itemize}
+
+We will need a communication thread per node/processor to do manage a global scheduling.
 
 Implementation idea: based on the hardware supported QoS concepts/implementation on Infiniband. We have 3 main classes: Service Level, Virtual Lane, and 
 
