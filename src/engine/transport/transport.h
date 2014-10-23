@@ -1,11 +1,17 @@
-#ifndef OPTIQ_TRANSPORT
-#define OPTIQ_TRANSPORT
+#ifndef OPTIQ_TRANSPORT_H
+#define OPTIQ_TRANSPORT_H
 
-#include <transport_interface.h>
+#include "transport_interface.h"
+
+#include "pami/transport_pami.h"
+#include "ugni/transport_ugni.h"
+#include "nonblk_mpi/transport_nonblk_mpi.h"
 
 struct transport {
     struct transport_interface *transport_impl;
 };
+
+void optiq_transport_init();
 
 void optiq_transport_assign_service_level_to_message(struct optiq_message  message, int service_level);
 

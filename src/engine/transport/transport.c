@@ -1,15 +1,15 @@
 #include <stdlib.h>
 
-#include <optiq_transport.h>
+#include <transport.h>
 
 void optiq_transport_init(struct transport *self, enum transport_type type)
 {
     if(type == PAMI) {
 	self->transport_impl = &transport_pami;
-    } else if (type == NON_BLK_MPI) {
+    } else if (type == NONBLK_MPI) {
 	self->transport_impl = &transport_nonblk_mpi;
     } else if (type == UGNI) {
-	self->tranport_impl = &transport_ugni;
+	self->transport_impl = &transport_ugni;
     } else {
 	/*self->transport_impl = &transport_tcp_ip;*/
     }

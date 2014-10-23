@@ -13,8 +13,9 @@ KRCA_PATH=/opt/cray/krca/default
 OPTIQ_SYSTEM=../core/system
 OPTIQ_STRUCTURE=../core/structures
 OPTIQ_UTILS=../core/utils
+OPTIQ_TRANSPORT=../engine/tranport
 
-INCLUDE = -I$(DMAPP_PATH)/include -I$(KRCA_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include -I$(OPTIQ_SYSTEM) -I$(OPTIQ_STRUCTURE) -I$(OPTIQ_UTILS)
+INCLUDE = -I. -I.. -I$(DMAPP_PATH)/include -I$(KRCA_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include -I$(OPTIQ_SYSTEM) -I$(OPTIQ_STRUCTURE) -I$(OPTIQ_UTILS) -I$(OPTIQ_TRANSPORT)
 LIBS    = -L$(DMAPP_PATH)/lib64   -L$(UDREG_PATH)/lib64   -L$(UGNI_PATH)/lib64   -L$(PMI_PATH)/lib64 -ldmapp -ludreg -lugni -lpmi
 
 CFLAGS  = $(COPT) $(INCLUDE)
@@ -26,9 +27,9 @@ TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
 OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
 ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
 
-OPTIQ_OBJS := $(OPTIQ_UTILS)/util.o  $(OPTIQ_SYSTEM)/xc30/topology_xc30.o $(OPTIQ_SYSTEM)/xe6/topology_xe6.o $(OPTIQ_SYSTEM)/bgq/topology_bgq.o $(OPTIQ_SYSTEM)/topology.o  
+OPTIQ_OBJS := $(OPTIQ_UTILS)/util.o  $(OPTIQ_SYSTEM)/xc30/topology_xc30.o $(OPTIQ_SYSTEM)/xe6/topology_xe6.o $(OPTIQ_SYSTEM)/bgq/topology_bgq.o $(OPTIQ_SYSTEM)/topology.o ../optiq.o
 
-all: rm $(OPTIQ_OBJS) ../core/system/topology.o test_topo_xc30.x copy
+all: rm $(OPTIQ_OBJS) ../core/system/topology.o test_topo_xc30.x example.x copy
 
 rm:
 	#rm -f *.x
