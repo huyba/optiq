@@ -6,12 +6,13 @@
 #include "../system/topology.h"
 #include "graph_interface.h"
 
-#include "graph_bgq.h"
-#include "graph_xe6.h"
-#include "graph_xc30.h"
+#include "bgq/graph_bgq.h"
+#include "xe6/graph_xe6.h"
+#include "xc30/graph_xc30.h"
 
 struct graph {
     struct topology_info *topo_info;
+    struct optiq_graph *graph_info;
     struct graph_interface *graph_impl;
 };
 

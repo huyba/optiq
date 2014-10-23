@@ -1,10 +1,10 @@
 #ifndef OPTIQ_TRANSPORT
 #define OPTIQ_TRANSPORT
 
-struct optiq_message {
-    void *buffer;
-    int size;
-    int service_level;
+#include <transport_interface.h>
+
+struct transport {
+    struct transport_interface *transport_impl;
 };
 
 void optiq_transport_assign_service_level_to_message(struct optiq_message  message, int service_level);
