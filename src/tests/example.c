@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     void *buf1, *buf2;
     //optiq_add_request(0, 3, buf1, 1024, OPTIQ_IO);
     //optiq_add_request(0, 3, buf2, 1024, OPTIQ_COMM);
-    //optiq_generate_model_data("optiq.dat");
+    optiq_generate_model_data("optiq.dat");
 
     //optiq_optimize();
 

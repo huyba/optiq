@@ -9,11 +9,13 @@
 struct optiq {
     machine_type machine;
     optiq_topology *topo;
+    optiq_graph *graph;
 };
 
 extern struct optiq *opq;
 
 void optiq_init();
 void optiq_get_topology_from_file(char *filePath);
+void optiq_generate_model_data(char *filePath);
 
 #endif

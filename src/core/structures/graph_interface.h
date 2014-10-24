@@ -1,7 +1,7 @@
 #ifndef OPTIQ_GRAPH_INTERFACE_H
 #define OPTIQ_GRAPH_INTERFACE_H
 
-struct optiq_graph {
+struct graph_info {
     int num_nodes;
     optiq_node *nodes;
     float **capacity;

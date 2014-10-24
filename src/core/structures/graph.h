@@ -10,15 +10,15 @@
 #include "xe6/graph_xe6.h"
 #include "xc30/graph_xc30.h"
 
-struct graph {
+struct optiq_graph {
     struct topology_info *topo_info;
-    struct optiq_graph *graph_info;
+    struct graph_info *graph;
     struct graph_interface *graph_impl;
 };
 
-void optiq_graph_init(struct graph *self);
-void optiq_graph_construct(struct graph *self, float **graph);
-void optiq_graph_coarsen(struct optiq_graph *graph);
-void optiq_graph_uncoarsen(struct optiq_graph *graph);
+void optiq_graph_init(struct optiq_graph *self);
+void optiq_graph_construct(struct optiq_graph *self, struct graph_info *graph);
+void optiq_graph_coarsen(struct optiq_graph *self);
+void optiq_graph_uncoarsen(struct optiq_graph *self);
 
 #endif
