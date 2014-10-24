@@ -12,7 +12,7 @@ void optiq_init()
     opq->topo = (struct optiq_topology *)malloc(sizeof(struct optiq_topology));
     optiq_topology_init(opq->topo, machine);
 
-    optiq->graph = (struct optiq_graph *graph)malloc(sizeof(struct optiq_graph));
+    opq->graph = (struct optiq_graph *)malloc(sizeof(struct optiq_graph));
     optiq_graph_init(opq->graph, machine);
 }
 

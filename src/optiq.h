@@ -8,8 +8,8 @@
 
 struct optiq {
     machine_type machine;
-    optiq_topology *topo;
-    optiq_graph *graph;
+    struct optiq_topology *topo;
+    struct optiq_graph *graph;
 };
 
 extern struct optiq *opq;

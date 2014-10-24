@@ -5,7 +5,7 @@
 
 #include <graph.h>
 
-void optiq_graph_init(struct graph *self) 
+void optiq_graph_init(struct optiq_graph *self) 
 {
     machine_type machine = self->topo_info->machine;
 
@@ -21,7 +21,7 @@ void optiq_graph_init(struct graph *self)
     self->graph_impl->optiq_graph_init(self->topo_info);
 }
 
-void optiq_graph_construct(struct graph *self, float **graph) 
+void optiq_graph_construct(struct optiq_graph *self, float **graph) 
 {
     self->graph_impl->optiq_graph_contruct(self->topo_info, graph);
 }
