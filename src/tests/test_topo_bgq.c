@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 {
     machine_type machine = BGQ;
 
-    struct topology *topo = (struct topology*)malloc(sizeof(struct topology));
+    struct optiq_topology *topo = (struct optiq_topology*)malloc(sizeof(struct optiq_topology));
 
     optiq_topology_init(topo, machine);
 }

@@ -15,17 +15,17 @@ endif
 LD      = mpixlc_r
 
 TOPO   = ../core/system
-
-CFLAGS  = $(COPT) -I. -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30
+UTILS  = ../core/utils
+CFLAGS  = $(COPT) -I. -I.. -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30 -I$(UTILS)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = $(TOPO)/topology.o $(TOPO)/bgq/topology_bgq.o
+obj = $(TOPO)/bgq/topology_bgq.o $(TOPO)/xc30/topology_xc30.o $(TOPO)/xe6/topology_xe6.o $(TOPO)/topology.o $(UTILS)/util.o ../optiq.o
 
 all: $(obj)  mpi copy
 
-mpi: test_topo_bgq.x
+mpi: test_transfer_queue.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

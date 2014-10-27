@@ -9,7 +9,7 @@ void optiq_graph_init_xc30(struct topology_info *topo_info)
 
 }
 
-void optiq_graph_construct_xc30(struct topology_info *topo_info, float **graph)
+void optiq_graph_construct_xc30(struct topology_info *topo_info, optiq_graph **graph)
 {
 
 }

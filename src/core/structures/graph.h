@@ -12,13 +12,13 @@
 
 struct optiq_graph {
     struct topology_info *topo_info;
-    struct graph_info *graph;
-    struct graph_interface *graph_impl;
+    struct optiq_graph_info *graph;
+    struct optiq_graph_interface *graph_impl;
 };
 
-void optiq_graph_init(struct optiq_graph *self);
-void optiq_graph_construct(struct optiq_graph *self, struct graph_info *graph);
-void optiq_graph_coarsen(struct optiq_graph *self);
-void optiq_graph_uncoarsen(struct optiq_graph *self);
+void optiq_graph_init(struct optiq_graph *self, machine_type machine);
+void optiq_graph_construct(struct optiq_graph *self, struct optiq_graph_info *graph_info);
+void optiq_graph_coarsen(struct optiq_graph *self, struct optiq_graph_info *graph_info);
+void optiq_graph_uncoarsen(struct optiq_graph *self, struct optiq_graph_info *graph_info);
 
 #endif

@@ -31,5 +31,5 @@ void optiq_topology_get_topology_at_runtime(struct optiq_topology *self);
 void optiq_topology_get_topology_from_file(struct optiq_topology *self, char *fileName);
 void optiq_topology_get_node(struct optiq_topology *self, struct optiq_node *node);
 void optiq_topology_finalize(struct optiq_topology *self);
-
+void special_init_for_bgq_struct(struct topology_interface *topology_bgq); 
 #endif

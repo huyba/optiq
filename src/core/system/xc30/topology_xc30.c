@@ -251,6 +251,7 @@ void optiq_topology_finalize_xc30(struct topology_info *topo_info)
 
 struct topology_interface topology_xc30 =
 {
+#ifdef __CRAYXC
     .machine = XC30,
     .optiq_topology_init = optiq_topology_init_xc30,
     .optiq_topology_get_rank = optiq_topology_get_rank_xc30,
@@ -269,6 +270,5 @@ struct topology_interface topology_xc30 =
     .optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtime_xc30,
     .optiq_topology_get_node = optiq_topology_get_node_xc30,
     .optiq_topology_finalize = optiq_topology_finalize_xc30
+#endif
 };
-
-//#endif
