@@ -43,7 +43,12 @@ struct optiq_message* optiq_create_message(void *buffer, int length, int dest, i
 
 void optiq_assign_message_to_vl(struct optiq_message* message, struct optiq_virtual_lane* virtual_lane)
 {
-    int vl = sl2vl[message->service_level];
+    virtual_lane->messages = message;
+}
+
+bool optiq_send_message_from_virtual_lane(struct optiq_virtual_lane* virtual_lane)
+{
+
 }
 
 int main(int argc, char **argv)
@@ -52,7 +57,7 @@ int main(int argc, char **argv)
 
     /*Create a number of virual lanes*/
     int num_virtual_lanes = 4;
-    struct optiq_virtual_lanes *virtual_lanes = (struct optiq_virtual_lanes*)malloc(sizeof(struct optiq_virtual_lanes) * num_virtual_lanes);
+    struct optiq_virtual_lane *virtual_lanes = (struct optiq_virtual_lane *)malloc(sizeof(struct optiq_virtual_lane) * num_virtual_lanes);
     for (int i = 0; i < num_virtual_lanes; i++) {
         virtual_lanes[i].id = i;
     }
@@ -79,11 +84,19 @@ int main(int argc, char **argv)
     int dest = 1, length = 0, service_level = 0, class_id = 0;
     for (int i = 0; i < num_messages; i++) {
         length = (i^2) * 1024 * 1024;
-        buffers[i] = malloc(length);
+        buffers[i] = (char *)malloc(length);
         service_level = i;
         struct optiq_message* message = optiq_create_message(buffers[i], length, dest, service_level, class_id);
         int vl = sl2vl[message->service_level];
-        optiq_assign_message_to_vl(message, virtual_lanes[i]);
+        optiq_assign_message_to_vl(message, &virtual_lanes[i]);
+    }
+
+    bool done = false;
+    while(!done) {
+        /*Go through all the virtual lanes*/
+        for (int i = 0; i < num_virtual_lanes; i++) {
+            done = optiq_send_message_from_virtual_lane(&virtual_lanes[i]);
+        }
     }
 
     return 0;
