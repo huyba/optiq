@@ -41,10 +41,13 @@ struct path {
     struct arct_t *arcs;
 }
 
-int main(int argc, char **argv)
+void printPath(int **arc, int n, int source, int dest) 
 {
     std::queue<int> myqueue;
+}
 
+int main(int argc, char **argv)
+{
     char *file_name = "flow85";
     FILE *file = fopen(file_name, "r");
  
