@@ -4,7 +4,7 @@
 #define OPTIQ_WEIGHT_UNIT 16
 
 struct optiq_message {
-    void *buffer;
+    char *buffer;
     int length;
     int current_offset;
     int dest;
@@ -46,9 +46,22 @@ void optiq_assign_message_to_vl(struct optiq_message* message, struct optiq_virt
     virtual_lane->messages = message;
 }
 
-bool optiq_send_message_from_virtual_lane(struct optiq_virtual_lane* virtual_lane)
+void optiq_send(void *buffer, int nbytes, int dest, MPI_Request *request)
 {
+    MPI_Isend(buffer, nbytes, MPI_BYTE, dest, 0, MPI_COMM_WORLD, request);
+}
 
+bool optiq_send_message_from_virtual_lane(struct optiq_virtual_lane* virtual_lane, struct optiq_vl_arbitration *vla)
+{
+    int index = 0;
+    for (int i = 0; i < 4; i++) {
+        if (vla[i].virtual_lane_id == virtual_lane->id) {
+            index = i;
+            break;
+        }
+    }
+    struct optiq_message *message = virtual_lane->messages;
+    optiq_isend(&message->buffer[message->current_offset], vla[i] * weight * OPTIQ_WEIGHT_UNIT, message->dest); 
 }
 
 int main(int argc, char **argv)
@@ -95,11 +108,9 @@ int main(int argc, char **argv)
     while(!done) {
         /*Go through all the virtual lanes*/
         for (int i = 0; i < num_virtual_lanes; i++) {
-            done = optiq_send_message_from_virtual_lane(&virtual_lanes[i]);
+            done = optiq_send_message_from_virtual_lane(&virtual_lanes[i], vla);
         }
     }
 
     return 0;
-
-    
 }
