@@ -1,6 +1,7 @@
-CC = gcc
+#CC = gcc
+CC = g++
 
-COPT = -g -O2 -Wall -std=c99
+COPT = -g -O2 -Wall #-std=c99
 
 INCLUDE = -I. -I../core/system/ -I../core/structures/
 
@@ -8,7 +9,7 @@ LD = gcc
 
 OBJ = ../core/system/topology.o ../core/structures/graph.o
 
-all: $(OBJ) generategraph.x
+all: readflow.x #$(OBJ) generategraph.x
 
 CFLAGS  = $(COPT) $(INCLUDE)
 

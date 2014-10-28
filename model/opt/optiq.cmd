@@ -1,4 +1,4 @@
-model optiq.mod;
+model optiq_hops.mod;
 data optiq32.dat;
 option solver snopt;
 solve;
