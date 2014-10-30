@@ -1,8 +1,13 @@
+#include "iostream"
+#include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <queue>
+
+using namespace std;
 
 void rtrim(char *str)
 {
@@ -39,11 +44,57 @@ struct arc_t {
 struct path {
     int num_arc;
     struct arct_t *arcs;
+};
+
+/* Returns true if there is a path from source 's' to sink 't' in
+   residual graph. Also fills parent[] to store the path */
+bool bfs(int V, bool *visited, int **rGraph, int s, int t, int parent[])
+{
+    /* Create a visited array and mark all vertices as not visited */
+    memset(visited, 0, sizeof(bool)*V);
+
+    /* Create a queue, enqueue source vertex and mark source vertex
+       as visited*/
+    queue <int> q;
+    q.push(s);
+    visited[s] = true;
+    parent[s] = -1;
+
+    /* Standard BFS Loop */
+    while (!q.empty())
+    {
+        int u = q.front();
+        q.pop();
+
+        for (int v=0; v<V; v++)
+        {
+            if (visited[v]==false && rGraph[u][v] > 0)
+            {
+                q.push(v);
+                parent[v] = u;
+                visited[v] = true;
+            }
+        }
+    }
+
+    /* If we reached sink in BFS starting from source, then return
+       true, else false */
+    return (visited[t] == true);
 }
 
-void printPath(int **arc, int n, int source, int dest) 
+void getPath(int **rGraph, int num_vertices, int source, int dest) 
 {
-    std::queue<int> myqueue;
+    bool *visited = (bool *)malloc(sizeof(bool) * num_vertices);
+    int *parent = (int *) malloc(sizeof(int) * num_vertices);
+    while (bfs(num_vertices, visited, rGraph, source, dest, parent)) {
+	int prev = dest;
+	while(parent[prev] != source) {
+	    printf("%d <- ", prev);
+	    prev = parent[prev];
+	    rGraph[parent[prev], prev] = 0;
+	}
+	printf("%d\n", source);
+    }
 }
 
 int main(int argc, char **argv)
@@ -53,9 +104,11 @@ int main(int argc, char **argv)
  
     char buf[256];
 
-    int arc[256][256];
-    for (int i = 0; i < 256; i++) {
-	for (int j = 0; j < 256; j++) {
+    int num_vertices = 256;
+    int **arc = (int **)malloc(sizeof(int *)*num_vertices);
+    for (int i = 0; i < num_vertices; i++) {
+	arc[i] = (int *)malloc(sizeof(int) * num_vertices);
+	for (int j = 0; j < num_vertices; j++) {
 	    arc[i][j] = 0;
 	}
     }
@@ -74,7 +127,7 @@ int main(int argc, char **argv)
 	}
 
 	/*Now we have the matrix, check what connects to what*/
-	printPath(arc, source, dest);
+	getPath(arc, num_vertices, source, dest);
 
 	source++;
 	dest++;
