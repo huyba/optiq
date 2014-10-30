@@ -35,15 +35,25 @@ void trim(char *str)
     ltrim(str);
 }
 
-struct arc_t {
+struct optiq_arc {
     int ep1;
     int ep2;
-    int bw;
 };
 
-struct path {
-    int num_arc;
-    struct arct_t *arcs;
+struct optiq_flow {
+    int id;
+    int throughput;
+    int num_arcs;
+    struct optiq_arc *arcs;
+};
+
+struct optiq_job {
+    int id;
+    int source;
+    int dest;
+    int demand;
+    int num_flows;
+    queue<struct optiq_flow *> flows;
 };
 
 /* Returns true if there is a path from source 's' to sink 't' in
@@ -82,24 +92,48 @@ bool bfs(int V, bool *visited, int **rGraph, int s, int t, int parent[])
     return (visited[t] == true);
 }
 
-void getPath(int **rGraph, int num_vertices, int source, int dest) 
+void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_id) 
 {
+    int source = job->source;
+    int dest = job->dest;
+
     bool *visited = (bool *)malloc(sizeof(bool) * num_vertices);
     int *parent = (int *) malloc(sizeof(int) * num_vertices);
-    int u, v, path_flow;
+    int u, v, throughput, num_arcs = 0;
     while (bfs(num_vertices, visited, rGraph, source, dest, parent)) {
-	path_flow = INT_MAX;
+	/*Get the number of arcs and throughput of the flow*/
+	throughput = INT_MAX;
+	num_arcs = 0;
         for (v = dest; v != source; v = parent[v]) {
             u = parent[v];
-            path_flow = min(path_flow, rGraph[u][v]);
+            throughput = min(throughput, rGraph[u][v]);
+	    num_arcs++;
         }
 
+	/*Create new flow*/
+	struct optiq_flow *flow = (struct optiq_flow *)malloc(sizeof(struct optiq_flow));
+	flow->throughput = throughput;
+	flow->num_arcs = num_arcs;
+	flow->arcs = (struct optiq_arc *)malloc(sizeof(struct optiq_arc) * num_arcs);
+	flow->id = *flow_id;
+	(*flow_id)++;
+
+	/*Adding arcs for each flow and subtract used throughput*/
+	int ai = 0;
 	for (v = dest; v != source; v = parent[v]) {
-	    printf("%d <-(%d)- ", v, path_flow);
 	    u = parent[v];
-	    rGraph[u][v] -= path_flow;
+	    flow->arcs[ai].ep1 = u;
+	    flow->arcs[ai].ep2 = v;
+	    rGraph[u][v] -= throughput;
+	    ai++;
 	}
+	flow->arcs[ai].ep1 = v;
+        flow->arcs[ai].ep2 = source;
 	printf("%d\n", source);
+
+	/*Add the flow to the job*/
+	job->flows.push(flow);
+	job->num_flows++;
     }
 }
 
@@ -120,6 +154,11 @@ int main(int argc, char **argv)
     }
 
     int source = 0, dest = 171, ep1, ep2, bw;
+    int flow_id = 0;
+    int job_id = 0;
+    int num_jobs = 85;
+    struct optiq_job *jobs = (struct optiq_job *)malloc(sizeof(struct optiq_job) * num_jobs);
+
     while (fgets(buf, 256, file)!=NULL) {
 	trim(buf);
 	printf("source = %d, dest = %d\n", source, dest);
@@ -133,7 +172,13 @@ int main(int argc, char **argv)
 	}
 
 	/*Now we have the matrix, check what connects to what*/
-	getPath(rGraph, num_vertices, source, dest);
+	jobs[job_id].id = job_id;
+	jobs[job_id].source = source;
+	jobs[job_id].dest = dest;
+	jobs[job_id].num_flows = 0;
+
+	get_flows(rGraph, num_vertices, &jobs[job_id], &flow_id);
+	job_id++;
 
 	for (int i = 0; i < num_vertices; i++) {
 	    for (int j = 0; j < num_vertices; j++) {
