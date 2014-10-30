@@ -118,7 +118,7 @@ void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_
 	flow->id = *flow_id;
 	(*flow_id)++;
 
-	/*Adding arcs for each flow and subtract used throughput*/
+	/* Adding arcs for each flow and subtract used throughput */
 	int ai = 0;
 	for (v = dest; v != source; v = parent[v]) {
 	    u = parent[v];
@@ -127,9 +127,6 @@ void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_
 	    rGraph[u][v] -= throughput;
 	    ai++;
 	}
-	flow->arcs[ai].ep1 = v;
-        flow->arcs[ai].ep2 = source;
-	printf("%d\n", source);
 
 	/*Add the flow to the job*/
 	job->flows.push(flow);
@@ -188,6 +185,22 @@ int main(int argc, char **argv)
 
 	source++;
 	dest++;
+    }
+
+    struct optiq_flow *flow;
+    for (int i = 0; i < num_jobs; i++) {
+	printf("job_id = %d, source = %d , dest = %d, num_flow = %d\n", jobs[i].job_id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
+
+	for (int j = 0; j < jobs[i].num_flows; j++) {
+	    flow = jobs[i].flows.front();
+	    jobs[i].pop();
+
+	    printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow->id, flow->throughput, flow->num_arcs);
+	    for (int k = flow->num_arcs; k > 0; k--) {
+		printf("%d -> ", flow->arcs[k].ep1);
+	    }
+	    printf("%d\n", flow->arcs[flow->num_arcs-1].ep2);
+	}
     }
 
     return 0;
