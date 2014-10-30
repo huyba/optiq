@@ -86,12 +86,18 @@ void getPath(int **rGraph, int num_vertices, int source, int dest)
 {
     bool *visited = (bool *)malloc(sizeof(bool) * num_vertices);
     int *parent = (int *) malloc(sizeof(int) * num_vertices);
+    int u, v, path_flow;
     while (bfs(num_vertices, visited, rGraph, source, dest, parent)) {
-	int prev = dest;
-	while(parent[prev] != source) {
-	    printf("%d <- ", prev);
-	    prev = parent[prev];
-	    rGraph[parent[prev], prev] = 0;
+	path_flow = INT_MAX;
+        for (v = dest; v != source; v = parent[v]) {
+            u = parent[v];
+            path_flow = min(path_flow, rGraph[u][v]);
+        }
+
+	for (v = dest; v != source; v = parent[v]) {
+	    printf("%d <-(%d)- ", v, path_flow);
+	    u = parent[v];
+	    rGraph[u][v] -= path_flow;
 	}
 	printf("%d\n", source);
     }
@@ -105,11 +111,11 @@ int main(int argc, char **argv)
     char buf[256];
 
     int num_vertices = 256;
-    int **arc = (int **)malloc(sizeof(int *)*num_vertices);
+    int **rGraph = (int **)malloc(sizeof(int *)*num_vertices);
     for (int i = 0; i < num_vertices; i++) {
-	arc[i] = (int *)malloc(sizeof(int) * num_vertices);
+	rGraph[i] = (int *)malloc(sizeof(int) * num_vertices);
 	for (int j = 0; j < num_vertices; j++) {
-	    arc[i][j] = 0;
+	    rGraph[i][j] = 0;
 	}
     }
 
@@ -121,13 +127,19 @@ int main(int argc, char **argv)
 	while(strlen(buf) > 0) {
 	    sscanf(buf, "%d %d %d", &ep1, &ep2, &bw);
 	    printf("%d %d %d\n", ep1, ep2, bw);
-	    arc[ep1][ep2] = bw;
+	    rGraph[ep1][ep2] = bw;
 	    fgets(buf, 256, file);
 	    trim(buf);
 	}
 
 	/*Now we have the matrix, check what connects to what*/
-	getPath(arc, num_vertices, source, dest);
+	getPath(rGraph, num_vertices, source, dest);
+
+	for (int i = 0; i < num_vertices; i++) {
+	    for (int j = 0; j < num_vertices; j++) {
+		rGraph[i][j] = 0;
+	    }
+	}
 
 	source++;
 	dest++;
