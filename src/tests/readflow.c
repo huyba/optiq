@@ -134,62 +134,75 @@ void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_
     }
 }
 
-int main(int argc, char **argv)
+void read_flow_from_file(char *file_path, struct optiq_job *job, int num_jobs)
 {
-    char *file_name = "flow85";
-    FILE *file = fopen(file_name, "r");
- 
+    FILE *file = fopen(file_path, "r");
+
     char buf[256];
 
     int num_vertices = 256;
     int **rGraph = (int **)malloc(sizeof(int *)*num_vertices);
     for (int i = 0; i < num_vertices; i++) {
-	rGraph[i] = (int *)malloc(sizeof(int) * num_vertices);
-	for (int j = 0; j < num_vertices; j++) {
-	    rGraph[i][j] = 0;
-	}
+        rGraph[i] = (int *)malloc(sizeof(int) * num_vertices);
+        for (int j = 0; j < num_vertices; j++) {
+            rGraph[i][j] = 0;
+        }
     }
 
     int source = 0, dest = 171, ep1, ep2, bw;
     int flow_id = 0;
     int job_id = 0;
-    int num_jobs = 85;
     struct optiq_job *jobs = (struct optiq_job *)malloc(sizeof(struct optiq_job) * num_jobs);
 
     while (fgets(buf, 256, file)!=NULL) {
-	trim(buf);
-	printf("source = %d, dest = %d\n", source, dest);
+        trim(buf);
+        printf("source = %d, dest = %d\n", source, dest);
 
-	while(strlen(buf) > 0) {
-	    sscanf(buf, "%d %d %d", &ep1, &ep2, &bw);
-	    printf("%d %d %d\n", ep1, ep2, bw);
-	    rGraph[ep1][ep2] = bw;
-	    fgets(buf, 256, file);
-	    trim(buf);
-	}
+        while(strlen(buf) > 0) {
+            sscanf(buf, "%d %d %d", &ep1, &ep2, &bw);
+            printf("%d %d %d\n", ep1, ep2, bw);
+            rGraph[ep1][ep2] = bw;
+            fgets(buf, 256, file);
+            trim(buf);
+        }
 
-	/*Now we have the matrix, check what connects to what*/
-	jobs[job_id].id = job_id;
-	jobs[job_id].source = source;
-	jobs[job_id].dest = dest;
-	jobs[job_id].num_flows = 0;
+        /*Now we have the matrix, check what connects to what*/
+        jobs[job_id].id = job_id;
+        jobs[job_id].source = source;
+        jobs[job_id].dest = dest;
+        jobs[job_id].num_flows = 0;
 
-	get_flows(rGraph, num_vertices, &jobs[job_id], &flow_id);
-	job_id++;
+        get_flows(rGraph, num_vertices, &jobs[job_id], &flow_id);
+        job_id++;
 
-	for (int i = 0; i < num_vertices; i++) {
-	    for (int j = 0; j < num_vertices; j++) {
-		rGraph[i][j] = 0;
-	    }
-	}
+        for (int i = 0; i < num_vertices; i++) {
+            for (int j = 0; j < num_vertices; j++) {
+                rGraph[i][j] = 0;
+            }
+        }
 
-	source++;
-	dest++;
+        source++;
+        dest++;
     }
+
+    fclose(file);
+    for (int i = 0; i < num_vertices; i++) {
+        free(rGraph[i]);
+    }
+    free(rGraph);
+}
+
+int main(int argc, char **argv)
+{
+    char *file_path = "flow85";
+
+    int num_jobs = 85;
+    struct optiq_job *jobs = NULL;
+    read_flow_from_file(file_path, jobs, num_jobs);
 
     printf("num_jobs = %d\n", num_jobs);
 
-    struct optiq_flow *flow;
+    struct optiq_flow *flow = NULL;
     for (int i = 0; i < num_jobs; i++) {
 	printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
 
