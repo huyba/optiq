@@ -187,19 +187,21 @@ int main(int argc, char **argv)
 	dest++;
     }
 
+    printf("num_jobs = %d\n", num_jobs);
+
     struct optiq_flow *flow;
     for (int i = 0; i < num_jobs; i++) {
-	printf("job_id = %d, source = %d , dest = %d, num_flow = %d\n", jobs[i].job_id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
+	printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
 
 	for (int j = 0; j < jobs[i].num_flows; j++) {
 	    flow = jobs[i].flows.front();
-	    jobs[i].pop();
+	    jobs[i].flows.pop();
 
 	    printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow->id, flow->throughput, flow->num_arcs);
-	    for (int k = flow->num_arcs; k > 0; k--) {
+	    for (int k = flow->num_arcs-1; k >= 0; k--) {
 		printf("%d -> ", flow->arcs[k].ep1);
 	    }
-	    printf("%d\n", flow->arcs[flow->num_arcs-1].ep2);
+	    printf("%d\n", flow->arcs[0].ep2);
 	}
     }
 
