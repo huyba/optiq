@@ -21,11 +21,11 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = #$(TOPO)/bgq/topology_bgq.o $(TOPO)/xc30/topology_xc30.o $(TOPO)/xe6/topology_xe6.o $(TOPO)/topology.o $(UTILS)/util.o ../optiq.o
+obj = $(UTILS)/util.o #$(TOPO)/bgq/topology_bgq.o $(TOPO)/xc30/topology_xc30.o $(TOPO)/xe6/topology_xe6.o $(TOPO)/topology.o $(UTILS)/util.o ../optiq.o
 
 all: $(obj)  mpi #copy
 
-mpi: test_transfer_queue.x
+mpi: readflow.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
