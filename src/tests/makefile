@@ -14,14 +14,16 @@ endif
 
 LD      = mpixlc_r
 
-TOPO   = ../core/system
+SYSTEM   = ../core/system
+STRUCTURE = ../core/structures
 UTILS  = ../core/utils
-CFLAGS  = $(COPT) -I. -I.. -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30 -I$(UTILS)
+
+CFLAGS  = $(COPT) -I. -I.. -I$(SYSTEM) -I$(SYSTEM)/bgq -I$(SYSTEM)/xe6 -I$(SYSTEM)/xc30 -I$(UTILS) -I$(STRUCTURE)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = $(UTILS)/util.o #$(TOPO)/bgq/topology_bgq.o $(TOPO)/xc30/topology_xc30.o $(TOPO)/xe6/topology_xe6.o $(TOPO)/topology.o $(UTILS)/util.o ../optiq.o
+obj = $(UTILS)/util.o $(STRUCTURE)/flow.o #$(SYSTEM)/bgq/topology_bgq.o $(SYSTEM)/xc30/topology_xc30.o $(SYSTEM)/xe6/topology_xe6.o $(SYSTEM)/topology.o $(UTILS)/util.o ../optiq.o
 
 all: $(obj)  mpi #copy
 
