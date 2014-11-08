@@ -35,6 +35,11 @@ struct optiq_arbitration {
     int priority;
 };
 
+void optiq_send(void *buffer, int length, int dest, int flow_id)
+{
+
+}
+
 int main(int argc, char **argv)
 {
     int world_rank, world_size;
@@ -85,8 +90,8 @@ int main(int argc, char **argv)
 	    printf("%d\n", flow->arcs[0].ep2);
 
 	    /*Compute the total flows for the local node*/
-	    if (jobs[i].source == world_ranks) {
-		total_local_throughput += flow.throughput;
+	    if (jobs[i].source == world_rank) {
+		total_local_throughput += flow->throughput;
 	    }
 	}
     }
@@ -97,7 +102,7 @@ int main(int argc, char **argv)
 
     /*Virtual lanes*/
     int num_virtual_lanes = ab.size();
-    struct virtual_lane *virtual_lanes = (struct virtual_lane *)malloc(sizeof(struct virtual_lane) * num_virtual_lanes);
+    struct optiq_virtual_lane *virtual_lanes = (struct optiq_virtual_lane *)malloc(sizeof(struct optiq_virtual_lane) * num_virtual_lanes);
 
     /*Fill in the arbitration table*/
     int index = 0;
