@@ -1,9 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <vector>
+#include <string>
 
 #include <mpi.h>
 
 #include <flow.h>
+
+using namespace std;
 
 struct assign_throughput {
     int dest;
@@ -26,7 +30,7 @@ struct optiq_message {
 
 struct optiq_virtual_lane {
     int id;
-    queue<struct optiq_message> requests;
+    vector<struct optiq_message> requests;
 };
 
 struct optiq_arbitration {
@@ -37,7 +41,32 @@ struct optiq_arbitration {
 
 void optiq_send(void *buffer, int length, int dest, int flow_id)
 {
+    printf("Rank xx send %d bytes to dest %d in flow_id = %d\n", length, dest, flow_id);
+}
 
+void print_arbitration_table(vector<struct optiq_arbitration> ab)
+{
+    int num_entries = ab.size();
+    printf("Arbitration table: #entries = %d\n", num_entries);
+    printf("vl_id weight priority\n");
+    for (int i = 0; i < num_entries; i++) {
+	printf("%d %d %d\n", ab[i].virtual_lane_id, ab[i].weight, ab[i].priority);
+    }
+}
+
+void print_virtual_lanes(vector<struct optiq_virtual_lane> virtual_lanes)
+{
+    int num_virtual_lanes = virtual_lanes.size();
+
+    printf("Current status of virtual lanes: \n");
+    printf("Number of virtual lanes = %d\n", num_virtual_lanes);
+    for (int i = 0; i < num_virtual_lanes; i++) {
+	printf("Virtual lane id = %d, #messages = %lu\n", virtual_lanes[i].id, virtual_lanes[i].requests.size());
+
+	for (int j = 0; j < virtual_lanes[i].requests.size(); i++) {
+	    printf("Message has %d bytes\n", virtual_lanes[i].requests[j].length);
+	}
+    }
 }
 
 int main(int argc, char **argv)
@@ -49,20 +78,23 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    char *file_path = "flow85";
+    string file_path = "flow85";
 
     int num_jobs = 85;
     struct optiq_job *jobs = NULL;
-    read_flow_from_file(file_path, &jobs, num_jobs);
+    read_flow_from_file((char *)file_path.c_str(), &jobs, num_jobs);
     struct optiq_job local_job;
 
     printf("num_jobs = %d\n", num_jobs);
 
-    queue<struct assign_throughput> ab;
+    vector<struct assign_throughput> ab;
     struct optiq_flow *flow = NULL;
 
     world_rank = 17;
     int total_local_throughput = 0;
+
+    vector<struct optiq_arbitration> arbitration_table;
+    vector<struct optiq_virtual_lane> virtual_lanes;
 
     for (int i = 0; i < num_jobs; i++) {
 	printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
@@ -79,12 +111,16 @@ int main(int argc, char **argv)
 		printf("%d -> ", flow->arcs[k].ep1);
 
 		if (flow->arcs[k].ep1 == world_rank) {
-		    struct assign_throughput b;
-		    b.dest = flow->arcs[k].ep2;
-		    b.throughput = flow->throughput;
-		    b.job_id = jobs[i].id;
-		    b.flow_id = flow->id;
-		    ab.push(b);
+		    struct optiq_arbitration ab;
+		    struct optiq_virtual_lane vl;
+
+		    ab.virtual_lane_id = flow->id;
+		    ab.weight = flow->throughput;
+		    ab.priority = 0;
+		    vl.id = flow->id;
+
+		    arbitration_table.push_back(ab);
+		    virtual_lanes.push_back(vl);
 		}
 	    }
 	    printf("%d\n", flow->arcs[0].ep2);
@@ -96,28 +132,11 @@ int main(int argc, char **argv)
 	}
     }
 
-    /*Arbitration table of virtual_lane_id and assigned weight*/
-    int num_entries_arb_table = ab.size();
-    struct optiq_arbitration *arbitration_table = (struct optiq_arbitration *)malloc(sizeof(struct optiq_arbitration) * num_entries_arb_table);   
-
-    /*Virtual lanes*/
-    int num_virtual_lanes = ab.size();
-    struct optiq_virtual_lane *virtual_lanes = (struct optiq_virtual_lane *)malloc(sizeof(struct optiq_virtual_lane) * num_virtual_lanes);
-
-    /*Fill in the arbitration table*/
-    int index = 0;
-    while (!ab.empty()) {
-	struct assign_throughput b = ab.front();
-	ab.pop();
-	arbitration_table[index].virtual_lane_id = b.flow_id;
-	arbitration_table[index].weight = b.throughput;
-	arbitration_table[index].priority = 0;
-	virtual_lanes[index].id = b.flow_id;
-	printf("Node %d will give %d throughput to flow %d of job %d to dest %d\n", world_rank, b.throughput, b.flow_id, b.job_id, b.dest);
-    }
-
     int data_size = 4*1024*1024;
     char *buffer = (char *)malloc(data_size);
+
+    int num_entries_arb_table = arbitration_table.size();
+    int num_virtual_lanes = virtual_lanes.size();
 
     /*Fill in the virtual lanes with data from local jobs*/
     int global_offset = 0, length = 0;
@@ -135,16 +154,19 @@ int main(int argc, char **argv)
 
 	for (int j = 0; j < num_virtual_lanes; j++) {
 	    if (message.flow_id == virtual_lanes[i].id) {
-		virtual_lanes[i].requests.push(message);
+		virtual_lanes[i].requests.push_back(message);
 	    }
 	}
     }
 
+    print_arbitration_table(arbitration_table);
+    print_virtual_lanes(virtual_lanes);
 
     /*Iterate the arbitration table to get the next virtual lane*/
     bool done = false;
     int nbytes = 0;
     int virtual_lane_id = 0;
+    int index = 0;
     while(!done) {
 	done = true;
 
@@ -163,7 +185,7 @@ int main(int argc, char **argv)
 
 		    if (message.current_offset + nbytes >= message.length) {
 			nbytes = message.length - message.current_offset;
-			virtual_lanes[i].requests.pop();
+			virtual_lanes[i].requests.erase(virtual_lanes[i].requests.begin());
 		    } else {
 			/*Update the virtual lane*/
 			message.current_offset += nbytes;
