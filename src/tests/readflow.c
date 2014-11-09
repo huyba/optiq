@@ -142,6 +142,64 @@ void transfer_from_virtual_lanes(vector<struct optiq_arbitration> arbitration_ta
     }
 }
 
+void create_virtual_lane_arbitration_table(vector<struct optiq_virtual_lane> &virtual_lanes, vector<struct optiq_arbitration> &arbitration_table, int num_jobs, struct optiq_job *jobs, int world_rank)
+{
+    struct optiq_flow *flow = NULL;
+
+    for (int i = 0; i < num_jobs; i++) {
+        for (int j = 0; j < jobs[i].num_flows; j++) {
+            flow = jobs[i].flows[j];
+            for (int k = flow->num_arcs-1; k >= 0; k--) {
+                if (flow->arcs[k].ep1 == world_rank) {
+                    struct optiq_arbitration ab;
+                    struct optiq_virtual_lane vl;
+
+                    ab.virtual_lane_id = flow->id;
+                    ab.weight = flow->throughput;
+                    ab.priority = 0;
+                    vl.id = flow->id;
+
+                    arbitration_table.push_back(ab);
+                    virtual_lanes.push_back(vl);
+                }
+            }
+        }
+    }
+}
+
+void add_message_to_virtual_lanes(char *buffer, int data_size, optiq_job &job, vector<struct optiq_virtual_lane> &virtual_lanes)
+{
+    int total_local_throughput = 0;
+
+    for (int i = 0; i < job.num_flows; i++) {
+        /*Compute the total flows for the local node*/
+        total_local_throughput += job.flows[i]->throughput;
+    }
+
+    int num_virtual_lanes = virtual_lanes.size();
+
+    /*Fill in the virtual lanes with data from local jobs*/
+    int global_offset = 0, length = 0;
+    for (int i = 0; i < job.num_flows; i++) {
+        length = ((double)job.flows[i]->throughput / (double)total_local_throughput) * (double)data_size;
+        struct optiq_message message;
+        message.job_id = job.id;
+        message.flow_id = job.flows[i]->id;
+        message.dest = job.dest;
+        message.current_offset = 0;
+        message.service_level = 0;
+        message.buffer = &buffer[global_offset];
+        message.length = length;
+        global_offset += length;
+
+        for (int j = 0; j < num_virtual_lanes; j++) {
+            if (message.flow_id == virtual_lanes[j].id) {
+                virtual_lanes[j].requests.push_back(message);
+            }
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     int world_rank, world_size;
@@ -156,71 +214,25 @@ int main(int argc, char **argv)
     int num_jobs = 85;
     struct optiq_job *jobs = NULL;
     read_flow_from_file((char *)file_path.c_str(), &jobs, num_jobs);
-    struct optiq_job local_job;
-
-    vector<struct assign_throughput> ab;
-    struct optiq_flow *flow = NULL;
 
     world_rank = 17;
-    int total_local_throughput = 0;
 
     vector<struct optiq_arbitration> arbitration_table;
     vector<struct optiq_virtual_lane> virtual_lanes;
 
-    for (int i = 0; i < num_jobs; i++) {
-	if (jobs[i].source == world_rank) {
-	    local_job = jobs[i];
-	}
-
-	for (int j = 0; j < jobs[i].num_flows; j++) {
-	    flow = jobs[i].flows[j];
-	    for (int k = flow->num_arcs-1; k >= 0; k--) {
-		if (flow->arcs[k].ep1 == world_rank) {
-		    struct optiq_arbitration ab;
-		    struct optiq_virtual_lane vl;
-
-		    ab.virtual_lane_id = flow->id;
-		    ab.weight = flow->throughput;
-		    ab.priority = 0;
-		    vl.id = flow->id;
-
-		    arbitration_table.push_back(ab);
-		    virtual_lanes.push_back(vl);
-		}
-	    }
-
-	    /*Compute the total flows for the local node*/
-	    if (jobs[i].source == world_rank) {
-		total_local_throughput += flow->throughput;
-	    }
-	}
-    }
+    create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, num_jobs, jobs, world_rank);
 
     int data_size = 4*1024*1024;
     char *buffer = (char *)malloc(data_size);
 
-    int num_virtual_lanes = virtual_lanes.size();
-
-    /*Fill in the virtual lanes with data from local jobs*/
-    int global_offset = 0, length = 0;
-    for (int i = 0; i < local_job.num_flows; i++) {
-	length = ((double)local_job.flows[i]->throughput / (double)total_local_throughput) * (double)data_size;
-	struct optiq_message message;
-	message.job_id = local_job.id;
-	message.flow_id = local_job.flows[i]->id;
-	message.dest = local_job.dest;
-	message.current_offset = 0;
-	message.service_level = 0;
-	message.buffer = &buffer[global_offset];
-	message.length = length;
-	global_offset += length;
-
-	for (int j = 0; j < num_virtual_lanes; j++) {
-	    if (message.flow_id == virtual_lanes[j].id) {
-		virtual_lanes[j].requests.push_back(message);
-	    }
-	}
+    struct optiq_job local_job;
+    for (int i = 0; i < num_jobs; i++) {
+        if (jobs[i].source == world_rank) {
+            local_job = jobs[i];
+        }
     }
+
+    add_message_to_virtual_lanes(buffer, data_size, local_job, virtual_lanes);
 
     /*Iterate the arbitration table to get the next virtual lane*/
     transfer_from_virtual_lanes(arbitration_table, virtual_lanes);
