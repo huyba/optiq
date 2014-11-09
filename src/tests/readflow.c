@@ -76,17 +76,69 @@ void print_jobs(struct optiq_job *jobs, int num_jobs)
     struct optiq_flow *flow = NULL;
 
     for (int i = 0; i < num_jobs; i++) {
-        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
+	printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
 
 	for (int j = 0; j < jobs[i].num_flows; j++) {
-            flow = jobs[i].flows[j];
+	    flow = jobs[i].flows[j];
 
-            printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow->id, flow->throughput, flow->num_arcs);
-            for (int k = flow->num_arcs-1; k >= 0; k--) {
-                printf("%d -> ", flow->arcs[k].ep1);
+	    printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow->id, flow->throughput, flow->num_arcs);
+	    for (int k = flow->num_arcs-1; k >= 0; k--) {
+		printf("%d -> ", flow->arcs[k].ep1);
 	    }
 	    printf("%d\n", flow->arcs[0].ep2);
 	}
+    }
+}
+
+void transfer_from_virtual_lanes(vector<struct optiq_arbitration> arbitration_table, vector<struct optiq_virtual_lane> virtual_lanes)
+{
+    int num_entries_arb_table = arbitration_table.size();
+    int num_virtual_lanes = virtual_lanes.size();
+
+    /*Iterate the arbitration table to get the next virtual lane*/
+    bool done = false;
+    int nbytes = 0;
+    int virtual_lane_id = 0;
+
+    while (!done) {
+
+        done = true;
+
+        /*Get the virtual lane id*/
+        for (int index = 0; index < num_entries_arb_table; index++) {
+            virtual_lane_id = arbitration_table[index].virtual_lane_id;
+
+            /*Get the virtual lane with that id*/
+            for (int i = 0; i < num_virtual_lanes; i++) {
+                if (virtual_lanes[i].id == virtual_lane_id) {
+                    if (virtual_lanes[i].requests.size() > 0) {
+                        struct optiq_message message = virtual_lanes[i].requests.front();
+
+                        printf("virtual_lane_id = %d, quota= %d\n", virtual_lane_id, arbitration_table[index].weight * BASE_UNIT_SIZE);
+                        printf(" message length = %d, offset = %d\n", message.length, message.current_offset);
+
+                        nbytes = arbitration_table[index].weight * BASE_UNIT_SIZE;
+
+                        if (message.current_offset + nbytes >= message.length) {
+                            nbytes = message.length - message.current_offset;
+                            virtual_lanes[i].requests.erase(virtual_lanes[i].requests.begin());
+                            printf("Remove a message\n");
+                        } else {
+                            /*Update the virtual lane*/
+                            virtual_lanes[i].requests.front().current_offset += nbytes;
+                        }
+
+                        optiq_send((void *)&message.buffer[message.current_offset], nbytes, message.dest, message.flow_id);
+                        done = false;
+
+                        printf("offset = %d\n", message.current_offset);
+
+                        /*After process any queue, go back to the arbitration table*/
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -147,7 +199,6 @@ int main(int argc, char **argv)
     int data_size = 4*1024*1024;
     char *buffer = (char *)malloc(data_size);
 
-    int num_entries_arb_table = arbitration_table.size();
     int num_virtual_lanes = virtual_lanes.size();
 
     /*Fill in the virtual lanes with data from local jobs*/
@@ -171,47 +222,8 @@ int main(int argc, char **argv)
 	}
     }
 
-    print_arbitration_table(arbitration_table);
-    print_virtual_lanes(virtual_lanes);
-
     /*Iterate the arbitration table to get the next virtual lane*/
-    bool done = false;
-    int nbytes = 0;
-    int virtual_lane_id = 0;
-    int index = 0;
-    while(!done) {
-	done = true;
-
-	/*Get the virtual lane id*/
-	index = index % num_entries_arb_table;
-	virtual_lane_id = arbitration_table[index].virtual_lane_id;
-	index++;
-
-	/*Get the virtual lane with that id*/
-	for (int i = 0; i < num_virtual_lanes; i++) {
-	    if (virtual_lanes[i].id == virtual_lane_id) {
-		if(virtual_lanes[i].requests.size() > 0) {
-		    struct optiq_message message = virtual_lanes[i].requests.front();
-
-		    nbytes = arbitration_table[index].weight * BASE_UNIT_SIZE;
-
-		    if (message.current_offset + nbytes >= message.length) {
-			nbytes = message.length - message.current_offset;
-			virtual_lanes[i].requests.erase(virtual_lanes[i].requests.begin());
-		    } else {
-			/*Update the virtual lane*/
-			message.current_offset += nbytes;
-		    }
-
-		    optiq_send((void *)&message.buffer[message.current_offset], nbytes, message.dest, message.flow_id);
-		    done = false;
-
-		    /*After process any queue, go back to the arbitration table*/
-		    break; 
-		}
-	    }
-	}
-    }
+    transfer_from_virtual_lanes(arbitration_table, virtual_lanes);
 
     return 0;
 }
