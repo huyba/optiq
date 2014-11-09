@@ -63,8 +63,29 @@ void print_virtual_lanes(vector<struct optiq_virtual_lane> virtual_lanes)
     for (int i = 0; i < num_virtual_lanes; i++) {
 	printf("Virtual lane id = %d, #messages = %lu\n", virtual_lanes[i].id, virtual_lanes[i].requests.size());
 
-	for (int j = 0; j < virtual_lanes[i].requests.size(); i++) {
+	for (int j = 0; j < virtual_lanes[i].requests.size(); j++) {
 	    printf("Message has %d bytes\n", virtual_lanes[i].requests[j].length);
+	}
+    }
+}
+
+void print_jobs(struct optiq_job *jobs, int num_jobs)
+{
+    printf("num_jobs = %d\n", num_jobs);
+
+    struct optiq_flow *flow = NULL;
+
+    for (int i = 0; i < num_jobs; i++) {
+        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
+
+	for (int j = 0; j < jobs[i].num_flows; j++) {
+            flow = jobs[i].flows[j];
+
+            printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow->id, flow->throughput, flow->num_arcs);
+            for (int k = flow->num_arcs-1; k >= 0; k--) {
+                printf("%d -> ", flow->arcs[k].ep1);
+	    }
+	    printf("%d\n", flow->arcs[0].ep2);
 	}
     }
 }
@@ -85,8 +106,6 @@ int main(int argc, char **argv)
     read_flow_from_file((char *)file_path.c_str(), &jobs, num_jobs);
     struct optiq_job local_job;
 
-    printf("num_jobs = %d\n", num_jobs);
-
     vector<struct assign_throughput> ab;
     struct optiq_flow *flow = NULL;
 
@@ -97,19 +116,13 @@ int main(int argc, char **argv)
     vector<struct optiq_virtual_lane> virtual_lanes;
 
     for (int i = 0; i < num_jobs; i++) {
-	printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
-
 	if (jobs[i].source == world_rank) {
 	    local_job = jobs[i];
 	}
 
 	for (int j = 0; j < jobs[i].num_flows; j++) {
 	    flow = jobs[i].flows[j];
-
-	    printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow->id, flow->throughput, flow->num_arcs);
 	    for (int k = flow->num_arcs-1; k >= 0; k--) {
-		printf("%d -> ", flow->arcs[k].ep1);
-
 		if (flow->arcs[k].ep1 == world_rank) {
 		    struct optiq_arbitration ab;
 		    struct optiq_virtual_lane vl;
@@ -123,7 +136,6 @@ int main(int argc, char **argv)
 		    virtual_lanes.push_back(vl);
 		}
 	    }
-	    printf("%d\n", flow->arcs[0].ep2);
 
 	    /*Compute the total flows for the local node*/
 	    if (jobs[i].source == world_rank) {
@@ -141,7 +153,7 @@ int main(int argc, char **argv)
     /*Fill in the virtual lanes with data from local jobs*/
     int global_offset = 0, length = 0;
     for (int i = 0; i < local_job.num_flows; i++) {
-	length = (int)((double)local_job.flows[i]->throughput / (double)total_local_throughput) * data_size;
+	length = ((double)local_job.flows[i]->throughput / (double)total_local_throughput) * (double)data_size;
 	struct optiq_message message;
 	message.job_id = local_job.id;
 	message.flow_id = local_job.flows[i]->id;
@@ -153,8 +165,8 @@ int main(int argc, char **argv)
 	global_offset += length;
 
 	for (int j = 0; j < num_virtual_lanes; j++) {
-	    if (message.flow_id == virtual_lanes[i].id) {
-		virtual_lanes[i].requests.push_back(message);
+	    if (message.flow_id == virtual_lanes[j].id) {
+		virtual_lanes[j].requests.push_back(message);
 	    }
 	}
     }
