@@ -15,7 +15,7 @@ enum optiq_transport_type {
 
 struct optiq_transport {
     struct optiq_transport_interface *transport_implementation;
-    void *concret_transport;
+    void *concrete_transport;
     optiq_transport_type type;
     int size;
     int rank;

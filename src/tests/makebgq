@@ -28,7 +28,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = ../core/utils/util.o ../core/structures/flow.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o ../engine/virtuallane.o
 
-all: $(OBJ)
+all: $(OBJ) mpi
 
 mpi: readflow.x
 
