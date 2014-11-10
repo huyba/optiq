@@ -18,6 +18,7 @@ struct optiq_pami_transport {
     pami_context_t context;
 #endif
     size_t num_contexts;
+    pami_endpoint_t *endpoints;
 };
 
 void optiq_pami_transport_init(struct optiq_transport *self);
