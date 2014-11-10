@@ -13,6 +13,7 @@
 extern struct optiq_transport_interface optiq_pami_transport_implementation;
 
 #define RECV_MESSAGE_DISPATCH_ID 17
+#define MAX_SHORT_MESSAGE_LENGTH 128
 
 struct optiq_pami_transport {
 #ifdef __bgq__
@@ -23,9 +24,13 @@ struct optiq_pami_transport {
     pami_endpoint_t *endpoints;
 };
 
+struct optiq_send_cookie {
+
+};
+
 void optiq_pami_transport_init(struct optiq_transport *self);
 
-void optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message);
+int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message);
 
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result);
 

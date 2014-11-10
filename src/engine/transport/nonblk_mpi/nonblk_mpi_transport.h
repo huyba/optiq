@@ -11,6 +11,6 @@ struct optiq_nonblk_mpi_transport {
 
 void optiq_nonblk_mpi_transport_init(struct optiq_transport *self);
 
-void optiq_nonblk_mpi_transport_send(struct optiq_transport *self, struct optiq_message &message);
+int optiq_nonblk_mpi_transport_send(struct optiq_transport *self, struct optiq_message &message);
 
 #endif

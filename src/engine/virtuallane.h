@@ -13,10 +13,12 @@ using namespace std;
 
 struct optiq_message {
     char *buffer;
-    int dest;
+    int next_dest;
+    int final_dest;
     int service_level;
     int length;
     int current_offset;
+    int original_offset;
     int job_id;
     int flow_id;
 };

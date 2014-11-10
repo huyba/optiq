@@ -9,6 +9,16 @@
 
 using namespace std;
 
+int get_next_dest(struct optiq_flow &flow, int current_ep)
+{
+    for (int i = 0; i < flow.num_arcs; i++) {
+        if (flow.arcs[i].ep1 == current_ep) {
+            return flow.arcs[i].ep2;
+        }
+    }
+    return -1;
+}
+
 void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_id)
 {
     int source = job->source;

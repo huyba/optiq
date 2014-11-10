@@ -8,7 +8,7 @@ struct optiq_transport;
 
 struct optiq_transport_interface {
     void (*init)(struct optiq_transport *self);
-    void (*send)(struct optiq_transport *self, struct optiq_message &message);
+    int (*send)(struct optiq_transport *self, struct optiq_message &message);
 };
 
 #endif

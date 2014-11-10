@@ -29,8 +29,6 @@ int main(int argc, char **argv)
     struct optiq_job *jobs = NULL;
     read_flow_from_file((char *)file_path.c_str(), &jobs, num_jobs);
 
-    world_rank = 17;
-
     vector<struct optiq_arbitration> arbitration_table;
     vector<struct optiq_virtual_lane> virtual_lanes;
 

@@ -83,9 +83,50 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 #endif
 }
 
-void optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message)
+int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message)
 {
+#ifdef __bgq__
     printf("Transport data of size %d to dest %d with flow_id = %d\n", message.length, message.dest, message.flow_id);
+
+    pami_result_t result;
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
+
+    struct optiq_send_cookie send_cookie;
+
+    if (message.length <= MAX_SHORT_MESSAGE_LENGTH) {
+        pami_send_immediate_t parameter;
+        parameter.dispatch = RECV_MESSAGE_DISPATCH_ID;
+        parameter.header.iov_base = (void *)&message.flow_id;
+        parameter.header.iov_len = sizeof(int);
+        parameter.data.iov_base = (void *)message.buffer;
+        parameter.data.iov_len = message.length;
+        parameter.dest = pami_transport->endpoints[message.dest];
+
+        result = PAMI_Send_immediate (pami_transport->context, &parameter);
+        assert(result == PAMI_SUCCESS);
+        if (result != PAMI_SUCCESS) {
+            return 1;
+        }
+    } else {
+        pami_send_t param_send;
+        param_send.send.dest = message.dest;
+        param_send.send.dispatch = RECV_MESSAGE_DISPATCH_ID;
+        param_send.send.header.iov_base = (void *)&message.flow_id;
+        param_send.send.header.iov_len = sizeof(int);
+        param_send.send.data.iov_base = (void *)message.buffer;
+        param_send.send.data.iov_len = message.length;
+        param_send.events.cookie = (void *)&send_cookie;
+        param_send.events.local_fn = optiq_send_done_fn;
+        param_send.events.remote_fn = NULL;
+
+        result = PAMI_Send(pami_transport->context, &param_send);
+        assert(result == PAMI_SUCCESS);
+        if (result != PAMI_SUCCESS) {
+            return 1;
+        }
+    }
+#endif
+    return 0;
 }
 
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result)

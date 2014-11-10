@@ -28,7 +28,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = ../core/utils/util.o ../core/structures/flow.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o ../engine/virtuallane.o
 
-all: $(OBJ) mpi
+all: $(OBJ) mpi copy
 
 mpi: readflow.x
 
@@ -47,4 +47,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 copy:
-	cp test_topo_bgq.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/topo/
+	cp readflow.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/

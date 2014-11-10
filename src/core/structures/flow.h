@@ -27,7 +27,7 @@ struct optiq_job {
 };
 
 void read_flows_from_file(char *filePath);
-
+int get_next_dest(struct optiq_flow &flow, int current_ep);
 void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_id);
 void read_flow_from_file(char *file_path, struct optiq_job **jobs, int num_jobs);
 

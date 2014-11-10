@@ -90,7 +90,10 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
 			struct optiq_message instant;
 			instant.buffer = &message.buffer[message.current_offset];
 			instant.length = nbytes;
-			instant.dest = message.dest;
+			instant.final_dest = message.final_dest;
+                        instant.original_offset = message.current_offset;
+                        instant.current_offset = 0;
+                        instant.next_dest = message.next_dest;
 			instant.flow_id = message.flow_id;
 
                         optiq_transport_send(transport, instant);
@@ -151,7 +154,8 @@ void add_message_to_virtual_lanes(char *buffer, int data_size, const optiq_job &
         struct optiq_message message;
         message.job_id = job.id;
         message.flow_id = job.flows[i]->id;
-        message.dest = job.dest;
+        message.final_dest = job.dest;
+        message.next_dest = get_next_dest(*(job.flows[i]), job.source);
         message.current_offset = 0;
         message.service_level = 0;
         message.buffer = &buffer[global_offset];
