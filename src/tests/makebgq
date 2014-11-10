@@ -21,7 +21,7 @@ TRANSPORT = ../engine/transport
 
 INCLUDE = -I. -I$(MPICH2_PATH)/include -I../core/system/ -I../core/structures/ -I../core/utils -I../engine/ -I$(TRANSPORT)
 
-CFLAGS = $(INCLUDE)
+CFLAGS = $(COPT) $(INCLUDE) 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD

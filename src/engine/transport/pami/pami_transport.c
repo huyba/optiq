@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
 #include "pami_transport.h"
 
 struct optiq_transport_interface optiq_pami_transport_implementation = {
@@ -19,7 +23,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     configuration_count = 0;
     configurations = NULL;
 
-    pami_transport = optiq_transport_get_concrete_transport(self);
+    pami_transport = (struct optiq_pami_transport *) optiq_transport_get_concrete_transport(self);
     pami_transport->num_contexts = 1;
 
     /*
@@ -27,7 +31,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     */
     result = PAMI_Client_create(client_name, &pami_transport->client, configurations, configuration_count);
 
-    CORE_DEBUGGER_ASSERT(result == PAMI_SUCCESS);
+    assert(result == PAMI_SUCCESS);
 
     if (result != PAMI_SUCCESS) {
         return;
@@ -37,7 +41,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     * Create context
     */
     result = PAMI_Context_createv(pami_transport->client, configurations, configuration_count, &pami_transport->context, pami_transport->num_contexts);
-    CORE_DEBUGGER_ASSERT(result == PAMI_SUCCESS);
+    assert(result == PAMI_SUCCESS);
 
     if (result != PAMI_SUCCESS) {
         return;
@@ -52,10 +56,10 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     self->rank = query_configurations[1].value.intval;
     contexts = query_configurations[2].value.intval;
 
-    CORE_DEBUGGER_ASSERT(contexts > 1);
+    assert(contexts >= 1);
 
     pami_transport->endpoints = (pami_endpoint_t *)malloc(sizeof(pami_endpoint_t) * self->size);
-    for (i = 0; i < self->size; i++) {
+    for (int i = 0; i < self->size; i++) {
         PAMI_Endpoint_create(pami_transport->client, i, 0, &pami_transport->endpoints[i]);
     }
 
@@ -71,7 +75,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
             (void *) pami_transport,
             options);
 
-    CORE_DEBUGGER_ASSERT(result == PAMI_SUCCESS);
+    assert(result == PAMI_SUCCESS);
     if (result != PAMI_SUCCESS) {
         return;
     }

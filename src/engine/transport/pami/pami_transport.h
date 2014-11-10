@@ -12,6 +12,8 @@
 
 extern struct optiq_transport_interface optiq_pami_transport_implementation;
 
+#define RECV_MESSAGE_DISPATCH_ID 17
+
 struct optiq_pami_transport {
 #ifdef __bgq__
     pami_client_t client;
