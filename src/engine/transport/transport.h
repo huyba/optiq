@@ -21,6 +21,11 @@ struct optiq_transport {
     int rank;
 };
 
+struct optiq_message_header {
+    int flow_id;
+    int original_offset;
+};
+
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type);
 
 void optiq_transport_send(struct optiq_transport *self, struct optiq_message &message);
