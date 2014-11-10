@@ -28,18 +28,18 @@ all: $(obj)
 mpi: test_topo_bgq.x example.x
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+        $(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o $(obj)
-	$(LD) $< $(obj) -o $@ $(LDFLAGS)
+        $(LD) $< $(obj) -o $@ $(LDFLAGS)
 
 clean:
 	$(RM) $(RMFLAGS) *.o
 	$(RM) $(RMFLAGS) *.lst
 
 realclean: clean
-	$(RM) $(RMFLAGS) *.x
-	$(RM) $(RMFLAGS) core.*
+        $(RM) $(RMFLAGS) *.x
+        $(RM) $(RMFLAGS) core.*
 
 copy:
 	cp test_topo_bgq.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/topo/
