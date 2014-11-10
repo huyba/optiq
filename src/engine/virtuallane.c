@@ -47,7 +47,7 @@ void print_jobs(struct optiq_job *jobs, int num_jobs)
     }
 }
 
-void transfer_from_virtual_lanes(const vector<struct optiq_arbitration> arbitration_table, vector<struct optiq_virtual_lane> virtual_lanes)
+void transfer_from_virtual_lanes(struct optiq_transport *transport, const vector<struct optiq_arbitration> arbitration_table, vector<struct optiq_virtual_lane> virtual_lanes)
 {
     int num_entries_arb_table = arbitration_table.size();
     int num_virtual_lanes = virtual_lanes.size();
@@ -85,7 +85,14 @@ void transfer_from_virtual_lanes(const vector<struct optiq_arbitration> arbitrat
                             virtual_lanes[i].requests.front().current_offset += nbytes;
                         }
 
-                        optiq_send((void *)&message.buffer[message.current_offset], nbytes, message.dest, message.flow_id);
+			struct optiq_message instant;
+			instant.buffer = &message.buffer[message.current_offset];
+			instant.length = nbytes;
+			instant.dest = message.dest;
+			instant.flow_id = message.flow_id;
+
+                        optiq_transport_send(transport, instant);
+
                         done = false;
 
                         printf("offset = %d\n", message.current_offset);

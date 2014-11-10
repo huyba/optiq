@@ -12,8 +12,8 @@ struct optiq_transport {
     void *concret_transport;
 };
 
-void optiq_transport_init(struct transport *self, enum transport_type type);
+void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type);
 
-void optiq_transport_send(struct transport *self, struct optiq_message &message);
+void optiq_transport_send(struct optiq_transport *self, struct optiq_message &message);
 
 #endif

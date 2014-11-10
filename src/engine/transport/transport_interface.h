@@ -13,7 +13,7 @@ enum optiq_transport_type {
 };
 
 struct optiq_transport_interface {
-    void (*init)(struct optiq_transport *self, enum optiq_transport_type type);
+    void (*init)(struct optiq_transport *self);
     void (*send)(struct optiq_transport *self, struct optiq_message &message);
 };
 

@@ -1,8 +1,15 @@
-#ifndef OPTIQ_TRANSPORT_UGNI_H
-#define OPTIQ_TRANSPORT_UGNI_H
+#ifndef OPTIQ_GNI_TRANSPORT_H
+#define OPTIQ_GNI_TRANSPORT_H
 
 #include "../transport_interface.h"
 
-extern struct transport_interface transport_gni;
+extern struct optiq_transport_interface optiq_gni_transport_implementation;
+
+struct optiq_gni_transport {
+};
+
+void optiq_gni_transport_init(struct optiq_transport *self);
+
+void optiq_gni_transport_send(struct optiq_transport *self, struct optiq_message &message);
 
 #endif

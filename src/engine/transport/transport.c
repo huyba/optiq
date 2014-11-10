@@ -2,7 +2,7 @@
 
 #include "transport.h"
 
-void optiq_transport_init(struct optiq_transport *self, enum transport_type type)
+void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type)
 {
     if(type == PAMI) {
 	self->transport_implementation = &optiq_pami_transport_implementation;
@@ -13,10 +13,10 @@ void optiq_transport_init(struct optiq_transport *self, enum transport_type type
     } else {
 	/*self->transport_implementation = &optiq_tcp_ip_transport_implementation;*/
     }
-    self->transport_implemetation->init();
+    self->transport_implementation->init(self);
 }
 
 void optiq_transport_send(struct optiq_transport *self, struct optiq_message &message)
 {
-    self->transport_implemetation->send(self, message);
+    self->transport_implementation->send(self, message);
 }
