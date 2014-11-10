@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     struct optiq_transport transport;
-    optiq_transport_init(&transport, NONBLK_MPI);
+    optiq_transport_init(&transport, PAMI);
 
     string file_path = "flow85";
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     add_message_to_virtual_lanes(buffer, data_size, local_job, virtual_lanes);
 
     /*Iterate the arbitration table to get the next virtual lane*/
-    transfer_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
+    transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
 
     return 0;
 }

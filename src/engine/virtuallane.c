@@ -47,7 +47,7 @@ void print_jobs(struct optiq_job *jobs, int num_jobs)
     }
 }
 
-void transfer_from_virtual_lanes(struct optiq_transport *transport, const vector<struct optiq_arbitration> arbitration_table, vector<struct optiq_virtual_lane> virtual_lanes)
+void transport_from_virtual_lanes(struct optiq_transport *transport, const vector<struct optiq_arbitration> arbitration_table, vector<struct optiq_virtual_lane> virtual_lanes)
 {
     int num_entries_arb_table = arbitration_table.size();
     int num_virtual_lanes = virtual_lanes.size();

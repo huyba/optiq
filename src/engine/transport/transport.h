@@ -7,6 +7,12 @@
 #include "gni/gni_transport.h"
 #include "nonblk_mpi/nonblk_mpi_transport.h"
 
+enum optiq_transport_type {
+    PAMI = 1,
+    GNI = 2,
+    NONBLK_MPI = 3
+};
+
 struct optiq_transport {
     struct optiq_transport_interface *transport_implementation;
     void *concret_transport;
