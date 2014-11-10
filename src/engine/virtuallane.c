@@ -1,4 +1,5 @@
 #include "virtuallane.h"
+#include "transport/transport.h"
 
 void print_arbitration_table(vector<struct optiq_arbitration> ab)
 {

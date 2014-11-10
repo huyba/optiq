@@ -3,20 +3,17 @@
 
 #include "transport_interface.h"
 
-#include "pami/transport_pami.h"
-#include "ugni/transport_ugni.h"
-#include "nonblk_mpi/transport_nonblk_mpi.h"
+#include "pami/pami_transport.h"
+#include "gni/gni_transport.h"
+#include "nonblk_mpi/nonblk_mpi_transport.h"
 
-struct transport {
-    struct transport_interface *transport_impl;
+struct optiq_transport {
+    struct optiq_transport_interface *transport_implementation;
+    void *concret_transport;
 };
 
-void optiq_transport_init();
+void optiq_transport_init(struct transport *self, enum transport_type type);
 
-void optiq_transport_assign_service_level_to_message(struct optiq_message  message, int service_level);
-
-void optiq_transport_add_message_to_hi_queue(struct optiq_message message, int weight);
-
-void optiq_transport_add_message_to_low_queue(struct optiq_message message, int weight);
+void optiq_transport_send(struct transport *self, struct optiq_message &message);
 
 #endif

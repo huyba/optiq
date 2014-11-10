@@ -23,12 +23,12 @@ struct optiq_job {
     int dest;
     int demand;
     int num_flows;
-    queue<struct optiq_flow *> flows;
+    struct optiq_flow **flows;
 };
 
 void read_flows_from_file(char *filePath);
 
 void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_id);
-void read_flow_from_file(char *file_path, struct optiq_job *job, int num_jobs);
+void read_flow_from_file(char *file_path, struct optiq_job **jobs, int num_jobs);
 
 #endif

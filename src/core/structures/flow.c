@@ -17,6 +17,7 @@ void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_
     bool *visited = (bool *)malloc(sizeof(bool) * num_vertices);
     int *parent = (int *) malloc(sizeof(int) * num_vertices);
     int u, v, throughput, num_arcs = 0;
+    queue<struct optiq_flow *> flows;
     while (bfs(num_vertices, visited, rGraph, source, dest, parent)) {
         /*Get the number of arcs and throughput of the flow*/
         throughput = INT_MAX;
@@ -46,12 +47,18 @@ void get_flows(int **rGraph, int num_vertices, struct optiq_job *job, int *flow_
         }
 
         /*Add the flow to the job*/
-        job->flows.push(flow);
+        flows.push(flow);
         job->num_flows++;
+    }
+
+    job->flows = (struct optiq_flow**)malloc(sizeof(struct optiq_flow *) * job->num_flows);
+    for (int i = 0; i < job->num_flows; i++) {
+	job->flows[i] = flows.front();
+	flows.pop();
     }
 }
 
-void read_flow_from_file(char *file_path, struct optiq_job *job, int num_jobs)
+void read_flow_from_file(char *file_path, struct optiq_job **jobs, int num_jobs)
 {
     FILE *file = fopen(file_path, "r");
 
@@ -69,27 +76,27 @@ void read_flow_from_file(char *file_path, struct optiq_job *job, int num_jobs)
     int source = 0, dest = 171, ep1, ep2, bw;
     int flow_id = 0;
     int job_id = 0;
-    struct optiq_job *jobs = (struct optiq_job *)malloc(sizeof(struct optiq_job) * num_jobs);
+    *jobs = (struct optiq_job *)malloc(sizeof(struct optiq_job) * num_jobs);
 
     while (fgets(buf, 256, file)!=NULL) {
         trim(buf);
-        printf("source = %d, dest = %d\n", source, dest);
+        /*printf("source = %d, dest = %d\n", source, dest);*/
 
         while(strlen(buf) > 0) {
             sscanf(buf, "%d %d %d", &ep1, &ep2, &bw);
-            printf("%d %d %d\n", ep1, ep2, bw);
+            /*printf("%d %d %d\n", ep1, ep2, bw);*/
             rGraph[ep1][ep2] = bw;
             fgets(buf, 256, file);
             trim(buf);
         }
 
         /*Now we have the matrix, check what connects to what*/
-        jobs[job_id].id = job_id;
-        jobs[job_id].source = source;
-        jobs[job_id].dest = dest;
-        jobs[job_id].num_flows = 0;
+        (*jobs)[job_id].id = job_id;
+        (*jobs)[job_id].source = source;
+        (*jobs)[job_id].dest = dest;
+        (*jobs)[job_id].num_flows = 0;
 
-        get_flows(rGraph, num_vertices, &jobs[job_id], &flow_id);
+        get_flows(rGraph, num_vertices, &(*jobs)[job_id], &flow_id);
         job_id++;
 
         for (int i = 0; i < num_vertices; i++) {

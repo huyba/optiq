@@ -1,32 +1,22 @@
 #include <stdlib.h>
 
-#include <transport.h>
+#include "transport.h"
 
-void optiq_transport_init(struct transport *self, enum transport_type type)
+void optiq_transport_init(struct optiq_transport *self, enum transport_type type)
 {
     if(type == PAMI) {
-	self->transport_impl = &transport_pami;
+	self->transport_implementation = &optiq_pami_transport_implementation;
     } else if (type == NONBLK_MPI) {
-	self->transport_impl = &transport_nonblk_mpi;
-    } else if (type == UGNI) {
-	self->transport_impl = &transport_ugni;
+	self->transport_implementation = &optiq_nonblk_mpi_transport_implementation;
+    } else if (type == GNI) {
+	self->transport_implementation = &optiq_gni_transport_implementation;
     } else {
-	/*self->transport_impl = &transport_tcp_ip;*/
+	/*self->transport_implementation = &optiq_tcp_ip_transport_implementation;*/
     }
-    self->transport_impl->optiq_transport_init();
+    self->transport_implemetation->init();
 }
 
-void optiq_transport_assign_service_level_to_message(struct optiq_message  message, int service_level)
+void optiq_transport_send(struct optiq_transport *self, struct optiq_message &message)
 {
-    message.service_level = service_level;
-}
-
-void optiq_transport_add_message_to_hi_queue(struct optiq_message message, int weight)
-{
-
-}
-
-void optiq_transport_add_message_to_low_queue(struct optiq_message message, int weight)
-{
-
+    self->transport_implemetation->send(self, message);
 }

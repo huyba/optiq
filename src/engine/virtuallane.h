@@ -1,7 +1,14 @@
 #ifndef OPTIQ_VIRTUAL_LANE
 #define OPTIQ_VIRTUAL_LANE
 
+#include <vector>
+#include <string>
+
+#include "../core/structures/flow.h"
+
 #define BASE_UNIT_SIZE 1024
+
+using namespace std;
 
 struct optiq_message {
     char *buffer;

@@ -3,13 +3,20 @@ CC = g++
 
 COPT = -g -O2 -Wall #-std=c99
 
-INCLUDE = -I. -I../core/system/ -I../core/structures/
+MPICH2_PATH=/usr/local/mpich2
 
-LD = gcc
+INCLUDE = -I. -I$(MPICH2_PATH)/include -I../core/system/ -I../core/structures/ -I../core/utils -I../engine/
 
-OBJ = ../core/system/topology.o ../core/structures/graph.o
+LD = g++
 
-all: readflow.x #$(OBJ) generategraph.x
+LIBS    = -L$(MPICH2_PATH)/lib -l mpi
+
+STRUCTURES = ../core/structures
+TRANSPORT = ../engine/transport
+
+OBJ = ../core/utils/util.o ../core/structures/flow.o $(TRANSPORT)/pami/transport_pami.o $(TRANSPORT)/gni/transport_gni.o $(TRANSPORT)/transport.o ../engine/virtuallane.o #../core/system/topology.o ../core/structures/graph.o
+
+all: $(OBJ) readflow.x #$(OBJ) generategraph.x
 
 CFLAGS  = $(COPT) $(INCLUDE)
 
@@ -17,7 +24,7 @@ CFLAGS  = $(COPT) $(INCLUDE)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o
-	$(LD) $(OBJ) $< -o $@
+	$(LD) $(OBJ) $< $(LIBS) -o $@
 
 rm:
 	rm $(OBJ)
