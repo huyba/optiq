@@ -84,3 +84,18 @@ void optiq_pami_transport_send(struct optiq_transport *self, struct optiq_messag
     printf("Transport data of size %d to dest %d with flow_id = %d\n", message.length, message.dest, message.flow_id);
 }
 
+void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result)
+{
+
+}
+
+void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result)
+{
+
+}
+
+void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
+                const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+
+}

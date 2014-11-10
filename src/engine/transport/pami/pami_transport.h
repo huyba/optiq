@@ -25,4 +25,18 @@ void optiq_pami_transport_init(struct optiq_transport *self);
 
 void optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message);
 
+void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result);
+
+void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result);
+
+void optiq_recv_message_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
 #endif
