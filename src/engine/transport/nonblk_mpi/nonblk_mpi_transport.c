@@ -12,5 +12,5 @@ void optiq_nonblk_mpi_transport_init(struct optiq_transport *self)
 
 int optiq_nonblk_mpi_transport_send(struct optiq_transport *self, struct optiq_message &message)
 {
-
+    return 0;
 }

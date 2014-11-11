@@ -130,6 +130,7 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
     return 0;
 }
 
+#ifdef __bgq__
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result)
 {
 
@@ -145,3 +146,4 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 {
 
 }
+#endif
