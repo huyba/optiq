@@ -90,11 +90,9 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
 			struct optiq_message instant;
 			instant.buffer = &message.buffer[message.current_offset];
 			instant.length = nbytes;
-			instant.final_dest = message.final_dest;
-                        instant.original_offset = message.current_offset;
                         instant.current_offset = 0;
                         instant.next_dest = message.next_dest;
-			instant.flow_id = message.flow_id;
+                        instant.header = message.header;
 
                         optiq_transport_send(transport, instant);
 
@@ -152,9 +150,10 @@ void add_message_to_virtual_lanes(char *buffer, int data_size, const optiq_job &
     for (int i = 0; i < job.num_flows; i++) {
         length = ((double)job.flows[i]->throughput / (double)total_local_throughput) * (double)data_size;
         struct optiq_message message;
-        message.job_id = job.id;
-        message.flow_id = job.flows[i]->id;
-        message.final_dest = job.dest;
+        message.header.original_length = data_size;
+        message.header.original_offset = global_offset;
+        message.header.flow_id = job.flows[i]->id;
+        message.header.final_dest = job.dest;
         message.next_dest = get_next_dest(*(job.flows[i]), job.source);
         message.current_offset = 0;
         message.service_level = 0;
@@ -163,7 +162,7 @@ void add_message_to_virtual_lanes(char *buffer, int data_size, const optiq_job &
         global_offset += length;
 
         for (int j = 0; j < num_virtual_lanes; j++) {
-            if (message.flow_id == virtual_lanes[j].id) {
+            if (message.header.flow_id == virtual_lanes[j].id) {
                 virtual_lanes[j].requests.push_back(message);
             }
         }
