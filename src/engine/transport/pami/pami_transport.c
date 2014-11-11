@@ -88,7 +88,7 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
 #ifdef __bgq__
     printf("Transport data of size %d to dest %d with flow_id = %d\n", message.length, message.next_dest, message.header.flow_id);
 
-    pami_result_t result;
+    /*pami_result_t result;
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
 
     struct optiq_send_cookie send_cookie;
@@ -125,6 +125,7 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
             return 1;
         }
     }
+    */
 #endif
     return 0;
 }

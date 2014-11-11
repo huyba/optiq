@@ -40,7 +40,6 @@ struct optiq_arbitration {
 
 void print_arbitration_table(vector<struct optiq_arbitration> ab);
 void print_virtual_lanes(vector<struct optiq_virtual_lane> virtual_lanes);
-void print_jobs(struct optiq_job *jobs, int num_jobs);
 void transport_from_virtual_lanes(struct optiq_transport *transport, const vector<struct optiq_arbitration> arbitration_table, vector<struct optiq_virtual_lane> virtual_lanes);
 void create_virtual_lane_arbitration_table(vector<struct optiq_virtual_lane> &virtual_lanes, vector<struct optiq_arbitration> &arbitration_table, int num_jobs, const struct optiq_job *jobs, int world_rank);
 void add_message_to_virtual_lanes(char *buffer, int data_size, const optiq_job &job, vector<struct optiq_virtual_lane> &virtual_lanes);
