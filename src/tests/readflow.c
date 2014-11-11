@@ -5,7 +5,7 @@
 
 #include <mpi.h>
 
-#include "virtuallane.h"
+#include "virtual_lane.h"
 #include "flow.h"
 #include "transport.h"
 
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     string file_path = "flow85";
 
     vector<struct optiq_job> jobs;
-    read_flow_from_file((char *)file_path.c_str(), jobs, num_jobs);
+    read_flow_from_file((char *)file_path.c_str(), jobs);
 
     vector<struct optiq_arbitration> arbitration_table;
     vector<struct optiq_virtual_lane> virtual_lanes;

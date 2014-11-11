@@ -9,7 +9,7 @@
 #endif
 
 #include "../transport_interface.h"
-#include "flow.h"
+#include "../../message.h"
 
 extern struct optiq_transport_interface optiq_pami_transport_implementation;
 
@@ -21,8 +21,8 @@ struct optiq_send_cookie {
 };
 
 struct optiq_recv_cookie {
-    vector<struct optiq_recv_cookie *> receives;
     struct optiq_message message;
+    vector<struct optiq_recv_cookie *> receives;
 };
 
 struct optiq_pami_transport {

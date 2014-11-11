@@ -6,26 +6,11 @@
 
 #include "../core/structures/flow.h"
 #include "transport/transport.h"
+#include "message.h"
 
 #define BASE_UNIT_SIZE 1024
 
 using namespace std;
-
-struct optiq_message_header {
-    int final_dest;
-    int flow_id;
-    int original_offset;
-    int original_length;
-};
-
-struct optiq_message {
-    char *buffer;
-    int next_dest;
-    int service_level;
-    int length;
-    int current_offset;
-    struct optiq_message_header header;
-};
 
 struct optiq_virtual_lane {
     int id;

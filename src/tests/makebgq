@@ -26,7 +26,7 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = ../core/utils/util.o ../core/system/memory.o ../core/structures/flow.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o ../engine/virtuallane.o
+OBJ = ../core/utils/util.o ../core/system/memory.o ../core/structures/flow.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o ../engine/virtual_lane.o
 
 all: $(OBJ) mpi copy
 

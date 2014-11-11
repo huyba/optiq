@@ -1,7 +1,7 @@
 #ifndef OPTIQ_TRANSPORT_INTERFACE_H
 #define OPTIQ_TRANSPORT_INTERFACE_H
 
-#include "../virtuallane.h"
+#include "../virtual_lane.h"
 
 struct optiq_message;
 struct optiq_transport;
