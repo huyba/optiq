@@ -44,7 +44,12 @@ int main(int argc, char **argv)
         }
     }
 
-    add_message_to_virtual_lanes(buffer, data_size, local_job, virtual_lanes);
+    /*Adding local job*/
+    if (world_rank < 85) {
+        local_job.buffer = buffer;
+        local_job.demand = data_size;
+        add_message_to_virtual_lanes(buffer, data_size, local_job, virtual_lanes);
+    }
 
     /*Iterate the arbitration table to get the next virtual lane*/
     transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);

@@ -22,6 +22,7 @@ struct optiq_job {
     int source;
     int dest;
     int demand;
+    void *buffer;
     int num_flows;
     struct optiq_flow **flows;
 };

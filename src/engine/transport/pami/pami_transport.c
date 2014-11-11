@@ -86,20 +86,17 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message)
 {
 #ifdef __bgq__
-    printf("Transport data of size %d to dest %d with flow_id = %d\n", message.length, message.next_dest, message.flow_id);
+    printf("Transport data of size %d to dest %d with flow_id = %d\n", message.length, message.next_dest, message.header.flow_id);
 
     pami_result_t result;
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
 
     struct optiq_send_cookie send_cookie;
-    struct optiq_message_header header;
-    header.flow_id = message.flow_id;
-    header.original_offset = message.original_offset;
 
     if (message.length <= MAX_SHORT_MESSAGE_LENGTH) {
         pami_send_immediate_t parameter;
         parameter.dispatch = RECV_MESSAGE_DISPATCH_ID;
-        parameter.header.iov_base = (void *)&header;
+        parameter.header.iov_base = (void *)&message.header;
         parameter.header.iov_len = sizeof(struct optiq_message_header);
         parameter.data.iov_base = (void *)message.buffer;
         parameter.data.iov_len = message.length;
@@ -114,7 +111,7 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
         pami_send_t param_send;
         param_send.send.dest = message.next_dest;
         param_send.send.dispatch = RECV_MESSAGE_DISPATCH_ID;
-        param_send.send.header.iov_base = (void *)&header;
+        param_send.send.header.iov_base = (void *)&message.header;
         param_send.send.header.iov_len = sizeof(struct optiq_message_header);
         param_send.send.data.iov_base = (void *)message.buffer;
         param_send.send.data.iov_len = message.length;
