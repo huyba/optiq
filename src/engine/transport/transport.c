@@ -4,7 +4,7 @@
 
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type)
 {
-    if(type == PAMI) {
+    if (type == PAMI) {
 	self->transport_implementation = &optiq_pami_transport_implementation;
     } else if (type == NONBLK_MPI) {
 	self->transport_implementation = &optiq_nonblk_mpi_transport_implementation;
