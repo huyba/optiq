@@ -132,10 +132,10 @@ void print_jobs(struct optiq_job *jobs, int num_jobs)
             flow = jobs[i].flows[j];
 
             printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow.id, flow.throughput, flow.num_arcs);
-            for (int k = flow.num_arcs-1; k >= 0; k--) {
+            for (int k = 0; i < flow.num_arcs; k ++) {
                 printf("%d -> ", flow.arcs[k].ep1);
             }
-            printf("%d\n", flow.arcs[0].ep2);
+            printf("%d\n", flow.arcs[flow.num_arcs-1].ep2);
         }
     }
 }
