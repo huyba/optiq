@@ -57,6 +57,7 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
+    transport.jobs = &jobs;
     /*Iterate the arbitration table to get the next virtual lane*/
     transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
 

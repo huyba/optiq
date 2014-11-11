@@ -19,6 +19,7 @@ struct optiq_transport {
     optiq_transport_type type;
     int size;
     int rank;
+    vector<struct optiq_job> *jobs;
 };
 
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type);

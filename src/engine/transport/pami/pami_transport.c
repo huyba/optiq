@@ -26,6 +26,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 
     pami_transport = (struct optiq_pami_transport *) optiq_transport_get_concrete_transport(self);
     pami_transport->num_contexts = 1;
+    pami_transport->jobs = self->jobs;
 
     /*
     * Create client
@@ -148,7 +149,7 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
     struct optiq_message message;
     memcpy(&message.header, header, sizeof(struct optiq_message_header));
     message.buffer = (char *)core_memory_pool_allocate(data_size);
-    message.next_dest = get_next_dest_from_jobs(pami_transport->jobs, message.header.flow_id, pami_transport->node_id);
+    message.next_dest = get_next_dest_from_jobs(*(pami_transport->jobs), message.header.flow_id, pami_transport->node_id);
     message.length = data_size;
     message.current_offset = 0;
 

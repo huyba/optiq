@@ -32,7 +32,7 @@ struct optiq_pami_transport {
     pami_endpoint_t *endpoints;
     vector<struct optiq_recv_cookie *> avail_recv_cookies;
     vector<struct optiq_recv_cookie *> in_use_recv_cookies;
-    vector<struct optiq_job>& jobs;
+    vector<struct optiq_job> *jobs;
     int node_id;
     int rank;
     int size;
