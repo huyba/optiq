@@ -13,7 +13,9 @@ void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_typ
     } else {
 	/*self->transport_implementation = &optiq_tcp_ip_transport_implementation;*/
     }
+
     self->type = type;
+    self->concrete_transport = NULL;
     self->transport_implementation->init(self);
 }
 

@@ -88,11 +88,11 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
     }
 }
 
-void create_virtual_lane_arbitration_table(vector<struct optiq_virtual_lane> &virtual_lanes, vector<struct optiq_arbitration> &arbitration_table, int num_jobs, const struct optiq_job *jobs, int world_rank)
+void create_virtual_lane_arbitration_table(vector<struct optiq_virtual_lane> &virtual_lanes, vector<struct optiq_arbitration> &arbitration_table, vector<struct optiq_job> &jobs, int world_rank)
 {
     const struct optiq_flow *flow = NULL;
 
-    for (int i = 0; i < num_jobs; i++) {
+    for (int i = 0; i < jobs.size(); i++) {
         for (int j = 0; j < jobs[i].num_flows; j++) {
             flow = &jobs[i].flows[j];
             for (int k = flow->num_arcs-1; k >= 0; k--) {
@@ -133,7 +133,7 @@ void add_message_to_virtual_lanes(char *buffer, int data_size, const optiq_job &
         message.header.original_offset = global_offset;
         message.header.flow_id = job.flows[i].id;
         message.header.final_dest = job.dest;
-        message.next_dest = get_next_dest(job.flows[i], job.source);
+        message.next_dest = get_next_dest_from_flow(job.flows[i], job.source);
         message.current_offset = 0;
         message.service_level = 0;
         message.buffer = &buffer[global_offset];

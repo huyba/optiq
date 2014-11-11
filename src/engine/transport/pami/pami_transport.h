@@ -9,23 +9,35 @@
 #endif
 
 #include "../transport_interface.h"
+#include "flow.h"
 
 extern struct optiq_transport_interface optiq_pami_transport_implementation;
 
 #define RECV_MESSAGE_DISPATCH_ID 17
 #define MAX_SHORT_MESSAGE_LENGTH 128
 
+struct optiq_send_cookie {
+
+};
+
+struct optiq_recv_cookie {
+    vector<struct optiq_recv_cookie *> receives;
+    struct optiq_message message;
+};
+
 struct optiq_pami_transport {
 #ifdef __bgq__
     pami_client_t client;
     pami_context_t context;
     pami_endpoint_t *endpoints;
+    vector<struct optiq_recv_cookie *> avail_recv_cookies;
+    vector<struct optiq_recv_cookie *> in_use_recv_cookies;
+    vector<struct optiq_job>& jobs;
+    int node_id;
+    int rank;
+    int size;
 #endif
     size_t num_contexts;
-};
-
-struct optiq_send_cookie {
-
 };
 
 void optiq_pami_transport_init(struct optiq_transport *self);

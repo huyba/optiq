@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "memory.h"
 #include "pami_transport.h"
 
 struct optiq_transport_interface optiq_pami_transport_implementation = {
@@ -87,7 +88,7 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
 {
     printf("Transport data of size %d to dest %d with flow_id = %d\n", message.length, message.next_dest, message.header.flow_id);
 #ifdef __bgq__
-    /*pami_result_t result;
+    pami_result_t result;
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
 
     struct optiq_send_cookie send_cookie;
@@ -124,7 +125,6 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
             return 1;
         }
     }
-    */
 #endif
     return 0;
 }
@@ -143,6 +143,39 @@ void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t resu
 void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
                 const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *) cookie;
+    struct optiq_message_header *message_header = (struct optiq_message_header *) header;
+    struct optiq_message message;
+    memcpy(&message.header, header, sizeof(struct optiq_message_header));
+    message.buffer = (char *)core_memory_pool_allocate(data_size);
+    message.next_dest = get_next_dest_from_jobs(pami_transport->jobs, message.header.flow_id, pami_transport->node_id);
+    message.length = data_size;
+    message.current_offset = 0;
 
+    struct optiq_recv_cookie *recv_cookie;
+
+    if (pami_transport->avail_recv_cookies.size() > 0) {
+        recv_cookie = pami_transport->avail_recv_cookies.front();
+        pami_transport->avail_recv_cookies.erase(pami_transport->avail_recv_cookies.begin());
+    } else {
+        recv_cookie = (struct optiq_recv_cookie *) malloc(sizeof(struct optiq_recv_cookie));
+    }
+
+    recv_cookie->receives = pami_transport->in_use_recv_cookies;
+    recv_cookie->message = message;
+
+    if (data != NULL) {
+        memcpy(message.buffer, data, data_size);
+        recv_cookie->receives.push_back(recv_cookie);   
+    } else {
+        recv->local_fn = optiq_recv_done_fn;
+        recv->cookie = (void *)recv_cookie;
+        recv->type = PAMI_TYPE_BYTE;
+        recv->addr = (void *)message.buffer;
+        recv->offset = 0;
+        recv->data_fn = PAMI_DATA_COPY;
+        recv->data_cookie = NULL;
+    }
+    return;
 }
 #endif

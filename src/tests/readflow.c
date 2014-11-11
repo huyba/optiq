@@ -25,20 +25,19 @@ int main(int argc, char **argv)
 
     string file_path = "flow85";
 
-    int num_jobs = 85;
-    struct optiq_job *jobs = NULL;
-    read_flow_from_file((char *)file_path.c_str(), &jobs, num_jobs);
+    vector<struct optiq_job> jobs;
+    read_flow_from_file((char *)file_path.c_str(), jobs, num_jobs);
 
     vector<struct optiq_arbitration> arbitration_table;
     vector<struct optiq_virtual_lane> virtual_lanes;
 
-    create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, num_jobs, jobs, world_rank);
+    create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
 
     int data_size = 4*1024*1024;
     char *buffer = (char *)malloc(data_size);
 
     struct optiq_job local_job;
-    for (int i = 0; i < num_jobs; i++) {
+    for (int i = 0; i < jobs.size(); i++) {
         if (jobs[i].source == world_rank) {
             local_job = jobs[i];
         }
@@ -51,10 +50,10 @@ int main(int argc, char **argv)
         add_message_to_virtual_lanes(buffer, data_size, local_job, virtual_lanes);
     }
 
-    /*if(world_rank == 0) {
+    if(world_rank == 0) {
         print_arbitration_table(arbitration_table);
         print_virtual_lanes(virtual_lanes);
-    }*/
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
