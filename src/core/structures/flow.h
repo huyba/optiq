@@ -17,16 +17,6 @@ struct optiq_flow {
     vector<struct optiq_arc> arcs;
 };
 
-struct optiq_job {
-    int id;
-    int source;
-    int dest;
-    int demand;
-    void *buffer;
-    int num_flows;
-    vector<struct optiq_flow> flows;
-};
-
 void read_flow_from_file(char *file_path, vector<struct optiq_job> &jobs);
 int get_next_dest_from_flow(const struct optiq_flow &flow, int current_ep);
 int get_next_dest_from_jobs(vector<struct optiq_job> &jobs, int flow_id, int current_ep);

@@ -167,7 +167,8 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 
     if (data != NULL) {
         memcpy(message.buffer, data, data_size);
-        recv_cookie->receives.push_back(recv_cookie);   
+        recv_cookie->receives.push_back(recv_cookie);
+        assigne_message_to_virtual_lane(recv_cookie->receives, pami_transport);
     } else {
         recv->local_fn = optiq_recv_done_fn;
         recv->cookie = (void *)recv_cookie;

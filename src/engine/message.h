@@ -9,12 +9,12 @@ struct optiq_message_header {
 };
 
 struct optiq_message {
-    char *buffer;
-    int next_dest;
-    int service_level;
-    int length;
-    int current_offset;
     struct optiq_message_header header;
+    char *buffer;
+    int length;
+    int next_dest;
+    int current_offset;
+    int service_level;
 };
 
 #endif

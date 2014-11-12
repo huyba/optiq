@@ -44,6 +44,13 @@ void optiq_pami_transport_init(struct optiq_transport *self);
 
 int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message);
 
+int assign_message_to_virtual_lane(struct optiq_pami_transport *pami_transport, vector<struct optiq_recv_cookie *> receives)
+{
+    for (int i = 0; i < receives.size(); i++) {
+        
+    }
+}
+
 #ifdef __bgq__
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result);
 
