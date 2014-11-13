@@ -164,14 +164,29 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
     return 0;
 }
 
+int optiq_pami_transport_destroy(struct optiq_transport *self)
+{
+
+}
+
 int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message &message)
 {
 
 }
 
-int optiq_pami_transport_test(struct optiq_transport *self, struct optiq_message &message)
+int optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job &job)
 {
+    pami_result_t result;
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
 
+    PAMI_Context_advance (pami_transport->context, 100);
+    optiq_send_cookie *send_cookie;
+
+    while (pami_transport->in_use_send_cookies.size() > 0) {
+        send_cookie = pami_transport->in_use_send_cookies.back();
+        pami_transport->in_use_send_cookies.pop_back();
+        pami_transport->avail_send_cookies.push_back(send_cookie);
+    }
 }
 
 int optiq_pami_transport_process_incomming_message(vector<struct optiq_recv_cookie *> *received)

@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "message.h"
+
 using namespace std;
 
 struct optiq_arc {
@@ -15,6 +17,8 @@ struct optiq_flow {
     int throughput;
     int num_arcs;
     vector<struct optiq_arc> arcs;
+    struct optiq_message *message;
+    int sent_bytes;
 };
 
 int get_next_dest_from_flow(const struct optiq_flow &flow, int current_ep);

@@ -9,6 +9,9 @@ struct optiq_transport;
 struct optiq_transport_interface {
     void (*init)(struct optiq_transport *self);
     int (*send)(struct optiq_transport *self, struct optiq_message &message);
+    int (*recv)(struct optiq_transport *self, struct optiq_message &message);
+    int (*test)(struct optiq_transport *self, struct optiq_flow &flow);
+    int (*destroy)(struct optiq_transport *self);
 };
 
 #endif

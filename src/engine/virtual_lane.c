@@ -23,7 +23,7 @@ void print_virtual_lanes(vector<struct optiq_virtual_lane> virtual_lanes)
         printf("Virtual lane id = %d, #messages = %lu\n", virtual_lanes[i].id, virtual_lanes[i].requests.size());
 
         for (int j = 0; j < virtual_lanes[i].requests.size(); j++) {
-            printf("Message has %d bytes\n", virtual_lanes[i].requests[j].length);
+            printf("Message has %d bytes\n", virtual_lanes[i].requests[j]->length);
         }
     }
 }
@@ -50,34 +50,34 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
             for (int i = 0; i < num_virtual_lanes; i++) {
                 if (virtual_lanes[i].id == virtual_lane_id) {
                     if (virtual_lanes[i].requests.size() > 0) {
-                        struct optiq_message message = virtual_lanes[i].requests.front();
+                        struct optiq_message *message = virtual_lanes[i].requests.front();
 
                         printf("virtual_lane_id = %d, quota= %d\n", virtual_lane_id, arbitration_table[index].weight * BASE_UNIT_SIZE);
-                        printf(" message length = %d, offset = %d\n", message.length, message.current_offset);
+                        printf(" message length = %d, offset = %d\n", message->length, message->current_offset);
 
                         nbytes = arbitration_table[index].weight * BASE_UNIT_SIZE;
 
-                        if (message.current_offset + nbytes >= message.length) {
-                            nbytes = message.length - message.current_offset;
+                        if (message->current_offset + nbytes >= message->length) {
+                            nbytes = message->length - message->current_offset;
                             virtual_lanes[i].requests.erase(virtual_lanes[i].requests.begin());
                             printf("Remove a message\n");
                         } else {
                             /*Update the virtual lane*/
-                            virtual_lanes[i].requests.front().current_offset += nbytes;
+                            virtual_lanes[i].requests.front()->current_offset += nbytes;
                         }
 
 			struct optiq_message instant;
-			instant.buffer = &message.buffer[message.current_offset];
+			instant.buffer = &message->buffer[message->current_offset];
 			instant.length = nbytes;
                         instant.current_offset = 0;
-                        instant.next_dest = message.next_dest;
-                        instant.header = message.header;
+                        instant.next_dest = message->next_dest;
+                        instant.header = message->header;
 
                         optiq_transport_send(transport, instant);
 
                         done = false;
 
-                        printf("offset = %d\n", message.current_offset);
+                        printf("offset = %d\n", message->current_offset);
 
                         /*After process any queue, go back to the arbitration table*/
                         break;
@@ -113,42 +113,16 @@ void create_virtual_lane_arbitration_table(vector<struct optiq_virtual_lane> &vi
     }
 }
 
-void add_message_to_virtual_lanes(char *buffer, int data_size, const optiq_job &job, vector<struct optiq_virtual_lane> &virtual_lanes)
+void add_message_to_virtual_lanes(struct optiq_message *message, vector<struct optiq_virtual_lane> &virtual_lanes)
 {
-    int total_local_throughput = 0;
-
-    for (int i = 0; i < job.num_flows; i++) {
-        /*Compute the total flows for the local node*/
-        total_local_throughput += job.flows[i].throughput;
-    }
-
-    int num_virtual_lanes = virtual_lanes.size();
-
-    /*Fill in the virtual lanes with data from local jobs*/
-    int global_offset = 0, length = 0;
-    for (int i = 0; i < job.num_flows; i++) {
-        length = ((double)job.flows[i].throughput / (double)total_local_throughput) * (double)data_size;
-        struct optiq_message message;
-        message.header.original_length = data_size;
-        message.header.original_offset = global_offset;
-        message.header.flow_id = job.flows[i].id;
-        message.header.final_dest = job.dest;
-        message.next_dest = get_next_dest_from_flow(job.flows[i], job.source);
-        message.current_offset = 0;
-        message.service_level = 0;
-        message.buffer = &buffer[global_offset];
-        message.length = length;
-        global_offset += length;
-
-        for (int j = 0; j < num_virtual_lanes; j++) {
-            if (message.header.flow_id == virtual_lanes[j].id) {
-                virtual_lanes[j].requests.push_back(message);
-            }
+    for (int i = 0; i < virtual_lanes.size(); i++) {
+        if (message->header.flow_id == virtual_lanes[i].id) {
+            virtual_lanes[i].requests.push_back(message);
         }
     }
 }
 
-void add_job_to_virtual_lanes(const optiq_job &job, vector<struct optiq_virtual_lane> &virtual_lanes)
+void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual_lane> &virtual_lanes)
 {
     char *buffer = (char *)job.buffer;
     int data_size = job.demand;
@@ -164,24 +138,22 @@ void add_job_to_virtual_lanes(const optiq_job &job, vector<struct optiq_virtual_
 
     /*Fill in the virtual lanes with data from local jobs*/
     int global_offset = 0, length = 0;
-    for (int i = 0; i < job.num_flows; i++) {
+    for (int i = 0; i < job.flows.size(); i++) {
         length = ((double)job.flows[i].throughput / (double)total_local_throughput) * (double)data_size;
-        struct optiq_message message;
-        message.header.original_length = data_size;
-        message.header.original_offset = global_offset;
-        message.header.flow_id = job.flows[i].id;
-        message.header.final_dest = job.dest;
-        message.next_dest = get_next_dest_from_flow(job.flows[i], job.source);
-        message.current_offset = 0;
-        message.service_level = 0;
-        message.buffer = &buffer[global_offset];
-        message.length = length;
+        struct optiq_message *message = (struct optiq_message *)malloc(sizeof(struct optiq_message));
+        message->header.original_length = data_size;
+        message->header.original_offset = global_offset;
+        message->header.flow_id = job.flows[i].id;
+        message->header.final_dest = job.dest;
+        message->next_dest = get_next_dest_from_flow(job.flows[i], job.source);
+        message->current_offset = 0;
+        message->service_level = 0;
+        message->buffer = &buffer[global_offset];
+        message->length = length;
         global_offset += length;
 
-        for (int j = 0; j < num_virtual_lanes; j++) {
-            if (message.header.flow_id == virtual_lanes[j].id) {
-                virtual_lanes[j].requests.push_back(message);
-            }
-        }
+        add_message_to_virtual_lanes(message, virtual_lanes);
+        job.flows[i].message = message;
+        job.flows[i].sent_bytes = 0;
     }
 }
