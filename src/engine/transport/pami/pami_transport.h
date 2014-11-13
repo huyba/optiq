@@ -10,19 +10,29 @@
 
 #include "../transport_interface.h"
 #include "../../message.h"
+#include "../../../core/structures/job.h"
 
 extern struct optiq_transport_interface optiq_pami_transport_implementation;
 
 #define RECV_MESSAGE_DISPATCH_ID 17
 #define MAX_SHORT_MESSAGE_LENGTH 128
 
-struct optiq_send_cookie {
+#define NUM_SEND_COOKIES 64
+#define NUM_RECV_COOKIES 64
 
+#define NUM_MESSAGES 64
+#define MESSAGE_SIZE (2*1024*1024)
+
+struct optiq_send_cookie;
+
+struct optiq_send_cookie {
+    struct optiq_message *message;
+    vector<struct optiq_send_cookie *> *sent;
 };
 
 struct optiq_recv_cookie {
-    struct optiq_message message;
-    vector<struct optiq_recv_cookie *> receives;
+    struct optiq_message *message;
+    vector<struct optiq_recv_cookie *> *received;
 };
 
 struct optiq_pami_transport {
@@ -32,6 +42,11 @@ struct optiq_pami_transport {
     pami_endpoint_t *endpoints;
     vector<struct optiq_recv_cookie *> avail_recv_cookies;
     vector<struct optiq_recv_cookie *> in_use_recv_cookies;
+    vector<struct optiq_send_cookie *> avail_send_cookies;
+    vector<struct optiq_send_cookie *> in_use_send_cookies;
+    vector<struct optiq_message *> in_use_messages;
+    vector<struct optiq_message *> avail_messages;
+
     vector<struct optiq_job> *jobs;
     int node_id;
     int rank;
@@ -43,13 +58,6 @@ struct optiq_pami_transport {
 void optiq_pami_transport_init(struct optiq_transport *self);
 
 int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message);
-
-int assign_message_to_virtual_lane(struct optiq_pami_transport *pami_transport, vector<struct optiq_recv_cookie *> receives)
-{
-    for (int i = 0; i < receives.size(); i++) {
-        
-    }
-}
 
 #ifdef __bgq__
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result);

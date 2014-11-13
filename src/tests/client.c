@@ -5,8 +5,9 @@
 
 #include <mpi.h>
 
-#include "virtual_lane.h"
+#include "job.h"
 #include "flow.h"
+#include "virtual_lane.h"
 #include "transport.h"
 
 using namespace std;
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
     if (world_rank < 85) {
         local_job.buffer = buffer;
         local_job.demand = data_size;
-        add_message_to_virtual_lanes(buffer, data_size, local_job, virtual_lanes);
+        add_job_to_virtual_lanes(local_job, virtual_lanes);
     }
 
     if(world_rank == 0) {

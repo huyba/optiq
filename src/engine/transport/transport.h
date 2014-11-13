@@ -1,7 +1,11 @@
 #ifndef OPTIQ_TRANSPORT_H
 #define OPTIQ_TRANSPORT_H
 
+#include <vector>
+
 #include "transport_interface.h"
+
+#include "../../core/structures/job.h"
 
 #include "pami/pami_transport.h"
 #include "gni/gni_transport.h"
