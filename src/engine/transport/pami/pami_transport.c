@@ -28,9 +28,9 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     pami_transport->num_contexts = 1;
     pami_transport->jobs = self->jobs;
 
-    pami_transport->avail_messages = self->avail_messages;
-    pami_transport->in_use_messages = self->in_use_messages;
-    pami_transport->messages_no_buffer = self->messages_no_buffer;
+    pami_transport->avail_messages = &self->avail_messages;
+    pami_transport->in_use_messages = &self->in_use_messages;
+    pami_transport->messages_no_buffer = &self->messages_no_buffer;
 
     /*Prepare cookies for sending*/
     struct optiq_send_cookie *send_cookies = (struct optiq_send_cookie *)malloc(sizeof(struct optiq_send_cookie) * NUM_SEND_COOKIES);
@@ -172,21 +172,45 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
 
 }
 
-int optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job &job)
+bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *job)
 {
+    bool isDone = true;
+#ifdef __bgq__
     pami_result_t result;
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
 
     PAMI_Context_advance (pami_transport->context, 100);
     optiq_send_cookie *send_cookie;
 
+    /*Return cookie, messag back to available queues. Adding message sent to flow's*/
     while (pami_transport->in_use_send_cookies.size() > 0) {
         send_cookie = pami_transport->in_use_send_cookies.back();
         pami_transport->in_use_send_cookies.pop_back();
         pami_transport->avail_send_cookies.push_back(send_cookie);
+
+        (*pami_transport->messages_no_buffer).push_back(send_cookie->message);
+    
+        for (int i = 0; i < job->flows.size(); i++) {
+            if (send_cookie->message->header.flow_id == job->flows[i].id) {
+                job->flows[i].sent_bytes == send_cookie->message->length;
+            }
+        }
     }
+
+    /*Checking if every flow is done*/
+    for (int i = 0; i < job->flows.size(); i++) {
+        if (job->flows[i].message->length != job->flows[i].sent_bytes) {
+            isDone = false;
+        }
+    }
+
+#endif
+    return isDone;
 }
 
+/*
+ * Process the incomming message. Either forward it by putting it in a virtual lane or keep it
+ * */
 int optiq_pami_transport_process_incomming_message(vector<struct optiq_recv_cookie *> *received)
 {
 
@@ -197,6 +221,8 @@ void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t resu
 {
     struct optiq_recv_cookie *recv_cookie = (struct optiq_recv_cookie *)cookie;
     (*recv_cookie->received).push_back(recv_cookie);
+
+    optiq_pami_transport_process_incomming_message(recv_cookie->received);
 }
 
 void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result)
@@ -221,9 +247,9 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
         message->buffer = (char *)malloc(data_size);
     } else {
         /*If there is still available message to use*/
-        if (pami_transport->avail_messages.size() > 0) {
-            message = pami_transport->avail_messages.back();
-            pami_transport->avail_messages.pop_back();
+        if ((*pami_transport->avail_messages).size() > 0) {
+            message = (*pami_transport->avail_messages).back();
+            (*pami_transport->avail_messages).pop_back();
         } else {
             message = (struct optiq_message *)malloc(sizeof(struct optiq_message));
             message->buffer = (char *)malloc(MESSAGE_SIZE);
