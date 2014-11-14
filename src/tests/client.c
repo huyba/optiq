@@ -62,5 +62,10 @@ int main(int argc, char **argv)
     /*Iterate the arbitration table to get the next virtual lane*/
     transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
 
+    bool isDone = false;
+    while (!isDone) {
+	isDone = optiq_transport_test(&transport, &local_job);
+    }
+
     return 0;
 }

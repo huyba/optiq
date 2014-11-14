@@ -38,6 +38,12 @@ void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_typ
 
 void optiq_transport_send(struct optiq_transport *self, struct optiq_message *message);
 
+void optiq_transport_recv(struct optiq_transport *self, struct optiq_message *message);
+
+void optiq_transport_test(struct optiq_transport *self, struct optiq_job *job);
+
+void optiq_transport_destroy(struct optiq_transport *self);
+
 void* optiq_transport_get_concrete_transport(struct optiq_transport *self);
 
 #endif
