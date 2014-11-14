@@ -19,20 +19,24 @@ UTILS  = core/utils
 STRUCTURES = core/structures
 TRANSPORT = engine/transport
 
-CFLAGS  = $(COPT) -I. -I.. -I$(SYSTEM) -I$(SYSTEM)/bgq -I$(SYTEM)/xe6 -I$(SYSTEM)/xc30 -I$(UTILS)
+CFLAGS  = $(COPT) -I. -I.. -I$(SYSTEM) -I$(UTILS) -I$(TRANSPORT) -I$(STRUCTURES) -I./engine
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTILS)/util.o $(STRUCTURES)/flow.o $(STRUCTURES)/job.o engine/message.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi.o $(TRANSPORT)/tranport.o engine/virtual_lane.o optiq.o
+OBJ = $(UTILS)/util.o $(STRUCTURES)/flow.o $(STRUCTURES)/job.o engine/message.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o engine/virtual_lane.o optiq.o
 
-all: $(OBJ)
+all: $(OBJ) liboptiq.a
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
+
+liboptiq.a: $(OBJ)
+        rm -f $@
+        ar cq $@ $(OBJ)
 
 clean:
 	$(RM) $(RMFLAGS) *.o
