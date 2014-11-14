@@ -14,24 +14,25 @@ endif
 
 LD      = mpixlc_r
 
-TOPO   = ../core/system
-UTILS  = ../core/utils
-CFLAGS  = $(COPT) -I. -I.. -I$(TOPO) -I$(TOPO)/bgq -I$(TOPO)/xe6 -I$(TOPO)/xc30 -I$(UTILS)
+SYSTEM   = core/system
+UTILS  = core/utils
+STRUCTURES = core/structures
+TRANSPORT = engine/transport
+
+CFLAGS  = $(COPT) -I. -I.. -I$(SYSTEM) -I$(SYSTEM)/bgq -I$(SYTEM)/xe6 -I$(SYSTEM)/xc30 -I$(UTILS)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-obj = $(TOPO)/bgq/topology_bgq.o $(TOPO)/xc30/topology_xc30.o $(TOPO)/xe6/topology_xe6.o $(TOPO)/topology.o $(UTILS)/util.o ../optiq.o
+OBJ = $(UTILS)/util.o $(STRUCTURES)/flow.o $(STRUCTURES)/job.o engine/message.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi.o $(TRANSPORT)/tranport.o engine/virtual_lane.o optiq.o
 
-all: $(obj)
-
-mpi: test_topo_bgq.x example.x
+all: $(OBJ)
 
 %.o: %.c
         $(CC) $(CFLAGS) -c $< -o $@
 
-%.x: %.o $(obj)
-        $(LD) $< $(obj) -o $@ $(LDFLAGS)
+%.x: %.o $(OBJ)
+        $(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
 	$(RM) $(RMFLAGS) *.o
@@ -41,5 +42,3 @@ realclean: clean
         $(RM) $(RMFLAGS) *.x
         $(RM) $(RMFLAGS) core.*
 
-copy:
-	cp test_topo_bgq.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/topo/

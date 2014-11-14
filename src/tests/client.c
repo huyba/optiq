@@ -24,6 +24,10 @@ int main(int argc, char **argv)
     struct optiq_transport transport;
     optiq_transport_init(&transport, PAMI);
 
+    if (world_rank == 0) {
+        printf("Init transport successfully!\n");
+    }
+
     string file_path = "flow85";
 
     vector<struct optiq_job> jobs;
@@ -60,7 +64,7 @@ int main(int argc, char **argv)
 
     transport.jobs = &jobs;
     /*Iterate the arbitration table to get the next virtual lane*/
-    transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
+    //transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
 
     bool isDone = false;
     while (!isDone) {

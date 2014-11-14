@@ -1,21 +1,20 @@
 #ifndef OPTIQ_H
 #define OPTIQ_H
 
-#include <core/system/topology.h>
-#include <core/structures/graph.h>
-#include <model/request.h>
-#include <engine/transport/transport.h>
+#include "job.h"
+#include "flow.h"
+#include "transport.h"
+#include "virtual_lane.h"
 
 struct optiq {
-    machine_type machine;
-    struct optiq_topology *topo;
-    struct optiq_graph *graph;
+    struct optiq_transport *transport;
+    struct optiq_virtual_lane *virtual_lanes;
 };
 
 extern struct optiq *opq;
 
 void optiq_init();
-void optiq_get_topology_from_file(char *filePath);
-void optiq_generate_model_data(char *filePath);
+void optiq_schedule(int source, int dest, int nbyte, void *buffer);
+void optiq_execute();
 
 #endif

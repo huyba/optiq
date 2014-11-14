@@ -29,25 +29,6 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 
     pami_transport = (struct optiq_pami_transport *) optiq_transport_get_concrete_transport(self);
     pami_transport->num_contexts = 1;
-    pami_transport->jobs = self->jobs;
-
-    pami_transport->avail_messages = &self->avail_messages;
-    pami_transport->in_use_messages = &self->in_use_messages;
-    pami_transport->messages_no_buffer = &self->messages_no_buffer;
-
-    /*Prepare cookies for sending*/
-    struct optiq_send_cookie *send_cookies = (struct optiq_send_cookie *)malloc(sizeof(struct optiq_send_cookie) * NUM_SEND_COOKIES);
-    for (int i = 0; i < NUM_SEND_COOKIES; i++) {
-        send_cookies[i].sent = &(pami_transport->in_use_send_cookies);
-        pami_transport->avail_send_cookies.push_back(send_cookies + i);
-    }
-
-    /*Prepare cookies for receiving*/
-    struct optiq_recv_cookie *recv_cookies = (struct optiq_recv_cookie *)malloc(sizeof(struct optiq_recv_cookie) * NUM_RECV_COOKIES);
-    for (int i = 0; i < NUM_RECV_COOKIES; i++) {
-        recv_cookies[i].received = &pami_transport->in_use_recv_cookies;
-        pami_transport->avail_recv_cookies.push_back(recv_cookies + i);
-    }
 
     /*
     * Create client
@@ -103,7 +84,31 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     if (result != PAMI_SUCCESS) {
         return;
     }
-    
+
+    /*Other initialization*/
+    pami_transport->jobs = self->jobs;
+    pami_transport->avail_messages = &self->avail_messages;
+    pami_transport->in_use_messages = &self->in_use_messages;
+    pami_transport->messages_no_buffer = &self->messages_no_buffer;
+
+    /*Prepare cookies for sending*/
+    struct optiq_send_cookie *send_cookies = (struct optiq_send_cookie *)malloc(sizeof(struct optiq_send_cookie) * NUM_SEND_COOKIES);
+    if (send_cookies == NULL) {
+        printf("Memory alloc error for send_cookies\n");
+    }
+
+    for (int i = 0; i < NUM_SEND_COOKIES; i++) {
+        send_cookies[i].sent = &(pami_transport->in_use_send_cookies);
+        printf("Rank %d add %dth element into send_cookies\n", self->rank, i);
+        (pami_transport->avail_send_cookies).push_back((struct optiq_send_cookie *)&send_cookies[i]);
+    }
+
+    /*Prepare cookies for receiving*/
+    struct optiq_recv_cookie *recv_cookies = (struct optiq_recv_cookie *)malloc(sizeof(struct optiq_recv_cookie) * NUM_RECV_COOKIES);
+    for (int i = 0; i < NUM_RECV_COOKIES; i++) {
+        recv_cookies[i].received = &(pami_transport->in_use_recv_cookies);
+        pami_transport->avail_recv_cookies.push_back(&recv_cookies[i]);
+    }   
 #endif
 }
 
