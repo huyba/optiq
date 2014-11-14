@@ -1,7 +1,8 @@
 #include <stdio.h>
 
+#include "message.h"
 #include "virtual_lane.h"
-#include "transport/transport.h"
+#include "transport.h"
 
 void print_arbitration_table(vector<struct optiq_arbitration> ab)
 {
@@ -66,12 +67,12 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
                             virtual_lanes[i].requests.front()->current_offset += nbytes;
                         }
 
-			struct optiq_message instant;
-			instant.buffer = &message->buffer[message->current_offset];
-			instant.length = nbytes;
-                        instant.current_offset = 0;
-                        instant.next_dest = message->next_dest;
-                        instant.header = message->header;
+			struct optiq_message *instant = get_message_with_no_buffer(&transport->messages_no_buffer);
+			instant->buffer = &message->buffer[message->current_offset];
+			instant->length = nbytes;
+                        instant->current_offset = 0;
+                        instant->next_dest = message->next_dest;
+                        instant->header = message->header;
 
                         optiq_transport_send(transport, instant);
 

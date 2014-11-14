@@ -11,6 +11,10 @@
 #include "gni/gni_transport.h"
 #include "nonblk_mpi/nonblk_mpi_transport.h"
 
+#define NUM_MESSAGES_NO_BUFFER 64
+
+using namespace std;
+
 enum optiq_transport_type {
     PAMI = 1,
     GNI = 2,
@@ -24,11 +28,15 @@ struct optiq_transport {
     int size;
     int rank;
     vector<struct optiq_job> *jobs;
+
+    vector<struct optiq_message *> in_use_messages;
+    vector<struct optiq_message *> avail_messages;
+    vector<struct optiq_message *> messages_no_buffer;
 };
 
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type);
 
-void optiq_transport_send(struct optiq_transport *self, struct optiq_message &message);
+void optiq_transport_send(struct optiq_transport *self, struct optiq_message *message);
 
 void* optiq_transport_get_concrete_transport(struct optiq_transport *self);
 

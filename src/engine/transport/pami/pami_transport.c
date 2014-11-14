@@ -28,6 +28,10 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     pami_transport->num_contexts = 1;
     pami_transport->jobs = self->jobs;
 
+    pami_transport->avail_messages = self->avail_messages;
+    pami_transport->in_use_messages = self->in_use_messages;
+    pami_transport->messages_no_buffer = self->messages_no_buffer;
+
     /*Prepare cookies for sending*/
     struct optiq_send_cookie *send_cookies = (struct optiq_send_cookie *)malloc(sizeof(struct optiq_send_cookie) * NUM_SEND_COOKIES);
     for (int i = 0; i < NUM_SEND_COOKIES; i++) {
@@ -40,12 +44,6 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     for (int i = 0; i < NUM_RECV_COOKIES; i++) {
         recv_cookies[i].received = &pami_transport->in_use_recv_cookies;
         pami_transport->avail_recv_cookies.push_back(recv_cookies + i);
-    }
-
-    struct optiq_message *messages = (struct optiq_message *)malloc(sizeof(struct optiq_message) * NUM_MESSAGES);
-    for (int i = 0; i < NUM_MESSAGES; i++) {
-        messages[i].buffer = (char *)malloc(MESSAGE_SIZE);
-        pami_transport->avail_messages.push_back(messages + i);
     }
 
     /*
@@ -106,9 +104,9 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 #endif
 }
 
-int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message &message)
+int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message *message)
 {
-    printf("Transport data of size %d to dest %d with flow_id = %d\n", message.length, message.next_dest, message.header.flow_id);
+    printf("Transport data of size %d to dest %d with flow_id = %d\n", message->length, message->next_dest, message->header.flow_id);
 #ifdef __bgq__
     pami_result_t result;
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
@@ -123,16 +121,16 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
         send_cookie->sent = &pami_transport->in_use_send_cookies;
     }
 
-    send_cookie->message = &message;
+    send_cookie->message = message;
 
-    if (message.length <= MAX_SHORT_MESSAGE_LENGTH) {
+    if (message->length <= MAX_SHORT_MESSAGE_LENGTH) {
         pami_send_immediate_t parameter;
         parameter.dispatch = RECV_MESSAGE_DISPATCH_ID;
-        parameter.header.iov_base = (void *)&message.header;
+        parameter.header.iov_base = (void *)&message->header;
         parameter.header.iov_len = sizeof(struct optiq_message_header);
-        parameter.data.iov_base = (void *)message.buffer;
-        parameter.data.iov_len = message.length;
-        parameter.dest = pami_transport->endpoints[message.next_dest];
+        parameter.data.iov_base = (void *)message->buffer;
+        parameter.data.iov_len = message->length;
+        parameter.dest = pami_transport->endpoints[message->next_dest];
 
         result = PAMI_Send_immediate (pami_transport->context, &parameter);
         assert(result == PAMI_SUCCESS);
@@ -144,12 +142,12 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
         (*send_cookie->sent).push_back(send_cookie);
     } else {
         pami_send_t param_send;
-        param_send.send.dest = message.next_dest;
+        param_send.send.dest = message->next_dest;
         param_send.send.dispatch = RECV_MESSAGE_DISPATCH_ID;
-        param_send.send.header.iov_base = (void *)&message.header;
+        param_send.send.header.iov_base = (void *)&message->header;
         param_send.send.header.iov_len = sizeof(struct optiq_message_header);
-        param_send.send.data.iov_base = (void *)message.buffer;
-        param_send.send.data.iov_len = message.length;
+        param_send.send.data.iov_base = (void *)message->buffer;
+        param_send.send.data.iov_len = message->length;
         param_send.events.cookie = (void *)&send_cookie;
         param_send.events.local_fn = optiq_send_done_fn;
         param_send.events.remote_fn = NULL;
@@ -169,7 +167,7 @@ int optiq_pami_transport_destroy(struct optiq_transport *self)
 
 }
 
-int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message &message)
+int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message *message)
 {
 
 }

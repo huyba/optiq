@@ -14,12 +14,25 @@ void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_typ
 	/*self->transport_implementation = &optiq_tcp_ip_transport_implementation;*/
     }
 
+    /*Init a number of messages with buffer for receiving incomming messages*/
+    struct optiq_message *messages = (struct optiq_message *)malloc(sizeof(struct optiq_message) * NUM_MESSAGES);
+    for (int i = 0; i < NUM_MESSAGES; i++) {
+        messages[i].buffer = (char *)malloc(MESSAGE_SIZE);
+        self->avail_messages.push_back(messages + i);
+    }
+
+    /*Init a number of messages without buffer for sending messages*/
+    struct optiq_message *send_messages = (struct optiq_message *)malloc(sizeof(struct optiq_message) * NUM_MESSAGES_NO_BUFFER);
+    for (int i = 0; i < NUM_MESSAGES_NO_BUFFER; i++) {
+        self->messages_no_buffer.push_back(send_messages + i);
+    }
+
     self->type = type;
     self->concrete_transport = NULL;
     self->transport_implementation->init(self);
 }
 
-void optiq_transport_send(struct optiq_transport *self, struct optiq_message &message)
+void optiq_transport_send(struct optiq_transport *self, struct optiq_message *message)
 {
     self->transport_implementation->send(self, message);
 }

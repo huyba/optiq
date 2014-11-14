@@ -10,7 +10,7 @@ void optiq_gni_transport_init(struct optiq_transport *self)
 
 }
 
-int optiq_gni_transport_send(struct optiq_transport *self, struct optiq_message &message)
+int optiq_gni_transport_send(struct optiq_transport *self, struct optiq_message *message)
 {
     return 0;
 }
