@@ -32,24 +32,24 @@ void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_typ
     self->transport_implementation->init(self);
 }
 
-void optiq_transport_send(struct optiq_transport *self, struct optiq_message *message)
+int  optiq_transport_send(struct optiq_transport *self, struct optiq_message *message)
 {
-    self->transport_implementation->send(self, message);
+    return self->transport_implementation->send(self, message);
 }
 
-void optiq_transport_recv(struct optiq_transport *self, struct optiq_message *message)
+int optiq_transport_recv(struct optiq_transport *self, struct optiq_message *message)
 {
-    self->transport_implementation->recv(self, message);
+    return self->transport_implementation->recv(self, message);
 }
 
-void optiq_transport_test(struct optiq_transport *self, struct optiq_job *job)
+bool optiq_transport_test(struct optiq_transport *self, struct optiq_job *job)
 {
-    self->transport_implementation->test(self, job);
+    return self->transport_implementation->test(self, job);
 }
 
-void optiq_transport_destroy(struct optiq_transport *self)
+int optiq_transport_destroy(struct optiq_transport *self)
 {
-    self->transport_implementation->destroy(self);
+    return self->transport_implementation->destroy(self);
 }
 
 void* optiq_transport_get_concrete_transport(struct optiq_transport *self)
