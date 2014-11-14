@@ -35,8 +35,8 @@ all: $(OBJ) liboptiq.a
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
 liboptiq.a: $(OBJ)
-        rm -f $@
-        ar cq $@ $(OBJ)
+	rm -f $@
+	ar cq $@ $(OBJ)
 
 clean:
 	$(RM) $(RMFLAGS) *.o
