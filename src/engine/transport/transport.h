@@ -23,6 +23,8 @@ enum optiq_transport_type {
     NONBLK_MPI = 3
 };
 
+struct optiq_virtual_lane;
+
 struct optiq_transport {
     struct optiq_transport_interface *transport_implementation;
     void *concrete_transport;
@@ -34,6 +36,8 @@ struct optiq_transport {
     vector<struct optiq_message *> in_use_recv_messages;
     vector<struct optiq_message *> avail_recv_messages;
     vector<struct optiq_message *> avail_send_messages;
+
+    vector<struct optiq_virtual_lane> *virtual_lanes;
 };
 
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type);

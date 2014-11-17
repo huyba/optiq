@@ -14,7 +14,7 @@ void print_arbitration_table(vector<struct optiq_arbitration> ab)
     }
 }
 
-void print_virtual_lanes(vector<struct optiq_virtual_lane> virtual_lanes)
+void print_virtual_lanes(vector<struct optiq_virtual_lane> &virtual_lanes)
 {
     int num_virtual_lanes = virtual_lanes.size();
 
@@ -114,16 +114,16 @@ void create_virtual_lane_arbitration_table(vector<struct optiq_virtual_lane> &vi
     }
 }
 
-void add_message_to_virtual_lanes(struct optiq_message *message, vector<struct optiq_virtual_lane> &virtual_lanes)
+void add_message_to_virtual_lanes(struct optiq_message *message, vector<struct optiq_virtual_lane> *virtual_lanes)
 {
-    for (int i = 0; i < virtual_lanes.size(); i++) {
-        if (message->header.flow_id == virtual_lanes[i].id) {
-            virtual_lanes[i].requests.push_back(message);
+    for (int i = 0; i < (*virtual_lanes).size(); i++) {
+        if (message->header.flow_id == (*virtual_lanes)[i].id) {
+            (*virtual_lanes)[i].requests.push_back(message);
         }
     }
 }
 
-void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual_lane> &virtual_lanes)
+void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual_lane> *virtual_lanes)
 {
     char *buffer = (char *)job.buffer;
     int data_size = job.demand;
@@ -135,7 +135,7 @@ void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual
         total_local_throughput += job.flows[i].throughput;
     }
 
-    int num_virtual_lanes = virtual_lanes.size();
+    int num_virtual_lanes = (*virtual_lanes).size();
 
     /*Fill in the virtual lanes with data from local jobs*/
     int global_offset = 0, length = 0;

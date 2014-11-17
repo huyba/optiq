@@ -38,6 +38,8 @@ int main(int argc, char **argv)
 
     create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
 
+    transport.virtual_lanes = &virtual_lanes;
+
     int data_size = 4*1024*1024;
     char *buffer = (char *)malloc(data_size);
 
@@ -52,7 +54,7 @@ int main(int argc, char **argv)
     if (world_rank < 85) {
         local_job.buffer = buffer;
         local_job.demand = data_size;
-        add_job_to_virtual_lanes(local_job, virtual_lanes);
+        add_job_to_virtual_lanes(local_job, &virtual_lanes);
     }
 
     if(world_rank == 0) {

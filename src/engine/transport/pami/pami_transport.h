@@ -45,7 +45,10 @@ struct optiq_pami_transport {
 
     vector<struct optiq_message *> *in_use_recv_messages;
     vector<struct optiq_message *> *avail_recv_messages;
+    vector<struct optiq_message *> local_messages;
     vector<struct optiq_message *> *avail_send_messages;
+
+    vector<struct optiq_virtual_lane> *virtual_lanes;
 
     vector<struct optiq_job> *jobs;
     int node_id;
