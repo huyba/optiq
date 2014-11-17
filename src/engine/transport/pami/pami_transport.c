@@ -209,14 +209,16 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
     for (int i = 0; i < pami_transport->local_messages.size(); i++) {
         struct optiq_message *instant = pami_transport->local_messages.back();
 
-        memcpy((void *)message->buffer[instant->header.original_offset], (const void*)instant->buffer, instant->length);
-        message->recv_length += instant->length;
+        if (instant->header.flow_id == message->header.flow_id) {
+            memcpy((void *)message->buffer[instant->header.original_offset], (const void*)instant->buffer, instant->length);
+            message->recv_length += instant->length;
 
-        pami_transport->local_messages.pop_back();
-        (*pami_transport->avail_recv_messages).push_back(instant);
+            pami_transport->local_messages.pop_back();
+            (*pami_transport->avail_recv_messages).push_back(instant);
 
-        if (message->recv_length == instant->header.original_length) {
-            return 1;
+            if (message->recv_length == instant->header.original_length) {
+                return 1;
+            }
         }
     }
 
