@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "memory.h"
 #include "transport.h"
 
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type)
@@ -15,14 +16,16 @@ void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_typ
     }
 
     /*Init a number of messages with buffer for receiving incomming messages*/
-    struct optiq_message *recv_messages = (struct optiq_message *)malloc(sizeof(struct optiq_message) * NUM_RECV_MESSAGES);
+    struct optiq_message *recv_messages = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message) * NUM_RECV_MESSAGES, "recv_messsage", "transport_init");
+
     for (int i = 0; i < NUM_RECV_MESSAGES; i++) {
-        recv_messages[i].buffer = (char *)malloc(RECV_MESSAGE_SIZE);
+        recv_messages[i].buffer = (char *)core_memory_alloc(RECV_MESSAGE_SIZE, "recv_message buffer", "transport_init");
         self->avail_recv_messages.push_back(recv_messages + i);
     }
 
     /*Init a number of messages without buffer for sending messages*/
-    struct optiq_message *send_messages = (struct optiq_message *)malloc(sizeof(struct optiq_message) * NUM_SEND_MESSAGES);
+    struct optiq_message *send_messages = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message) * NUM_SEND_MESSAGES, "send_messages", "transport_init");
+
     for (int i = 0; i < NUM_SEND_MESSAGES; i++) {
         self->avail_send_messages.push_back(send_messages + i);
     }
@@ -56,11 +59,11 @@ void* optiq_transport_get_concrete_transport(struct optiq_transport *self)
 {
     if (self->concrete_transport == NULL) {
 	if (self->type == PAMI) {
-	    self->concrete_transport = (struct optiq_pami_transport *)malloc(sizeof(struct optiq_pami_transport));
+	    self->concrete_transport = (struct optiq_pami_transport *)core_memory_alloc(sizeof(struct optiq_pami_transport), "pami concrete transport", "get_concrete_transport");
 	} else if (self->type == GNI) {
-	    self->concrete_transport = (struct optiq_gni_transport *)malloc(sizeof(struct optiq_gni_transport));
+	    self->concrete_transport = (struct optiq_gni_transport *)core_memory_alloc(sizeof(struct optiq_gni_transport), "gni concrete transport", "get_concrete_transport");
 	} else if (self->type == NONBLK_MPI) {
-	    self->concrete_transport = (struct optiq_nonblk_mpi_transport *)malloc(sizeof(struct optiq_nonblk_mpi_transport));
+	    self->concrete_transport = (struct optiq_nonblk_mpi_transport *)core_memory_alloc(sizeof(struct optiq_nonblk_mpi_transport), "nonblk concrete transport", "get_concrete_transport");
 	} else {
 
 	}
