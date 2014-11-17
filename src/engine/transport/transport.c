@@ -16,15 +16,15 @@ void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_typ
     }
 
     /*Init a number of messages with buffer for receiving incomming messages*/
-    struct optiq_message *recv_messages = get_messages_with_buffer(NUM_RECV_MESSAGES, RECV_MESSAGE_SIZE);
+    struct optiq_message **recv_messages = get_messages_with_buffer(NUM_RECV_MESSAGES, RECV_MESSAGE_SIZE);
     for (int i = 0; i < NUM_RECV_MESSAGES; i++) {
-        self->avail_recv_messages.push_back(recv_messages + i);
+        self->avail_recv_messages.push_back(recv_messages[i]);
     }
 
     /*Init a number of messages without buffer for sending messages*/
-    struct optiq_message *send_messages = get_messages(NUM_SEND_MESSAGES);
+    struct optiq_message **send_messages = get_messages(NUM_SEND_MESSAGES);
     for (int i = 0; i < NUM_SEND_MESSAGES; i++) {
-        self->avail_send_messages.push_back(send_messages + i);
+        self->avail_send_messages.push_back(send_messages[i]);
     }
 
     self->type = type;
@@ -49,7 +49,28 @@ bool optiq_transport_test(struct optiq_transport *self, struct optiq_job *job)
 
 int optiq_transport_destroy(struct optiq_transport *self)
 {
-    return self->transport_implementation->destroy(self);
+    self->transport_implementation->destroy(self);
+
+    free(self->concrete_transport);
+
+    struct optiq_message *message;
+
+    /*Free send_messages*/
+    while (self->avail_send_messages.size() > 0) {
+        message = self->avail_send_messages.back();
+        self->avail_send_messages.pop_back();
+        free(message);
+    }
+
+    /*Free recv_messages*/
+    while (self->avail_recv_messages.size() > 0) {
+        message = self->avail_recv_messages.back();
+        self->avail_recv_messages.pop_back();
+        free(message->buffer);
+        free(message);
+    }
+
+    return 0;
 }
 
 void* optiq_transport_get_concrete_transport(struct optiq_transport *self)
