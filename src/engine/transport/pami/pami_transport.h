@@ -20,19 +20,17 @@ extern struct optiq_transport_interface optiq_pami_transport_implementation;
 #define NUM_SEND_COOKIES 64
 #define NUM_RECV_COOKIES 64
 
-#define NUM_MESSAGES 64
-#define MESSAGE_SIZE (2*1024*1024)
-
 struct optiq_send_cookie;
+struct optiq_pami_transport;
 
 struct optiq_send_cookie {
     struct optiq_message *message;
-    vector<struct optiq_send_cookie *> *sent;
+    struct optiq_pami_transport *pami_transport;
 };
 
 struct optiq_recv_cookie {
     struct optiq_message *message;
-    vector<struct optiq_recv_cookie *> *received;
+    struct optiq_pami_transport *pami_transport;
 };
 
 struct optiq_pami_transport {
@@ -44,9 +42,10 @@ struct optiq_pami_transport {
     vector<struct optiq_recv_cookie *> in_use_recv_cookies;
     vector<struct optiq_send_cookie *> avail_send_cookies;
     vector<struct optiq_send_cookie *> in_use_send_cookies;
-    vector<struct optiq_message *> *in_use_messages;
-    vector<struct optiq_message *> *avail_messages;
-    vector<struct optiq_message *> *messages_no_buffer;
+
+    vector<struct optiq_message *> *in_use_recv_messages;
+    vector<struct optiq_message *> *avail_recv_messages;
+    vector<struct optiq_message *> *avail_send_messages;
 
     vector<struct optiq_job> *jobs;
     int node_id;

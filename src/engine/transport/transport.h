@@ -11,7 +11,9 @@
 #include "gni/gni_transport.h"
 #include "nonblk_mpi/nonblk_mpi_transport.h"
 
-#define NUM_MESSAGES_NO_BUFFER 64
+#define RECV_MESSAGE_SIZE (2*1024*1024)
+#define NUM_RECV_MESSAGES 64
+#define NUM_SEND_MESSAGES 64
 
 using namespace std;
 
@@ -29,9 +31,9 @@ struct optiq_transport {
     int rank;
     vector<struct optiq_job> *jobs;
 
-    vector<struct optiq_message *> in_use_messages;
-    vector<struct optiq_message *> avail_messages;
-    vector<struct optiq_message *> messages_no_buffer;
+    vector<struct optiq_message *> in_use_recv_messages;
+    vector<struct optiq_message *> avail_recv_messages;
+    vector<struct optiq_message *> avail_send_messages;
 };
 
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type);

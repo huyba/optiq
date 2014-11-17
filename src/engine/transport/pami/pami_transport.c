@@ -87,9 +87,9 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 
     /*Other initialization*/
     pami_transport->jobs = self->jobs;
-    pami_transport->avail_messages = &self->avail_messages;
-    pami_transport->in_use_messages = &self->in_use_messages;
-    pami_transport->messages_no_buffer = &self->messages_no_buffer;
+    pami_transport->avail_recv_messages = &self->avail_recv_messages;
+    pami_transport->in_use_recv_messages = &self->in_use_recv_messages;
+    pami_transport->avail_send_messages = &self->avail_send_messages;
 
     /*Prepare cookies for sending*/
     struct optiq_send_cookie *send_cookies = (struct optiq_send_cookie *)malloc(sizeof(struct optiq_send_cookie) * NUM_SEND_COOKIES);
@@ -98,17 +98,17 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     }
 
     for (int i = 0; i < NUM_SEND_COOKIES; i++) {
-        send_cookies[i].sent = &(pami_transport->in_use_send_cookies);
+        send_cookies[i].pami_transport = pami_transport;
         printf("Rank %d add %dth element into send_cookies\n", self->rank, i);
-        (pami_transport->avail_send_cookies).push_back((struct optiq_send_cookie *)&send_cookies[i]);
+        //pami_transport->avail_send_cookies.push_back(send_cookies + i);
     }
 
     /*Prepare cookies for receiving*/
     struct optiq_recv_cookie *recv_cookies = (struct optiq_recv_cookie *)malloc(sizeof(struct optiq_recv_cookie) * NUM_RECV_COOKIES);
     for (int i = 0; i < NUM_RECV_COOKIES; i++) {
-        recv_cookies[i].received = &(pami_transport->in_use_recv_cookies);
-        pami_transport->avail_recv_cookies.push_back(&recv_cookies[i]);
-    }   
+        recv_cookies[i].pami_transport = pami_transport;
+        //pami_transport->avail_recv_cookies.push_back(recv_cookies + i);
+    }
 #endif
 }
 
@@ -126,7 +126,7 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
         pami_transport->avail_send_cookies.pop_back();
     } else {
         send_cookie = (struct optiq_send_cookie *)malloc(sizeof(struct optiq_send_cookie));
-        send_cookie->sent = &pami_transport->in_use_send_cookies;
+        send_cookie->pami_transport = pami_transport;
     }
 
     send_cookie->message = message;
@@ -146,8 +146,8 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
             return 1;
         }
 
-        /*Add the cookie to the queue of sent messages*/
-        (*send_cookie->sent).push_back(send_cookie);
+        /*Add the cookie to the vector of in-use send cookies*/
+        pami_transport->in_use_send_cookies.push_back(send_cookie);
     } else {
         pami_send_t param_send;
         param_send.send.dest = message->next_dest;
@@ -196,7 +196,7 @@ bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *j
         pami_transport->in_use_send_cookies.pop_back();
         pami_transport->avail_send_cookies.push_back(send_cookie);
 
-        (*pami_transport->messages_no_buffer).push_back(send_cookie->message);
+        (*pami_transport->avail_send_messages).push_back(send_cookie->message);
     
         for (int i = 0; i < job->flows.size(); i++) {
             if (send_cookie->message->header.flow_id == job->flows[i].id) {
@@ -219,7 +219,7 @@ bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *j
 /*
  * Process the incomming message. Either forward it by putting it in a virtual lane or keep it
  * */
-int optiq_pami_transport_process_incomming_message(vector<struct optiq_recv_cookie *> *received)
+int optiq_pami_transport_process_incomming_message(vector<struct optiq_recv_cookie *> &received)
 {
 
 }
@@ -228,16 +228,16 @@ int optiq_pami_transport_process_incomming_message(vector<struct optiq_recv_cook
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result)
 {
     struct optiq_recv_cookie *recv_cookie = (struct optiq_recv_cookie *)cookie;
-    (*recv_cookie->received).push_back(recv_cookie);
+    recv_cookie->pami_transport->in_use_recv_cookies.push_back(recv_cookie);
 
-    optiq_pami_transport_process_incomming_message(recv_cookie->received);
+    optiq_pami_transport_process_incomming_message(recv_cookie->pami_transport->in_use_recv_cookies);
 }
 
 void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result)
 {
     /*Add send cookie into in_use_cookie*/
     struct optiq_send_cookie *send_cookie = (struct optiq_send_cookie *)cookie;
-    (*send_cookie->sent).push_back(send_cookie);
+    send_cookie->pami_transport->avail_send_cookies.push_back(send_cookie);
 }
 
 void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
@@ -250,17 +250,17 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
     struct optiq_message *message;
 
     /*If incomming message is larger than the default size, need to allocate new memory*/
-    if (data_size > MESSAGE_SIZE) {
+    if (data_size > RECV_MESSAGE_SIZE) {
         message = (struct optiq_message *)malloc(sizeof(struct optiq_message));
         message->buffer = (char *)malloc(data_size);
     } else {
         /*If there is still available message to use*/
-        if ((*pami_transport->avail_messages).size() > 0) {
-            message = (*pami_transport->avail_messages).back();
-            (*pami_transport->avail_messages).pop_back();
+        if ((*pami_transport->avail_recv_messages).size() > 0) {
+            message = (*pami_transport->avail_recv_messages).back();
+            (*pami_transport->avail_recv_messages).pop_back();
         } else {
             message = (struct optiq_message *)malloc(sizeof(struct optiq_message));
-            message->buffer = (char *)malloc(MESSAGE_SIZE);
+            message->buffer = (char *)malloc(RECV_MESSAGE_SIZE);
         }
     }
 
@@ -276,15 +276,15 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
         pami_transport->avail_recv_cookies.pop_back();
     } else {
         recv_cookie = (struct optiq_recv_cookie *) malloc(sizeof(struct optiq_recv_cookie));
-        recv_cookie->received = &pami_transport->in_use_recv_cookies;
+        recv_cookie->pami_transport = pami_transport;
     }
 
     recv_cookie->message = message;
 
     if (data != NULL) {
         memcpy(message->buffer, data, data_size);
-        (*recv_cookie->received).push_back(recv_cookie);
-        optiq_pami_transport_process_incomming_message(recv_cookie->received);
+        pami_transport->in_use_recv_cookies.push_back(recv_cookie);
+        optiq_pami_transport_process_incomming_message(pami_transport->in_use_recv_cookies);
     } else {
         recv->local_fn = optiq_recv_done_fn;
         recv->cookie = (void *)recv_cookie;

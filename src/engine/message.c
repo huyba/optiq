@@ -3,7 +3,7 @@
 
 #include "message.h"
 
-struct optiq_message* get_message_with_no_buffer(vector<struct optiq_message *> *messages)
+struct optiq_message* get_send_message(vector<struct optiq_message *> *messages)
 {
     struct optiq_message *message = NULL;
 

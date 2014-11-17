@@ -67,7 +67,7 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
                             virtual_lanes[i].requests.front()->current_offset += nbytes;
                         }
 
-			struct optiq_message *instant = get_message_with_no_buffer(&transport->messages_no_buffer);
+			struct optiq_message *instant = get_send_message(&transport->avail_send_messages);
 			instant->buffer = &message->buffer[message->current_offset];
 			instant->length = nbytes;
                         instant->current_offset = 0;
