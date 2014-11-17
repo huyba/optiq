@@ -193,16 +193,16 @@ bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *j
     /*Return cookie, messag back to available queues. Adding message sent to flow's*/
     while (pami_transport->in_use_send_cookies.size() > 0) {
         send_cookie = pami_transport->in_use_send_cookies.back();
-        pami_transport->in_use_send_cookies.pop_back();
-        pami_transport->avail_send_cookies.push_back(send_cookie);
-
-        (*pami_transport->avail_send_messages).push_back(send_cookie->message);
     
         for (int i = 0; i < job->flows.size(); i++) {
             if (send_cookie->message->header.flow_id == job->flows[i].id) {
                 job->flows[i].sent_bytes == send_cookie->message->length;
             }
         }
+
+        pami_transport->in_use_send_cookies.pop_back();
+        pami_transport->avail_send_cookies.push_back(send_cookie);
+        (*pami_transport->avail_send_messages).push_back(send_cookie->message);
     }
 
     /*Checking if every flow is done*/
@@ -237,7 +237,7 @@ void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t resu
 {
     /*Add send cookie into in_use_cookie*/
     struct optiq_send_cookie *send_cookie = (struct optiq_send_cookie *)cookie;
-    send_cookie->pami_transport->avail_send_cookies.push_back(send_cookie);
+    send_cookie->pami_transport->in_use_send_cookies.push_back(send_cookie);
 }
 
 void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
