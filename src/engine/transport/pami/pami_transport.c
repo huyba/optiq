@@ -61,6 +61,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     contexts = query_configurations[2].value.intval;
     pami_transport->rank = self->rank;
     pami_transport->size = self->size;
+    pami_transport->node_id = self->rank;
     pami_transport->virtual_lanes = self->virtual_lanes;
 
     assert(contexts >= 1);
@@ -179,7 +180,27 @@ int optiq_pami_transport_destroy(struct optiq_transport *self)
 /* Return 1 if entire message is ready, 0 if not*/
 int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message *message)
 {
+#ifdef __bgq__
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
 
+    PAMI_Context_advance (pami_transport->context, 100);
+
+    for (int i = 0; i < pami_transport->local_messages.size(); i++) {
+        struct optiq_message *instant = pami_transport->local_messages.back();
+
+        memcpy((void *)message->buffer[instant->header.original_offset], (const void*)instant->buffer, instant->length);
+        message->length += instant->length;
+
+        pami_transport->local_messages.pop_back();
+        pami_transport->local_messages.push_back(instant);
+
+        if (message->length == instant->header.original_length) {
+            return 1;
+        }
+    }
+
+#endif
+    return 0;
 }
 
 bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *job)
@@ -233,6 +254,7 @@ int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *
         } 
         /*If the final destination is at other node, put the message to the virtual lane*/
         else {
+            message->next_dest = get_next_dest_from_jobs(*(pami_transport->jobs), message->header.flow_id, pami_transport->node_id);
             add_message_to_virtual_lanes(message, pami_transport->virtual_lanes);
         }
 
@@ -271,21 +293,18 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 
     /*If incomming message is larger than the default size, need to allocate new memory*/
     if (data_size > RECV_MESSAGE_SIZE) {
-        message = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message), "message", "recv_message_fn");
-        message->buffer = (char *)core_memory_alloc(data_size, "message->buffer", "recv_message_fn");
+        message = get_message_with_buffer(data_size);
     } else {
         /*If there is still available message to use*/
         if ((*pami_transport->avail_recv_messages).size() > 0) {
             message = (*pami_transport->avail_recv_messages).back();
             (*pami_transport->avail_recv_messages).pop_back();
         } else {
-            message = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message), "message", "recv_message_fn");
-            message->buffer = (char *)core_memory_alloc(RECV_MESSAGE_SIZE, "message->buffer", "recv_message_fn");
+            message = get_message_with_buffer(RECV_MESSAGE_SIZE);
         }
     }
 
     memcpy(&message->header, header, sizeof(struct optiq_message_header));
-    message->next_dest = get_next_dest_from_jobs(*(pami_transport->jobs), message->header.flow_id, pami_transport->node_id);
     message->length = data_size;
     message->current_offset = 0;
 

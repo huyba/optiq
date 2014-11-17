@@ -16,16 +16,13 @@ void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_typ
     }
 
     /*Init a number of messages with buffer for receiving incomming messages*/
-    struct optiq_message *recv_messages = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message) * NUM_RECV_MESSAGES, "recv_messsage", "transport_init");
-
+    struct optiq_message *recv_messages = get_messages_with_buffer(NUM_RECV_MESSAGES, RECV_MESSAGE_SIZE);
     for (int i = 0; i < NUM_RECV_MESSAGES; i++) {
-        recv_messages[i].buffer = (char *)core_memory_alloc(RECV_MESSAGE_SIZE, "recv_message buffer", "transport_init");
         self->avail_recv_messages.push_back(recv_messages + i);
     }
 
     /*Init a number of messages without buffer for sending messages*/
-    struct optiq_message *send_messages = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message) * NUM_SEND_MESSAGES, "send_messages", "transport_init");
-
+    struct optiq_message *send_messages = get_messages(NUM_SEND_MESSAGES);
     for (int i = 0; i < NUM_SEND_MESSAGES; i++) {
         self->avail_send_messages.push_back(send_messages + i);
     }
