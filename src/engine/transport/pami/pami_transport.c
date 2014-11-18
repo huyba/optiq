@@ -99,15 +99,15 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     for (int i = 0; i < NUM_SEND_COOKIES; i++) {
         struct optiq_send_cookie *send_cookie = (struct optiq_send_cookie *)core_memory_alloc(sizeof(struct optiq_send_cookie), "send_cookies", "pami_init");
         send_cookie->pami_transport = pami_transport;
-        printf("Rank %d add %dth element into send_cookies\n", self->rank, i);
         pami_transport->avail_send_cookies.push_back(send_cookie);
     }
 
     /*Prepare cookies for receiving*/
+    vector<struct optiq_recv_cookie *> avail_recv_cookies;
     for (int i = 0; i < NUM_RECV_COOKIES; i++) {
         struct optiq_recv_cookie *recv_cookie = (struct optiq_recv_cookie *)core_memory_alloc(sizeof(struct optiq_recv_cookie), "recv_cookies", "pami_init");
         recv_cookie->pami_transport = pami_transport;
-        pami_transport->avail_recv_cookies.push_back(recv_cookie);
+        avail_recv_cookies.push_back(recv_cookie);
     }
 #endif
 }
@@ -248,7 +248,7 @@ bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *j
 
         pami_transport->in_use_send_cookies.pop_back();
         pami_transport->avail_send_cookies.push_back(send_cookie);
-        (*pami_transport->avail_send_messages).push_back(send_cookie->message);
+        (*(pami_transport->avail_send_messages)).push_back(send_cookie->message);
     }
 
     /*Checking if every flow is done*/

@@ -1,6 +1,11 @@
 #ifndef OPTIQ_PAMI_TRANSPORT_H
 #define OPTIQ_PAMI_TRANSPORT_H
 
+#include <vector>
+#include <queue>
+
+using namespace std;
+
 #ifdef __bgq__
 #include <spi/include/kernel/location.h>
 #include <spi/include/kernel/process.h>
@@ -20,7 +25,6 @@ extern struct optiq_transport_interface optiq_pami_transport_implementation;
 #define NUM_SEND_COOKIES 64
 #define NUM_RECV_COOKIES 64
 
-struct optiq_send_cookie;
 struct optiq_pami_transport;
 
 struct optiq_send_cookie {
@@ -34,16 +38,14 @@ struct optiq_recv_cookie {
 };
 
 struct optiq_pami_transport {
-#ifdef __bgq__
-    pami_client_t client;
-    pami_context_t context;
-    pami_endpoint_t *endpoints;
     vector<struct optiq_recv_cookie *> avail_recv_cookies;
     vector<struct optiq_recv_cookie *> in_use_recv_cookies;
+
     vector<struct optiq_send_cookie *> avail_send_cookies;
     vector<struct optiq_send_cookie *> in_use_send_cookies;
+
     vector<struct optiq_message *> local_messages;
-    
+
     vector<struct optiq_message *> *in_use_recv_messages;
     vector<struct optiq_message *> *avail_recv_messages;
     vector<struct optiq_message *> *avail_send_messages;
@@ -54,8 +56,14 @@ struct optiq_pami_transport {
     int node_id;
     int rank;
     int size;
-#endif
     size_t num_contexts;
+
+#ifdef __bgq__
+    pami_client_t client;
+    pami_context_t context;
+    pami_endpoint_t *endpoints;
+#endif
+
 };
 
 void optiq_pami_transport_init(struct optiq_transport *self);

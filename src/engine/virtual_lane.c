@@ -141,7 +141,7 @@ void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual
     int global_offset = 0, length = 0;
     for (int i = 0; i < job.flows.size(); i++) {
         length = ((double)job.flows[i].throughput / (double)total_local_throughput) * (double)data_size;
-        struct optiq_message *message = (struct optiq_message *)malloc(sizeof(struct optiq_message));
+        struct optiq_message *message = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message), "message", "add_job_to_virtual_lanes");
         message->header.original_length = data_size;
         message->header.original_offset = global_offset;
         message->header.flow_id = job.flows[i].id;

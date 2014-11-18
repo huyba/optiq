@@ -11,7 +11,7 @@ struct optiq_message* get_send_message(vector<struct optiq_message *> *messages)
         message = (*messages).back();
         (*messages).pop_back();
     } else {
-        message = (struct optiq_message *)malloc(sizeof(struct optiq_message));
+        message = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message), "message", "get_send_message");
     }
 
     return message;

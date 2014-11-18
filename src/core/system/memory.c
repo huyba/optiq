@@ -12,7 +12,7 @@ void* core_memory_pool_allocate(int size)
 
 void* core_memory_alloc(int size, string var_name, string function_name)
 {
-    void *buffer = malloc(size);
+    void *buffer = calloc(1, size);
 
     if (buffer == NULL) {
         char error_message[256];

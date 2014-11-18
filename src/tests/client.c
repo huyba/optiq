@@ -7,6 +7,7 @@
 
 #include "job.h"
 #include "flow.h"
+#include "message.h"
 #include "virtual_lane.h"
 #include "transport.h"
 
@@ -22,11 +23,14 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     struct optiq_transport transport;
+    printf("size of avail_send_messages %d\n", transport.avail_send_messages.size());
     optiq_transport_init(&transport, PAMI);
 
     if (world_rank == 0) {
         printf("Init transport successfully!\n");
     }
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     string file_path = "flow85";
 
@@ -39,6 +43,7 @@ int main(int argc, char **argv)
     create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
 
     transport.virtual_lanes = &virtual_lanes;
+    transport.jobs = &jobs;
 
     int data_size = 4*1024*1024;
     char *buffer = (char *)malloc(data_size);
@@ -64,14 +69,27 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    transport.jobs = &jobs;
     /*Iterate the arbitration table to get the next virtual lane*/
-    //transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
+    /*if (world_rank < 85) {
+        transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
 
-    bool isDone = false;
-    while (!isDone) {
-	isDone = optiq_transport_test(&transport, &local_job);
+        bool isDone = false;
+        while (!isDone) {
+            isDone = optiq_transport_test(&transport, &local_job);
+        }
     }
+
+    if ( 171 <= world_rank && world_rank <= 255) {
+        struct optiq_message *message = get_message_with_buffer(data_size);
+        int isDone = 0;
+        while (isDone == 0) {
+            isDone = optiq_transport_recv(&transport, message);
+        }
+    }*/
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    MPI_Finalize();
 
     return 0;
 }
