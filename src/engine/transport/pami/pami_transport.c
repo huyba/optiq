@@ -103,18 +103,17 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     }
 
     /*Prepare cookies for receiving*/
-    vector<struct optiq_recv_cookie *> avail_recv_cookies;
     for (int i = 0; i < NUM_RECV_COOKIES; i++) {
         struct optiq_recv_cookie *recv_cookie = (struct optiq_recv_cookie *)core_memory_alloc(sizeof(struct optiq_recv_cookie), "recv_cookies", "pami_init");
         recv_cookie->pami_transport = pami_transport;
-        avail_recv_cookies.push_back(recv_cookie);
+        pami_transport->avail_recv_cookies.push_back(recv_cookie);
     }
 #endif
 }
 
 int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message *message)
 {
-    printf("Transport data of size %d to dest %d with flow_id = %d\n", message->length, message->next_dest, message->header.flow_id);
+    printf("Rank %d sends data of size %d to dest %d with flow_id = %d\n", self->rank, message->length, message->next_dest, message->header.flow_id);
 #ifdef __bgq__
     pami_result_t result;
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
@@ -209,6 +208,8 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
     for (int i = 0; i < pami_transport->local_messages.size(); i++) {
         struct optiq_message *instant = pami_transport->local_messages.back();
 
+        printf("Rank %d received as the destination of a message of size %d\n", pami_transport->rank, instant->length);
+
         if (instant->header.flow_id == message->header.flow_id) {
             memcpy((void *)message->buffer[instant->header.original_offset], (const void*)instant->buffer, instant->length);
             message->recv_length += instant->length;
@@ -278,6 +279,7 @@ int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *
         /*If the final destination is at other node, put the message to the virtual lane*/
         else {
             message->next_dest = get_next_dest_from_jobs(*(pami_transport->jobs), message->header.flow_id, pami_transport->node_id);
+            message->source = pami_transport->rank;
             add_message_to_virtual_lanes(message, pami_transport->virtual_lanes);
         }
 
@@ -311,6 +313,7 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *) cookie;
     struct optiq_message_header *message_header = (struct optiq_message_header *) header;
 
+    printf("At %d received from %d with %d bytes\n", pami_transport->rank, origin, data_size);
 
     struct optiq_message *message;
 

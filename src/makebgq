@@ -38,6 +38,9 @@ liboptiq.a: $(OBJ)
 	rm -f $@
 	ar cq $@ $(OBJ)
 
+clobj: $(OBJ)
+	rm $(OBJ)
+
 clean:
 	$(RM) $(RMFLAGS) *.o
 	$(RM) $(RMFLAGS) *.lst

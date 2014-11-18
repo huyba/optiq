@@ -10,6 +10,7 @@ using namespace std;
 struct optiq_message_header {
     int final_dest;
     int flow_id;
+    int original_source;
     int original_offset;
     int original_length;
 };
@@ -19,6 +20,7 @@ struct optiq_message {
     char *buffer;
     int length;
     int next_dest;
+    int source;
     int current_offset;
     int service_level;
     int recv_length;

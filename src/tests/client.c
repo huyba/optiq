@@ -23,7 +23,6 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     struct optiq_transport transport;
-    printf("size of avail_send_messages %d\n", transport.avail_send_messages.size());
     optiq_transport_init(&transport, PAMI);
 
     if (world_rank == 0) {
@@ -62,15 +61,10 @@ int main(int argc, char **argv)
         add_job_to_virtual_lanes(local_job, &virtual_lanes);
     }
 
-    if(world_rank == 0) {
-        print_arbitration_table(arbitration_table);
-        print_virtual_lanes(virtual_lanes);
-    }
-
     MPI_Barrier(MPI_COMM_WORLD);
 
     /*Iterate the arbitration table to get the next virtual lane*/
-    /*if (world_rank < 85) {
+    if (world_rank < 85) {
         transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
 
         bool isDone = false;
@@ -85,7 +79,7 @@ int main(int argc, char **argv)
         while (isDone == 0) {
             isDone = optiq_transport_recv(&transport, message);
         }
-    }*/
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
 

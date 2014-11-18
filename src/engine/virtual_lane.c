@@ -53,9 +53,7 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
                     if (virtual_lanes[i].requests.size() > 0) {
                         struct optiq_message *message = virtual_lanes[i].requests.front();
 
-                        printf("virtual_lane_id = %d, quota= %d\n", virtual_lane_id, arbitration_table[index].weight * BASE_UNIT_SIZE);
-                        printf(" message length = %d, offset = %d\n", message->length, message->current_offset);
-
+                        printf("Rank %d virtual_lane_id = %d, quota= %d, message length = %d, offset = %d\n", transport->rank, virtual_lane_id, arbitration_table[index].weight * BASE_UNIT_SIZE, message->length, message->current_offset); 
                         nbytes = arbitration_table[index].weight * BASE_UNIT_SIZE;
 
                         if (message->current_offset + nbytes >= message->length) {
@@ -72,13 +70,14 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
 			instant->length = nbytes;
                         instant->current_offset = 0;
                         instant->next_dest = message->next_dest;
+                        instant->source = transport->rank;
                         instant->header = message->header;
 
                         optiq_transport_send(transport, instant);
 
                         done = false;
 
-                        printf("offset = %d\n", message->current_offset);
+                        printf("Rank %d update new offset = %d\n", transport->rank, message->current_offset);
 
                         /*After process any queue, go back to the arbitration table*/
                         break;
@@ -146,7 +145,9 @@ void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual
         message->header.original_offset = global_offset;
         message->header.flow_id = job.flows[i].id;
         message->header.final_dest = job.dest;
+        message->header.original_source = job.source;
         message->next_dest = get_next_dest_from_flow(job.flows[i], job.source);
+        message->source = job.source;
         message->current_offset = 0;
         message->service_level = 0;
         message->buffer = &buffer[global_offset];
