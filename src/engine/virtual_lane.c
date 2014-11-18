@@ -53,13 +53,13 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
                     if (virtual_lanes[i].requests.size() > 0) {
                         struct optiq_message *message = virtual_lanes[i].requests.front();
 
-                        printf("Rank %d virtual_lane_id = %d, quota= %d, message length = %d, offset = %d\n", transport->rank, virtual_lane_id, arbitration_table[index].weight * BASE_UNIT_SIZE, message->length, message->current_offset); 
+                        //printf("Rank %d virtual_lane_id = %d, quota= %d, message length = %d, offset = %d\n", transport->rank, virtual_lane_id, arbitration_table[index].weight * BASE_UNIT_SIZE, message->length, message->current_offset); 
                         nbytes = arbitration_table[index].weight * BASE_UNIT_SIZE;
 
                         if (message->current_offset + nbytes >= message->length) {
                             nbytes = message->length - message->current_offset;
                             virtual_lanes[i].requests.erase(virtual_lanes[i].requests.begin());
-                            printf("Remove a message\n");
+                            //printf("Remove a message\n");
                         } else {
                             /*Update the virtual lane*/
                             virtual_lanes[i].requests.front()->current_offset += nbytes;
@@ -77,7 +77,7 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, const vecto
 
                         done = false;
 
-                        printf("Rank %d update new offset = %d\n", transport->rank, message->current_offset);
+                        //printf("Rank %d update new offset = %d\n", transport->rank, message->current_offset);
 
                         /*After process any queue, go back to the arbitration table*/
                         break;

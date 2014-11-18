@@ -272,6 +272,8 @@ int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *
         struct optiq_recv_cookie *recv_cookie = pami_transport->in_use_recv_cookies.back();
         struct optiq_message *message = recv_cookie->message;
 
+        printf("At rank %d processing message from %d, size %d\n", pami_transport->rank, message->source, message->length);
+
         /*If the final destination is at local, deliver it*/
         if (message->header.final_dest == pami_transport->rank) {
             pami_transport->local_messages.push_back(message);
