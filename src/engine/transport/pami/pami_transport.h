@@ -7,10 +7,12 @@
 using namespace std;
 
 #ifdef __bgq__
+
 #include <spi/include/kernel/location.h>
 #include <spi/include/kernel/process.h>
 #include <firmware/include/personality.h>
 #include <pami.h>
+
 #endif
 
 #include "../transport_interface.h"
@@ -20,6 +22,7 @@ using namespace std;
 extern struct optiq_transport_interface optiq_pami_transport_implementation;
 
 #define RECV_MESSAGE_DISPATCH_ID 17
+#define JOB_DONE_NOTIFICATION_DISPATCH_ID 18
 #define MAX_SHORT_MESSAGE_LENGTH 128
 
 #define NUM_SEND_COOKIES 64
@@ -52,6 +55,9 @@ struct optiq_pami_transport {
 
     vector<struct optiq_virtual_lane> *virtual_lanes;
 
+    vector<int> involved_job_ids;
+    vector<int> involved_task_ids;
+
     vector<struct optiq_job> *jobs;
     int node_id;
     int rank;
@@ -80,10 +86,14 @@ void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struc
 
 void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes);
 
+bool optiq_pami_transport_forward_test(struct optiq_transport *self);
+
 #ifdef __bgq__
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result);
 
 void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result);
+
+int optiq_notify_job_done(struct optiq_transport *self, int job_id, vector<int> *dests);
 
 void optiq_recv_message_fn (
         pami_context_t    context,      /**< IN: PAMI context */
@@ -94,6 +104,9 @@ void optiq_recv_message_fn (
         size_t            data_size,    /**< IN: size of PAMI pipe buffer */
         pami_endpoint_t   origin,
         pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
+                const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv);
 #endif
 
 #endif

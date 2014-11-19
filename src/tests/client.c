@@ -63,7 +63,6 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    /*Iterate the arbitration table to get the next virtual lane*/
     if (world_rank < 85) {
         transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
 
@@ -75,10 +74,16 @@ int main(int argc, char **argv)
 
     if ( 171 <= world_rank && world_rank <= 255) {
         struct optiq_message *message = get_message_with_buffer(data_size);
+	message->header.job_id = world_rank - 171;
         int isDone = 0;
         while (isDone == 0) {
             isDone = optiq_transport_recv(&transport, message);
         }
+    }
+
+    bool done_forward = false;
+    while (!done_forward) {
+	done_forward = optiq_pami_transport_forward_test(&transport);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);

@@ -9,6 +9,7 @@ using namespace std;
 
 struct optiq_message_header {
     int final_dest;
+    int job_id;
     int flow_id;
     int original_source;
     int original_offset;
