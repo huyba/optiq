@@ -30,7 +30,7 @@ OBJ = ../core/utils/util.o ../core/system/memory.o ../core/structures/flow.o ../
 
 all: $(OBJ) mpi copy
 
-mpi: client.x
+mpi: client.x test_pami_transport.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -51,3 +51,4 @@ realclean: clean
 
 copy:
 	cp client.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/
+	cp test_pami_transport.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/

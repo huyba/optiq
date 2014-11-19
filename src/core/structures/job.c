@@ -9,13 +9,9 @@
 
 int get_next_dest_from_jobs(vector<struct optiq_job> *jobs, int flow_id, int current_ep)
 {
-    printf("Get into get_next_dest_from_jobs\n");
     for (int i = 0; i < jobs->size(); i++) {
-	printf("process job %d of job size = %zu\n", i, jobs->size());
         for (int j = 0; j < (*jobs)[i].flows.size(); j++) {
-	    printf("process flow %d of flow size %d\n", j, (*jobs)[i].flows.size());
             if ((*jobs)[i].flows[j].id == flow_id) {
-		printf("job source = %d\n", (*jobs)[i].source);
                 return get_next_dest_from_flow(&(*jobs)[i].flows[j], current_ep);
             }
         }

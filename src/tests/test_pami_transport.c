@@ -43,7 +43,6 @@ int main(int argc, char **argv)
     message->header.original_offset = 0;
     message->header.original_source = 0;
     message->length = data_size;
-    
 
     /*Iterate the arbitration table to get the next virtual lane*/
     if (world_rank == 0) {
@@ -53,6 +52,7 @@ int main(int argc, char **argv)
 
         bool isDone = false;
 	struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(&transport);
+
         while (!isDone) {
 	    PAMI_Context_advance (pami_transport->context, 100);
 	    if (pami_transport->in_use_send_cookies.size() > 0) {
@@ -68,6 +68,8 @@ int main(int argc, char **argv)
             isDone = optiq_transport_recv(&transport, message);
         }
     }
+
+    printf("Rank %d come to here\n", world_rank);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
