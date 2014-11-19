@@ -21,6 +21,6 @@ struct optiq_flow {
     int sent_bytes;
 };
 
-int get_next_dest_from_flow(const struct optiq_flow &flow, int current_ep);
+int get_next_dest_from_flow(const struct optiq_flow *flow, int current_ep);
 
 #endif

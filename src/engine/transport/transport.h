@@ -52,4 +52,8 @@ int optiq_transport_destroy(struct optiq_transport *self);
 
 void* optiq_transport_get_concrete_transport(struct optiq_transport *self);
 
+void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs);
+
+void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes);
+
 #endif

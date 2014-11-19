@@ -41,8 +41,8 @@ int main(int argc, char **argv)
 
     create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
 
-    transport.virtual_lanes = &virtual_lanes;
-    transport.jobs = &jobs;
+    optiq_transport_assign_jobs(&transport, &jobs);
+    optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes);
 
     int data_size = 4*1024*1024;
     char *buffer = (char *)malloc(data_size);

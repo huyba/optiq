@@ -76,6 +76,10 @@ bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *j
 
 int optiq_pami_transport_destroy(struct optiq_transport *self);
 
+void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs);
+
+void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes);
+
 #ifdef __bgq__
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result);
 

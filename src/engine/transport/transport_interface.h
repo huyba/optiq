@@ -12,6 +12,8 @@ struct optiq_transport_interface {
     int (*recv)(struct optiq_transport *self, struct optiq_message *message);
     bool (*test)(struct optiq_transport *self, struct optiq_job *job);
     int (*destroy)(struct optiq_transport *self);
+    void (*assign_jobs)(struct optiq_transport *self, vector<struct optiq_job> *jobs);
+    void (*assign_virtual_lanes)(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes);
 };
 
 #endif

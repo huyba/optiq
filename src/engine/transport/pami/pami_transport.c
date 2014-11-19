@@ -12,7 +12,9 @@ struct optiq_transport_interface optiq_pami_transport_implementation = {
     /*.send = */optiq_pami_transport_send,
     /*.recv = */optiq_pami_transport_recv,
     /*.test = */optiq_pami_transport_test,
-    /*.destroy = */optiq_pami_transport_destroy   
+    /*.destroy = */optiq_pami_transport_destroy,
+    /*.assign_jobs = */optiq_pami_transport_assign_jobs,
+    /*.assign_virtual_lanes = */optiq_pami_transport_assign_virtual_lanes
 };
 
 void optiq_pami_transport_init(struct optiq_transport *self)
@@ -272,20 +274,22 @@ int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *
         struct optiq_recv_cookie *recv_cookie = pami_transport->in_use_recv_cookies.back();
         struct optiq_message *message = recv_cookie->message;
 
-        printf("At rank %d processing message from %d, size %d\n", pami_transport->rank, message->source, message->length);
+	//printf("At rank %d process message from %d with size %d\n", pami_transport->rank, message->source, message->length);
 
         /*If the final destination is at local, deliver it*/
         if (message->header.final_dest == pami_transport->rank) {
+	    printf("At rank %d get a message for itself from %d with size %d\n", pami_transport->rank, message->source, message->length);
             pami_transport->local_messages.push_back(message);
         } 
         /*If the final destination is at other node, put the message to the virtual lane*/
         else {
-            message->next_dest = get_next_dest_from_jobs(*(pami_transport->jobs), message->header.flow_id, pami_transport->node_id);
+            message->next_dest = get_next_dest_from_jobs(pami_transport->jobs, message->header.flow_id, pami_transport->node_id);
+	    printf("At rank %d, next dest = %d for flow_id %d\n", pami_transport->rank, message->next_dest, message->header.flow_id);
             message->source = pami_transport->rank;
             add_message_to_virtual_lanes(message, pami_transport->virtual_lanes);
         }
 
-        /*Free the recv_cookie*/
+        /*Move the recv_cookie to available vector*/
         pami_transport->in_use_recv_cookies.pop_back();
         pami_transport->avail_recv_cookies.push_back(recv_cookie);
     }
@@ -334,6 +338,7 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 
     memcpy(&message->header, header, sizeof(struct optiq_message_header));
     message->length = data_size;
+    message->source = origin;
     message->current_offset = 0;
 
     struct optiq_recv_cookie *recv_cookie;
@@ -363,4 +368,17 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
     }
     return;
 }
+
+void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
+    pami_transport->jobs = self->jobs;
+}
+
+void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
+    pami_transport->virtual_lanes = self->virtual_lanes;
+}
+
 #endif

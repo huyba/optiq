@@ -146,7 +146,7 @@ void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual
         message->header.flow_id = job.flows[i].id;
         message->header.final_dest = job.dest;
         message->header.original_source = job.source;
-        message->next_dest = get_next_dest_from_flow(job.flows[i], job.source);
+        message->next_dest = get_next_dest_from_flow(&job.flows[i], job.source);
         message->source = job.source;
         message->current_offset = 0;
         message->service_level = 0;

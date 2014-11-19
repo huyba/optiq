@@ -90,3 +90,16 @@ void* optiq_transport_get_concrete_transport(struct optiq_transport *self)
 
     return self->concrete_transport;
 }
+
+void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs)
+{
+    self->jobs = jobs;
+    return self->transport_implementation->assign_jobs(self, jobs);
+}
+
+
+void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes)
+{
+    self->virtual_lanes = virtual_lanes;
+    self->transport_implementation->assign_virtual_lanes(self, virtual_lanes);
+}

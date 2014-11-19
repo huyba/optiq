@@ -50,4 +50,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 copy:
-	cp client.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/
+	cp client.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/
