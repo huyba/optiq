@@ -30,7 +30,7 @@ OBJ = $(UTILS)/util.o $(SYSTEM)/memory.o $(STRUCTURES)/flow.o $(STRUCTURES)/job.
 
 all: $(OBJ) mpi copy
 
-mpi: pami_send_recv.x pami_forward.x
+mpi: data_from_file.x pami_send_recv.x pami_forward.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -50,5 +50,6 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 copy:
+	cp data_from_file.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/from_file/
 	cp pami_send_recv.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/send_recv/
 	cp pami_forward.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/forward/
