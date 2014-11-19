@@ -96,14 +96,14 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     /*Job done notification*/
     fn.p2p = optiq_recv_job_done_notification_fn;
     result = PAMI_Dispatch_set (pami_transport->context,
-            JOB_DONE_NOTIFICATION_DISPATCH_ID,
-            fn,
-            (void *) pami_transport,
-            options);
+	    JOB_DONE_NOTIFICATION_DISPATCH_ID,
+	    fn,
+	    (void *) pami_transport,
+	    options);
 
     assert(result == PAMI_SUCCESS);
     if (result != PAMI_SUCCESS) {
-        return;
+	return;
     }
 
     /*Other initialization*/
@@ -125,47 +125,6 @@ void optiq_pami_transport_init(struct optiq_transport *self)
         recv_cookie->pami_transport = pami_transport;
         pami_transport->avail_recv_cookies.push_back(recv_cookie);
     }
-#endif
-}
-
-#ifdef __bgq__
-void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
-                const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
-{
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *) cookie;
-
-    int *job_id = (int *) header;
-
-    for (int i = 0; i < pami_transport->involved_job_ids.size(); i++) {
-	if (pami_transport->involved_job_ids[i] == *job_id) {
-	    pami_transport->involved_job_ids.erase(pami_transport->involved_job_ids.begin() + i);
-	}
-    }
-}
-#endif
-
-int optiq_notify_job_done(struct optiq_transport *self, int job_id, vector<int> *dests)
-{
-#ifdef __bgq__
-    pami_result_t result;
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
-
-    for (int i = 0; i < dests->size(); i++) {
-	pami_send_immediate_t parameter;
-	parameter.dispatch = JOB_DONE_NOTIFICATION_DISPATCH_ID;
-	parameter.header.iov_base = &job_id;
-	parameter.header.iov_len = sizeof(int);
-	parameter.data.iov_base = NULL;
-	parameter.data.iov_len = 0;
-	parameter.dest = pami_transport->endpoints[(*dests)[i]];
-
-	result = PAMI_Send_immediate (pami_transport->context, &parameter);
-	assert(result == PAMI_SUCCESS);
-	if (result != PAMI_SUCCESS) {
-            return 1;
-        }
-    }
-    return 0;
 #endif
 }
 
@@ -280,7 +239,7 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
 
             if (message->recv_length == instant->header.original_length) {
 		printf("Rank %d received entire message of the job, notify the involved tasks\n", pami_transport->rank);
-		optiq_notify_job_done(self, message->header.job_id, &pami_transport->involved_task_ids);
+		//optiq_notify_job_done(self, message->header.job_id, &pami_transport->involved_task_ids);
                 return 1;
             }
         }
@@ -290,19 +249,6 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
     return 0;
 }
 
-bool optiq_pami_transport_forward_test(struct optiq_transport *self) 
-{
-    pami_result_t result;
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
-
-    PAMI_Context_advance (pami_transport->context, 100);
-
-    if (pami_transport->involved_job_ids.size() > 0) {
-	return false;
-    }
-
-    return true;
-}
 bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *job)
 {
     bool isDone = true;
@@ -474,5 +420,21 @@ void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vec
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
     pami_transport->virtual_lanes = self->virtual_lanes;
 }
+
+#ifdef __bgq__
+void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
+                const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *) cookie;
+
+    int *job_id = (int *) header;
+
+    for (int i = 0; i < pami_transport->involved_job_ids.size(); i++) {
+        if (pami_transport->involved_job_ids[i] == *job_id) {
+            pami_transport->involved_job_ids.erase(pami_transport->involved_job_ids.begin() + i);
+        }
+    }
+}
+#endif
 
 #endif

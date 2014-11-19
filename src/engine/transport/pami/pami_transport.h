@@ -21,8 +21,9 @@ using namespace std;
 
 extern struct optiq_transport_interface optiq_pami_transport_implementation;
 
+#define JOB_DONE_NOTIFICATION_DISPATCH_ID 16
 #define RECV_MESSAGE_DISPATCH_ID 17
-#define JOB_DONE_NOTIFICATION_DISPATCH_ID 18
+
 #define MAX_SHORT_MESSAGE_LENGTH 128
 
 #define NUM_SEND_COOKIES 64
@@ -88,12 +89,13 @@ void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vec
 
 bool optiq_pami_transport_forward_test(struct optiq_transport *self);
 
+int optiq_notify_job_done(struct optiq_transport *self, int job_id, vector<int> *dests); 
+
 #ifdef __bgq__
+
 void optiq_recv_done_fn(pami_context_t context, void *cookie, pami_result_t result);
 
 void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result);
-
-int optiq_notify_job_done(struct optiq_transport *self, int job_id, vector<int> *dests);
 
 void optiq_recv_message_fn (
         pami_context_t    context,      /**< IN: PAMI context */
@@ -105,8 +107,16 @@ void optiq_recv_message_fn (
         pami_endpoint_t   origin,
         pami_recv_t     *recv);        /**< OUT: receive message structure */
 
-void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
-                const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv);
+void optiq_recv_job_done_notification_fn (
+	pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
 #endif
 
 #endif

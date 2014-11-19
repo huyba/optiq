@@ -81,10 +81,10 @@ int main(int argc, char **argv)
         }
     }
 
-    bool done_forward = false;
+    /*bool done_forward = false;
     while (!done_forward) {
 	done_forward = optiq_pami_transport_forward_test(&transport);
-    }
+    }*/
 
     MPI_Barrier(MPI_COMM_WORLD);
 

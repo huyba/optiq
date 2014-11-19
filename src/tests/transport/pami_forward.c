@@ -69,7 +69,7 @@ int main(int argc, char **argv)
         }
     }
 
-    printf("Rank %d come to here\n", world_rank);
+    printf("Rank %d completed the test successfully\n", world_rank);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
