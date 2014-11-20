@@ -65,7 +65,7 @@ void transport_from_virtual_lanes(struct optiq_transport *transport, vector<stru
                             virtual_lanes[i].requests.front()->current_offset += nbytes;
                         }
 
-			struct optiq_message *instant = optiq_transport_get_message(transport);
+			struct optiq_message *instant = optiq_transport_get_send_message(transport);
 			instant->buffer = &message->buffer[message->current_offset];
 			instant->length = nbytes;
                         instant->current_offset = 0;
@@ -140,7 +140,7 @@ void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual
     int global_offset = 0, length = 0;
     for (int i = 0; i < job.flows.size(); i++) {
         length = ((double)job.flows[i].throughput / (double)total_local_throughput) * (double)data_size;
-	struct optiq_message *message = optiq_transport_get_message(transport);
+	struct optiq_message *message = optiq_transport_get_send_message(transport);
 
 	if (i == job.flows.size() - 1) {
 	    length = data_size - global_offset;

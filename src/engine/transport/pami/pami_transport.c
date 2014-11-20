@@ -130,6 +130,30 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 
 int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message *message)
 {
+    /*Depend of the message size and source, do the spit up*/
+    if (message->header.original_source == self->rank) {
+	int window_size = calculate_winsize(message->length);
+	int offset = 0;
+	while (offset < message->length) {
+	    struct optiq_message *instant = optiq_transport_get_send_message(self);
+	    instant->header = message->header;
+	    instant->next_dest = message->next_dest;
+	    instant->source = message->source;
+	    instant->buffer = &message->buffer[offset];
+	    instant->length = (offset + window_size <= message->length ? window_size : message->length - offset);
+	    offset += instant->length;
+
+	    optiq_pami_transport_actual_send(self, instant);
+	}
+
+	optiq_transport_return_send_message(self, message);
+    } else {
+	return optiq_pami_transport_actual_send(self, message);
+    }
+}
+
+int optiq_pami_transport_actual_send(struct optiq_transport *self, struct optiq_message *message)
+{
 #ifdef __bgq__
     pami_result_t result;
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
@@ -182,7 +206,7 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
         }
     }
 
-    /*printf("Rank %d is sending data of size %d to Rank %d with flow_id = %d\n", self->rank, message->length, message->next_dest, message->header.flow_id);*/
+    printf("Rank %d is sending data of size %d to Rank %d with flow_id = %d\n", self->rank, message->length, message->next_dest, message->header.flow_id);
 #endif
     return 0;
 }
@@ -480,5 +504,47 @@ void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, c
     }
 }
 #endif
+
+int calculate_winsize(int message_size)
+{
+    if (message_size < 1024)
+        return message_size;
+    else if(1024 <= message_size && message_size < 2048)
+        return 1024;
+    if (2048 <= message_size && message_size < 4096)
+        return 2048;
+    if (4096 <= message_size && message_size < 8192)
+        return 4096;
+    if (8192 <= message_size && message_size < 16384)
+        return 4096;
+    if (16384 <= message_size && message_size < 32768)
+        return 4096;
+    if (32768 <= message_size && message_size < 65536)
+        return 8192;
+    if (65536 <= message_size && message_size < 131072)
+        return 16384;
+    if (131072 <= message_size && message_size < 262144)
+        return 16384;
+    if (262144 <= message_size && message_size < 524288)
+        return 16384;
+    if (524288 <= message_size && message_size < 1048576)
+        return 32768;
+    if (1048576 <= message_size && message_size < 2097152)
+        return 65536;
+    if (2097152 <= message_size && message_size < 4194304)
+        return 65536;
+    if (4194304 <= message_size && message_size < 8388608)
+        return 65536;
+    if (8388608 <= message_size && message_size < 16777216)
+        return 131072;
+    if (16777216 <= message_size && message_size < 33554432)
+        return 131072;
+    if (33554432 <= message_size && message_size < 67108864)
+        return 262144;
+    if (67108864 <= message_size && message_size < 134217728)
+        return 262144;
+    if (134217728 <= message_size)
+        return 524288;
+}
 
 #endif

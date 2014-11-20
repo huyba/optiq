@@ -80,6 +80,8 @@ void optiq_pami_transport_init(struct optiq_transport *self);
 
 int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message *message);
 
+int optiq_pami_transport_actual_send(struct optiq_transport *self, struct optiq_message *message);
+
 int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message *message);
 
 bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *job);
@@ -121,5 +123,7 @@ void optiq_recv_job_done_notification_fn (
         pami_recv_t     *recv);        /**< OUT: receive message structure */
 
 #endif
+
+int calculate_winsize(int message_size);
 
 #endif

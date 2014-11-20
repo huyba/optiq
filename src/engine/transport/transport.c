@@ -33,9 +33,14 @@ void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_typ
     self->transport_implementation->init(self);
 }
 
-struct optiq_message* optiq_transport_get_message(struct optiq_transport *self)
+struct optiq_message* optiq_transport_get_send_message(struct optiq_transport *self)
 {
     return get_send_message(&self->avail_send_messages);
+}
+
+void optiq_transport_return_send_message(struct optiq_transport *self, struct optiq_message *message)
+{
+    self->avail_send_messages.push_back(message);
 }
 
 int  optiq_transport_send(struct optiq_transport *self, struct optiq_message *message)
