@@ -78,7 +78,9 @@ void* optiq_transport_get_concrete_transport(struct optiq_transport *self)
 {
     if (self->concrete_transport == NULL) {
 	if (self->type == PAMI) {
-	    self->concrete_transport = (struct optiq_pami_transport *)core_memory_alloc(sizeof(struct optiq_pami_transport), "pami concrete transport", "get_concrete_transport");
+	    struct optiq_pami_transport * pami_transport = (struct optiq_pami_transport *)core_memory_alloc(sizeof(struct optiq_pami_transport), "pami concrete transport", "get_concrete_transport");
+	    pami_transport->transport = self;
+	    self->concrete_transport = pami_transport;
 	} else if (self->type == GNI) {
 	    self->concrete_transport = (struct optiq_gni_transport *)core_memory_alloc(sizeof(struct optiq_gni_transport), "gni concrete transport", "get_concrete_transport");
 	} else if (self->type == NONBLK_MPI) {
@@ -98,8 +100,9 @@ void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct opt
 }
 
 
-void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes)
+void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<optiq_arbitration> *arbitration_table)
 {
     self->virtual_lanes = virtual_lanes;
-    self->transport_implementation->assign_virtual_lanes(self, virtual_lanes);
+    self->arbitration_table = arbitration_table;
+    self->transport_implementation->assign_virtual_lanes(self, virtual_lanes, arbitration_table);
 }

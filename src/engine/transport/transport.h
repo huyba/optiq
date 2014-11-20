@@ -38,6 +38,7 @@ struct optiq_transport {
     vector<struct optiq_message *> avail_send_messages;
 
     vector<struct optiq_virtual_lane> *virtual_lanes;
+    vector<struct optiq_arbitration> *arbitration_table;
 };
 
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type);
@@ -54,6 +55,6 @@ void* optiq_transport_get_concrete_transport(struct optiq_transport *self);
 
 void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs);
 
-void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes);
+void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table);
 
 #endif

@@ -45,13 +45,11 @@ int main(int argc, char **argv)
 
     flow0.id = 0;
     flow0.throughput = 1024;
-    flow0.num_arcs = 2;
     flow0.arcs.push_back(arc0);
     flow0.arcs.push_back(arc1);
 
     flow1.id = 1;
     flow1.throughput = 1024;
-    flow1.num_arcs = 2;
     flow1.arcs.push_back(arc1);
     flow1.arcs.push_back(arc2);
 
@@ -82,7 +80,7 @@ int main(int argc, char **argv)
     create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
 
     optiq_transport_assign_jobs(&transport, &jobs);
-    optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes);
+    optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes, &arbitration_table);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -90,7 +88,7 @@ int main(int argc, char **argv)
     if (world_rank <= 1) {
 	add_job_to_virtual_lanes(jobs[world_rank], &virtual_lanes);
 
-	transport_from_virtual_lanes(&transport, arbitration_table, virtual_lanes);
+	transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
 
         bool isDone = false;
         while (!isDone) {

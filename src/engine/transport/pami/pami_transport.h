@@ -30,6 +30,7 @@ extern struct optiq_transport_interface optiq_pami_transport_implementation;
 #define NUM_RECV_COOKIES 64
 
 struct optiq_pami_transport;
+struct optiq_transport;
 
 struct optiq_send_cookie {
     struct optiq_message *message;
@@ -55,9 +56,11 @@ struct optiq_pami_transport {
     vector<struct optiq_message *> *avail_send_messages;
 
     vector<struct optiq_virtual_lane> *virtual_lanes;
+    vector<struct optiq_arbitration> *arbitration_table;
 
     vector<int> involved_job_ids;
     vector<int> involved_task_ids;
+    struct optiq_transport *transport;
 
     vector<struct optiq_job> *jobs;
     int node_id;
@@ -85,7 +88,7 @@ int optiq_pami_transport_destroy(struct optiq_transport *self);
 
 void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs);
 
-void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes);
+void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table);
 
 bool optiq_pami_transport_forward_test(struct optiq_transport *self);
 

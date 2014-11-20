@@ -15,7 +15,6 @@ struct optiq_arc {
 struct optiq_flow {
     int id;
     int throughput;
-    int num_arcs;
     vector<struct optiq_arc> arcs;
     struct optiq_message *message;
     int sent_bytes;

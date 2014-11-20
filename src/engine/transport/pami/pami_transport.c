@@ -226,7 +226,7 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
     for (int i = 0; i < pami_transport->local_messages.size(); i++) {
         struct optiq_message *instant = pami_transport->local_messages.back();
 
-        printf("Rank %d received as the destination of a message of size %d\n", pami_transport->rank, instant->length);
+        printf("Rank %d received as the destination of a message of size %d of job_id = %d, while job_id is %d\n", pami_transport->rank, instant->length, instant->header.job_id, message->header.job_id);
 
         if (instant->header.job_id == message->header.job_id) {
 	    /*printf("Rank %d copies %d bytes of data to offset %d\n", pami_transport->rank, instant->length, instant->header.original_offset);*/
@@ -307,6 +307,9 @@ int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *
 	    printf("At Rank %d, next dest = %d for flow_id %d\n", pami_transport->rank, message->next_dest, message->header.flow_id);
             message->source = pami_transport->rank;
             add_message_to_virtual_lanes(message, pami_transport->virtual_lanes);
+
+	    /*Process messages in virtual lanes*/
+	    transport_from_virtual_lanes(pami_transport->transport, *(pami_transport->virtual_lanes), *(pami_transport->arbitration_table));
         }
 
         /*Move the recv_cookie to available vector*/
@@ -415,10 +418,11 @@ void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struc
     }
 }
 
-void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes)
+void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
-    pami_transport->virtual_lanes = self->virtual_lanes;
+    pami_transport->virtual_lanes = virtual_lanes;
+    pami_transport->arbitration_table = arbitration_table;
 }
 
 int optiq_notify_job_done(struct optiq_transport *self, int job_id, vector<int> *dests)

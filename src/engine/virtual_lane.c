@@ -29,7 +29,7 @@ void print_virtual_lanes(vector<struct optiq_virtual_lane> &virtual_lanes)
     }
 }
 
-void transport_from_virtual_lanes(struct optiq_transport *transport, const vector<struct optiq_arbitration> arbitration_table, vector<struct optiq_virtual_lane> virtual_lanes)
+void transport_from_virtual_lanes(struct optiq_transport *transport, vector<struct optiq_virtual_lane> &virtual_lanes, vector<struct optiq_arbitration> &arbitration_table)
 {
     int num_entries_arb_table = arbitration_table.size();
     int num_virtual_lanes = virtual_lanes.size();
@@ -93,9 +93,9 @@ void create_virtual_lane_arbitration_table(vector<struct optiq_virtual_lane> &vi
     const struct optiq_flow *flow = NULL;
 
     for (int i = 0; i < jobs.size(); i++) {
-        for (int j = 0; j < jobs[i].num_flows; j++) {
+        for (int j = 0; j < jobs[i].flows.size(); j++) {
             flow = &jobs[i].flows[j];
-            for (int k = flow->num_arcs-1; k >= 0; k--) {
+            for (int k = flow->arcs.size()-1; k >= 0; k--) {
                 if (flow->arcs[k].ep1 == world_rank) {
                     struct optiq_arbitration ab;
                     struct optiq_virtual_lane vl;
@@ -129,7 +129,7 @@ void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual
 
     int total_local_throughput = 0;
 
-    for (int i = 0; i < job.num_flows; i++) {
+    for (int i = 0; i < job.flows.size(); i++) {
         /*Compute the total flows for the local node*/
         total_local_throughput += job.flows[i].throughput;
     }
@@ -143,6 +143,7 @@ void add_job_to_virtual_lanes(struct optiq_job &job, vector<struct optiq_virtual
         struct optiq_message *message = (struct optiq_message *)core_memory_alloc(sizeof(struct optiq_message), "message", "add_job_to_virtual_lanes");
         message->header.original_length = data_size;
         message->header.original_offset = global_offset;
+	message->header.job_id = job.id;
         message->header.flow_id = job.flows[i].id;
         message->header.final_dest = job.dest;
         message->header.original_source = job.source;

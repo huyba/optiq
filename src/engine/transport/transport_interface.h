@@ -13,7 +13,7 @@ struct optiq_transport_interface {
     bool (*test)(struct optiq_transport *self, struct optiq_job *job);
     int (*destroy)(struct optiq_transport *self);
     void (*assign_jobs)(struct optiq_transport *self, vector<struct optiq_job> *jobs);
-    void (*assign_virtual_lanes)(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes);
+    void (*assign_virtual_lanes)(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table);
 };
 
 #endif

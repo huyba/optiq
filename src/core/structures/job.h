@@ -11,7 +11,6 @@ struct optiq_job {
     int dest;
     int demand;
     void *buffer;
-    int num_flows;
     vector<struct optiq_flow> flows;
 };
 

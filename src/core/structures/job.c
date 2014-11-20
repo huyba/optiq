@@ -26,16 +26,16 @@ void print_jobs(vector<struct optiq_job> &jobs, int num_jobs)
     struct optiq_flow flow;
 
     for (int i = 0; i < num_jobs; i++) {
-        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].num_flows);
+        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].flows.size());
 
-        for (int j = 0; j < jobs[i].num_flows; j++) {
+        for (int j = 0; j < jobs[i].flows.size(); j++) {
             flow = jobs[i].flows[j];
 
-            printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow.id, flow.throughput, flow.num_arcs);
-            for (int k = 0; k < flow.num_arcs; k ++) {
+            printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow.id, flow.throughput, flow.arcs.size());
+            for (int k = 0; k < flow.arcs.size(); k ++) {
                 printf("%d -> ", flow.arcs[k].ep1);
             }
-            printf("%d\n", flow.arcs[flow.num_arcs-1].ep2);
+            printf("%d\n", flow.arcs[flow.arcs.size()-1].ep2);
         }
     }
 }
@@ -76,7 +76,6 @@ void read_flow_from_file(char *file_path, vector<struct optiq_job> &jobs)
         job.id = job_id;
         job.source = source;
         job.dest = dest;
-        job.num_flows = 0;
 
         get_flows(rGraph, num_vertices, job, flow_id);
         jobs.push_back(job);
@@ -106,22 +105,19 @@ void get_flows(int **rGraph, int num_vertices, struct optiq_job &job, int &flow_
 
     bool *visited = (bool *)malloc(sizeof(bool) * num_vertices);
     int *parent = (int *) malloc(sizeof(int) * num_vertices);
-    int u, v, throughput, num_arcs = 0;
+    int u, v, throughput;
 
     while (bfs(num_vertices, visited, rGraph, source, dest, parent)) {
         /*Get the number of arcs and throughput of the flow*/
         throughput = INT_MAX;
-        num_arcs = 0;
         for (v = dest; v != source; v = parent[v]) {
             u = parent[v];
             throughput = min(throughput, rGraph[u][v]);
-            num_arcs++;
         }
 
         /*Create new flow*/
         struct optiq_flow flow;
         flow.throughput = throughput;
-        flow.num_arcs = num_arcs;
         flow.id = flow_id;
         flow_id++;
 
@@ -137,6 +133,5 @@ void get_flows(int **rGraph, int num_vertices, struct optiq_job &job, int &flow_
 
         /*Add the flow to the job*/
         job.flows.push_back(flow);
-        job.num_flows++;
     }
 }
