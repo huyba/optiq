@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     optiq_transport_init(&transport, PAMI);
 
     if (world_rank == 0) {
-        printf("Init transport successfully!\n");
+	printf("Init transport successfully!\n");
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -49,46 +49,68 @@ int main(int argc, char **argv)
 
     struct optiq_job local_job;
     for (int i = 0; i < jobs.size(); i++) {
-        if (jobs[i].source == world_rank) {
-            local_job = jobs[i];
-        }
+	if (jobs[i].source == world_rank) {
+	    local_job = jobs[i];
+	}
     }
 
     /*Adding local job*/
     if (world_rank < 85) {
-        local_job.buffer = buffer;
-        local_job.demand = data_size;
-        add_job_to_virtual_lanes(local_job, &virtual_lanes);
+	local_job.buffer = buffer;
+	local_job.demand = data_size;
+    }
+
+    int num_iters = 30;
+    if (argc > 1) {
+	num_iters = atoi(argv[1]);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    if (world_rank < 85) {
-        transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
+    uint64_t start = GetTimeBase();
 
-        bool isDone = false;
-        while (!isDone) {
-            isDone = optiq_transport_test(&transport, &local_job);
-        }
-	printf("Rank %d done sending data from its job\n", world_rank);
+    for (int iter = 0; iter < num_iters; iter++) {
+
+	if (world_rank < 85) {
+	    add_job_to_virtual_lanes(local_job, &virtual_lanes);
+
+	    transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
+
+	    bool isDone = false;
+	    while (!isDone) {
+		isDone = optiq_transport_test(&transport, &local_job);
+	    }
+	    /*printf("Rank %d done sending data from its job\n", world_rank);*/
+	}
+
+	if ( 171 <= world_rank && world_rank <= 255) {
+	    struct optiq_message *message = get_message_with_buffer(data_size);
+	    message->header.job_id = world_rank - 171;
+	    int isDone = 0;
+	    while (isDone == 0) {
+		isDone = optiq_transport_recv(&transport, message);
+	    }
+	    /*printf("Rank %d done receiving data of its job\n", world_rank);*/
+	}
+
+	bool done_forward = false;
+	while (!done_forward) {
+	    done_forward = optiq_pami_transport_forward_test(&transport);
+	}
     }
 
-    if ( 171 <= world_rank && world_rank <= 255) {
-        struct optiq_message *message = get_message_with_buffer(data_size);
-	message->header.job_id = world_rank - 171;
-        int isDone = 0;
-        while (isDone == 0) {
-            isDone = optiq_transport_recv(&transport, message);
-        }
-	printf("Rank %d done receiving data of its job\n", world_rank);
+    uint64_t end = GetTimeBase();
+
+    double elapsed_time = (double)(end-start)/1.6e3;
+    double max_time;
+    MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (world_rank == 0) {
+	double bw = (double) data_size * 1e6 / 1024 / 1024 / max_time / num_iters;
+	printf("Elapse time = %8.0f, bw = %8.4f\n", max_time, bw);
     }
 
-    bool done_forward = false;
-    while (!done_forward) {
-	done_forward = optiq_pami_transport_forward_test(&transport);
-    }
-
-    printf("Rank %d completed test successfully\n", world_rank);
+    /*printf("Rank %d completed test successfully\n", world_rank);*/
 
     MPI_Barrier(MPI_COMM_WORLD);
 

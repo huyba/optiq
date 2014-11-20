@@ -182,7 +182,7 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
         }
     }
 
-    printf("Rank %d is sending data of size %d to Rank %d with flow_id = %d\n", self->rank, message->length, message->next_dest, message->header.flow_id);
+    /*printf("Rank %d is sending data of size %d to Rank %d with flow_id = %d\n", self->rank, message->length, message->next_dest, message->header.flow_id);*/
 #endif
     return 0;
 }
@@ -226,7 +226,7 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
     for (int i = 0; i < pami_transport->local_messages.size(); i++) {
         struct optiq_message *instant = pami_transport->local_messages.back();
 
-        printf("Rank %d received as the destination of a message of size %d of job_id = %d, while job_id is %d\n", pami_transport->rank, instant->length, instant->header.job_id, message->header.job_id);
+        /*printf("Rank %d received as the destination of a message of size %d of job_id = %d, while job_id is %d\n", pami_transport->rank, instant->length, instant->header.job_id, message->header.job_id);*/
 
         if (instant->header.job_id == message->header.job_id) {
 	    /*printf("Rank %d copies %d bytes of data to offset %d\n", pami_transport->rank, instant->length, instant->header.original_offset);*/
@@ -238,7 +238,7 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
             (*pami_transport->avail_recv_messages).push_back(instant);
 
             if (message->recv_length == instant->header.original_length) {
-		printf("Rank %d received entire message of the job, notify the involved tasks\n", pami_transport->rank);
+		/*printf("Rank %d received entire message of the job, notify the involved tasks\n", pami_transport->rank);*/
 		optiq_notify_job_done(self, message->header.job_id, &pami_transport->involved_task_ids);
                 return 1;
             }
@@ -298,13 +298,13 @@ int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *
 
         /*If the final destination is at local, deliver it*/
         if (message->header.final_dest == pami_transport->rank) {
-	    printf("At Rank %d get a message for itself from Rank %d with size %d\n", pami_transport->rank, message->source, message->length);
+	    /*printf("At Rank %d get a message for itself from Rank %d with size %d\n", pami_transport->rank, message->source, message->length);*/
             pami_transport->local_messages.push_back(message);
         } 
         /*If the final destination is at other node, put the message to the virtual lane*/
         else {
             message->next_dest = get_next_dest_from_jobs(pami_transport->jobs, message->header.flow_id, pami_transport->node_id);
-	    printf("At Rank %d, next dest = %d for flow_id %d\n", pami_transport->rank, message->next_dest, message->header.flow_id);
+	    /*printf("At Rank %d, next dest = %d for flow_id %d\n", pami_transport->rank, message->next_dest, message->header.flow_id);*/
             message->source = pami_transport->rank;
             add_message_to_virtual_lanes(message, pami_transport->virtual_lanes);
 
@@ -344,7 +344,7 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *) cookie;
     struct optiq_message_header *message_header = (struct optiq_message_header *) header;
 
-    printf("Rank %d is receiving from Rank %d with %d bytes\n", pami_transport->rank, origin, data_size);
+    /*printf("Rank %d is receiving from Rank %d with %d bytes\n", pami_transport->rank, origin, data_size);*/
 
     struct optiq_message *message;
 

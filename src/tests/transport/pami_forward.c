@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     optiq_transport_init(&transport, PAMI);
 
     if (world_rank == 0) {
-        printf("Init transport successfully!\n");
+	printf("Init transport successfully!\n");
     }
 
     int data_size = 2*1024*1024;
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     job0.demand = data_size;
     job0.buffer = buffer;
     job0.flows.push_back(flow0);
-    
+
     job1.id = 1;
     job1.source = 1;
     job1.dest = 3;
@@ -85,31 +85,34 @@ int main(int argc, char **argv)
     MPI_Barrier(MPI_COMM_WORLD);
 
     /*Iterate the arbitration table to get the next virtual lane*/
-    if (world_rank <= 1) {
-	add_job_to_virtual_lanes(jobs[world_rank], &virtual_lanes);
+    for (int iter = 0; iter < 5; iter++)
+    {
+	if (world_rank <= 1) {
+	    add_job_to_virtual_lanes(jobs[world_rank], &virtual_lanes);
 
-	transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
+	    transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
 
-        bool isDone = false;
-        while (!isDone) {
-            isDone = optiq_transport_test(&transport, &jobs[world_rank]);
-        }
-        printf("Rank %d done sending data from its job\n", world_rank);
-    }
+	    bool isDone = false;
+	    while (!isDone) {
+		isDone = optiq_transport_test(&transport, &jobs[world_rank]);
+	    }
+	    printf("Rank %d done sending data from its job\n", world_rank);
+	}
 
-    if (2 <=  world_rank && world_rank <= 3) {
-	struct optiq_message *message = get_message_with_buffer(data_size);
-        message->header.job_id = world_rank - 2;
-        int isDone = 0;
-        while (isDone == 0) {
-            isDone = optiq_transport_recv(&transport, message);
-        }
-        printf("Rank %d done receiving data of its job\n", world_rank);
-    }
+	if (2 <=  world_rank && world_rank <= 3) {
+	    struct optiq_message *message = get_message_with_buffer(data_size);
+	    message->header.job_id = world_rank - 2;
+	    int isDone = 0;
+	    while (isDone == 0) {
+		isDone = optiq_transport_recv(&transport, message);
+	    }
+	    printf("Rank %d done receiving data of its job\n", world_rank);
+	}
 
-    bool done_forward = false;
-    while (!done_forward) {
-        done_forward = optiq_pami_transport_forward_test(&transport);
+	bool done_forward = false;
+	while (!done_forward) {
+	    done_forward = optiq_pami_transport_forward_test(&transport);
+	}
     }
 
     printf("Rank %d completed the test successfully\n", world_rank);
