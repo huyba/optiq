@@ -85,10 +85,14 @@ int main(int argc, char **argv)
     MPI_Barrier(MPI_COMM_WORLD);
 
     /*Iterate the arbitration table to get the next virtual lane*/
-    for (int iter = 0; iter < 5; iter++)
+    int num_iters = 30;
+    if (argc > 1) {
+	num_iters = atoi(argv[1]);
+    }
+    for (int iter = 0; iter < num_iters; iter++)
     {
 	if (world_rank <= 1) {
-	    add_job_to_virtual_lanes(jobs[world_rank], &virtual_lanes);
+	    add_job_to_virtual_lanes(jobs[world_rank], &virtual_lanes, &transport);
 
 	    transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
 

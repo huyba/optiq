@@ -13,7 +13,7 @@
 
 #define RECV_MESSAGE_SIZE (2*1024*1024)
 #define NUM_RECV_MESSAGES 64
-#define NUM_SEND_MESSAGES 64
+#define NUM_SEND_MESSAGES 128
 
 using namespace std;
 
@@ -56,5 +56,7 @@ void* optiq_transport_get_concrete_transport(struct optiq_transport *self);
 void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs);
 
 void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table);
+
+struct optiq_message* optiq_transport_get_message(struct optiq_transport *self);
 
 #endif

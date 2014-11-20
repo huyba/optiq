@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     optiq_transport_assign_jobs(&transport, &jobs);
     optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes, &arbitration_table);
 
-    int data_size = 4*1024*1024;
+    int data_size = 8*1024*1024;
     char *buffer = (char *)malloc(data_size);
 
     struct optiq_job local_job;
@@ -65,6 +65,8 @@ int main(int argc, char **argv)
 	num_iters = atoi(argv[1]);
     }
 
+    struct optiq_message *message = get_message_with_buffer(data_size);
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     uint64_t start = GetTimeBase();
@@ -72,7 +74,7 @@ int main(int argc, char **argv)
     for (int iter = 0; iter < num_iters; iter++) {
 
 	if (world_rank < 85) {
-	    add_job_to_virtual_lanes(local_job, &virtual_lanes);
+	    add_job_to_virtual_lanes(local_job, &virtual_lanes, &transport);
 
 	    transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
 
@@ -84,7 +86,7 @@ int main(int argc, char **argv)
 	}
 
 	if ( 171 <= world_rank && world_rank <= 255) {
-	    struct optiq_message *message = get_message_with_buffer(data_size);
+	    message->recv_length = 0;
 	    message->header.job_id = world_rank - 171;
 	    int isDone = 0;
 	    while (isDone == 0) {
