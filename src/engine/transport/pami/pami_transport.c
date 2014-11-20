@@ -298,13 +298,13 @@ int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *
 
         /*If the final destination is at local, deliver it*/
         if (message->header.final_dest == pami_transport->rank) {
-	    printf("At rank %d get a message for itself from Rank %d with size %d\n", pami_transport->rank, message->source, message->length);
+	    printf("At Rank %d get a message for itself from Rank %d with size %d\n", pami_transport->rank, message->source, message->length);
             pami_transport->local_messages.push_back(message);
         } 
         /*If the final destination is at other node, put the message to the virtual lane*/
         else {
             message->next_dest = get_next_dest_from_jobs(pami_transport->jobs, message->header.flow_id, pami_transport->node_id);
-	    printf("At rank %d, next dest = %d for flow_id %d\n", pami_transport->rank, message->next_dest, message->header.flow_id);
+	    printf("At Rank %d, next dest = %d for flow_id %d\n", pami_transport->rank, message->next_dest, message->header.flow_id);
             message->source = pami_transport->rank;
             add_message_to_virtual_lanes(message, pami_transport->virtual_lanes);
         }

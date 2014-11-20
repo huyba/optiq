@@ -70,6 +70,7 @@ int main(int argc, char **argv)
         while (!isDone) {
             isDone = optiq_transport_test(&transport, &local_job);
         }
+	printf("Rank %d done sending data from its job\n", world_rank);
     }
 
     if ( 171 <= world_rank && world_rank <= 255) {
@@ -79,12 +80,15 @@ int main(int argc, char **argv)
         while (isDone == 0) {
             isDone = optiq_transport_recv(&transport, message);
         }
+	printf("Rank %d done receiving data of its job\n", world_rank);
     }
 
-    /*bool done_forward = false;
+    bool done_forward = false;
     while (!done_forward) {
 	done_forward = optiq_pami_transport_forward_test(&transport);
-    }*/
+    }
+
+    printf("Rank %d completed test successfully\n", world_rank);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
