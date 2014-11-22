@@ -5,11 +5,7 @@
 
 #include <mpi.h>
 
-#include "job.h"
-#include "flow.h"
-#include "message.h"
-#include "virtual_lane.h"
-#include "transport.h"
+#include "optiq.h"
 
 using namespace std;
 
@@ -41,8 +37,8 @@ int main(int argc, char **argv)
 
     create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
 
-    optiq_transport_assign_jobs(&transport, &jobs);
-    optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes, &arbitration_table);
+    optiq_transport_assign_jobs(&transport, jobs);
+    //optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes, &arbitration_table);
 
     int data_size = 8*1024*1024;
     char *buffer = (char *)malloc(data_size);

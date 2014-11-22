@@ -1,12 +1,12 @@
 #ifndef OPTIQ_H
 #define OPTIQ_H
 
-#include "job.h"
-#include "flow.h"
-#include "message.h"
-#include "memory.h"
-#include "transport.h"
-#include "virtual_lane.h"
+#include "core/structures/job.h"
+#include "core/structures/flow.h"
+#include "core/system/memory.h"
+#include "engine/message.h"
+#include "engine/virtual_lane.h"
+#include "engine/transport/transport.h"
 
 struct optiq {
     struct optiq_transport transport;

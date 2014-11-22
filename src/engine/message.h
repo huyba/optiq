@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "memory.h"
+#include "../core/system/memory.h"
 
 using namespace std;
 

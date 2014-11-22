@@ -5,11 +5,9 @@
 
 #include <mpi.h>
 
-#include "job.h"
-#include "flow.h"
-#include "message.h"
-#include "virtual_lane.h"
-#include "transport.h"
+#include "optiq.h"
+
+#define OPTIQ_DEBUG_TRANSPORT
 
 using namespace std;
 
@@ -25,12 +23,17 @@ int main(int argc, char **argv)
     struct optiq_transport transport;
     optiq_transport_init(&transport, PAMI);
 
+#ifdef OPTIQ_DEBUG_TRANSPORT
+    printf("Debuging mode\n");
+#endif
+
     if (world_rank == 0) {
 	printf("Init transport successfully!\n");
     }
 
     int data_size = 2*1024*1024;
     char *buffer = (char*)malloc(data_size);
+    memset (buffer, 7, data_size);
 
     /*Create jobs for testing*/
     /*2 jobs here: 0-1-2 and 1-2-3*/
@@ -78,8 +81,7 @@ int main(int argc, char **argv)
     vector<struct optiq_virtual_lane> virtual_lanes;
 
     create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
-
-    optiq_transport_assign_jobs(&transport, &jobs);
+    optiq_transport_assign_jobs(&transport, jobs);
     optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes, &arbitration_table);
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -111,6 +113,11 @@ int main(int argc, char **argv)
 		isDone = optiq_transport_recv(&transport, message);
 	    }
 	    printf("Rank %d done receiving data of its job\n", world_rank);
+	    if (memcmp(message->buffer, buffer, data_size) != 0) {
+		printf("Error: Rank %d received invalid data\n", world_rank);
+	    } else {
+		printf("Rank %d received valid data\n", world_rank);
+	    }
 	}
 
 	bool done_forward = false;

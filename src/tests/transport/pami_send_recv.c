@@ -5,11 +5,7 @@
 
 #include <mpi.h>
 
-#include "job.h"
-#include "flow.h"
-#include "message.h"
-#include "virtual_lane.h"
-#include "transport.h"
+#include "optiq.h"
 
 using namespace std;
 

@@ -103,9 +103,13 @@ void* optiq_transport_get_concrete_transport(struct optiq_transport *self)
     return self->concrete_transport;
 }
 
-void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs)
+void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> &jobs)
 {
-    self->jobs = jobs;
+    self->jobs = &jobs;
+
+    /*Build the look up table for the job*/
+   build_look_up_next_dest_table(jobs, self->rank, self->next_dest);
+
     return self->transport_implementation->assign_jobs(self, jobs);
 }
 
@@ -114,5 +118,4 @@ void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<s
 {
     self->virtual_lanes = virtual_lanes;
     self->arbitration_table = arbitration_table;
-    self->transport_implementation->assign_virtual_lanes(self, virtual_lanes, arbitration_table);
 }

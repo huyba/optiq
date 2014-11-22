@@ -2,6 +2,7 @@
 #define OPTIQ_TRANSPORT_H
 
 #include <vector>
+#include <map>
 
 #include "transport_interface.h"
 
@@ -11,8 +12,8 @@
 #include "gni/gni_transport.h"
 #include "nonblk_mpi/nonblk_mpi_transport.h"
 
-#define RECV_MESSAGE_SIZE (2*1024*1024)
-#define NUM_RECV_MESSAGES 64
+#define RECV_MESSAGE_SIZE (64*1024)
+#define NUM_RECV_MESSAGES 1024
 #define NUM_SEND_MESSAGES 1024
 
 using namespace std;
@@ -39,6 +40,8 @@ struct optiq_transport {
 
     vector<struct optiq_virtual_lane> *virtual_lanes;
     vector<struct optiq_arbitration> *arbitration_table;
+
+    map<int, int> next_dest;
 };
 
 void optiq_transport_init(struct optiq_transport *self, enum optiq_transport_type type);
@@ -53,7 +56,7 @@ int optiq_transport_destroy(struct optiq_transport *self);
 
 void* optiq_transport_get_concrete_transport(struct optiq_transport *self);
 
-void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> *jobs);
+void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> &jobs);
 
 void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table);
 

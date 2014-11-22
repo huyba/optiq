@@ -7,6 +7,19 @@
 #include "util.h"
 #include "job.h"
 
+void build_look_up_next_dest_table(vector<struct optiq_job> &jobs, int rank, map<int, int> &next_dest)
+{
+    for (int i = 0; i < jobs.size(); i++) {
+	for (int j = 0; j < jobs[i].flows.size(); j++) {
+	    for (int k = 0; k < jobs[i].flows[j].arcs.size(); k++) {
+		if (jobs[i].flows[j].arcs[k].ep1 == rank) {
+		    next_dest.insert(make_pair(jobs[i].flows[j].id, jobs[i].flows[j].arcs[k].ep2));
+		}
+	    }
+	}
+    }
+}
+
 int get_next_dest_from_jobs(vector<struct optiq_job> *jobs, int flow_id, int current_ep)
 {
     for (int i = 0; i < jobs->size(); i++) {
