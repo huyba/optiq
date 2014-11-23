@@ -77,12 +77,11 @@ int main(int argc, char **argv)
     jobs.push_back(job0);
     jobs.push_back(job1);
 
-    vector<struct optiq_arbitration> arbitration_table;
-    vector<struct optiq_virtual_lane> virtual_lanes;
-
-    create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
+    struct optiq_vlab vlab;
+    
+    optiq_vlab_create(vlab, jobs, world_rank);
     optiq_transport_assign_jobs(&transport, jobs);
-    optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes, &arbitration_table);
+    optiq_transport_assign_vlab(&transport, &vlab);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -94,9 +93,9 @@ int main(int argc, char **argv)
     for (int iter = 0; iter < num_iters; iter++)
     {
 	if (world_rank <= 1) {
-	    add_job_to_virtual_lanes(jobs[world_rank], &virtual_lanes, &transport);
+	    optiq_vlab_add_job(vlab, jobs[world_rank], &transport);
 
-	    transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
+	    optiq_vlab_transport(vlab, &transport);
 
 	    bool isDone = false;
 	    while (!isDone) {

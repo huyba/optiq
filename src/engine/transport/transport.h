@@ -24,7 +24,7 @@ enum optiq_transport_type {
     NONBLK_MPI = 3
 };
 
-struct optiq_virtual_lane;
+struct optiq_vlab;
 
 struct optiq_transport {
     struct optiq_transport_interface *transport_implementation;
@@ -38,8 +38,7 @@ struct optiq_transport {
     vector<struct optiq_message *> avail_recv_messages;
     vector<struct optiq_message *> avail_send_messages;
 
-    vector<struct optiq_virtual_lane> *virtual_lanes;
-    vector<struct optiq_arbitration> *arbitration_table;
+    struct optiq_vlab *vlab;
 
     map<int, int> next_dest;
 };
@@ -58,7 +57,7 @@ void* optiq_transport_get_concrete_transport(struct optiq_transport *self);
 
 void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> &jobs);
 
-void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table);
+void optiq_transport_assign_vlab(struct optiq_transport *self, struct optiq_vlab *vlab);
 
 struct optiq_message* optiq_transport_get_send_message(struct optiq_transport *self);
 void optiq_transport_return_send_message(struct optiq_transport *self, struct optiq_message *message);

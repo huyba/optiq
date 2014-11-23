@@ -337,14 +337,14 @@ int optiq_pami_transport_process_incomming_message(struct optiq_transport *self)
 	    printf("At Rank %d, next dest = %d for flow_id %d\n", pami_transport->rank, message->next_dest, message->header.flow_id);
 #endif
             message->source = self->rank;
-            add_message_to_virtual_lanes(message, self->virtual_lanes);
+            optiq_vlab_add_message(*self->vlab, message);
 
 #ifdef DEBUG
             printf("At Rank %d, added messge to VL next dest = %d for flow_id %d\n", pami_transport->rank, message->next_dest, message->header.flow_id);
 #endif
 
 	    /*Process messages in virtual lanes*/
-	    transport_from_virtual_lanes(self, *(self->virtual_lanes), *(self->arbitration_table));
+	    optiq_vlab_transport(*self->vlab, self);
         }
 
         /*Move the recv_cookie to available vector*/
@@ -453,13 +453,6 @@ void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struc
 	}
     }
 }
-
-/*void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table)
-{
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(self);
-    pami_transport->virtual_lanes = virtual_lanes;
-    pami_transport->arbitration_table = arbitration_table;
-}*/
 
 int optiq_notify_job_done(struct optiq_transport *self, int job_id, vector<int> *dests)
 {

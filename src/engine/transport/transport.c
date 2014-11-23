@@ -114,8 +114,7 @@ void optiq_transport_assign_jobs(struct optiq_transport *self, vector<struct opt
 }
 
 
-void optiq_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<optiq_arbitration> *arbitration_table)
+void optiq_transport_assign_vlab(struct optiq_transport *self, struct optiq_vlab *vlab)
 {
-    self->virtual_lanes = virtual_lanes;
-    self->arbitration_table = arbitration_table;
+    self->vlab = vlab;
 }

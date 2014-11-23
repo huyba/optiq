@@ -55,9 +55,6 @@ struct optiq_pami_transport {
     vector<struct optiq_message *> *avail_recv_messages;
     vector<struct optiq_message *> *avail_send_messages;
 
-    //vector<struct optiq_virtual_lane> *virtual_lanes;
-    //vector<struct optiq_arbitration> *arbitration_table;
-
     vector<int> involved_job_ids;
     vector<int> involved_task_ids;
     struct optiq_transport *transport;
@@ -89,8 +86,6 @@ bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *j
 int optiq_pami_transport_destroy(struct optiq_transport *self);
 
 void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> &jobs);
-
-void optiq_pami_transport_assign_virtual_lanes(struct optiq_transport *self, vector<struct optiq_virtual_lane> *virtual_lanes, vector<struct optiq_arbitration> *arbitration_table);
 
 int optiq_pami_transport_process_incomming_message(struct optiq_transport *self);
 

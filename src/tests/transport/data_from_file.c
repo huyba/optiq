@@ -32,13 +32,12 @@ int main(int argc, char **argv)
     vector<struct optiq_job> jobs;
     read_flow_from_file((char *)file_path.c_str(), jobs);
 
-    vector<struct optiq_virtual_lane> virtual_lanes;
-    vector<struct optiq_arbitration> arbitration_table;
+    struct optiq_vlab vlab;
 
-    create_virtual_lane_arbitration_table(virtual_lanes, arbitration_table, jobs, world_rank);
+    optiq_vlab_create(vlab, jobs, world_rank);
 
     optiq_transport_assign_jobs(&transport, jobs);
-    //optiq_transport_assign_virtual_lanes(&transport, &virtual_lanes, &arbitration_table);
+    optiq_transport_assign_vlab(&transport, &vlab);
 
     int data_size = 8*1024*1024;
     char *buffer = (char *)malloc(data_size);
@@ -70,9 +69,9 @@ int main(int argc, char **argv)
     for (int iter = 0; iter < num_iters; iter++) {
 
 	if (world_rank < 85) {
-	    add_job_to_virtual_lanes(local_job, &virtual_lanes, &transport);
+	    optiq_vlab_add_job(vlab, local_job, &transport);
 
-	    transport_from_virtual_lanes(&transport, virtual_lanes, arbitration_table);
+	    optiq_vlab_transport(vlab, &transport);
 
 	    bool isDone = false;
 	    while (!isDone) {
