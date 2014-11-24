@@ -5,6 +5,7 @@
 
 #include <mpi.h>
 
+#include "../../core/utils/test.h"
 #include "optiq.h"
 
 using namespace std;
@@ -61,6 +62,9 @@ int main(int argc, char **argv)
     }
 
     struct optiq_message *message = get_message_with_buffer(data_size);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    ring_warm_up(50);
 
     MPI_Barrier(MPI_COMM_WORLD);
 

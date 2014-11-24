@@ -29,7 +29,7 @@ struct optiq_vlab {
     vector<struct optiq_arbitration> ab;
 };
 
-void print_arbitration_table(vector<struct optiq_arbitration> ab);
+void print_arbitration_table(vector<struct optiq_arbitration> &ab);
 void print_virtual_lanes(map<int, struct optiq_virtual_lane> &virtual_lanes);
 
 int optiq_vlab_create(struct optiq_vlab &vlab, vector<struct optiq_job> &jobs, int world_rank);

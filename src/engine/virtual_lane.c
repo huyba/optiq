@@ -4,7 +4,7 @@
 #include "virtual_lane.h"
 #include "transport.h"
 
-void print_arbitration_table(vector<struct optiq_arbitration> ab)
+void print_arbitration_table(vector<struct optiq_arbitration> &ab)
 {
     int num_entries = ab.size();
     printf("Arbitration table: #entries = %d\n", num_entries);
@@ -32,14 +32,15 @@ void print_virtual_lanes(map<int, struct optiq_virtual_lane> &virtual_lanes)
 void optiq_vlab_transport(struct optiq_vlab &vlab, struct optiq_transport *transport)
 {
     /*Iterate the arbitration table to get the next virtual lane*/
-    bool done = false;
+    bool empty = false;
     int nbytes = 0;
     int virtual_lane_id = 0;
+    struct optiq_virtual_lane *virtual_lane = NULL;
     map<int, struct optiq_virtual_lane>::iterator iter;
 
-    while (!done) {
+    while (!empty) {
 
-	done = true;
+	empty = true;
 
 	/*Get the virtual lane id*/
 	for (int index = 0; index < vlab.ab.size(); index++) {
@@ -49,20 +50,20 @@ void optiq_vlab_transport(struct optiq_vlab &vlab, struct optiq_transport *trans
 
 	    /*Get the virtual lane with that id*/
 	    if (iter != vlab.vl.end()) {
-		struct optiq_virtual_lane virtual_lane = iter->second;
-		if (virtual_lane.requests.size() > 0) {
-		    struct optiq_message *message = virtual_lane.requests.front();
+		virtual_lane = &iter->second;
+		if (virtual_lane->requests.size() > 0) {
+		    struct optiq_message *message = virtual_lane->requests.front();
 
 		    //printf("Rank %d virtual_lane_id = %d, quota= %d, message length = %d, offset = %d\n", transport->rank, virtual_lane_id, arbitration_table[index].weight * BASE_UNIT_SIZE, message->length, message->current_offset); 
 		    nbytes = vlab.ab[index].weight * BASE_UNIT_SIZE;
 
 		    if (message->current_offset + nbytes >= message->length) {
 			nbytes = message->length - message->current_offset;
-			virtual_lane.requests.erase(virtual_lane.requests.begin());
+			virtual_lane->requests.erase(virtual_lane->requests.begin());
 			//printf("Remove a message\n");
 		    } else {
 			/*Update the virtual lane*/
-			virtual_lane.requests.front()->current_offset += nbytes;
+			virtual_lane->requests.front()->current_offset += nbytes;
 		    }
 
 		    struct optiq_message *instant = optiq_transport_get_send_message(transport);
@@ -75,7 +76,7 @@ void optiq_vlab_transport(struct optiq_vlab &vlab, struct optiq_transport *trans
 
 		    optiq_transport_send(transport, instant);
 
-		    done = false;
+		    empty = false;
 
 		    //printf("Rank %d update new offset = %d\n", transport->rank, message->current_offset);
 
