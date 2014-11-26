@@ -23,17 +23,29 @@ int main(int argc, char **argv)
     struct optiq_transport transport;
     optiq_transport_init(&transport, PAMI);
 
-#ifdef OPTIQ_DEBUG_TRANSPORT
-    printf("Debuging mode\n");
+#ifdef DEBUG
+    if (world_rank == 0) {
+	printf("Debuging mode\n");
+    }
 #endif
 
     if (world_rank == 0) {
 	printf("Init transport successfully!\n");
     }
 
-    int data_size = 2*1024*1024;
+    int data_size = 2 * 1024 * 1024;
+    if (argc > 1) {
+	data_size  = atoi(argv[1]) * 1024;
+    }
+
+    if (world_rank == 0) {
+	printf("Data size is %d\n", data_size);
+    }
+
     char *buffer = (char*)malloc(data_size);
-    memset (buffer, 7, data_size);
+    for (int i = 0; i < data_size; i++) {
+	buffer[i] = i % 128;
+    }
 
     /*Create jobs for testing*/
     /*2 jobs here: 0-1-2 and 1-2-3*/
@@ -78,7 +90,7 @@ int main(int argc, char **argv)
     jobs.push_back(job1);
 
     struct optiq_vlab vlab;
-    
+
     optiq_vlab_create(vlab, jobs, world_rank);
     optiq_transport_assign_jobs(&transport, jobs);
     optiq_transport_assign_vlab(&transport, &vlab);
@@ -86,10 +98,11 @@ int main(int argc, char **argv)
     MPI_Barrier(MPI_COMM_WORLD);
 
     /*Iterate the arbitration table to get the next virtual lane*/
-    int num_iters = 30;
-    if (argc > 1) {
-	num_iters = atoi(argv[1]);
+    int num_iters = 1;
+    if (argc > 2) {
+	num_iters = atoi(argv[2]);
     }
+    struct optiq_message *message = NULL;
     for (int iter = 0; iter < num_iters; iter++)
     {
 	if (world_rank <= 1) {
@@ -101,27 +114,34 @@ int main(int argc, char **argv)
 	    while (!isDone) {
 		isDone = optiq_transport_test(&transport, &jobs[world_rank]);
 	    }
-	    printf("Rank %d done sending data from its job\n", world_rank);
 	}
 
 	if (2 <=  world_rank && world_rank <= 3) {
-	    struct optiq_message *message = get_message_with_buffer(data_size);
+	    message = get_message_with_buffer(data_size);
 	    message->header.job_id = world_rank - 2;
 	    int isDone = 0;
 	    while (isDone == 0) {
 		isDone = optiq_transport_recv(&transport, message);
-	    }
-	    printf("Rank %d done receiving data of its job\n", world_rank);
-	    if (memcmp(message->buffer, buffer, data_size) != 0) {
-		printf("Error: Rank %d received invalid data\n", world_rank);
-	    } else {
-		printf("Rank %d received valid data\n", world_rank);
 	    }
 	}
 
 	bool done_forward = false;
 	while (!done_forward) {
 	    done_forward = optiq_pami_transport_forward_test(&transport);
+	}
+    }
+
+    if (2 <= world_rank && world_rank <= 3) {
+	if (memcmp(message->buffer, buffer, data_size) != 0) {
+	    printf("Error: Rank %d received invalid data\n", world_rank);
+	    for (int i = 0; i < data_size; i++) {
+		if (message->buffer[i] != buffer[i]) {
+		    printf("Rank %d Pos %d: recv: %d sent: %d\n", world_rank, i, message->buffer[i], buffer[i]);
+		}
+	    }
+	    printf("\n");
+	} else {
+	    printf("Rank %d received valid data\n", world_rank);
 	}
     }
 

@@ -54,16 +54,13 @@ void optiq_vlab_transport(struct optiq_vlab &vlab, struct optiq_transport *trans
 		if (virtual_lane->requests.size() > 0) {
 		    struct optiq_message *message = virtual_lane->requests.front();
 
-		    //printf("Rank %d virtual_lane_id = %d, quota= %d, message length = %d, offset = %d\n", transport->rank, virtual_lane_id, arbitration_table[index].weight * BASE_UNIT_SIZE, message->length, message->current_offset); 
+#ifdef DEBUG
+		    printf("Rank %d virtual_lane_id = %d, quota= %d, message length = %d, offset = %d, original_offset = %d\n", transport->rank, virtual_lane_id, vlab.ab[index].weight * BASE_UNIT_SIZE, message->length, message->current_offset, message->header.original_offset); 
+#endif
 		    nbytes = vlab.ab[index].weight * BASE_UNIT_SIZE;
 
 		    if (message->current_offset + nbytes >= message->length) {
 			nbytes = message->length - message->current_offset;
-			virtual_lane->requests.erase(virtual_lane->requests.begin());
-			//printf("Remove a message\n");
-		    } else {
-			/*Update the virtual lane*/
-			virtual_lane->requests.front()->current_offset += nbytes;
 		    }
 
 		    struct optiq_message *instant = optiq_transport_get_send_message(transport);
@@ -73,15 +70,22 @@ void optiq_vlab_transport(struct optiq_vlab &vlab, struct optiq_transport *trans
 		    instant->next_dest = message->next_dest;
 		    instant->source = transport->rank;
 		    instant->header = message->header;
+		    instant->header.original_offset += message->current_offset;
 
+#ifdef DEBUG
+		    printf("Rank %d send a message with offset %d\n", transport->rank, instant->header.original_offset);
+#endif
 		    optiq_transport_send(transport, instant);
 
 		    empty = false;
 
-		    //printf("Rank %d update new offset = %d\n", transport->rank, message->current_offset);
-
-		    /*After process any queue, go back to the arbitration table*/
-		    break;
+		    /*Update the virtual lanes and message*/
+		    if (message->current_offset + nbytes >= message->length) {
+                        virtual_lane->requests.erase(virtual_lane->requests.begin());
+                        optiq_transport_return_send_message(transport, message);
+		    } else {
+			virtual_lane->requests.front()->current_offset += nbytes;
+		    }
 		}
 	    }
 	}
@@ -160,6 +164,9 @@ int optiq_vlab_add_job(struct optiq_vlab &vlab, struct optiq_job &job, struct op
 	message->length = length;
 	global_offset += length;
 
+#ifdef DEBUG
+	printf("Rank %d add message with orignal offset = %d to VL\n", transport->rank, message->header.original_offset);
+#endif
 	optiq_vlab_add_message(vlab, message);
 	job.flows[i].message = message;
 	job.flows[i].sent_bytes = 0;

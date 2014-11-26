@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 
     int data_size = 8*1024*1024;
     char *buffer = (char *)malloc(data_size);
+    memset(buffer, world_rank+1, data_size);
 
     struct optiq_job local_job;
     for (int i = 0; i < jobs.size(); i++) {
@@ -52,8 +53,13 @@ int main(int argc, char **argv)
 
     /*Adding local job*/
     if (world_rank < 85) {
+	memset(buffer, world_rank+1, data_size);
 	local_job.buffer = buffer;
 	local_job.demand = data_size;
+    }
+
+    if (171 <= world_rank) {
+	memset(buffer, world_rank-170, data_size);
     }
 
     int num_iters = 30;
@@ -64,7 +70,7 @@ int main(int argc, char **argv)
     struct optiq_message *message = get_message_with_buffer(data_size);
 
     MPI_Barrier(MPI_COMM_WORLD);
-    ring_warm_up(50);
+    //ring_warm_up(50);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -81,7 +87,7 @@ int main(int argc, char **argv)
 	    while (!isDone) {
 		isDone = optiq_transport_test(&transport, &local_job);
 	    }
-	    /*printf("Rank %d done sending data from its job\n", world_rank);*/
+	    printf("Rank %d done sending data from its job\n", world_rank);
 	}
 
 	if ( 171 <= world_rank && world_rank <= 255) {
@@ -91,7 +97,7 @@ int main(int argc, char **argv)
 	    while (isDone == 0) {
 		isDone = optiq_transport_recv(&transport, message);
 	    }
-	    /*printf("Rank %d done receiving data of its job\n", world_rank);*/
+	    printf("Rank %d done receiving data of its job\n", world_rank);
 	}
 
 	bool done_forward = false;
@@ -109,6 +115,14 @@ int main(int argc, char **argv)
     if (world_rank == 0) {
 	double bw = (double) data_size * 1e6 / 1024 / 1024 / max_time / num_iters;
 	printf("Elapse time = %8.0f, bw = %8.4f\n", max_time, bw);
+    }
+
+    if (171 <= world_rank && world_rank <= 255) {
+	if (memcmp(message->buffer, buffer, data_size) != 0) {
+	    printf("Rank %d: invalid data received\n", world_rank);
+	} else {
+	    printf("Rank %d: valid data received\n", world_rank);
+	}
     }
 
     /*printf("Rank %d completed test successfully\n", world_rank);*/

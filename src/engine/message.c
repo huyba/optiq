@@ -1,5 +1,6 @@
 #include <vector>
 #include <stdlib.h>
+#include <string.h>
 
 #include "message.h"
 
@@ -9,7 +10,9 @@ struct optiq_message* get_send_message(vector<struct optiq_message *> *messages)
 
     if ((*messages).size() > 0) {
         message = (*messages).back();
-        (*messages).pop_back();
+	(*messages).pop_back();
+
+	memset(message, 0, sizeof(struct optiq_message));
     } else {
         message = get_message();
     }

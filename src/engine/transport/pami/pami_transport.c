@@ -128,7 +128,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message *message)
 {
     /*Depend of the message size and source, do the spit up*/
-    if (message->header.original_source == self->rank) {
+    /*if (message->header.original_source == self->rank) {
 	int window_size = calculate_winsize(message->length);
 	int offset = 0;
 	while (offset < message->length) {
@@ -147,7 +147,8 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
 	optiq_transport_return_send_message(self, message);
     } else {
 	return optiq_pami_transport_actual_send(self, message);
-    }
+    }*/
+    return optiq_pami_transport_actual_send(self, message);
 }
 
 int optiq_pami_transport_actual_send(struct optiq_transport *self, struct optiq_message *message)
@@ -205,7 +206,7 @@ int optiq_pami_transport_actual_send(struct optiq_transport *self, struct optiq_
     }
 
 #ifdef DEBUG
-    printf("Rank %d is sending data of size %d to Rank %d with flow_id = %d\n", self->rank, message->length, message->next_dest, message->header.flow_id);
+    printf("Rank %d is sending data of size %d to Rank %d with flow_id = %d, original_offset = %d\n", self->rank, message->length, message->next_dest, message->header.flow_id, message->header.original_offset);
 #endif
 
 #endif
@@ -254,7 +255,9 @@ int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message
         /*printf("Rank %d received as the destination of a message of size %d of job_id = %d, while job_id is %d\n", pami_transport->rank, instant->length, instant->header.job_id, message->header.job_id);*/
 
         if (instant->header.job_id == message->header.job_id) {
-	    /*printf("Rank %d copies %d bytes of data to offset %d\n", pami_transport->rank, instant->length, instant->header.original_offset);*/
+#ifdef DEBUG
+	    printf("Rank %d copies %d bytes of data to offset %d\n", pami_transport->rank, instant->length, instant->header.original_offset);
+#endif
             memcpy((void *)&message->buffer[instant->header.original_offset], (const void*)instant->buffer, instant->length);
 	    /*printf("Done copy data\n");*/
             message->recv_length += instant->length;
