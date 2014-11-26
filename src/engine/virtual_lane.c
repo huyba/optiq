@@ -20,11 +20,11 @@ void print_virtual_lanes(map<int, struct optiq_virtual_lane> &virtual_lanes)
 
     printf("Current status of virtual lanes: \n");
     printf("Number of virtual lanes = %d\n", num_virtual_lanes);
-    for (map<int, struct optiq_virtual_lane>::iterator iter = virtual_lanes.begin(); iter != virtual_lanes.end(); ) {
-	printf("Virtual lane id = %d, #messages = %lu\n", iter->first, iter->second.requests.size());
+    for (map<int, struct optiq_virtual_lane>::iterator iter = virtual_lanes.begin(); iter != virtual_lanes.end(); iter++) {
+	printf("Virtual lane flow_id = %d, #messages = %lu\n", iter->first, iter->second.requests.size());
 
 	for (int j = 0; j < iter->second.requests.size(); j++) {
-	    printf("Message has %d bytes\n", iter->second.requests[j]->length);
+	    printf("flow_id = %d Message has %d bytes\n", iter->first, iter->second.requests[j]->length);
 	}
     }
 }
@@ -169,6 +169,7 @@ int optiq_vlab_add_job(struct optiq_vlab &vlab, struct optiq_job &job, struct op
 #endif
 	optiq_vlab_add_message(vlab, message);
 	job.flows[i].message = message;
+	job.flows[i].registered_bytes = message->length;
 	job.flows[i].sent_bytes = 0;
     }
 

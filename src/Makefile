@@ -9,7 +9,7 @@ endif
 
 ifeq ($(COMPILER),XL)
   CC      = mpicxx
-  COPT    = -g -O3 -DDEBUG
+  COPT    = -g -O3 #-DDEBUG
 endif
 
 LD      = mpixlc_r

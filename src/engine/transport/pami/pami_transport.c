@@ -304,8 +304,11 @@ bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *j
 
     /*Checking if every flow is done*/
     for (int i = 0; i < job->flows.size(); i++) {
-        if (job->flows[i].message->length != job->flows[i].sent_bytes) {
+        if (job->flows[i].registered_bytes != job->flows[i].sent_bytes) {
             isDone = false;
+#ifdef DEBUG
+	    printf("Rank %d at flow_id %d sent %d out of %d bytes\n", self->rank, job->flows[i].id, job->flows[i].sent_bytes, job->flows[i].message->length);
+#endif
         }
     }
 
