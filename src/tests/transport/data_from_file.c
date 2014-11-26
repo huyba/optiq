@@ -41,6 +41,9 @@ int main(int argc, char **argv)
     optiq_transport_assign_vlab(&transport, &vlab);
 
     int data_size = 8*1024*1024;
+    if (argc > 1) {
+	data_size = atoi(argv[1]) * 1024;
+    }
     char *buffer = (char *)malloc(data_size);
     for (int i = 0; i < data_size;  i++) {
 	buffer[i] = i % 128;
@@ -60,8 +63,8 @@ int main(int argc, char **argv)
     }
 
     int num_iters = 30;
-    if (argc > 1) {
-	num_iters = atoi(argv[1]);
+    if (argc > 2) {
+	num_iters = atoi(argv[2]);
     }
 
     struct optiq_message *message = get_message_with_buffer(data_size);

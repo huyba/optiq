@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     arc0.ep2 = 1;
     arc1.ep1 = 1;
     arc1.ep2 = 2;
-    arc2.ep1 = 2;   
+    arc2.ep1 = 2;
     arc2.ep2 = 3;
 
     flow0.id = 0;
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     MPI_Barrier(MPI_COMM_WORLD);
     vector<struct optiq_job> jobs;
     jobs.push_back(job0);
-    jobs.push_back(job1);
+    //jobs.push_back(job1);
 
     struct optiq_vlab vlab;
 
@@ -103,25 +103,29 @@ int main(int argc, char **argv)
 	num_iters = atoi(argv[2]);
     }
     struct optiq_message *message = NULL;
+
+    uint64_t start = GetTimeBase();
     for (int iter = 0; iter < num_iters; iter++)
     {
-	if (world_rank <= 1) {
-	    optiq_vlab_add_job(vlab, jobs[world_rank], &transport);
+	for (int i = 0; i < jobs.size(); i++) {
+	    if (jobs[i].source == world_rank) {
+		optiq_vlab_add_job(vlab, jobs[i], &transport);
 
-	    optiq_vlab_transport(vlab, &transport);
+		optiq_vlab_transport(vlab, &transport);
 
-	    bool isDone = false;
-	    while (!isDone) {
-		isDone = optiq_transport_test(&transport, &jobs[world_rank]);
+		bool isDone = false;
+		while (!isDone) {
+		    isDone = optiq_transport_test(&transport, &jobs[i]);
+		}
 	    }
-	}
 
-	if (2 <=  world_rank && world_rank <= 3) {
-	    message = get_message_with_buffer(data_size);
-	    message->header.job_id = world_rank - 2;
-	    int isDone = 0;
-	    while (isDone == 0) {
-		isDone = optiq_transport_recv(&transport, message);
+	    if (jobs[i].dest == world_rank) {
+		message = get_message_with_buffer(data_size);
+		message->header.job_id = jobs[i].id;
+		int isDone = 0;
+		while (isDone == 0) {
+		    isDone = optiq_transport_recv(&transport, message);
+		}
 	    }
 	}
 
@@ -131,17 +135,32 @@ int main(int argc, char **argv)
 	}
     }
 
-    if (2 <= world_rank && world_rank <= 3) {
-	if (memcmp(message->buffer, buffer, data_size) != 0) {
-	    printf("Error: Rank %d received invalid data\n", world_rank);
-	    for (int i = 0; i < data_size; i++) {
-		if (message->buffer[i] != buffer[i]) {
-		    printf("Rank %d Pos %d: recv: %d sent: %d\n", world_rank, i, message->buffer[i], buffer[i]);
+    uint64_t end = GetTimeBase();
+
+    double elapsed_time = (double)(end-start)/1.6e3;
+    double max_time;
+    MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (world_rank == 0) {
+	double bw = (double) data_size * 1e6 / 1024 / 1024 / max_time / num_iters;
+	printf("Elapse time = %8.0f, bw = %8.4f\n", max_time, bw);
+    }
+
+
+    for (int i = 0; i < jobs.size(); i++) 
+    {
+	if (world_rank == jobs[i].dest) {
+	    if (memcmp(message->buffer, buffer, data_size) != 0) {
+		printf("Error: Rank %d received invalid data\n", world_rank);
+		for (int j = 0; j < data_size; j++) {
+		    if (message->buffer[j] != buffer[j]) {
+			printf("Rank %d Pos %d: recv: %d sent: %d\n", world_rank, j, message->buffer[j], buffer[j]);
+		    }
 		}
+		printf("\n");
+	    } else {
+		printf("Rank %d received valid data\n", world_rank);
 	    }
-	    printf("\n");
-	} else {
-	    printf("Rank %d received valid data\n", world_rank);
 	}
     }
 
