@@ -440,6 +440,7 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
     }
     return;
 }
+#endif
 
 void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> &jobs)
 {
@@ -562,5 +563,3 @@ int calculate_winsize(int message_size)
     if (134217728 <= message_size)
 	return 524288;
 }
-
-#endif
