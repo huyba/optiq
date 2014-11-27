@@ -11,6 +11,7 @@ void optiq_topology_init(struct optiq_topology *self, enum machine_type machine)
     if (machine == BGQ) {
 	self->topo_info->num_dims = 5;
 	self->topo_impl = &topology_bgq;
+        special_init_for_bgq_struct(&topology_bgq);
     } else if (machine == XE6) {
 	self->topo_info->num_dims = 3;
 	self->topo_impl = &topology_xe6;
@@ -101,4 +102,26 @@ void optiq_topology_get_node(struct optiq_topology *self, struct optiq_node *nod
 void optiq_topology_finalize(struct optiq_topology *self) 
 {
     self->topo_impl->optiq_topology_finalize(self->topo_info);
+}
+
+void special_init_for_bgq_struct(struct topology_interface *topology_bgq)
+{
+    topology_bgq->machine = BGQ;
+    topology_bgq->optiq_topology_init = optiq_topology_init_bgq;
+    topology_bgq->optiq_topology_get_rank = optiq_topology_get_rank_bgq;
+    topology_bgq->optiq_topology_get_num_ranks = optiq_topology_get_num_ranks_bgq;
+    topology_bgq->optiq_topology_get_node_id = optiq_topology_get_node_id_bgq;
+    topology_bgq->optiq_topology_get_node_id_from_coord = optiq_topology_get_node_id_from_coord_bgq;
+    topology_bgq->optiq_topology_get_coord = optiq_topology_get_coord_bgq;
+    topology_bgq->optiq_topology_get_physical_location = optiq_topology_get_physical_location_bgq;
+    topology_bgq->optiq_topology_get_all_coords = optiq_topology_get_all_coords_bgq;
+    topology_bgq->optiq_topology_get_all_node_ids = optiq_topology_get_all_node_ids_bgq;
+    topology_bgq->optiq_topology_get_size = optiq_topology_get_size_bgq;
+    topology_bgq->optiq_topology_get_torus = optiq_topology_get_torus_bgq;
+    topology_bgq->optiq_topology_get_bridge = optiq_topology_get_bridge_bgq;
+    topology_bgq->optiq_topology_get_neighbors = optiq_topology_get_neighbors_bgq;
+    topology_bgq->optiq_topology_get_topology_from_file = optiq_topology_get_topology_from_file_bgq;
+    topology_bgq->optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtime_bgq;
+    topology_bgq->optiq_topology_get_node = optiq_topology_get_node_bgq;
+    topology_bgq->optiq_topology_finalize = optiq_topology_finalize_bgq;
 }

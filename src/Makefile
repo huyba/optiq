@@ -1,47 +1,52 @@
-CC      = CC 
-COPT    = -g -O2 #-std=gnu99
-FOPT    = -g -O2
+ifndef COMPILER
+  COMPILER = XL
+endif
 
-# CSCS paths
-DMAPP_PATH=/opt/cray/dmapp/default
-GNIH_PATH=/opt/cray/gni-headers/default
-UGNI_PATH=/opt/cray/ugni/default
-UDREG_PATH=/opt/cray/udreg/default
-PMI_PATH=/opt/cray/pmi/default
-KRCA_PATH=/opt/cray/krca/default
+ifeq ($(COMPILER),GNU)
+  CC      = mpicc
+  COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
+endif
 
-OPTIQ_SYSTEM=core/system
-OPTIQ_STRUCTURE=core/structures
-OPTIQ_UTILS=core/utils
+ifeq ($(COMPILER),XL)
+  CC      = mpicxx
+  COPT    = -g -O3 #-DDEBUG
+endif
 
-INCLUDE = -I. -I$(DMAPP_PATH)/include -I$(KRCA_PATH)/include -I$(UDREG_PATH)/include -I$(GNIH_PATH)/include -I$(PMI_PATH)/include -I$(OPTIQ_SYSTEM) -I$(OPTIQ_STRUCTURE) -I$(OPTIQ_UTILS)
-LIBS    = -L$(DMAPP_PATH)/lib64   -L$(UDREG_PATH)/lib64   -L$(UGNI_PATH)/lib64   -L$(PMI_PATH)/lib64 -ldmapp -ludreg -lugni -lpmi
+LD      = mpixlc_r
 
-CFLAGS  = $(COPT) $(INCLUDE)
+SYSTEM   = core/system
+UTILS  = core/utils
+STRUCTURES = core/structures
+TRANSPORT = engine/transport
 
-LD      = $(CC)
-LDFLAGS = $(COPT) $(INCLUDE)
+CFLAGS  = $(COPT) -I. -I.. -I$(SYSTEM) -I$(UTILS) -I$(TRANSPORT) -I$(STRUCTURES) -I./engine
+LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
-TESTS := $(patsubst %.c,%.x,$(wildcard *.c))
-OBJ   := $(patsubst %.c,%.o,$(wildcard *.c))
-ASM   := $(patsubst %.c,%.s,$(wildcard *.c))
+CFLAGS += -DPROGRESS_THREAD
 
-OPTIQ_OBJS := $(OPTIQ_UTILS)/util.o  $(OPTIQ_SYSTEM)/xc30/topology_xc30.o $(OPTIQ_SYSTEM)/xe6/topology_xe6.o $(OPTIQ_SYSTEM)/bgq/topology_bgq.o $(OPTIQ_SYSTEM)/topology.o  
+OBJ = $(UTILS)/util.o $(UTILS)/test.o $(SYSTEM)/memory.o $(STRUCTURES)/flow.o $(STRUCTURES)/job.o engine/message.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o engine/virtual_lane.o optiq.o
 
-all: $(OPTIQ_OBJS) core/system/topology.o optiq.o
-
-tests: $(TESTS)
+all: $(OBJ) liboptiq.a
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.s: %.c
-	$(CC) $(CFLAGS) -S $< -o $@
+%.x: %.o $(OBJ)
+	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
+
+liboptiq.a: $(OBJ)
+	rm -f $@
+	ar cq $@ $(OBJ)
+
+clobj: $(OBJ)
+	rm $(OBJ)
+	rm liboptiq.a
 
 clean:
-	$(RM) $(RMFLAGS) $(OBJ)
+	$(RM) $(RMFLAGS) *.o
+	$(RM) $(RMFLAGS) *.lst
 
 realclean: clean
-	$(RM) $(RMFLAGS) $(TESTS)
-	$(RM) $(RMFLAGS) $(ASM)
+	$(RM) $(RMFLAGS) *.x
+	$(RM) $(RMFLAGS) core.*
 

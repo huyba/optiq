@@ -1,4 +1,4 @@
-CC      = CC 
+CC      = CC
 COPT    = -g -O2 #-std=gnu99
 FOPT    = -g -O2
 
@@ -37,20 +37,20 @@ rm:
 tests: $(TESTS)
 
 %.x: %.o
-	$(LD) $(LDFLAGS) $(OPTIQ_OBJS) $< $(LIBS) -o $@
+        $(LD) $(LDFLAGS) $(OPTIQ_OBJS) $< $(LIBS) -o $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+        $(CC) $(CFLAGS) -c $< -o $@
 
 %.s: %.c
-	$(CC) $(CFLAGS) -S $< -o $@
+        $(CC) $(CFLAGS) -S $< -o $@
 
 clean:
 	$(RM) $(RMFLAGS) $(OBJ)
 
 realclean: clean
-	$(RM) $(RMFLAGS) $(TESTS)
-	$(RM) $(RMFLAGS) $(ASM)
+        $(RM) $(RMFLAGS) $(TESTS)
+        $(RM) $(RMFLAGS) $(ASM)
 
 copy:
 	cp test_topo_xc30.x /scratch2/scratchdirs/huybui/optiq/tests/testtopo/

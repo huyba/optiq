@@ -1,28 +1,34 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "optiq.h"
 
 struct optiq *opq;
 
 void optiq_init()
 {
-    machine_type machine = XC30;
-    opq = (struct optiq *)malloc(sizeof(struct optiq));
-    opq->topo = (struct optiq_topology *)malloc(sizeof(struct optiq_topology));
-    optiq_topology_init(opq->topo, machine);
+    opq = (struct optiq *)core_memory_alloc(sizeof(struct optiq), "optiq", "optiq_init");
 
-    opq->graph = (struct optiq_graph *)malloc(sizeof(struct optiq_graph));
-    optiq_graph_init(opq->graph, machine);
+    optiq_transport_init(&opq->transport, PAMI);
 }
 
-void optiq_get_topology_from_file(char *filePath)
+void optiq_create_communication_graph(int source, int dest, int nbytes, void *buffer)
 {
-    optiq_topology_get_topology_from_file(opq->topo, filePath);
+    /*1. Create list of job*/
+    struct optiq_job *job = (struct optiq_job *)core_memory_alloc(sizeof(struct optiq_job), "job", "create_communication_graph");
+    job->source = source;
+    job->dest = dest;
+    job->demand = nbytes;
+    job->buffer = (char *)buffer;
+
+    /*2. Gather all jobs from all ranks*/
+
+    /*2. Optimize the communication by an solver or write to a file*/
+
+    /*3. Read the communication flows back*/
+    
+
+    /*4. Create virtual lanes, arbitration table */
 }
 
-void optiq_generate_model_data(char *filePath)
+void optiq_execute()
 {
-    optiq_graph_construct(opq->graph, opq->graph->graph);
-}
 
+}

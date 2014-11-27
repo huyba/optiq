@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 model optiq.mod;
 data optiq_s.dat;
+=======
+model optiq_hops.mod;
+data optiq32.dat;
+>>>>>>> 3f172a6455575aaead87019dcae8173031d9eb9f
 option solver snopt;
 solve;
 

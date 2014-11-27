@@ -1,12 +1,26 @@
 #ifndef OPTIQ_FLOW
 #define OPTIQ_FLOW
 
-struct flow {
-    int source;
-    int destination;
-    float demand;
+#include <vector>
+
+#include "../../engine/message.h"
+
+using namespace std;
+
+struct optiq_arc {
+    int ep1;
+    int ep2;
 };
 
-void read_flows_from_file(char *filePath);
+struct optiq_flow {
+    int id;
+    int throughput;
+    vector<struct optiq_arc> arcs;
+    struct optiq_message *message;
+    int registered_bytes;
+    int sent_bytes;
+};
+
+int get_next_dest_from_flow(const struct optiq_flow *flow, int current_ep);
 
 #endif

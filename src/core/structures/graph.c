@@ -5,7 +5,7 @@
 
 #include <graph.h>
 
-void optiq_graph_init(struct optiq_graph *self) 
+void optiq_graph_init(struct optiq_graph *self, machine_type machine) 
 {
     machine_type machine = self->topo_info->machine;
 
@@ -21,18 +21,18 @@ void optiq_graph_init(struct optiq_graph *self)
     self->graph_impl->optiq_graph_init(self->topo_info);
 }
 
-void optiq_graph_construct(struct optiq_graph *self, float **graph) 
+void optiq_graph_construct(struct optiq_graph *self, optiq_graph_info *graph_info) 
 {
-    self->graph_impl->optiq_graph_contruct(self->topo_info, graph);
+    self->graph_impl->optiq_graph_contruct(self->topo_info, graph_info);
 }
 
-void optiq_graph_coarsen(struct optiq_graph *graph)
+void optiq_graph_coarsen(struct optiq_graph *self, optiq_graph_info *graph_info)
 {
-    self->graph_impl->optiq_graph_coarsen(graph);
+    self->graph_impl->optiq_graph_coarsen(graph_info);
 }
 
-void optiq_graph_uncoarsen(struct optiq_graph *graph)
+void optiq_graph_uncoarsen(struct optiq_graph *sefl, optiq_graph_info *graph_info)
 {
-    self->graph_impl->optiq_graph_uncoarsen(graph);
+    self->graph_impl->optiq_graph_uncoarsen(graph_info);
 }
 

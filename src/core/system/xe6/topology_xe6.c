@@ -251,6 +251,7 @@ void optiq_topology_finalize_xe6(struct topology_info *topo_info)
 
 struct topology_interface topology_xe6 =
 {
+#ifdef __CRAYXE
     .machine = XE6,
     .optiq_topology_init = optiq_topology_init_xe6,
     .optiq_topology_get_rank = optiq_topology_get_rank_xe6,
@@ -269,4 +270,5 @@ struct topology_interface topology_xe6 =
     .optiq_topology_get_topology_at_runtime = optiq_topology_get_topology_at_runtime_xe6,
     .optiq_topology_get_node = optiq_topology_get_node_xe6,
     .optiq_topology_finalize = optiq_topology_finalize_xe6
+#endif
 };

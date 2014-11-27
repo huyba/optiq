@@ -9,17 +9,17 @@ void optiq_graph_init_xc30(struct topology_info *topo_info)
 
 }
 
-void optiq_graph_construct_xc30(struct topology_info *topo_info, float **graph)
+void optiq_graph_construct_xc30(struct topology_info *topo_info, optiq_graph_info **graph_info)
 {
 
 }
 
-void optiq_graph_coarsen_xc30(struct optiq_graph *graph)
+void optiq_graph_coarsen_xc30(struct optiq_graph_info *graph_info)
 {
 
 }
 
-void optiq_graph_uncoarsen_xc30(struct optiq_graph *graph)
+void optiq_graph_uncoarsen_xc30(struct optiq_graph_info *graph_info)
 {
 
 }

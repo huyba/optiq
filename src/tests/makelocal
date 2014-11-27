@@ -1,0 +1,31 @@
+#CC = gcc
+CC = g++
+
+COPT = -g -O2 -Wall #-std=c99
+
+MPICH2_PATH=/usr/local/mpich2
+
+STRUCTURES = ../core/structures
+TRANSPORT = ../engine/transport
+
+INCLUDE = -I. -I$(MPICH2_PATH)/include -I../core/system/ -I../core/structures/ -I../core/utils -I../engine/ -I$(TRANSPORT)
+
+LD = g++
+
+LIBS    = -L$(MPICH2_PATH)/lib -l mpi
+
+OBJ = ../core/utils/util.o ../core/structures/flow.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o ../engine/virtuallane.o #../core/system/topology.o ../core/structures/graph.o
+
+all: $(OBJ) client.x #$(OBJ) generategraph.x
+
+CFLAGS  = $(COPT) $(INCLUDE)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.x: %.o
+	$(LD) $(OBJ) $< $(LIBS) -o $@
+
+rm:
+	rm $(OBJ)
+	rm *.x
