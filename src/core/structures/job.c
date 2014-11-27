@@ -34,21 +34,37 @@ int get_next_dest_from_jobs(vector<struct optiq_job> *jobs, int flow_id, int cur
 
 void optiq_job_print(vector<struct optiq_job> *jobs)
 {
+    printf("Number of jobs = %ld\n", jobs->size());
+    int num_flows = 0, total_arcs = 0, min_arcs = 1000, max_arcs = 0;
+    
     struct optiq_flow flow;
 
     for (int i = 0; i < (*jobs).size(); i++) {
-        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %ld\n", (*jobs)[i].id, (*jobs)[i].source, (*jobs)[i].dest, (*jobs)[i].flows.size());
+        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %ld, demand = %d\n", (*jobs)[i].id, (*jobs)[i].source, (*jobs)[i].dest, (*jobs)[i].flows.size(), (*jobs)[i].demand);
+
+	num_flows += (*jobs)[i].flows.size();
 
         for (int j = 0; j < (*jobs)[i].flows.size(); j++) {
             flow = (*jobs)[i].flows[j];
 
             printf("flow_id = %d, throughput = %d, num_arcs = %ld\n", flow.id, flow.throughput, flow.arcs.size());
+
+	    total_arcs += flow.arcs.size();
+	    if (min_arcs > flow.arcs.size()) {
+		min_arcs = flow.arcs.size();
+	    }
+	    if (max_arcs < flow.arcs.size()) {
+		max_arcs = flow.arcs.size();
+	    }
+
             for (int k = 0; k < flow.arcs.size(); k ++) {
                 printf("%d -> ", flow.arcs[k].ep1);
             }
             printf("%d\n", flow.arcs[flow.arcs.size()-1].ep2);
         }
     }
+
+    printf("\nMin arcs = %d, Max arcs = %d, Avg arcs = %d\n", min_arcs, max_arcs, total_arcs/num_flows);
 }
 
 void optiq_job_read_from_file(const char *file_path, vector<struct optiq_job> *jobs)
