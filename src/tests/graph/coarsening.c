@@ -19,5 +19,8 @@ int main(int argc, char **argv)
 
     optiq_job_print(&jobs);
 
+    int size[5] = {2,4,4,4,2};
+    int dims = 5;
+
     return 0;
 }
