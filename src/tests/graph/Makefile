@@ -11,7 +11,7 @@ STRUCTURE = ../../core/structures
 TRANSPORT = ../../engine/transport
 ENGINE = ../../engine
 
-INCLUDE = -I. -I$(MPICH2_PATH)/include -I$(SYSTEM) -I$(STRUCTURE) -I$(UTILS) -I$(ENGINE) -I$(TRANSPORT)
+INCLUDE = -I. -I../.. -I$(MPICH2_PATH)/include -I$(SYSTEM) -I$(STRUCTURE) -I$(UTILS) -I$(ENGINE) -I$(TRANSPORT)
 
 LD = g++
 

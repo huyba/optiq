@@ -32,17 +32,15 @@ int get_next_dest_from_jobs(vector<struct optiq_job> *jobs, int flow_id, int cur
     return -1;
 }
 
-void print_jobs(vector<struct optiq_job> &jobs, int num_jobs)
+void optiq_job_print(vector<struct optiq_job> *jobs)
 {
-    printf("num_jobs = %d\n", num_jobs);
-
     struct optiq_flow flow;
 
-    for (int i = 0; i < num_jobs; i++) {
-        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %ld\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].flows.size());
+    for (int i = 0; i < (*jobs).size(); i++) {
+        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %ld\n", (*jobs)[i].id, (*jobs)[i].source, (*jobs)[i].dest, (*jobs)[i].flows.size());
 
-        for (int j = 0; j < jobs[i].flows.size(); j++) {
-            flow = jobs[i].flows[j];
+        for (int j = 0; j < (*jobs)[i].flows.size(); j++) {
+            flow = (*jobs)[i].flows[j];
 
             printf("flow_id = %d, throughput = %d, num_arcs = %ld\n", flow.id, flow.throughput, flow.arcs.size());
             for (int k = 0; k < flow.arcs.size(); k ++) {
@@ -53,7 +51,7 @@ void print_jobs(vector<struct optiq_job> &jobs, int num_jobs)
     }
 }
 
-void read_flow_from_file(char *file_path, vector<struct optiq_job> &jobs)
+void optiq_job_read_from_file(const char *file_path, vector<struct optiq_job> *jobs)
 {
     FILE *file = fopen(file_path, "r");
 
@@ -68,20 +66,32 @@ void read_flow_from_file(char *file_path, vector<struct optiq_job> &jobs)
         }
     }
 
-    int source = 0, dest = 171, ep1, ep2, bw;
+    int source = 0, dest = 0, ep1, ep2, bw, demand;
     int flow_id = 0;
     int job_id = 0;
+    char c;
+
+    /*Skip the first 6 lines*/
+    for (int i = 0; i < 6; i++) {
+	fgets(buf, 256, file);
+	/*printf("%s\n", buf);*/
+    }
 
     while (fgets(buf, 256, file)!=NULL) {
         trim(buf);
-        /*printf("source = %d, dest = %d\n", source, dest);*/
+        /*printf("%s\n", buf);*/
 
         while(strlen(buf) > 0) {
-            sscanf(buf, "%d %d %d", &ep1, &ep2, &bw);
-            /*printf("%d %d %d\n", ep1, ep2, bw);*/
-            rGraph[ep1][ep2] = bw;
-            fgets(buf, 256, file);
-            trim(buf);
+	    if (buf[0] == 'J') {
+		sscanf(buf, "%c %d %d %d %d",&c, &job_id, &source, &dest, &demand);
+		/*printf("%c %d %d %d %d\n", c, job_id, source, dest, demand);*/
+	    } else {
+		sscanf(buf, "%d %d %d", &ep1, &ep2, &bw);
+		/*printf("%d %d %d\n", ep1, ep2, bw);*/
+		rGraph[ep1][ep2] = bw;
+	    }
+	    fgets(buf, 256, file);
+	    trim(buf);
         }
 
         /*Now we have the matrix, check what connects to what*/
@@ -89,9 +99,10 @@ void read_flow_from_file(char *file_path, vector<struct optiq_job> &jobs)
         job.id = job_id;
         job.source = source;
         job.dest = dest;
+	job.demand = demand;
 
         get_flows(rGraph, num_vertices, job, flow_id);
-        jobs.push_back(job);
+        (*jobs).push_back(job);
         job_id++;
 
         for (int i = 0; i < num_vertices; i++) {
