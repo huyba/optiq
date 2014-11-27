@@ -39,12 +39,12 @@ void print_jobs(vector<struct optiq_job> &jobs, int num_jobs)
     struct optiq_flow flow;
 
     for (int i = 0; i < num_jobs; i++) {
-        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %d\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].flows.size());
+        printf("\njob_id = %d, source = %d , dest = %d, num_flows = %ld\n", jobs[i].id, jobs[i].source, jobs[i].dest, jobs[i].flows.size());
 
         for (int j = 0; j < jobs[i].flows.size(); j++) {
             flow = jobs[i].flows[j];
 
-            printf("flow_id = %d, throughput = %d, num_arcs = %d\n", flow.id, flow.throughput, flow.arcs.size());
+            printf("flow_id = %d, throughput = %d, num_arcs = %ld\n", flow.id, flow.throughput, flow.arcs.size());
             for (int k = 0; k < flow.arcs.size(); k ++) {
                 printf("%d -> ", flow.arcs[k].ep1);
             }

@@ -128,6 +128,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
 int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message *message)
 {
     bool use_window = false;
+    int ret = 0;
 
     if (use_window) {
 	/*Depend of the message size and source, do the spit up*/
@@ -144,16 +145,17 @@ int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message
 		instant->length = (offset + window_size <= message->length ? window_size : message->length - offset);
 		offset += instant->length;
 
-		optiq_pami_transport_actual_send(self, instant);
+		ret = optiq_pami_transport_actual_send(self, instant);
 	    }
 
 	    optiq_transport_return_send_message(self, message);
 	} else {
-	    return optiq_pami_transport_actual_send(self, message);
+	    ret = optiq_pami_transport_actual_send(self, message);
 	}
     } else {
-	return optiq_pami_transport_actual_send(self, message);
+	ret = optiq_pami_transport_actual_send(self, message);
     }
+    return ret;
 }
 
 int optiq_pami_transport_actual_send(struct optiq_transport *self, struct optiq_message *message)
@@ -242,8 +244,8 @@ int optiq_pami_transport_destroy(struct optiq_transport *self)
 	free(send_cookie);
     }
 
-    return 0;
 #endif
+    return 0;
 }
 
 /* Return 1 if entire message is ready, 0 if not*/
@@ -562,4 +564,6 @@ int calculate_winsize(int message_size)
 	return 262144;
     if (134217728 <= message_size)
 	return 524288;
+
+    return message_size;
 }

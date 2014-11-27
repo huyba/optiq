@@ -115,6 +115,8 @@ int optiq_vlab_create(struct optiq_vlab &vlab, vector<struct optiq_job> &jobs, i
 	    }
 	}
     }
+
+    return 0;
 }
 
 int optiq_vlab_add_message(struct optiq_vlab &vlab, struct optiq_message *message)
