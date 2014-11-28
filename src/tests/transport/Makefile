@@ -43,7 +43,11 @@ mpi: data_from_file.x pami_send_recv.x pami_forward.x
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clobj: $(OBJ)
+rm:
+	cd ../../ && $(MAKE) -f Makefile rm
+	rm *.x
+
+rm: $(OBJ)
 	rm $(OBJ)
 
 clean:

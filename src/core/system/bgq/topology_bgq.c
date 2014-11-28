@@ -147,7 +147,7 @@ void optiq_topology_get_neighbors_bgq(struct topology_info *topo_info, int *coor
 	    optiq_topology_get_node_id_from_coord_bgq(topo_info, coord, &nid);
 	    if (optiq_check_existing_neighbor(*num_neighbors, neighbors, nid) != 1) {
 		neighbors[*num_neighbors].node.rank = nid;
-		*num_neighbors++;
+		(*num_neighbors)++;
 	    }
 	    coord[i]++;
 	}
@@ -156,7 +156,7 @@ void optiq_topology_get_neighbors_bgq(struct topology_info *topo_info, int *coor
             optiq_topology_get_node_id_from_coord_bgq(topo_info, coord, &nid);
 	    if (optiq_check_existing_neighbor(*num_neighbors, neighbors, nid) != 1) {
 		neighbors[*num_neighbors].node.rank = nid;
-		*num_neighbors++;
+		(*num_neighbors)++;
 	    }
 	    coord[i]--;
 	}
@@ -168,7 +168,7 @@ void optiq_topology_get_neighbors_bgq(struct topology_info *topo_info, int *coor
                 optiq_topology_get_node_id_from_coord_bgq(topo_info, coord, &nid);
 		if (optiq_check_existing_neighbor(*num_neighbors, neighbors, nid) != 1) {
 		    neighbors[*num_neighbors].node.rank = nid;
-		    *num_neighbors++;
+		    (*num_neighbors)++;
 		}
 		coord[i] = 0;
 	    }
@@ -178,7 +178,7 @@ void optiq_topology_get_neighbors_bgq(struct topology_info *topo_info, int *coor
                 optiq_topology_get_node_id_from_coord_bgq(topo_info, coord, &nid);
 		if (optiq_check_existing_neighbor(*num_neighbors, neighbors, nid) != 1) {
 		    neighbors[*num_neighbors].node.rank = nid;
-		    *num_neighbors++;
+		    (*num_neighbors)++;
 		}
 		coord[i] = size[i]-1;
 	    }
@@ -360,7 +360,6 @@ void optiq_topology_print_arcs_bgq(struct topology_info *topo_info, double cap)
     int nid;
 
     int *size = topo_info->size;
-    int num_dims = topo_info->num_dims;
 
     for (int ad = 0; ad < size[0]; ad++) {
 	coord[0] = ad;
