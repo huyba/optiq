@@ -10,6 +10,7 @@ using namespace std;
 struct optiq_arc {
     int ep1;
     int ep2;
+    int capacity;
 };
 
 struct optiq_flow {
