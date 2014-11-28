@@ -94,9 +94,9 @@ int main(int argc, char **argv)
 	if (isSource) {    
 	    optiq_vlab_add_job(vlab, local_job, &transport);
 
-	    if (world_rank == 0) {
+	    /*if (world_rank == 0) {
 		print_virtual_lanes(vlab.vl);
-	    }
+	    }*/
 
 	    optiq_vlab_transport(vlab, &transport);
 
