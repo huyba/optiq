@@ -36,6 +36,10 @@ int main(int argc, char **argv)
     vector<struct optiq_job> jobs;
     optiq_job_read_from_file(file_path, &jobs);
 
+    /*if (world_rank == 0) {
+	optiq_job_print(&jobs);
+    }*/
+
     struct optiq_vlab vlab;
 
     optiq_vlab_create(vlab, jobs, world_rank);
@@ -53,14 +57,20 @@ int main(int argc, char **argv)
     }
 
     struct optiq_job local_job;
+    bool isSource = false, isDest = false;
     for (int i = 0; i < jobs.size(); i++) {
 	if (jobs[i].source == world_rank) {
 	    local_job = jobs[i];
+	    isSource = true;
+	}
+	if (jobs[i].dest == world_rank) {
+	    local_job = jobs[i];
+	    isDest = true;
 	}
     }
 
     /*Adding local job*/
-    if (world_rank < 85) {
+    if (isSource) {
 	local_job.buffer = buffer;
 	local_job.demand = data_size;
     }
@@ -81,12 +91,12 @@ int main(int argc, char **argv)
 
     for (int iter = 0; iter < num_iters; iter++) {
 
-	if (world_rank < 85) {    
+	if (isSource) {    
 	    optiq_vlab_add_job(vlab, local_job, &transport);
 
-	    /*if (world_rank == 0) {
+	    if (world_rank == 0) {
 		print_virtual_lanes(vlab.vl);
-	    }*/
+	    }
 
 	    optiq_vlab_transport(vlab, &transport);
 
@@ -97,9 +107,9 @@ int main(int argc, char **argv)
 	    /*printf("Rank %d done sending data from its job\n", world_rank);*/
 	}
 
-	if ( 171 <= world_rank && world_rank <= 255) {
+	if (isDest) {
 	    message->recv_length = 0;
-	    message->header.job_id = world_rank - 171;
+	    message->header.job_id = local_job.id;
 	    int isDone = 0;
 	    while (isDone == 0) {
 		isDone = optiq_transport_recv(&transport, message);
@@ -124,7 +134,7 @@ int main(int argc, char **argv)
 	printf("Elapse time = %8.0f, bw = %8.4f\n", max_time, bw);
     }
 
-    if (171 <= world_rank && world_rank <= 255) {
+    if (isDest) {
 	if (memcmp(message->buffer, buffer, data_size) != 0) {
 	    printf("Rank %d: invalid data received\n", world_rank);
 	} /*else {
