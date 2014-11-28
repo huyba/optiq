@@ -28,10 +28,13 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    string file_path = "flow85";
+    char *file_path = (char *)"flow85";
+    if (argc > 1) {
+	file_path = argv[1];
+    }
 
     vector<struct optiq_job> jobs;
-    read_flow_from_file((char *)file_path.c_str(), jobs);
+    optiq_job_read_from_file(file_path, &jobs);
 
     struct optiq_vlab vlab;
 
@@ -41,8 +44,8 @@ int main(int argc, char **argv)
     optiq_transport_assign_vlab(&transport, &vlab);
 
     int data_size = 8*1024*1024;
-    if (argc > 1) {
-	data_size = atoi(argv[1]) * 1024;
+    if (argc > 2) {
+	data_size = atoi(argv[2]) * 1024;
     }
     char *buffer = (char *)malloc(data_size);
     for (int i = 0; i < data_size;  i++) {
@@ -63,8 +66,8 @@ int main(int argc, char **argv)
     }
 
     int num_iters = 30;
-    if (argc > 2) {
-	num_iters = atoi(argv[2]);
+    if (argc > 3) {
+	num_iters = atoi(argv[3]);
     }
 
     struct optiq_message *message = get_message_with_buffer(data_size);

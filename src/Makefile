@@ -38,7 +38,7 @@ liboptiq.a: $(OBJ)
 	rm -f $@
 	ar cq $@ $(OBJ)
 
-clobj: $(OBJ)
+rm: $(OBJ)
 	rm $(OBJ)
 	rm liboptiq.a
 
