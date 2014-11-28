@@ -65,7 +65,28 @@ int optiq_job_mapping(vector<struct optiq_job> *old_jobs, vector<struct optiq_jo
 
 void optiq_model_write_data_to_file(vector<struct optiq_supernode> *supernodes, vector<struct optiq_arc> *superarcs, vector<struct optiq_job> *new_jobs)
 {
+    printf("set Nodes :=\n");
+    for (int i = 0; i < (*supernodes).size(); i++) {
+        printf("%d\n", (*supernodes)[i].id);
+    }
+    printf(";\n\n");
 
+    printf("set Arcs :=\n");
+    for (int i = 0; i < (*superarcs).size(); i++) {
+	printf("%d %d\n", (*superarcs)[i].ep1, (*superarcs)[i].ep2);
+    }
+    printf(";\n\n");
+
+    printf("param Capacity :=\n");
+    for (int i = 0; i < (*superarcs).size(); i++) {
+        printf("%d %d %d\n", (*superarcs)[i].ep1, (*superarcs)[i].ep2, (*superarcs)[i].capacity);
+    }
+    printf(";\n\n");
+
+    printf("param: Jobs: Source Destination Demand :=\n");
+    for (int i = 0; i < (*new_jobs).size(); i++) {
+        printf("%d %d %d %d\n", (*new_jobs)[i].id, (*new_jobs)[i].source, (*new_jobs)[i].dest, (*new_jobs)[i].demand);
+    }
 }
 
 int main(int argc, char **argv)
