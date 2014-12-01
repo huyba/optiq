@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 	printf("num_iters = %d, data_size = %d\n", num_iters, data_size);
     }
 
-    pami_transport.recv_cookie.val = 0;
+    pami_transport.recv_cookie = 0;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -69,13 +69,15 @@ int main(int argc, char **argv)
 	}
 
 	if (world_rank == 1) {
+	    struct optiq_message message;
+	    message.length = data_size;
+	    message.recv_length = 0;
+	    pami_transport.recv_cookie++;
 	    pami_transport.involved_task_ids.push_back(0);
-	    pami_transport.recv_cookie.val++;
-	    pami_transport.recv_cookie.buffer = buffer;
 
 	    int isDone = 0;
 	    while (isDone == 0) {
-		isDone = optiq_pami_transport_recv(&pami_transport);
+		isDone = optiq_pami_transport_recv(&pami_transport, &message);
 	    }
 	}
 	//printf("Rank %d done %dth iter\n", world_rank, i);

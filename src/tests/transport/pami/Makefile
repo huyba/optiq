@@ -20,14 +20,14 @@ UTILS  = $(SRC)/core/utils
 STRUCTURES = $(SRC)/core/structures
 TRANSPORT = $(SRC)/engine/transport
 
-INCLUDE = -I. -I$(SRC) -I$(SYSTEM) -I$(UTILS) -I$(SRC)/engine/
+INCLUDE = -I. -I$(SRC) -I$(SYSTEM) -I$(UTILS) -I$(SRC)/engine/ -I$(STRUCTURES)
 
 CFLAGS = $(COPT) $(INCLUDE) 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(SRC)/engine/message.o $(UTILS)/util.o $(SYSTEM)/memory.o pami_transport.o
+OBJ = $(SRC)/engine/message.o $(UTILS)/util.o $(SYSTEM)/memory.o $(STRUCTURES)/queue.o pami_transport.o
 
 all: $(OBJ) mpi copy
 

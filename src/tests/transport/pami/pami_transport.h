@@ -16,6 +16,7 @@ using namespace std;
 #endif
 
 #include "message.h"
+#include "queue.h"
 
 #define JOB_DONE_NOTIFICATION_DISPATCH_ID 16
 #define RECV_MESSAGE_DISPATCH_ID 17
@@ -37,13 +38,12 @@ struct optiq_send_cookie {
 };
 
 struct optiq_recv_cookie {
-    int val;
-    void *buffer;
+    struct optiq_message *message;
+    struct optiq_pami_transport *pami_transport;
 };
 
 struct optiq_pami_transport {
-    struct optiq_recv_cookie recv_cookie;
-
+    int recv_cookie;
     vector<struct optiq_recv_cookie *> avail_recv_cookies;
     vector<struct optiq_recv_cookie *> in_use_recv_cookies;
 
@@ -79,7 +79,7 @@ int optiq_pami_transport_send(struct optiq_pami_transport *self, struct optiq_me
 
 int optiq_pami_transport_actual_send(struct optiq_pami_transport *pami_transport, void *buffer, int length, int dest, int *cookie);
 
-int optiq_pami_transport_recv(struct optiq_pami_transport *self);
+int optiq_pami_transport_recv(struct optiq_pami_transport *self, struct optiq_message *message);
 
 bool optiq_pami_transport_test(struct optiq_pami_transport *self, void *cookie);
 
