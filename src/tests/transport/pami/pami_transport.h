@@ -15,11 +15,7 @@ using namespace std;
 
 #endif
 
-#include "../transport_interface.h"
-#include "../../message.h"
-#include "../../../core/structures/job.h"
-
-extern struct optiq_transport_interface optiq_pami_transport_implementation;
+#include "message.h"
 
 #define JOB_DONE_NOTIFICATION_DISPATCH_ID 16
 #define RECV_MESSAGE_DISPATCH_ID 17
@@ -29,8 +25,11 @@ extern struct optiq_transport_interface optiq_pami_transport_implementation;
 #define NUM_SEND_COOKIES 64
 #define NUM_RECV_COOKIES 64
 
+#define RECV_MESSAGE_SIZE (64*1024)
+#define NUM_RECV_MESSAGES 1024
+#define NUM_SEND_MESSAGES 1024
+
 struct optiq_pami_transport;
-struct optiq_transport;
 
 struct optiq_send_cookie {
     struct optiq_message *message;
@@ -51,13 +50,12 @@ struct optiq_pami_transport {
 
     vector<struct optiq_message *> local_messages;
 
-    vector<struct optiq_message *> *in_use_recv_messages;
-    vector<struct optiq_message *> *avail_recv_messages;
-    vector<struct optiq_message *> *avail_send_messages;
+    vector<struct optiq_message *> in_use_recv_messages;
+    vector<struct optiq_message *> avail_recv_messages;
+    vector<struct optiq_message *> avail_send_messages;
 
     vector<int> involved_job_ids;
     vector<int> involved_task_ids;
-    struct optiq_transport *transport;
 
     //vector<struct optiq_job> *jobs;
     int node_id;
@@ -73,25 +71,19 @@ struct optiq_pami_transport {
 
 };
 
-void optiq_pami_transport_init(struct optiq_transport *self);
+void optiq_pami_transport_init(struct optiq_pami_transport *self);
 
-int optiq_pami_transport_send(struct optiq_transport *self, struct optiq_message *message);
+int optiq_pami_transport_send(struct optiq_pami_transport *self, struct optiq_message *message);
 
-int optiq_pami_transport_actual_send(struct optiq_transport *self, struct optiq_message *message);
+int optiq_pami_transport_actual_send(struct optiq_pami_transport *self, struct optiq_message *message);
 
-int optiq_pami_transport_recv(struct optiq_transport *self, struct optiq_message *message);
+int optiq_pami_transport_recv(struct optiq_pami_transport *self, struct optiq_message *message);
 
-bool optiq_pami_transport_test(struct optiq_transport *self, struct optiq_job *job);
+bool optiq_pami_transport_test(struct optiq_pami_transport *self, struct optiq_message *message);
 
-int optiq_pami_transport_destroy(struct optiq_transport *self);
+int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *self);
 
-void optiq_pami_transport_assign_jobs(struct optiq_transport *self, vector<struct optiq_job> &jobs);
-
-int optiq_pami_transport_process_incomming_message(struct optiq_transport *self);
-
-bool optiq_pami_transport_forward_test(struct optiq_transport *self);
-
-int optiq_notify_job_done(struct optiq_transport *self, int job_id, vector<int> *dests); 
+int optiq_notify_job_done(struct optiq_pami_transport *self, vector<int> *dests); 
 
 #ifdef __bgq__
 
@@ -123,5 +115,9 @@ void optiq_recv_job_done_notification_fn (
 
 int calculate_winsize(int message_size);
 struct optiq_send_cookie* optiq_pami_transport_get_send_cookie(struct optiq_pami_transport *self);
+
+struct optiq_message* optiq_pami_transport_get_send_message(struct optiq_pami_transport *self);
+void optiq_pami_transport_return_send_message(struct optiq_pami_transport *self, struct optiq_message *message);
+
 
 #endif

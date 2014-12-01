@@ -5,7 +5,7 @@
 
 #include <mpi.h>
 
-#include "optiq.h"
+#include "pami_transport.h"
 
 using namespace std;
 
@@ -18,8 +18,8 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    struct optiq_transport transport;
-    optiq_transport_init(&transport, PAMI);
+    struct optiq_pami_transport pami_transport;
+    optiq_pami_transport_init(&pami_transport);
 
     if (world_rank == 0) {
 	printf("Init transport successfully!\n");
@@ -36,8 +36,6 @@ int main(int argc, char **argv)
     message->header.original_source = 0;
     message->length = data_size;
 
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)optiq_transport_get_concrete_transport(&transport);
-
     int num_iters = 1;
     if (argc > 1) {
 	num_iters = atoi(argv[1]);
@@ -50,26 +48,24 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < num_iters; i++) {
 	if (world_rank == 0) {
+	    pami_transport.involved_job_ids.push_back(0);
 	    message->next_dest = 1;
 
-	    optiq_transport_send(&transport, message);
+	    optiq_pami_transport_send(&pami_transport, message);
 
-	    bool isDone = false;
+	    int isDone = 1;
 
-	    while (!isDone) {
-		PAMI_Context_advance (pami_transport->context, 100);
-		if (pami_transport->in_use_send_cookies.size() > 0) {
-		    isDone = true;
-		    pami_transport->in_use_send_cookies.pop_back();
-		}
+	    while (isDone != 0) {
+		isDone = optiq_pami_transport_test(&pami_transport, message);
 	    }
 	}
 
 	if ( world_rank == 1) {
+	    pami_transport.involved_task_ids.push_back(0);
 	    int isDone = 0;
 	    message->recv_length = 0;
 	    while (isDone == 0) {
-		isDone = optiq_transport_recv(&transport, message);
+		isDone = optiq_pami_transport_recv(&pami_transport, message);
 	    }
 	}
     }

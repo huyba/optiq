@@ -25,6 +25,7 @@ struct optiq_message {
     int current_offset;
     int service_level;
     int recv_length;
+    int sent_bytes;
 };
 
 struct optiq_message* get_send_message(vector<struct optiq_message *> *messages);

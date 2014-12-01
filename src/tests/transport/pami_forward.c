@@ -54,9 +54,9 @@ int main(int argc, char **argv)
     arc0.ep1 = 0;
     arc0.ep2 = 1;
     arc1.ep1 = 1;
-    arc1.ep2 = 2;
-    arc2.ep1 = 2;
-    arc2.ep2 = 3;
+    arc1.ep2 = 3;
+    arc2.ep1 = 3;
+    arc2.ep2 = 2;
 
     flow0.id = 0;
     flow0.throughput = 1024;
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 
     job0.id = 0;
     job0.source = 0;
-    job0.dest = 2;
+    job0.dest = 3;
     job0.demand = data_size;
     job0.buffer = buffer;
     job0.flows.push_back(flow0);
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     if (argc > 2) {
 	num_iters = atoi(argv[2]);
     }
-    struct optiq_message *message = NULL;
+    struct optiq_message *message = get_message_with_buffer(data_size);
 
     uint64_t start = GetTimeBase();
     for (int iter = 0; iter < num_iters; iter++)
@@ -120,7 +120,6 @@ int main(int argc, char **argv)
 	    }
 
 	    if (jobs[i].dest == world_rank) {
-		message = get_message_with_buffer(data_size);
 		message->header.job_id = jobs[i].id;
 		int isDone = 0;
 		while (isDone == 0) {
@@ -141,10 +140,13 @@ int main(int argc, char **argv)
     double max_time;
     MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
-    if (world_rank == 0) {
+    double bw = (double) data_size * 1e6 / 1024 / 1024 / elapsed_time / num_iters;
+    printf("Elapse time = %8.0f, bw = %8.4f\n", elapsed_time, bw);
+
+    /*if (world_rank == 0) {
 	double bw = (double) data_size * 1e6 / 1024 / 1024 / max_time / num_iters;
 	printf("Elapse time = %8.0f, bw = %8.4f\n", max_time, bw);
-    }
+    }*/
 
 
     for (int i = 0; i < jobs.size(); i++) 
