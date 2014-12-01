@@ -87,6 +87,13 @@ void optiq_pami_transport_init(struct optiq_pami_transport *pami_transport)
     }
 }
 
+int optiq_pami_transport_send(struct optiq_pami_transport *pami_transport, struct optiq_message *message)
+{
+    int ret = 0;
+
+    return ret;
+}
+
 int optiq_pami_transport_actual_send(struct optiq_pami_transport *pami_transport, void *buffer, int length, int dest, int *cookie)
 {
     pami_result_t result;
