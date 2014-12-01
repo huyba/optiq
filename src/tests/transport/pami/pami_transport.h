@@ -25,8 +25,8 @@ using namespace std;
 #define NUM_SEND_COOKIES 64
 #define NUM_RECV_COOKIES 64
 
-#define RECV_MESSAGE_SIZE (64*1024)
-#define NUM_RECV_MESSAGES 1024
+#define RECV_MESSAGE_SIZE (8*1024*1024)
+#define NUM_RECV_MESSAGES 8
 #define NUM_SEND_MESSAGES 1024
 
 struct optiq_pami_transport;
@@ -37,11 +37,13 @@ struct optiq_send_cookie {
 };
 
 struct optiq_recv_cookie {
-    struct optiq_message *message;
-    struct optiq_pami_transport *pami_transport;
+    int val;
+    void *buffer;
 };
 
 struct optiq_pami_transport {
+    struct optiq_recv_cookie recv_cookie;
+
     vector<struct optiq_recv_cookie *> avail_recv_cookies;
     vector<struct optiq_recv_cookie *> in_use_recv_cookies;
 
@@ -75,11 +77,11 @@ void optiq_pami_transport_init(struct optiq_pami_transport *self);
 
 int optiq_pami_transport_send(struct optiq_pami_transport *self, struct optiq_message *message);
 
-int optiq_pami_transport_actual_send(struct optiq_pami_transport *self, struct optiq_message *message);
+int optiq_pami_transport_actual_send(struct optiq_pami_transport *pami_transport, void *buffer, int length, int dest, int *cookie);
 
-int optiq_pami_transport_recv(struct optiq_pami_transport *self, struct optiq_message *message);
+int optiq_pami_transport_recv(struct optiq_pami_transport *self);
 
-bool optiq_pami_transport_test(struct optiq_pami_transport *self, struct optiq_message *message);
+bool optiq_pami_transport_test(struct optiq_pami_transport *self, void *cookie);
 
 int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *self);
 
@@ -118,6 +120,6 @@ struct optiq_send_cookie* optiq_pami_transport_get_send_cookie(struct optiq_pami
 
 struct optiq_message* optiq_pami_transport_get_send_message(struct optiq_pami_transport *self);
 void optiq_pami_transport_return_send_message(struct optiq_pami_transport *self, struct optiq_message *message);
-
+bool optiq_pami_transport_forward_test(struct optiq_pami_transport *pami_transport);
 
 #endif
