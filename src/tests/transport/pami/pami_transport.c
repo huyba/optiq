@@ -138,7 +138,8 @@ int optiq_pami_transport_recv(struct optiq_pami_transport *pami_transport)
 	return 0;
     }
     else {
-	optiq_notify_job_done(pami_transport, &pami_transport->involved_job_ids);
+	//printf("calling notify\n");
+	optiq_notify_job_done(pami_transport, &pami_transport->involved_task_ids);
 	return 1;
     }
 }
@@ -202,6 +203,7 @@ int optiq_notify_job_done(struct optiq_pami_transport *pami_transport, vector<in
 	parameter.dest = pami_transport->endpoints[(*dests)[i]];
 
 	result = PAMI_Send_immediate (pami_transport->context, &parameter);
+	//printf("done notify %d\n", (*dests)[i]);
 	assert(result == PAMI_SUCCESS);
 	if (result != PAMI_SUCCESS) {
 	    return 1;
@@ -213,9 +215,10 @@ int optiq_notify_job_done(struct optiq_pami_transport *pami_transport, vector<in
 void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
 	const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
+    //printf("recv notif\n");
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *) cookie;
     if (pami_transport->involved_job_ids.size() > 0) {
-	pami_transport->involved_job_ids.pop_back();//erase(pami_transport->involved_job_ids.begin());
+	pami_transport->involved_job_ids.erase(pami_transport->involved_job_ids.begin());
     }
 }
 

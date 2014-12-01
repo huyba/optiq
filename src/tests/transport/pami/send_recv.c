@@ -50,7 +50,6 @@ int main(int argc, char **argv)
 
     /*Iterate the arbitration table to get the next virtual lane*/
     uint64_t start = GetTimeBase();
-
     
     for (int i = 0; i < num_iters; i++) {
 	if (world_rank == 0) {
@@ -74,11 +73,12 @@ int main(int argc, char **argv)
 	    pami_transport.recv_cookie.val++;
 	    pami_transport.recv_cookie.buffer = buffer;
 
-	    while (pami_transport.recv_cookie.val > 0) {
-		optiq_pami_transport_recv(&pami_transport);
+	    int isDone = 0;
+	    while (isDone == 0) {
+		isDone = optiq_pami_transport_recv(&pami_transport);
 	    }
 	}
-	printf("Rank %d done %dth iter\n", world_rank, i);
+	//printf("Rank %d done %dth iter\n", world_rank, i);
     }
 
     uint64_t end = GetTimeBase();
