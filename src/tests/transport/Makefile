@@ -28,7 +28,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = 
 
-libobj = $(UTILS)/util.o $(SYSTEM)/memory.o $(STRUCTURES)/flow.o $(STRUCTURES)/job.o ../../engine/message.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o ../../engine/virtual_lane.o ../../liboptiq.a
+libobj = $(UTILS)/util.o $(SYSTEM)/memory.o $(STRUCTURES)/queue.o $(STRUCTURES)/flow.o $(STRUCTURES)/job.o ../../engine/message.o $(TRANSPORT)/pami/pami_transport.o $(TRANSPORT)/gni/gni_transport.o $(TRANSPORT)/nonblk_mpi/nonblk_mpi_transport.o $(TRANSPORT)/transport.o ../../engine/virtual_lane.o ../../liboptiq.a
 
 all: lib $(OBJ) mpi copy
 

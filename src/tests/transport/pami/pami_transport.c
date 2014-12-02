@@ -101,9 +101,10 @@ void optiq_pami_transport_init(struct optiq_pami_transport *pami_transport)
     }
 
     /*Init a number of messages with buffer for receiving incomming messages*/
+    optiq_queue_init(&pami_transport->avail_recv_messages, sizeof(struct optiq_message *));
     struct optiq_message **recv_messages = get_messages_with_buffer(NUM_RECV_MESSAGES, RECV_MESSAGE_SIZE);
     for (int i = 0; i < NUM_RECV_MESSAGES; i++) {
-        pami_transport->avail_recv_messages.push_back(recv_messages[i]);
+        optiq_queue_enqueue(&pami_transport->avail_recv_messages, &recv_messages[i]);
     }
 
     /*Init a number of messages without buffer for sending messages*/
@@ -226,16 +227,15 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 	const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
-    struct optiq_message *message = NULL;
+    struct optiq_message *message;
 
     /*If incomming message is larger than the default size, need to allocate new memory*/
     if (data_size > RECV_MESSAGE_SIZE) {
         message = get_message_with_buffer(data_size);
     } else {
         /*If there is still available message to use*/
-        if (pami_transport->avail_recv_messages.size() > 0) {
-            message = pami_transport->avail_recv_messages.back();
-            pami_transport->avail_recv_messages.pop_back();
+        if (pami_transport->avail_recv_messages.size > 0) {
+            optiq_queue_dequeue(&pami_transport->avail_recv_messages, &message);
         } else {
             message = get_message_with_buffer(RECV_MESSAGE_SIZE);
         }

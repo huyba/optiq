@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "job.h"
-#include "memory.h"
-#include "virtual_lane.h"
+#include "../../../core/structures/job.h"
+#include "../../../core/system/memory.h"
+#include "../../virtual_lane.h"
 #include "pami_transport.h"
 
 struct optiq_transport_interface optiq_pami_transport_implementation = {

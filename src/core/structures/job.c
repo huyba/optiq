@@ -4,7 +4,7 @@
 #include <limits.h>
 #include <string.h>
 
-#include "util.h"
+#include "../utils/util.h"
 #include "job.h"
 
 void build_look_up_next_dest_table(vector<struct optiq_job> &jobs, int rank, map<int, int> &next_dest)

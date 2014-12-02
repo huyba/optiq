@@ -2,7 +2,6 @@
 #define OPTIQ_PAMI_TRANSPORT_H
 
 #include <vector>
-#include <queue>
 
 using namespace std;
 
@@ -53,7 +52,7 @@ struct optiq_pami_transport {
     vector<struct optiq_message *> local_messages;
 
     vector<struct optiq_message *> in_use_recv_messages;
-    vector<struct optiq_message *> avail_recv_messages;
+    struct optiq_queue avail_recv_messages;
     vector<struct optiq_message *> avail_send_messages;
 
     vector<int> involved_job_ids;
