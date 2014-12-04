@@ -72,7 +72,7 @@ void optiq_graph_add_superarc(int u_sp, int v_sp, vector<struct optiq_arc *> *su
     /*Check to see if exist*/
     bool existing = false;
     for (int i = 0; i < superarcs->size(); i++) {
-	if ((superarcs->at(i)->ep1 == u_sp && superarcs->at(i)->ep2 == v_sp) || (superarcs->at(i)->ep2 == u_sp && superarcs->at(i)->ep1 == v_sp)) {
+	if (superarcs->at(i)->ep1 == u_sp && superarcs->at(i)->ep2 == v_sp) {
 	    superarcs->at(i)->capacity += capacity;
 	    existing = true;
 	    break;
