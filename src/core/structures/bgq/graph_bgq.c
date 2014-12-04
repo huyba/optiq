@@ -65,6 +65,10 @@ int** optiq_graph_build_nodes_graph_bgq(int *size, vector<struct optiq_bgq_node 
 
 void optiq_graph_add_superarc(int u_sp, int v_sp, vector<struct optiq_arc *> *superarcs, int capacity)
 {
+#ifdef DEBUG_BUILD_GRAPH_BGQ
+    printf("u = %d, v = %d, capacity = %d, superarcs.size = %ld\n", u_sp, v_sp, capacity, superarcs->size());
+#endif
+
     /*Check to see if exist*/
     bool existing = false;
     for (int i = 0; i < superarcs->size(); i++) {
@@ -102,7 +106,7 @@ int optiq_graph_coarsen_bgq(int **graph, int num_nodes, vector<struct optiq_supe
             node_supernode->insert(make_pair(node_id, supernode->id));
         }
 
-        (*supernodes).push_back(supernode);
+        supernodes->push_back(supernode);
     }
 
     /*Create new superarcs from arcs*/
@@ -112,7 +116,7 @@ int optiq_graph_coarsen_bgq(int **graph, int num_nodes, vector<struct optiq_supe
     std::map<int, int>::iterator iter;
     int capacity = 2048;
 
-    while(queue.empty() > 0) {
+    while(!queue.empty()) {
 	u = queue.front();
 	queue.pop();
 
@@ -130,6 +134,10 @@ int optiq_graph_coarsen_bgq(int **graph, int num_nodes, vector<struct optiq_supe
 		if (iter != node_supernode->end()) {
 		    v_sp = iter->second;
 		}
+
+#ifdef DEBUG_BUILD_GRAPH_BGQ
+		printf("u = %d, u_sp = %d, v = %d, v_sp = %d\n", u, u_sp, v, v_sp);
+#endif
 
 		if (u_sp != v_sp) {
 		    optiq_graph_add_superarc(u_sp, v_sp, superarcs, capacity);

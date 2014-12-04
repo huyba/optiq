@@ -79,6 +79,14 @@ int main(int argc, char **argv)
     int size[5] = {2, 4, 4, 4, 2};
     int **graph = optiq_graph_build_nodes_graph_bgq(size, &nodes);
 
+    /*
+    for (int i = 0; i < nodes.size(); i++) {
+	for (int j = 0; j < nodes.size(); j++) {
+	    printf("%d ", graph[i][j]);
+	}
+	printf("\n");
+    }*/
+
     vector<struct optiq_supernode *> supernodes;
     vector<struct optiq_arc *> superarcs;
     map<int, int> node_supernode;   
