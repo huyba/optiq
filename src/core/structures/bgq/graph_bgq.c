@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <map>
+#include <queue>
 
 #include "../system/bgq/topology_bgq.h"
 #include "../system/memory.h"
@@ -62,7 +63,28 @@ int** optiq_graph_build_nodes_graph_bgq(int *size, vector<struct optiq_bgq_node 
     return graph;
 }
 
-int optiq_graph_coarsen_bgq(vector<struct optiq_supernode> *supernodes, vector<struct optiq_arc> *superarcs, map<int, int> *node_supernode)
+void optiq_graph_add_superarc(int u_sp, int v_sp, vector<struct optiq_arc *> *superarcs, int capacity)
+{
+    /*Check to see if exist*/
+    bool existing = false;
+    for (int i = 0; i < superarcs->size(); i++) {
+	if ((superarcs->at(i)->ep1 == u_sp && superarcs->at(i)->ep2 == v_sp) || (superarcs->at(i)->ep2 == u_sp && superarcs->at(i)->ep1 == v_sp)) {
+	    superarcs->at(i)->capacity += capacity;
+	    existing = true;
+	    break;
+	}
+    }
+
+    if (!existing) {
+	struct optiq_arc *arc = (struct optiq_arc *)malloc(sizeof(struct optiq_arc));
+	arc->ep1 = u_sp;
+	arc->ep2 = v_sp;
+	arc->capacity = capacity;
+	superarcs->push_back(arc);
+    }
+}
+
+int optiq_graph_coarsen_bgq(int **graph, int num_nodes, vector<struct optiq_supernode *> *supernodes, vector<struct optiq_arc *> *superarcs, std::map<int, int> *node_supernode)
 {
     int num_supernodes = 8;
     int nodes_per_supernode = 32;
@@ -80,41 +102,41 @@ int optiq_graph_coarsen_bgq(vector<struct optiq_supernode> *supernodes, vector<s
             node_supernode->insert(make_pair(node_id, supernode->id));
         }
 
-        (*supernodes).push_back(*supernode);
+        (*supernodes).push_back(supernode);
     }
 
     /*Create new superarcs from arcs*/
-    int neighbors[9];
-    int num_neighbors;
-    int neighbor_id;
-    int neighbor_sp_id;
-    std::map<int, int>::iterator it;
+    std::queue<int> queue;
+    queue.push(0);
+    int u, v, u_sp, v_sp;
+    std::map<int, int>::iterator iter;
+    int capacity = 2048;
 
-    for (int i = 0; i < supernodes->size(); i++) {
-        for (int j = 0; j < supernodes->at(i).node_ids.size(); j++) {
-            node_id = supernodes->at(i).node_ids[j];
+    while(queue.empty() > 0) {
+	u = queue.front();
+	queue.pop();
 
-            /*Get neighbors of the current node*/
-            get_neighbors(node_id, neighbors, &num_neighbors);
+	for (v = 0; v < num_nodes; v++) {
+	    if (graph[u][v] > 0) {
+		queue.push(v);
+		graph[u][v] = 0;
 
-            /*For each neighbor, determine if an superarc exists*/
-            for (int k = 0; k < num_neighbors; k++) {
-                neighbor_id = neighbors[k];
+		/*Get the supernode_ids of both nodes to see if they are in different supernodes*/
+		iter = node_supernode->find(u);
+		if (iter != node_supernode->end()) {
+		    u_sp = iter->second;
+		}
+		iter = node_supernode->find(v);
+		if (iter != node_supernode->end()) {
+		    v_sp = iter->second;
+		}
 
-                /*Get the supernode id of each neighbor*/
-                it = node_supernode->find(neighbor_id);
-                if (it != node_supernode->end()) {
-                    neighbor_sp_id = it->second();
-
-                    /*If they belong to 2 different supernodes*/
-                    if (neighbor_sp_id != supernodes->at(i).id) {
-                        add_super_arc(node_id, supernodes->at(i).id, neighbor_id, neighbor_sp_id);
-                    }
-                }
-            }
-        }
+		if (u_sp != v_sp) {
+		    optiq_graph_add_superarc(u_sp, v_sp, superarcs, capacity);
+		}
+	    }
+	}
     }
-
 
     return 0;
 }

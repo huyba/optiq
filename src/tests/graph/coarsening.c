@@ -35,23 +35,23 @@ int optiq_job_mapping(vector<struct optiq_job> *old_jobs, vector<struct optiq_jo
     return 0;
 }
 
-void optiq_model_write_data_to_file(vector<struct optiq_supernode> *supernodes, vector<struct optiq_arc> *superarcs, vector<struct optiq_job> *new_jobs)
+void optiq_model_write_data_to_file(vector<struct optiq_supernode *> *supernodes, vector<struct optiq_arc *> *superarcs, vector<struct optiq_job> *new_jobs)
 {
     printf("set Nodes :=\n");
-    for (int i = 0; i < (*supernodes).size(); i++) {
-        printf("%d\n", (*supernodes)[i].id);
+    for (int i = 0; i < supernodes->size(); i++) {
+        printf("%d\n", supernodes->at(i)->id);
     }
     printf(";\n\n");
 
     printf("set Arcs :=\n");
-    for (int i = 0; i < (*superarcs).size(); i++) {
-	printf("%d %d\n", (*superarcs)[i].ep1, (*superarcs)[i].ep2);
+    for (int i = 0; i < superarcs->size(); i++) {
+	printf("%d %d\n", superarcs->at(i)->ep1, superarcs->at(i)->ep2);
     }
     printf(";\n\n");
 
     printf("param Capacity :=\n");
-    for (int i = 0; i < (*superarcs).size(); i++) {
-        printf("%d %d %d\n", (*superarcs)[i].ep1, (*superarcs)[i].ep2, (*superarcs)[i].capacity);
+    for (int i = 0; i < superarcs->size(); i++) {
+        printf("%d %d %d\n", superarcs->at(i)->ep1, superarcs->at(i)->ep2, superarcs->at(i)->capacity);
     }
     printf(";\n\n");
 
@@ -79,11 +79,11 @@ int main(int argc, char **argv)
     int size[5] = {2, 4, 4, 4, 2};
     int **graph = optiq_graph_build_nodes_graph_bgq(size, &nodes);
 
-    vector<struct optiq_supernode> supernodes;
-    vector<struct optiq_arc> superarcs;
+    vector<struct optiq_supernode *> supernodes;
+    vector<struct optiq_arc *> superarcs;
     map<int, int> node_supernode;   
 
-    optiq_graph_coarsen_bgq(&supernodes, &superarcs, &node_supernode);   
+    optiq_graph_coarsen_bgq(graph, nodes.size(), &supernodes, &superarcs, &node_supernode);   
 
     vector<struct optiq_job> new_jobs;
     optiq_job_mapping(&jobs, &new_jobs, &node_supernode);
