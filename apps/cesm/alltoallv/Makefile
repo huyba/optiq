@@ -1,44 +1,28 @@
-ifndef COMPILER
-  COMPILER = XL
-endif
+#CC = gcc
+CC = g++
 
-ifeq ($(COMPILER),GNU)
-  CC      = mpicc
-  COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
-endif
+COPT = -g -O2 -Wall #-std=c99
 
-ifeq ($(COMPILER),XL)
-  CC      = mpicxx
-  COPT    = -g -O3
-endif
+MPICH2_PATH=/usr/local/mpich2
 
-LD      = mpixlc_r
+INCLUDE = -I. 
 
-CFLAGS  = $(COPT) -I.
-LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
+CFLAGS  = $(COPT) $(INCLUDE)
 
-CFLAGS += -DPROGRESS_THREAD
+LD = g++
 
-obj =
+LIBS    = -L$(MPICH2_PATH)/lib -l mpi
 
-all: alltoallv.x alltoallvcpy
+OBJ = util.o topology.o datagen.o
 
-rm:
-	rm -f *.o
+all: util.o topology.o datagen.o patterngen.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.x: %.o $(obj)
-	$(LD) $< $(obj) -o $@ $(LDFLAGS)
+%.x: %.o
+	$(LD) $(OBJ) $< $(LIBS) -o $@
 
-clean:
-	$(RM) $(RMFLAGS) *.o
-	$(RM) $(RMFLAGS) *.lst
-
-realclean: clean
-	$(RM) $(RMFLAGS) *.x
-	$(RM) $(RMFLAGS) core.*
-
-alltoallvcpy:
-	cp alltoallv.x /gpfs/vesta-fs0/projects/Performance/abui/cesm/alltoallv/
+rm:
+	rm *.o
+	rm *.x
