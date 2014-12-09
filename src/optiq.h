@@ -1,6 +1,7 @@
 #ifndef OPTIQ_H
 #define OPTIQ_H
 
+#include "core/structures/queue.h"
 #include "core/structures/job.h"
 #include "core/structures/flow.h"
 #include "core/system/memory.h"
