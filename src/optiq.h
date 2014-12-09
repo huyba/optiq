@@ -4,6 +4,7 @@
 #include "core/structures/queue.h"
 #include "core/structures/job.h"
 #include "core/structures/flow.h"
+#include "core/structures/graph.h"
 #include "core/system/memory.h"
 #include "engine/message.h"
 #include "engine/virtual_lane.h"
