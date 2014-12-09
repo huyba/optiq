@@ -23,8 +23,8 @@ void optiq_print_arcs(int num_dims, int *size, double cap)
                     for (int ed = 0; ed < size[4]; ed++) {
                         coord[4] = ed;
                         num_neighbors = 0;
-                        nid = optiq_compute_nid(num_dims, coord, size);
-                        num_neighbors = optiq_compute_neighbors(num_dims, coord, size, neighbors);
+                        nid = optiq_compute_nid(num_dims, size, coord);
+                        num_neighbors = optiq_compute_neighbors(num_dims, size, coord, neighbors);
                         for (int i = 0; i < num_neighbors; i++) {
                             if (cap < 0.0) {
                                 printf("%d %d\n", nid, neighbors[i]);

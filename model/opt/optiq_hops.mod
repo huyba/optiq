@@ -14,7 +14,7 @@ var Flow {Jobs, Arcs} >= 0;
 var Z >= 0;
 
 var total_flow{(i,j) in Arcs} = sum {job in Jobs} Flow[job,i,j];
-var total_hops{job in Jobs} = sum {(i,j) in Arcs} Hop[i,j] * (if (Flow[job,i,j] > 0.5) then 1 else 0);
+var total_hops{job in Jobs} = sum {(i,j) in Arcs} Hop[i,j] * (if (Flow[job,i,j] > 0) then 1 else 0);
 
 maximize obj: Z;
 
