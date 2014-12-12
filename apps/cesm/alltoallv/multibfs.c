@@ -33,14 +33,25 @@ void optiq_neighbor_print_neighbor(int node_id, int **graph, int num_nodes)
 void optiq_path_print_paths(std::vector<struct path> paths)
 {
     printf("#paths = %ld\n", paths.size());
+    int max_hops = 0;
 
     for (int i = 0; i < paths.size(); i++) {
         struct path p = paths[i];
+
+	if (max_hops < p.arcs.size()) {
+	    max_hops = p.arcs.size();
+	}
+
+	printf("path %d num_hops = %ld\n", i, p.arcs.size());
+
+	printf("path %d: ", i);
         for (int j = 0; j < p.arcs.size(); j++) {
             printf("%d->", p.arcs[j].u);
         }
         printf("%d\n", p.arcs.back().v);
     }
+
+    printf("max_hops = %d\n", max_hops);
 }
 
 void adding_load_on_path(struct path np, int **load, int adding_load)
@@ -57,7 +68,7 @@ int pick_up_path(std::vector<struct path> &paths)
     int index = 0;
 
     for (int i = 0; i < paths.size(); i++) {
-	printf("path %d load %d\n", i, paths[i].max_load);
+	/*printf("path %d load %d\n", i, paths[i].max_load);*/
 	if (min_load > paths[i].max_load) {
 	    min_load = paths[i].max_load;
 	    min_hops = paths[i].arcs.size();
@@ -68,7 +79,7 @@ int pick_up_path(std::vector<struct path> &paths)
 	}
     }
 
-    printf("index = %d\n\n", index);
+    /*printf("index = %d\n\n", index);*/
 
     return index;
 }
@@ -214,7 +225,7 @@ int main(int argc, char **argv)
 		np.arcs.push_back(na);
 		expanding_paths.push_back(np);
 		complete_paths.push_back(np);
-		update_max_load(np, load, complete_paths);
+		update_max_load(np, load, expanding_paths);
 		visited[p.dest_id][i] = true;
 	    }
 	}
@@ -224,7 +235,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < num_nodes; i++) {
 	for (int j = 0; j < num_nodes; j++) {
 	    if (graph[i][j] == 1) {
-		printf("Load on [%d %d] %d\n", i, j, load[i][j]);
+		printf("Load on link [%d %d] %d\n", i, j, load[i][j]);
 	    }
 	    if (max_load < load[i][j]) {
 		max_load = load[i][j];
@@ -233,8 +244,9 @@ int main(int argc, char **argv)
 	}
     }
 
+    printf("max_load [%d, %d] = %d\n", u, v, max_load);
+
     optiq_path_print_paths(complete_paths);
 
-    printf("[%d, %d] = %d\n", u, v, max_load);
-
+    return 0;
 }
