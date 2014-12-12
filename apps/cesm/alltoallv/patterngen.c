@@ -25,12 +25,12 @@ int main(int argc, char **argv)
     printf(";\n\n");
 
     printf("param Capacity :=\n");
-    optiq_print_arcs(num_dims, size, 2048);
+    optiq_print_arcs(num_dims, size, 1740800);
 
     printf(";\n\n");
 
     int source, dest, jobId = 0, num_dests = world_size/ratio;
-    float demand = 2048.0;
+    float demand = 1024;
 
     printf("param: Jobs: Source Destination Demand :=\n");
     for (int i = 0; i < world_size; i ++) {
