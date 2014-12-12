@@ -37,8 +37,10 @@ int main(int argc, char **argv)
 	for (int j = 0; j < num_dests; j++) {
 	    source = i;
 	    dest = j * ratio + ratio/2;
-	    printf("%d %d %d %8.0f\n", jobId, source, dest, demand);
-	    jobId++;
+	    if (source != dest) {
+		printf("%d %d %d %8.0f\n", jobId, source, dest, demand);
+		jobId++;
+	    }
 	}
     }
     printf(";\n\n");

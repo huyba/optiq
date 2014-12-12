@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+
+#include <vector>
 
 #include "util.h"
 #include "datagen.h"
 #include "topology.h"
-
-#include <vector>
 
 struct arc {
     int u;
@@ -29,9 +30,10 @@ void optiq_neighbor_print_neighbor(int node_id, int **graph, int num_nodes)
     printf("\n");
 }
 
-
 void optiq_path_print_paths(std::vector<struct path> paths)
 {
+    printf("#paths = %ld\n", paths.size());
+
     for (int i = 0; i < paths.size(); i++) {
         struct path p = paths[i];
         for (int j = 0; j < p.arcs.size(); j++) {
@@ -45,6 +47,47 @@ void adding_load_on_path(struct path np, int **load, int adding_load)
 {
     for (int i = 0; i < np.arcs.size(); i++) {
 	load[np.arcs[i].u][np.arcs[i].v] += adding_load;
+    }
+}
+
+int pick_up_path(std::vector<struct path> &paths)
+{
+    int min_load = INT_MAX;
+    int min_hops = INT_MAX;
+    int index = 0;
+
+    for (int i = 0; i < paths.size(); i++) {
+	printf("path %d load %d\n", i, paths[i].max_load);
+	if (min_load > paths[i].max_load) {
+	    min_load = paths[i].max_load;
+	    min_hops = paths[i].arcs.size();
+	    index = i;
+	} else if (min_load == paths[i].max_load && min_hops > paths[i].arcs.size()) {
+	    min_hops = paths[i].arcs.size();
+	    index = i;
+	}
+    }
+
+    printf("index = %d\n\n", index);
+
+    return index;
+}
+
+void update_max_load(struct path &np, int **load, std::vector<struct path> &paths)
+{
+    int u = 0, v = 0;
+    for (int k = 0; k < np.arcs.size(); k++) {
+	u = np.arcs[k].u;
+	v = np.arcs[k].v;
+
+        for (int i = 0; i < paths.size(); i++) {
+	   for (int j = 0; j < paths[i].arcs.size(); j++) {
+		if (paths[i].arcs[j].u == u && paths[i].arcs[j].v == v && paths[i].max_load < load[u][v]) {
+		    paths[i].max_load = load[u][v];
+		    //printf("Updated maxload to %d of %d %d\n", load[u][v], u, v);
+		}
+	    }
+	}
     }
 }
 
@@ -105,8 +148,6 @@ int main(int argc, char **argv)
         }
     }
 
-    optiq_neighbor_print_neighbor(32, graph, num_nodes);
-
     optiq_topology_compute_routing_order_bgq(num_dims, size, order);
 
     printf("Order [%d %d %d %d %d]\n", order[0], order[1], order[2], order[3], order[4]);
@@ -140,8 +181,10 @@ int main(int argc, char **argv)
 		    p.arcs.push_back(a);
 		    p.max_load = 1;
 		    p.dest_id = i;
+		    adding_load_on_path(p, load, 1);
 		    expanding_paths.push_back(p);
 		    complete_paths.push_back(p);
+		    
 		    visited[i][j] = true;
 		    done = false;
 		    break;
@@ -151,9 +194,11 @@ int main(int argc, char **argv)
     }
 
     /*For the current number of paths, start expanding and add more path*/
+    int index;
     while(!expanding_paths.empty()) {
-	struct path p = expanding_paths.front();
-	expanding_paths.erase(expanding_paths.begin());
+	index = pick_up_path(expanding_paths);
+	struct path p = expanding_paths[index];
+	expanding_paths.erase(expanding_paths.begin() + index);
 
 	struct arc a = p.arcs.back();
 	int furthest_point = a.v;
@@ -169,6 +214,7 @@ int main(int argc, char **argv)
 		np.arcs.push_back(na);
 		expanding_paths.push_back(np);
 		complete_paths.push_back(np);
+		update_max_load(np, load, complete_paths);
 		visited[p.dest_id][i] = true;
 	    }
 	}
@@ -177,6 +223,9 @@ int main(int argc, char **argv)
     int max_load = 0, u, v;
     for (int i = 0; i < num_nodes; i++) {
 	for (int j = 0; j < num_nodes; j++) {
+	    if (graph[i][j] == 1) {
+		printf("Load on [%d %d] %d\n", i, j, load[i][j]);
+	    }
 	    if (max_load < load[i][j]) {
 		max_load = load[i][j];
 		u = i; v = j;
