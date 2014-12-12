@@ -13,10 +13,33 @@ struct arc {
 };
 
 struct path {
-    int max_weight;
+    int max_load;
     int dest_id;
     std::vector<struct arc> arcs;
 };
+
+void optiq_neighbor_print_neighbor(int node_id, int **graph, int num_nodes)
+{
+    printf("Node_id = %d. Neighbors = ", node_id);
+    for (int i = 0; i < num_nodes; i++) {
+	if (graph[node_id][i] == 1) {
+	    printf("%d ", i);
+	}
+    }
+    printf("\n");
+}
+
+
+void optiq_path_print_paths(std::vector<struct path> paths)
+{
+    for (int i = 0; i < paths.size(); i++) {
+        struct path p = paths[i];
+        for (int j = 0; j < p.arcs.size(); j++) {
+            printf("%d->", p.arcs[j].u);
+        }
+        printf("%d\n", p.arcs.back().v);
+    }
+}
 
 int main(int argc, char **argv) 
 {
@@ -39,13 +62,13 @@ int main(int argc, char **argv)
     }
 
     int **graph = (int **)malloc(sizeof(int *) * num_nodes);
-    int **weight = (int **)malloc(sizeof(int *) * num_nodes);
+    int **load = (int **)malloc(sizeof(int *) * num_nodes);
     for (int i = 0; i < num_nodes; i++) {
         graph[i] = (int *)malloc(sizeof(int) * num_nodes);
-	weight[i] = (int *)malloc(sizeof(int) * num_nodes);
+	load[i] = (int *)malloc(sizeof(int) * num_nodes);
         for (int j = 0; j < num_nodes; j++) {
             graph[i][j] = 0;
-	    weight[i][j] = 0;
+	    load[i][j] = 0;
         }
     }
 
@@ -75,6 +98,8 @@ int main(int argc, char **argv)
         }
     }
 
+    optiq_neighbor_print_neighbor(32, graph, num_nodes);
+
     optiq_topology_compute_routing_order_bgq(num_dims, size, order);
 
     printf("Order [%d %d %d %d %d]\n", order[0], order[1], order[2], order[3], order[4]);
@@ -103,19 +128,22 @@ int main(int argc, char **argv)
 		    struct arc a;
 		    a.u = dests[i];
 		    a.v = j;
-		    weight[dests[i]][j]++;
+		    load[dests[i]][j]++;
 		    struct path p;
 		    p.arcs.push_back(a);
-		    p.max_weight = 1;
+		    p.max_load = 1;
 		    p.dest_id = i;
 		    expanding_paths.push_back(p);
 		    complete_paths.push_back(p);
+		    visited[i][j] = true;
 		    done = false;
 		    break;
 		}	
 	    }
 	}
     }
+
+    std::vector<struct path>::iterator iter;
 
     /*For the current number of paths, start expanding and add more path*/
     while(!expanding_paths.empty()) {
@@ -132,24 +160,27 @@ int main(int argc, char **argv)
 		struct arc na;
 		na.u = a.v;
 		na.v = i;
-		weight[a.v][i]++;
+		load[a.v][i]++;
 		np.arcs.push_back(na);
 		expanding_paths.push_back(np);
 		complete_paths.push_back(np);
+		visited[p.dest_id][i] = true;
 	    }
 	}
     }
 
-    int max_weight = 0, u, v;
+    int max_load = 0, u, v;
     for (int i = 0; i < num_nodes; i++) {
 	for (int j = 0; j < num_nodes; j++) {
-	    if (max_weight < weight[i][j]) {
-		max_weight = weight[i][j];
+	    if (max_load < load[i][j]) {
+		max_load = load[i][j];
 		u = i; v = j;
 	    }
 	}
     }
 
-    printf("[%d, %d] = %d\n", u, v, max_weight);
+    optiq_path_print_paths(complete_paths);
+
+    printf("[%d, %d] = %d\n", u, v, max_load);
 
 }
