@@ -41,6 +41,13 @@ void optiq_path_print_paths(std::vector<struct path> paths)
     }
 }
 
+void adding_load_on_path(struct path np, int **load, int adding_load)
+{
+    for (int i = 0; i < np.arcs.size(); i++) {
+	load[np.arcs[i].u][np.arcs[i].v] += adding_load;
+    }
+}
+
 int main(int argc, char **argv) 
 {
     int num_dims = 5;
@@ -88,7 +95,7 @@ int main(int argc, char **argv)
 			    all_coords[nid][i] = coord[i];
 			}
 
-			num_neighbors = optiq_compute_neighbors(num_dims, coord, size, neighbors);
+			num_neighbors = optiq_compute_neighbors(num_dims, size, coord, neighbors);
                         for(int i = 0; i < num_neighbors; i++) {
                             graph[nid][neighbors[i]] = 1;
                         }
@@ -143,12 +150,10 @@ int main(int argc, char **argv)
 	}
     }
 
-    std::vector<struct path>::iterator iter;
-
     /*For the current number of paths, start expanding and add more path*/
     while(!expanding_paths.empty()) {
-	struct path p = expanding_paths.back();
-	expanding_paths.pop_back();
+	struct path p = expanding_paths.front();
+	expanding_paths.erase(expanding_paths.begin());
 
 	struct arc a = p.arcs.back();
 	int furthest_point = a.v;
@@ -160,7 +165,7 @@ int main(int argc, char **argv)
 		struct arc na;
 		na.u = a.v;
 		na.v = i;
-		load[a.v][i]++;
+		adding_load_on_path(np, load, 1);
 		np.arcs.push_back(na);
 		expanding_paths.push_back(np);
 		complete_paths.push_back(np);
