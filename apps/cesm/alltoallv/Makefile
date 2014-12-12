@@ -11,11 +11,11 @@ CFLAGS  = $(COPT) $(INCLUDE)
 
 LD = g++
 
-LIBS    = -L$(MPICH2_PATH)/lib -l mpi
+LIBS    = -L$(MPICH2_PATH)/lib -l mpi -lm
 
 OBJ = util.o topology.o datagen.o
 
-all: util.o topology.o datagen.o patterngen.x
+all: util.o topology.o datagen.o patterngen.x pathreconstruct.x multibfs.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

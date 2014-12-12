@@ -1,5 +1,5 @@
 model optiq.mod;
-data optiq64.dat;
+data test1.dat;
 option solver snopt;
 solve;
 
