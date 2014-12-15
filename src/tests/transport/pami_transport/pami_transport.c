@@ -225,7 +225,7 @@ void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void 
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &pami_transport->extra.remote_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
+    optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, pami_transport->extra.remote_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
     pami_transport->extra.remote_mr->offset += (*(int *)data);
 }
