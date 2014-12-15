@@ -27,18 +27,20 @@ int main(int argc, char **argv)
     rput_cookie.mr_val = 1;
     rput_cookie.dest = dest;
     rput_cookie.pami_transport = pami_transport;
-    pami_transport->rput_cookie = &rput_cookie;
+    pami_transport->extra.rput_cookie = &rput_cookie;
 
     int nbytes = 4 * 1024 * 1024;
     void *remote_buf = malloc(nbytes);
     void *local_buf = malloc(nbytes);
 
-    pami_memregion_t local_mr, remote_mr;
-    pami_transport->remote_mr = &remote_mr;
-    pami_transport->local_mr = &local_mr;
+    optiq_memregion local_mr, remote_mr;
+    pami_transport->extra.remote_mr = &remote_mr;
+    pami_transport->extra.remote_mr->offset = 0;
+    pami_transport->extra.local_mr = &local_mr;
+    pami_transport->extra.local_mr->offset = 0;
 
     size_t bytes;
-    pami_result_t result = PAMI_Memregion_create (pami_transport->context, remote_buf, nbytes, &bytes, pami_transport->remote_mr);
+    pami_result_t result = PAMI_Memregion_create (pami_transport->context, remote_buf, nbytes, &bytes, &remote_mr.mr);
 
     if (result != PAMI_SUCCESS) {
         printf("No success\n");
@@ -46,7 +48,7 @@ int main(int argc, char **argv)
         printf("Registered less\n");
     }
 
-    result = PAMI_Memregion_create (pami_transport->context, local_buf, nbytes, &bytes, pami_transport->local_mr);
+    result = PAMI_Memregion_create (pami_transport->context, local_buf, nbytes, &bytes, &local_mr.mr);
 
     if (result != PAMI_SUCCESS) {
         printf("No success\n");
@@ -61,14 +63,17 @@ int main(int argc, char **argv)
     uint64_t start = GetTimeBase();
 
     if (world_rank == source) {
+	rput_cookie.mr_val = 1;
+	rput_cookie.val = 1;
+
         /*Notify the size, ask for mem region*/
         optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, NULL, 0, &nbytes, sizeof(int), pami_transport->endpoints[dest]);
 	while(rput_cookie.mr_val > 0) {
 	    PAMI_Context_advance(pami_transport->context, 100);
 	}
 
-        /*Actual rput data*/  
-        optiq_pami_rput(pami_transport->client, pami_transport->context, &local_mr, 0, nbytes, pami_transport->endpoints[dest], pami_transport->remote_mr, 0, &rput_cookie);
+        /*Actual rput data*/ 
+        optiq_pami_rput(pami_transport->client, pami_transport->context, &local_mr.mr, local_mr.offset, nbytes, pami_transport->endpoints[dest], &pami_transport->extra.remote_mr->mr, pami_transport->extra.remote_mr->offset, &rput_cookie);
 
         /*Notify that rput is done*/
         while(rput_cookie.val > 0) {
@@ -78,6 +83,7 @@ int main(int argc, char **argv)
     }
 
     if (world_rank == dest) {
+	rput_cookie.val = 1;
         while(rput_cookie.val > 0) {
             PAMI_Context_advance(pami_transport->context, 100);
         }

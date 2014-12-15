@@ -13,6 +13,11 @@
 
 #define MAX_SHORT_MESSAGE_LENGTH 128
 
+struct optiq_memregion {
+    pami_memregion_t mr;
+    int offset;
+};
+
 struct optiq_pami_transport;
 
 struct optiq_rput_cookie {
@@ -20,6 +25,12 @@ struct optiq_rput_cookie {
     int dest;
     int val;
     int mr_val;
+};
+
+struct optiq_pami_extra {
+    optiq_memregion *local_mr;
+    optiq_memregion *remote_mr;
+    struct optiq_rput_cookie *rput_cookie;
 };
 
 struct optiq_pami_transport {
@@ -30,10 +41,7 @@ struct optiq_pami_transport {
     pami_context_t context;
     pami_endpoint_t *endpoints;
 
-    pami_memregion_t *local_mr;
-    pami_memregion_t *remote_mr;
-
-    struct optiq_rput_cookie *rput_cookie;
+    optiq_pami_extra extra;
 };
 
 void optiq_pami_init(struct optiq_pami_transport *self);
