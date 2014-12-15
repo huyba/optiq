@@ -19,6 +19,7 @@ struct optiq_rput_cookie {
     struct optiq_pami_transport *pami_transport;
     int dest;
     int val;
+    int mr_val;
 };
 
 struct optiq_pami_transport {
@@ -41,7 +42,7 @@ int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *heade
 
 void optiq_pami_rput_done_fn(pami_context_t context, void *cookie, pami_result_t result);
 
-int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, int dest, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie);
+int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie);
 
 void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result);
 

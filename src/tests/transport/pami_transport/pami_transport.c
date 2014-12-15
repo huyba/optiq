@@ -119,14 +119,10 @@ void optiq_pami_rput_done_fn(pami_context_t context, void *cookie, pami_result_t
 void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_t result)
 {   
     struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)cookie;
-    struct optiq_pami_transport *pami_transport = rput_cookie->pami_transport;
-
-    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[rput_cookie->dest]);
-
     rput_cookie->val--;
 }
 
-int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, int dest, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie)
+int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie)
 {
     int ret = 0;
 
@@ -140,7 +136,7 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
     parameters.rdma.local.offset  = local_offset;
     parameters.rma.bytes      = nbytes;
 
-    PAMI_Endpoint_create (client, dest, 0, &parameters.rma.dest);
+    parameters.rma.dest = endpoint;
 
     parameters.rdma.remote.mr = remote_mr;
     parameters.rdma.remote.offset = remote_offset;
@@ -221,6 +217,7 @@ void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void 
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
     memcpy(pami_transport->remote_mr, data, data_size);
+    pami_transport->rput_cookie->mr_val--;
 }
 
 void optiq_recv_mr_request_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,

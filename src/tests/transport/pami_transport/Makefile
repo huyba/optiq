@@ -42,4 +42,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) $(libobj)
 
 copy:
-	cp test.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/pami_transport/send_recv/
+	cp test.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/send_recv/
