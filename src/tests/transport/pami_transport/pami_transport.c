@@ -210,6 +210,13 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
     struct optiq_rput_cookie *rput_cookie = pami_transport->extra.rput_cookie;
 
+    /*If the message is not for itself*/
+    struct optiq_message_header *message_header = (struct optiq_message_header *)data;
+
+    if(pami_transport->rank != message_header->dest) {
+	pami_transport->extra.forward_messages.push_back(*message_header);
+    }
+
     rput_cookie->val--;
 }
 

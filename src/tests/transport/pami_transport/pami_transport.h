@@ -1,6 +1,8 @@
 #ifndef OPTIQ_PAMI_TRANSPORT_H
 #define OPTIQ_PAMI_TRANSPORT_H
 
+#include <vector>
+
 #include <spi/include/kernel/location.h>
 #include <spi/include/kernel/process.h>
 #include <firmware/include/personality.h>
@@ -18,6 +20,14 @@ struct optiq_memregion {
     int offset;
 };
 
+struct optiq_message_header {
+    int length;
+    int source;
+    int dest;
+    int flow_id;
+    struct optiq_memregion mem;
+};
+
 struct optiq_pami_transport;
 
 struct optiq_rput_cookie {
@@ -31,6 +41,7 @@ struct optiq_pami_extra {
     optiq_memregion *local_mr;
     optiq_memregion *remote_mr;
     struct optiq_rput_cookie *rput_cookie;
+    std::vector<struct optiq_message_header> forward_messages;
 };
 
 struct optiq_pami_transport {
