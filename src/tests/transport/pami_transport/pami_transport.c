@@ -208,8 +208,8 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
-
     struct optiq_rput_cookie *rput_cookie = pami_transport->extra.rput_cookie;
+
     rput_cookie->val--;
 }
 

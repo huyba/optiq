@@ -42,7 +42,6 @@ struct optiq_recv_cookie {
 };
 
 struct optiq_pami_transport {
-    int recv_cookie;
     vector<struct optiq_recv_cookie *> avail_recv_cookies;
     vector<struct optiq_recv_cookie *> in_use_recv_cookies;
 
@@ -52,7 +51,9 @@ struct optiq_pami_transport {
     vector<struct optiq_message *> local_messages;
 
     vector<struct optiq_message *> in_use_recv_messages;
-    struct optiq_queue avail_recv_messages;
+
+    vector<struct optiq_message *> avail_recv_messages;
+
     vector<struct optiq_message *> avail_send_messages;
 
     vector<int> involved_job_ids;
@@ -76,11 +77,11 @@ void optiq_pami_transport_init(struct optiq_pami_transport *self);
 
 int optiq_pami_transport_send(struct optiq_pami_transport *self, struct optiq_message *message);
 
-int optiq_pami_transport_actual_send(struct optiq_pami_transport *pami_transport, void *buffer, int length, int dest, int *cookie);
+int optiq_pami_transport_actual_send(struct optiq_pami_transport *pami_transport, struct optiq_message *message);
 
 int optiq_pami_transport_recv(struct optiq_pami_transport *self, struct optiq_message *message);
 
-bool optiq_pami_transport_test(struct optiq_pami_transport *self, void *cookie);
+bool optiq_pami_transport_test(struct optiq_pami_transport *self, struct optiq_message *message);
 
 int optiq_pami_transport_process_incomming_message(struct optiq_pami_transport *self);
 

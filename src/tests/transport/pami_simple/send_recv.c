@@ -45,6 +45,7 @@ int main(int argc, char **argv)
     }
 
     pami_transport.recv_cookie.val = 0;
+    pami_transport.buffer = buffer;
 
     MPI_Barrier(MPI_COMM_WORLD);
 

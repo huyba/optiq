@@ -39,9 +39,9 @@ mpi: send_recv.x
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clean:
-	$(RM) $(RMFLAGS) *.o
-	$(RM) $(RMFLAGS) *.lst
+clean: $(OBJ)
+	cd ../../../ && $(MAKE) -f Makefile clean
+	rm *.x *.o
 
 realclean: clean
 	$(RM) $(RMFLAGS) *.x

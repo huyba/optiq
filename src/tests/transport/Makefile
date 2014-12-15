@@ -35,7 +35,7 @@ all: lib $(OBJ) mpi copy
 lib:
 	cd ../../ && $(MAKE) -f Makefile
 
-mpi: data_from_file.x pami_send_recv.x pami_forward.x
+mpi: data_from_file.x pami_send_recv.x pami_forward.x send_recv.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -43,13 +43,9 @@ mpi: data_from_file.x pami_send_recv.x pami_forward.x
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-rm: $(libobj)
-	cd ../../ && $(MAKE) -f Makefile rm
+clean: $(libobj)
+	cd ../../ && $(MAKE) -f Makefile clean
 	rm *.x
-
-clean:
-	$(RM) $(RMFLAGS) *.o
-	$(RM) $(RMFLAGS) *.lst
 
 realclean: clean
 	$(RM) $(RMFLAGS) *.x
