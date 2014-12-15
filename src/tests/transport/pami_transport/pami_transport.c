@@ -4,7 +4,7 @@
 
 #include "pami_transport.h"
 
-void optiq_pami_transport_init(struct optiq_pami_transport *pami_transport)
+void optiq_pami_init(struct optiq_pami_transport *pami_transport)
 {
     const char client_name[] = "OPTIQ";
     pami_result_t result;
@@ -119,11 +119,11 @@ void optiq_pami_rput_done_fn(pami_context_t context, void *cookie, pami_result_t
 void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_t result)
 {   
     struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)cookie;
-    rput_cookie->val--;
-
     struct optiq_pami_transport *pami_transport = rput_cookie->pami_transport;
 
     optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[rput_cookie->dest]);
+
+    rput_cookie->val--;
 }
 
 int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, int dest, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie)

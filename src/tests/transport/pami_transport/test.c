@@ -20,24 +20,59 @@ int main(int argc, char **argv)
 
     int source = 0, dest = 1;
 
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)malloc(sizeof(struct optiq_pami_transport));
+
+    struct optiq_rput_cookie rput_cookie;
+    rput_cookie.val = 1;
+    rput_cookie.dest = dest;
+    rput_cookie.pami_transport = pami_transport;
+    pami_transport->rput_cookie = &rput_cookie;
+
+    int nbytes = 4 * 1024 * 1024;
+    void *remote_buf = malloc(nbytes);
+    void *local_buf = malloc(nbytes);
+
+    pami_memregion_t local_mr, remote_mr;
+
+    size_t bytes;
+    pami_result_t result = PAMI_Memregion_create (pami_transport->context, remote_buf, nbytes, &bytes, pami_transport->remote_mr);
+
+    if (result != PAMI_SUCCESS) {
+        printf("No success\n");
+    } else if (bytes < nbytes) {
+        printf("Registered less\n");
+    }
+
+    result = PAMI_Memregion_create (pami_transport->context, local_buf, nbytes, &bytes, pami_transport->local_mr);
+
+    if (result != PAMI_SUCCESS) {
+        printf("No success\n");
+    } else if (bytes < nbytes) {
+        printf("Registered less\n");
+    }
+
+    pami_transport->remote_mr = &remote_mr;
+    pami_transport->local_mr = &local_mr;
+
+    optiq_pami_init(pami_transport);
+
     if (world_rank == source) {
         /*Notify the size, ask for mem region*/
-
+        optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, NULL, 0, &nbytes, sizeof(int), pami_transport->endpoints[dest]);
 
         /*Actual rput data*/  
-
+        optiq_pami_rput(pami_transport->client, pami_transport->context, &local_mr, 0, nbytes, dest, pami_transport->remote_mr, 0, &rput_cookie);
 
         /*Notify that rput is done*/
-
-
+        while(rput_cookie.val > 0) {
+            PAMI_Context_advance(pami_transport->context, 100);
+        }
     }
 
     if (world_rank == dest) {
-        /*Return a mem region*/
-
-
-        /*Wait for everything is done*/
-
+        while(rput_cookie.val > 0) {
+            PAMI_Context_advance(pami_transport->context, 100);
+        }
     }
 
     return 0;
