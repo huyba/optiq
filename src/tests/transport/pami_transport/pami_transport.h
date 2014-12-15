@@ -38,9 +38,13 @@ struct optiq_rput_cookie {
 };
 
 struct optiq_pami_extra {
-    optiq_memregion *local_mr;
-    optiq_memregion *remote_mr;
+
+    struct optiq_memregion *local_mr;
+    struct optiq_memregion *near_mr;
+    struct optiq_memregion *far_mr;
+
     struct optiq_rput_cookie *rput_cookie;
+
     std::vector<struct optiq_message_header> forward_messages;
 };
 
@@ -52,7 +56,7 @@ struct optiq_pami_transport {
     pami_context_t context;
     pami_endpoint_t *endpoints;
 
-    optiq_pami_extra extra;
+    struct optiq_pami_extra extra;
 };
 
 void optiq_pami_init(struct optiq_pami_transport *self);

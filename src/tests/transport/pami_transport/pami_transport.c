@@ -224,15 +224,19 @@ void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void 
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    memcpy(pami_transport->extra.remote_mr, data, data_size);
+    memcpy(pami_transport->extra.far_mr, data, data_size);
     pami_transport->extra.rput_cookie->mr_val--;
+
+    //printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.far_mr->offset);
 }
 
 void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, pami_transport->extra.remote_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
+    optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, pami_transport->extra.near_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
-    pami_transport->extra.remote_mr->offset += (*(int *)data);
+    //printf("Rank %d sent a response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.near_mr->offset);
+
+    pami_transport->extra.near_mr->offset += (*(int *)data);
 }
