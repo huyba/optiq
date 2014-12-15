@@ -4,23 +4,20 @@ set Arcs within Nodes cross Nodes;
 set Paths{OD};
 set Path_Arcs{od in OD, p in Paths[od]} within Arcs;
 
-
+param Demand{OD} default 0;
 param Capacity {Arcs} >= 0 default Infinity;
-param Source {Jobs};
-param Destination {Jobs} default 0;
-param Demand {Jobs} default 0;
 
-var Flow {Jobs, Arcs} >= 0;
+var Flow {Paths} >= 0;
 var Z >= 0;
 
-var total_flow{(i,j) in Arcs} = sum {job in Jobs} Flow[job,i,j];
+var total_flow{(i,j) in Arcs} = sum {path in Paths} Flow[path];
 
 maximize obj: Z;
 
 subject to
 
-zero_flow {job in Jobs, i in Nodes}:
-sum{(i,j) in Arcs} Flow[job,i,j] - sum{(j,i) in Arcs} Flow[job,j,i] =
+zero_flow {od in OD, i in Nodes}:
+sum{(i,j) in Arcs} Flow[od,i,j] - sum{(j,i) in Arcs} Flow[job,j,i] =
 if (i == Source[job]) then Demand[job]*Z else if (i == Destination[job]) then -Demand[job]*Z else 0;
 
 capacity {(i,j) in Arcs}:
