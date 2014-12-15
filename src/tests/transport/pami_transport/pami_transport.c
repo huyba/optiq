@@ -73,9 +73,9 @@ void optiq_pami_transport_init(struct optiq_pami_transport *pami_transport)
     }
 
     /*Job done notification*/
-    fn.p2p = optiq_recv_transfer_done_notification_fn;
+    fn.p2p = optiq_recv_rput_done_notification_fn;
     result = PAMI_Dispatch_set (pami_transport->context,
-            TRANSFER_DONE_NOTIFICATION,
+            RPUT_DONE,
 	    fn,
 	    (void *) pami_transport,
 	    options);
@@ -116,6 +116,16 @@ void optiq_pami_rput_done_fn(pami_context_t context, void *cookie, pami_result_t
     (*val)--;   
 }
 
+void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_t result)
+{   
+    struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)cookie;
+    rput_cookie->val--;
+
+    struct optiq_pami_transport *pami_transport = rput_cookie->pami_transport;
+
+    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[rput_cookie->dest]);
+}
+
 int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, int dest, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie)
 {
     int ret = 0;
@@ -134,7 +144,7 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
 
     parameters.rdma.remote.mr = remote_mr;
     parameters.rdma.remote.offset = remote_offset;
-    parameters.put.rdone_fn = NULL;
+    parameters.put.rdone_fn = optiq_pami_rput_rdone_fn;
 
     pami_result_t result = PAMI_Rput (context, &parameters);
     if (result != PAMI_SUCCESS) {
@@ -144,7 +154,7 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
     return ret;
 }
 
-int optiq_pami_send_immediate(pami_context_t context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t endpoint)
+int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint)
 {
     int ret = 0;
 
@@ -199,18 +209,23 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 
 }
 
-void optiq_recv_transfer_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
+    struct optiq_rput_cookie *rput_cookie = pami_transport->rput_cookie;
+    rput_cookie->val--;
 }
 
 void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
-
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+    memcpy(pami_transport->remote_mr, data, data_size);
 }
 
 void optiq_recv_mr_request_fn(pami_context_t context, void *cookie, const void *header, size_t header_size,
         const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
-
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+    optiq_pami_send_immediate(pami_transport->context, MR_RESPONSE, NULL, 0, pami_transport->remote_mr, sizeof(pami_memregion_t), pami_transport->endpoints[origin]);
 }

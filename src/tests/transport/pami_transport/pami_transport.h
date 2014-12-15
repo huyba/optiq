@@ -8,10 +8,18 @@
 
 #define MR_REQUEST 10
 #define MR_RESPONSE 11
-#define TRANSFER_DONE_NOTIFICATION 12
+#define RPUT_DONE 12
 #define RECV_MESSAGE 13
 
 #define MAX_SHORT_MESSAGE_LENGTH 128
+
+struct optiq_pami_transport;
+
+struct optiq_rput_cookie {
+    struct optiq_pami_transport *pami_transport;
+    int dest;
+    int val;
+};
 
 struct optiq_pami_transport {
     int rank;
@@ -21,10 +29,15 @@ struct optiq_pami_transport {
     pami_context_t context;
     pami_endpoint_t *endpoints;
 
-    pami_memregion_t *mr;
+    pami_memregion_t *local_mr;
+    pami_memregion_t *remote_mr;
+
+    struct optiq_rput_cookie *rput_cookie;
 };
 
 void optiq_pami_init(struct optiq_pami_transport *self);
+
+int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint);
 
 void optiq_pami_rput_done_fn(pami_context_t context, void *cookie, pami_result_t result);
 
@@ -44,7 +57,7 @@ void optiq_recv_message_fn (
         pami_endpoint_t   origin,
         pami_recv_t     *recv);        /**< OUT: receive message structure */
 
-void optiq_recv_transfer_done_notification_fn (
+void optiq_recv_rput_done_notification_fn (
 	pami_context_t    context,      /**< IN: PAMI context */
         void            *cookie,       /**< IN: dispatch cookie */
         const void      *header,       /**< IN: header address */

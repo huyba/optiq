@@ -34,8 +34,7 @@ mpi: test.x
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
-	$(RM) $(RMFLAGS) *.o
-	$(RM) $(RMFLAGS) *.lst
+	rm *.x *.o
 
 realclean: clean
 	$(RM) $(RMFLAGS) *.x
