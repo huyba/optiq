@@ -14,24 +14,18 @@ endif
 
 LD      = mpixlc_r
 
-SRC = ../../..
-SYSTEM   = $(SRC)/core/system
-UTILS  = $(SRC)/core/utils
-STRUCTURES = $(SRC)/core/structures
-TRANSPORT = $(SRC)/engine/transport
-
-INCLUDE = -I. -I$(SRC) -I$(SYSTEM) -I$(UTILS) -I$(SRC)/engine/ -I$(STRUCTURES)
+INCLUDE = -I.
 
 CFLAGS = $(COPT) $(INCLUDE) 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(SRC)/engine/message.o $(UTILS)/util.o $(SYSTEM)/memory.o $(STRUCTURES)/queue.o pami_transport.o
+OBJ = pami_transport.o
 
 all: $(OBJ) mpi copy
 
-mpi: send_recv.x
+mpi: test.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -39,8 +33,7 @@ mpi: send_recv.x
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clean: $(OBJ)
-	cd ../../../ && $(MAKE) -f Makefile clean
+clean:
 	rm *.x *.o
 
 realclean: clean
@@ -49,4 +42,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) $(libobj)
 
 copy:
-	cp send_recv.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/send_recv/
+	cp test.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/send_recv/

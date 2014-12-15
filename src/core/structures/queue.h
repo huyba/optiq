@@ -1,7 +1,7 @@
 #ifndef OPTIQ_QUEUE
 #define OPTIQ_QUEUE
 
-#define NUM_OPTIQ_QUEUE_POOL_ELEMENTS 64
+#define NUM_OPTIQ_QUEUE_POOL_ELEMENTS 128
 
 struct optiq_element {
     struct optiq_element *next;
@@ -18,7 +18,11 @@ struct optiq_queue {
 };
 
 void optiq_queue_init(struct optiq_queue *queue, int content_size);
+
 void optiq_queue_enqueue(struct optiq_queue *queue, void *content);
+
 int optiq_queue_dequeue(struct optiq_queue *queue, void *content);
+
+void optiq_queue_pool_allocate(struct optiq_queue *pool, int num_elements, int content_size);
 
 #endif

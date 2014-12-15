@@ -44,6 +44,8 @@ struct optiq_recv_cookie {
 struct optiq_pami_transport {
     struct optiq_recv_cookie recv_cookie;
 
+    void *buffer;
+
     vector<struct optiq_recv_cookie *> avail_recv_cookies;
     vector<struct optiq_recv_cookie *> in_use_recv_cookies;
 

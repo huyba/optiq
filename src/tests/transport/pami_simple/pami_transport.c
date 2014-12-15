@@ -187,7 +187,7 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 	recv->local_fn = optiq_recv_done_fn;
 	recv->cookie = (void *)&recv_cookie->val;
 	recv->type = PAMI_TYPE_BYTE;
-	recv->addr = (void *)recv_cookie->buffer;
+	recv->addr = (void *)pami_transport->buffer;//recv_cookie->buffer;
 	recv->offset = 0;
 	recv->data_fn = PAMI_DATA_COPY;
 	recv->data_cookie = NULL;

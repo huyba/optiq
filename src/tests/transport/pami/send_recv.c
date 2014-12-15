@@ -44,7 +44,13 @@ int main(int argc, char **argv)
 	printf("num_iters = %d, data_size = %d\n", num_iters, data_size);
     }
 
-    pami_transport.recv_cookie = 0;
+    struct optiq_message *message = get_message_with_buffer(data_size);
+    message->header.flow_id = 0;
+    message->header.final_dest = 1;
+    message->header.original_length = data_size;
+    message->header.original_offset = 0;
+    message->header.original_source = 0;
+    message->length = data_size;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -53,16 +59,16 @@ int main(int argc, char **argv)
     
     for (int i = 0; i < num_iters; i++) {
 	if (world_rank == 0) {
-	    int cookie = 1;
-	    int dest = 1;
+	    message->next_dest = 1;
+	    message->sent_bytes = 0;
 	    pami_transport.involved_job_ids.push_back(0);
 
-	    optiq_pami_transport_actual_send(&pami_transport, buffer, data_size, dest, &cookie);
+	    optiq_pami_transport_send(&pami_transport, message);
 
 	    bool isDone = false;
 
 	    while (!isDone) {
-		isDone = optiq_pami_transport_test(&pami_transport, &cookie);
+		isDone = optiq_pami_transport_test(&pami_transport, message);
 	    }
 
 	    while(!optiq_pami_transport_forward_test(&pami_transport));
@@ -72,7 +78,6 @@ int main(int argc, char **argv)
 	    struct optiq_message message;
 	    message.length = data_size;
 	    message.recv_length = 0;
-	    pami_transport.recv_cookie++;
 	    pami_transport.involved_task_ids.push_back(0);
 
 	    int isDone = 0;

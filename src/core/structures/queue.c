@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "../system/memory.h"
 #include "queue.h"
 
@@ -14,6 +15,7 @@ void optiq_queue_pool_allocate(struct optiq_queue *pool, int num_elements, int c
 
     struct optiq_element *element;
     char *buffer = NULL;
+
     for (int i = 0; i < num_elements; i++) {
 	buffer = (char *)core_memory_alloc(one_element_size, "buffer", "optiq_queue_pool_allocate");
 
@@ -38,6 +40,7 @@ void optiq_queue_init(struct optiq_queue *queue, int content_size)
     queue->tail = NULL;
     queue->size = 0;
     queue->content_size = content_size;
+    queue->pool = (struct optiq_queue *)core_memory_alloc(sizeof(struct optiq_queue), "pool", "optiq_queue_init");
 
     /*Create the pool for a number of availale element, avoiding memory allocation all the time*/
     optiq_queue_pool_allocate(queue->pool, NUM_OPTIQ_QUEUE_POOL_ELEMENTS, content_size);

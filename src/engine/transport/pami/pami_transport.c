@@ -16,6 +16,23 @@ struct optiq_transport_interface optiq_pami_transport_implementation = {
     /*.assign_jobs = */optiq_pami_transport_assign_jobs
 };
 
+void optiq_pami_data_init(struct optiq_pami_transport *pami_transport)
+{
+    /*Prepare cookies for sending*/
+    for (int i = 0; i < NUM_SEND_COOKIES; i++) {
+        struct optiq_send_cookie *send_cookie = (struct optiq_send_cookie *)core_memory_alloc(sizeof(struct optiq_send_cookie), "send_cookies", "pami_init");
+        send_cookie->pami_transport = pami_transport;
+        pami_transport->avail_send_cookies.push_back(send_cookie);
+    }
+
+    /*Prepare cookies for receiving*/
+    for (int i = 0; i < NUM_RECV_COOKIES; i++) {
+        struct optiq_recv_cookie *recv_cookie = (struct optiq_recv_cookie *)core_memory_alloc(sizeof(struct optiq_recv_cookie), "recv_cookies", "pami_init");
+        recv_cookie->pami_transport = pami_transport;
+        pami_transport->avail_recv_cookies.push_back(recv_cookie);
+    }
+}
+
 void optiq_pami_transport_init(struct optiq_transport *self)
 {
 #ifdef __bgq__
@@ -29,6 +46,7 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     pami_configuration_t *configurations = NULL;
 
     pami_transport = (struct optiq_pami_transport *) optiq_transport_get_concrete_transport(self);
+    optiq_pami_data_init(pami_transport);
     pami_transport->num_contexts = 1;
 
     /*
@@ -108,20 +126,6 @@ void optiq_pami_transport_init(struct optiq_transport *self)
     pami_transport->avail_recv_messages = &self->avail_recv_messages;
     pami_transport->in_use_recv_messages = &self->in_use_recv_messages;
     pami_transport->avail_send_messages = &self->avail_send_messages;
-
-    /*Prepare cookies for sending*/
-    for (int i = 0; i < NUM_SEND_COOKIES; i++) {
-	struct optiq_send_cookie *send_cookie = (struct optiq_send_cookie *)core_memory_alloc(sizeof(struct optiq_send_cookie), "send_cookies", "pami_init");
-	send_cookie->pami_transport = pami_transport;
-	pami_transport->avail_send_cookies.push_back(send_cookie);
-    }
-
-    /*Prepare cookies for receiving*/
-    for (int i = 0; i < NUM_RECV_COOKIES; i++) {
-	struct optiq_recv_cookie *recv_cookie = (struct optiq_recv_cookie *)core_memory_alloc(sizeof(struct optiq_recv_cookie), "recv_cookies", "pami_init");
-	recv_cookie->pami_transport = pami_transport;
-	pami_transport->avail_recv_cookies.push_back(recv_cookie);
-    }
 #endif
 }
 
