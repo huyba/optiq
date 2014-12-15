@@ -45,8 +45,12 @@ int main(int argc, char **argv)
     pami_transport->extra.rput_cookie = &rput_cookie;
 
     int buf_size = 4 * 1024 * 1024;
-    void *remote_buf = malloc(buf_size);
-    void *local_buf = malloc(buf_size);
+    char *remote_buf = (char *) malloc(buf_size);
+    char *local_buf = (char *) malloc(buf_size);
+
+    for (int i = 0; i < buf_size; i++) {
+	local_buf[i] = i % 128;
+    }
 
     optiq_memregion local_mr, remote_mr;
     pami_transport->extra.remote_mr = &remote_mr;
@@ -164,6 +168,12 @@ int main(int argc, char **argv)
     double bw = buf_size/t/1024/1024*1e6;
 
     printf("Rank %d done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", world_rank, t, bw);
+
+    if (isDest) {
+	if (memcmp(local_buf, remote_buf, buf_size) != 0) {
+	    printf("Rank %d Received invalid data\n", world_rank);
+	}
+    }
 
     return 0;
 }
