@@ -12,6 +12,7 @@
 #define MR_RESPONSE 11
 #define RPUT_DONE 12
 #define RECV_MESSAGE 13
+#define JOB_DONE 14
 
 #define MAX_SHORT_MESSAGE_LENGTH 128
 
@@ -46,6 +47,8 @@ struct optiq_pami_extra {
     struct optiq_rput_cookie *rput_cookie;
 
     std::vector<struct optiq_message_header> forward_messages;
+
+    int remaining_jobs;
 };
 
 struct optiq_pami_transport {
@@ -72,6 +75,16 @@ void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t resu
 int optiq_pami_send(pami_context_t context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t endpoint, void *cookie);
 
 void optiq_recv_message_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_job_done_notification_fn (
         pami_context_t    context,      /**< IN: PAMI context */
         void            *cookie,       /**< IN: dispatch cookie */
         const void      *header,       /**< IN: header address */

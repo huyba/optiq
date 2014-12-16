@@ -18,6 +18,11 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+    if (world_size < 8) {
+	printf("Need at least 8 nodes\n");
+	exit(0);
+    }
+
     int source = 0, dest = 0, mid = 0;
     bool isSource = false, isDest = false, isMid = false;
     int next_dest = 0;
@@ -25,20 +30,37 @@ int main(int argc, char **argv)
     if (world_rank == 0) {
 	isSource = true;
 	source = 0;
-	dest = 3;
+	dest = 4;
 	next_dest = 1;
     }
     if (world_rank == 1) {
 	isMid = true;
 	next_dest = 3;
     }
-    if (world_rank  == 3) {
+    if (world_rank == 3) {
+	isMid = true;
+	next_dest = 5;
+    }
+    if (world_rank == 5) {
+        isMid = true;
+        next_dest = 7;
+    }
+    if (world_rank == 7) {
+        isMid = true;
+        next_dest = 6;
+    }
+    if (world_rank == 6) {
+        isMid = true;
+        next_dest = 4;
+    }
+    if (world_rank  == 4) {
 	isDest = true;
     }
 
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)malloc(sizeof(struct optiq_pami_transport));
 
     pami_transport->extra.forward_messages.clear();
+    pami_transport->extra.remaining_jobs = 1;
 
     struct optiq_rput_cookie rput_cookie;
     rput_cookie.val = 1;
@@ -46,7 +68,7 @@ int main(int argc, char **argv)
     rput_cookie.pami_transport = pami_transport;
     pami_transport->extra.rput_cookie = &rput_cookie;
 
-    int buf_size = 4 * 1024 * 1024;
+    int buf_size = 1 * 1024 * 1024;
     char *remote_buf = (char *) malloc(buf_size);
     char *local_buf = (char *) malloc(buf_size);
 
@@ -85,7 +107,7 @@ int main(int argc, char **argv)
 
     optiq_pami_init(pami_transport);
 
-    int nbytes = 128 * 1024;
+    int nbytes = 32 * 1024;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -93,7 +115,7 @@ int main(int argc, char **argv)
 
     if (isSource) {
 	header.source = 0;
-	header.dest = 3;
+	header.dest = 4;
 	header.length = nbytes;
 	header.flow_id = 0;
  
@@ -122,6 +144,11 @@ int main(int argc, char **argv)
 	    /*Notify that rput is done*/
 	    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, &header, sizeof(struct optiq_message_header), pami_transport->endpoints[next_dest]);
 	}
+
+	/*Wait until job is done*/
+	while(pami_transport->extra.remaining_jobs > 0) {
+	    PAMI_Context_advance(pami_transport->context, 100);
+	}
     }
 
     if (isMid) {
@@ -129,7 +156,13 @@ int main(int argc, char **argv)
 	    /*Wait if there is no message to forward*/
 	    while(pami_transport->extra.forward_messages.size() == 0) {
 		PAMI_Context_advance(pami_transport->context, 100);
+		if (pami_transport->extra.remaining_jobs <= 0) {
+		    break;
+		}
 	    }
+	    if (pami_transport->extra.remaining_jobs == 0) {
+                break;
+            }
 
 	    /*Forward message as request*/
 	    struct optiq_message_header header;
@@ -165,6 +198,9 @@ int main(int argc, char **argv)
         while(rput_cookie.val > 0) {
             PAMI_Context_advance(pami_transport->context, 100);
         }
+	for (int i = 0; i < world_size; i++) {
+	    optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
+	}
     }
 
     uint64_t end = GetTimeBase();
@@ -174,6 +210,8 @@ int main(int argc, char **argv)
 
     if (isSource || isDest || isMid) {
         printf("Rank %d done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", world_rank, t, bw);
+    } else {
+	printf("Rank %d not involved into the test\n", world_rank);
     }
 
     if (isDest) {

@@ -73,6 +73,19 @@ void optiq_pami_init(struct optiq_pami_transport *pami_transport)
     }
 
     /*Job done notification*/
+    fn.p2p = optiq_recv_job_done_notification_fn;
+    result = PAMI_Dispatch_set (pami_transport->context,
+            JOB_DONE,
+            fn,
+            (void *) pami_transport,
+            options);
+
+    assert(result == PAMI_SUCCESS);
+    if (result != PAMI_SUCCESS) {
+        return;
+    }
+
+    /*Rput done notification*/
     fn.p2p = optiq_recv_rput_done_notification_fn;
     result = PAMI_Dispatch_set (pami_transport->context,
             RPUT_DONE,
@@ -203,6 +216,13 @@ void optiq_recv_message_fn(pami_context_t context, void *cookie, const void *hea
 	const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
 
+}
+
+void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+
+    pami_transport->extra.remaining_jobs--;
 }
 
 void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
