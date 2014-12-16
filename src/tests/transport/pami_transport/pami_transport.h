@@ -33,23 +33,23 @@ struct optiq_pami_transport;
 
 struct optiq_rput_cookie {
     struct optiq_pami_transport *pami_transport;
-    int dest;
-    int val;
-    int mr_val;
+    struct optiq_message_header *header;
 };
 
 struct optiq_pami_extra {
-
-    struct optiq_memregion *local_mr;
     struct optiq_memregion *near_mr;
     struct optiq_memregion *far_mr;
 
-    struct optiq_rput_cookie *rput_cookie;
+    std::vector<struct optiq_rput_cookie *> rput_cookies;
 
-    std::vector<struct optiq_message_header> forward_messages;
+    std::vector<struct optiq_message_header *> forward_messages;
+    std::vector<struct optiq_message_header *> message_headers;
+    std::vector<struct optiq_message_header *> local_messages;
 
+    int mr_val;
     int remaining_jobs;
     int *next_dest;
+    int expecting_length;
 };
 
 struct optiq_pami_transport {

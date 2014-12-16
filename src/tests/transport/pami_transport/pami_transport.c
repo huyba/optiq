@@ -132,7 +132,15 @@ void optiq_pami_rput_done_fn(pami_context_t context, void *cookie, pami_result_t
 void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_t result)
 {   
     struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)cookie;
-    rput_cookie->val--;
+    struct optiq_message_header *header = rput_cookie->header;
+    struct optiq_pami_transport *pami_transport = rput_cookie->pami_transport;
+
+    /*Notify that rput is done*/
+    int dest = pami_transport->extra.next_dest[header->flow_id];
+    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
+
+    pami_transport->extra.rput_cookies.push_back(rput_cookie);
+    pami_transport->extra.message_headers.push_back(header);
 }
 
 int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie)
@@ -228,26 +236,36 @@ void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, c
 void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
-    struct optiq_rput_cookie *rput_cookie = pami_transport->extra.rput_cookie;
+
+    struct optiq_message_header *message_header = pami_transport->extra.message_headers.back();
+    pami_transport->extra.message_headers.pop_back();
+
+    memcpy(message_header, data, data_size);
 
     /*If the message is not for itself*/
-    struct optiq_message_header *message_header = (struct optiq_message_header *)data;
-
     if(pami_transport->rank != message_header->dest) {
-	pami_transport->extra.forward_messages.push_back(*message_header);
-    }
+	pami_transport->extra.forward_messages.push_back(message_header);
+    } else {
+	pami_transport->extra.expecting_length -= message_header->length ;
 
-    rput_cookie->val--;
+	if (pami_transport->extra.expecting_length == 0) {
+	    for (int i = 0; i < pami_transport->size; i++) {
+		optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
+	    }
+	}
+    }
 }
 
 void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    memcpy(pami_transport->extra.far_mr, data, data_size);
-    pami_transport->extra.rput_cookie->mr_val--;
+    printf("Rank %d recv a response from %d\n", pami_transport->rank, origin);
 
-    //printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.far_mr->offset);
+    memcpy(pami_transport->extra.far_mr, data, data_size);
+    pami_transport->extra.mr_val--;
+
+    printf("Rank %d done pusbh back\n", pami_transport->rank);
 }
 
 void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -256,7 +274,7 @@ void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void 
 
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, pami_transport->extra.near_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
-    //printf("Rank %d sent a response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.near_mr->offset);
+    printf("Rank %d sent a response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.near_mr->offset);
 
     pami_transport->extra.near_mr->offset += (*(int *)data);
 }
