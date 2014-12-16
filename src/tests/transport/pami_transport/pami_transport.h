@@ -49,6 +49,7 @@ struct optiq_pami_extra {
     std::vector<struct optiq_message_header> forward_messages;
 
     int remaining_jobs;
+    int *next_dest;
 };
 
 struct optiq_pami_transport {
