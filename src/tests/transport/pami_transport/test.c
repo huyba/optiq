@@ -9,6 +9,31 @@
 
 using namespace std;
 
+void flow_create(int world_rank, int *next_dest)
+{
+    if (world_rank == 0) {
+        next_dest[0] = 1;
+    }
+    if (world_rank == 1) {
+        next_dest[0] = 3;
+    }
+    if (world_rank == 3) {
+        next_dest[0] = 5;
+    }
+    if (world_rank == 5) {
+        next_dest[0] = 7;
+    }
+    if (world_rank == 7) {
+        next_dest[0] = 6;
+    }
+    if (world_rank == 6) {
+        next_dest[0] = 4;
+    }
+    if (world_rank == 4) {
+        next_dest[0] = 2;
+    }
+}
+
 int main(int argc, char **argv)
 {
     int world_rank, world_size;
@@ -25,35 +50,32 @@ int main(int argc, char **argv)
 
     int source = 0, dest = 0, mid = 0;
     bool isSource = false, isDest = false, isMid = false;
-    int next_dest = 0;
+    int next_dest[1];
+
+    flow_create(world_rank, next_dest);
 
     if (world_rank == 0) {
 	isSource = true;
-	source = 0;
-	dest = 4;
-	next_dest = 1;
     }
     if (world_rank == 1) {
 	isMid = true;
-	next_dest = 3;
     }
     if (world_rank == 3) {
 	isMid = true;
-	next_dest = 5;
     }
     if (world_rank == 5) {
         isMid = true;
-        next_dest = 7;
     }
     if (world_rank == 7) {
         isMid = true;
-        next_dest = 6;
     }
     if (world_rank == 6) {
         isMid = true;
-        next_dest = 4;
     }
-    if (world_rank  == 4) {
+    if (world_rank == 4) {
+        isMid = true;
+    }
+    if (world_rank  == 2) {
 	isDest = true;
     }
 
@@ -115,7 +137,7 @@ int main(int argc, char **argv)
 
     if (isSource) {
 	header.source = 0;
-	header.dest = 4;
+	header.dest = 2;
 	header.length = nbytes;
 	header.flow_id = 0;
  
@@ -125,14 +147,15 @@ int main(int argc, char **argv)
 
 	    /*Notify the size, ask for mem region*/
 	    header.length = nbytes;
-	    optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, NULL, 0, &nbytes, sizeof(int), pami_transport->endpoints[next_dest]);
+	    dest = next_dest[header.flow_id];
+	    optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, NULL, 0, &nbytes, sizeof(int), pami_transport->endpoints[dest]);
 
 	    while(rput_cookie.mr_val > 0) {
 		PAMI_Context_advance(pami_transport->context, 100);
 	    }
 
 	    /*Actual rput data*/ 
-	    optiq_pami_rput(pami_transport->client, pami_transport->context, &local_mr.mr, local_mr.offset, nbytes, pami_transport->endpoints[next_dest], &pami_transport->extra.far_mr->mr, pami_transport->extra.far_mr->offset, &rput_cookie);
+	    optiq_pami_rput(pami_transport->client, pami_transport->context, &local_mr.mr, local_mr.offset, nbytes, pami_transport->endpoints[dest], &pami_transport->extra.far_mr->mr, pami_transport->extra.far_mr->offset, &rput_cookie);
 
 	    memcpy(&header.mem, pami_transport->extra.far_mr, sizeof(struct optiq_memregion));
 
@@ -142,7 +165,7 @@ int main(int argc, char **argv)
 	    }
 
 	    /*Notify that rput is done*/
-	    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, &header, sizeof(struct optiq_message_header), pami_transport->endpoints[next_dest]);
+	    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, &header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
 	}
 
 	/*Wait until job is done*/
@@ -173,13 +196,14 @@ int main(int argc, char **argv)
             rput_cookie.val = 1;
 
             /*Notify the size, ask for mem region*/
-            optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, NULL, 0, &header.length, sizeof(int), pami_transport->endpoints[next_dest]);
+	    dest = next_dest[header.flow_id];
+            optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, NULL, 0, &header.length, sizeof(int), pami_transport->endpoints[dest]);
             while(rput_cookie.mr_val > 0) {
                 PAMI_Context_advance(pami_transport->context, 100);
             }
 
             /*Actual rput data*/
-            optiq_pami_rput(pami_transport->client, pami_transport->context, &header.mem.mr, header.mem.offset, header.length, pami_transport->endpoints[next_dest], &pami_transport->extra.far_mr->mr, pami_transport->extra.far_mr->offset, &rput_cookie);
+            optiq_pami_rput(pami_transport->client, pami_transport->context, &header.mem.mr, header.mem.offset, header.length, pami_transport->endpoints[dest], &pami_transport->extra.far_mr->mr, pami_transport->extra.far_mr->offset, &rput_cookie);
 
             memcpy(&header.mem, pami_transport->extra.far_mr, sizeof(struct optiq_memregion));
 
@@ -189,7 +213,7 @@ int main(int argc, char **argv)
             }
 
             /*Notify that rput is done*/
-            optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, &header, sizeof(struct optiq_message_header), pami_transport->endpoints[next_dest]);
+            optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, &header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
 	}
     }
 
