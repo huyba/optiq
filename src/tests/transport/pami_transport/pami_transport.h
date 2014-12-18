@@ -19,6 +19,7 @@
 struct optiq_memregion {
     pami_memregion_t mr;
     int offset;
+    int header_id;
 };
 
 struct optiq_message_header {
@@ -27,6 +28,7 @@ struct optiq_message_header {
     int dest;
     int flow_id;
     struct optiq_memregion mem;
+    int header_id;
 };
 
 struct optiq_pami_transport;
@@ -41,19 +43,25 @@ struct optiq_pami_extra {
 
     struct optiq_memregion *local_mr;
     struct optiq_memregion *near_mr;
-    struct optiq_memregion *far_mr;
+    //struct optiq_memregion *far_mr;
 
     std::vector<struct optiq_rput_cookie *> rput_cookies;
+    std::vector<struct optiq_rput_cookie *> complete_rputs;
 
     std::vector<struct optiq_message_header *> forward_headers;
     std::vector<struct optiq_message_header *> message_headers;
     std::vector<struct optiq_message_header *> local_headers;
+    std::vector<struct optiq_message_header *> processing_headers;
+
+    std::vector<struct optiq_memregion> mr_responses;
+
     int remaining_jobs;
     int *next_dest;
 
-    int val;
     int mr_val;
     int expecting_length;
+
+    int global_header_id;
 };
 
 struct optiq_pami_transport {

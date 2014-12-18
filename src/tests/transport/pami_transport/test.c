@@ -48,32 +48,13 @@ int main(int argc, char **argv)
 	exit(0);
     }
 
-    int source = 0, dest = 0, mid = 0;
-    bool isSource = false, isDest = false, isMid = false;
+    bool isSource = false, isDest = false;
     int next_dest[1];
 
     flow_create(world_rank, next_dest);
 
     if (world_rank == 0) {
 	isSource = true;
-    }
-    if (world_rank == 1) {
-	isMid = true;
-    }
-    if (world_rank == 3) {
-	isMid = true;
-    }
-    if (world_rank == 5) {
-	isMid = true;
-    }
-    if (world_rank == 7) {
-	isMid = true;
-    }
-    if (world_rank == 6) {
-	isMid = true;
-    }
-    if (world_rank == 4) {
-	isMid = true;
     }
     if (world_rank  == 2) {
 	isDest = true;
@@ -115,7 +96,7 @@ int main(int argc, char **argv)
     pami_transport->extra.local_mr = &local_mr;
     pami_transport->extra.local_mr->offset = 0;
 
-    pami_transport->extra.far_mr = &far_mr;
+    //pami_transport->extra.far_mr = &far_mr;
 
     size_t bytes;
     pami_result_t result = PAMI_Memregion_create (pami_transport->context, remote_buf, buf_size, &bytes, &near_mr.mr);
@@ -135,6 +116,8 @@ int main(int argc, char **argv)
     }
 
     pami_transport->extra.expecting_length = buf_size;
+    pami_transport->extra.global_header_id = 0;
+
     optiq_pami_init(pami_transport);
 
     int nbytes = 32 * 1024;
@@ -149,9 +132,9 @@ int main(int argc, char **argv)
 	    pami_transport->extra.message_headers.pop_back();
 
 	    header->length = nbytes;
-            header->source = 0;
-            header->dest = 2;
-            header->flow_id = 0;
+	    header->source = 0;
+	    header->dest = 2;
+	    header->flow_id = 0;
 
 	    memcpy(&header->mem, &local_mr, sizeof(struct optiq_memregion));
 	    header->mem.offset = offset;
@@ -160,67 +143,91 @@ int main(int argc, char **argv)
 	}
     }
 
-    if (isSource || isMid || isDest) {
-	while (pami_transport->extra.remaining_jobs > 0) {
-	    while (pami_transport->extra.local_headers.size() == 0 && pami_transport->extra.forward_headers.size() == 0) {
-		PAMI_Context_advance(pami_transport->context, 100);
+    while (pami_transport->extra.remaining_jobs > 0) 
+    {
+	PAMI_Context_advance(pami_transport->context, 100);
 
-		if (pami_transport->extra.remaining_jobs == 0) {
-		    break;
-		}
+	/*If all jobs are done*/
+	if (pami_transport->extra.remaining_jobs == 0) {
+            break;
+        }
 
-		/*This is for the dest node to notify that its job is done*/
-		if (isDest && pami_transport->extra.expecting_length == 0) {
-		    for (int i = 0; i < world_size; i++) {
-			optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
-		    }
-		    pami_transport->extra.expecting_length = -1;
-		}
-	    }
-	    if (pami_transport->extra.remaining_jobs == 0) {
-                break;
+	/*If a destination receives all of its data*/
+	if (isDest && pami_transport->extra.expecting_length == 0) {
+            for (int i = 0; i < world_size; i++) {
+                optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
             }
+            pami_transport->extra.expecting_length = -1;
+        }
 
+	/*If there is message to send*/
+	if (pami_transport->extra.local_headers.size() + pami_transport->extra.forward_headers.size() > 0)
+	{
 	    struct optiq_message_header *header = NULL;
-	    if (pami_transport->extra.local_headers.size() > 0) {
+	    if (pami_transport->extra.local_headers.size() > 0) 
+	    {
 		header = pami_transport->extra.local_headers.front();
 		pami_transport->extra.local_headers.erase(pami_transport->extra.local_headers.begin());
-	    } else if (pami_transport->extra.forward_headers.size() > 0) {
+	    } 
+	    else if (pami_transport->extra.forward_headers.size() > 0) 
+	    {
 		header = pami_transport->extra.forward_headers.front();
 		pami_transport->extra.forward_headers.erase(pami_transport->extra.forward_headers.begin());
 	    }
 
-	    struct optiq_rput_cookie *rput_cookie = pami_transport->extra.rput_cookies.back();
-	    pami_transport->extra.rput_cookies.pop_back();
-
 	    pami_transport->extra.mr_val = 1;
-	    pami_transport->extra.val = 1;
+
+	    header->header_id = pami_transport->extra.global_header_id;
+	    pami_transport->extra.global_header_id++;
+	    pami_transport->extra.processing_headers.push_back(header);
 
 	    /*Notify the size, ask for mem region*/
-	    dest = next_dest[header->flow_id];
-	    optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, NULL, 0, &header->length, sizeof(int), pami_transport->endpoints[dest]);
+            int dest = next_dest[header->flow_id];
+	    optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, &header->header_id, sizeof(int), &header->length, sizeof(int), pami_transport->endpoints[dest]);
+	}
+	
+	if (pami_transport->extra.mr_responses.size() > 0) 
+	{
+	    struct optiq_memregion far_mr = pami_transport->extra.mr_responses.front();
+	    pami_transport->extra.mr_responses.erase(pami_transport->extra.mr_responses.begin());
 
-	    while(pami_transport->extra.mr_val > 0) {
-		PAMI_Context_advance(pami_transport->context, 100);
+	    /*Search for the message with the same header_id*/
+	    struct optiq_message_header *header = NULL;
+	    for (int i = 0; i < pami_transport->extra.processing_headers.size(); i++) {
+		if (pami_transport->extra.processing_headers[i]->header_id == far_mr.header_id) {
+		    header = pami_transport->extra.processing_headers[i];
+		    pami_transport->extra.processing_headers.erase(pami_transport->extra.processing_headers.begin() + i);
+		    break;
+		}
 	    }
-
+	    
 	    /*Actual rput data*/
+	    struct optiq_rput_cookie *rput_cookie = pami_transport->extra.rput_cookies.back();
+            pami_transport->extra.rput_cookies.pop_back();
+
+	    int dest = pami_transport->extra.next_dest[header->flow_id];
 	    rput_cookie->message_header = header;
 	    rput_cookie->dest = dest;
-	    optiq_pami_rput(pami_transport->client, pami_transport->context, &header->mem.mr, header->mem.offset, header->length, pami_transport->endpoints[dest], &pami_transport->extra.far_mr->mr, pami_transport->extra.far_mr->offset, rput_cookie);
 
-	    memcpy(&header->mem, pami_transport->extra.far_mr, sizeof(struct optiq_memregion));
+	    optiq_pami_rput(pami_transport->client, pami_transport->context, &header->mem.mr, header->mem.offset, header->length, pami_transport->endpoints[dest], &far_mr.mr, far_mr.offset, rput_cookie);
 
-	    /*Check to see if the rput is done*/
-	    while(pami_transport->extra.val > 0) {
-		PAMI_Context_advance(pami_transport->context, 100);
-	    }
+	    /*Now the header will contain the far memregion instead of local memregion*/
+	    memcpy(&header->mem, &far_mr, sizeof(struct optiq_memregion));
+	}
+
+	/*If a put is done, notify the remote destination*/
+	if (pami_transport->extra.complete_rputs.size() > 0) 
+	{
+	    struct optiq_rput_cookie *complete_rput = pami_transport->extra.complete_rputs.front();
+	    pami_transport->extra.complete_rputs.erase(pami_transport->extra.complete_rputs.begin());
+
+	    struct optiq_message_header *complete_header = complete_rput->message_header;
 
 	    /*Notify that rput is done*/
-	    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
+	    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, complete_header, sizeof(struct optiq_message_header), pami_transport->endpoints[complete_rput->dest]);
 
-	    pami_transport->extra.message_headers.push_back(header);
-	    pami_transport->extra.rput_cookies.push_back(rput_cookie);
+	    pami_transport->extra.message_headers.push_back(complete_header);
+	    pami_transport->extra.rput_cookies.push_back(complete_rput);
 	}
     }
 
@@ -229,11 +236,9 @@ int main(int argc, char **argv)
     double t = (double)(end-start)/1.6e3;
     double bw = buf_size/t/1024/1024*1e6;
 
-    if (isSource || isDest || isMid) {
+    if (isSource || isDest) {
 	printf("Rank %d done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", world_rank, t, bw);
-    } else {
-	printf("Rank %d not involved into the test\n", world_rank);
-    }
+    } 
 
     if (isDest) {
 	if (memcmp(local_buf, remote_buf, buf_size) != 0) {

@@ -132,7 +132,7 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
     struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)cookie;
     struct optiq_pami_transport *pami_transport = rput_cookie->pami_transport;
 
-    pami_transport->extra.val--;
+    pami_transport->extra.complete_rputs.push_back(rput_cookie); 
 }
 
 int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie)
@@ -186,8 +186,6 @@ int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *heade
 
 void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result)
 {
-    int *val = (int *)cookie;
-    (*val)--;
 }
 
 int optiq_pami_send(pami_context_t context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t endpoint, void *cookie)
@@ -240,16 +238,16 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
     } else {
 	pami_transport->extra.expecting_length -= message_header->length;
     }
-
-    pami_transport->extra.val--;
 }
 
 void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    memcpy(pami_transport->extra.far_mr, data, data_size);
-    pami_transport->extra.mr_val--;
+    pami_transport->extra.mr_responses.push_back(*(struct optiq_memregion *)data);
+
+    //memcpy(pami_transport->extra.far_mr, data, data_size);
+    //pami_transport->extra.mr_val--;
 
     //printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.far_mr->offset);
 }
@@ -257,6 +255,8 @@ void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void 
 void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+
+    pami_transport->extra.near_mr->header_id = *((int*)header);
 
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, pami_transport->extra.near_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
