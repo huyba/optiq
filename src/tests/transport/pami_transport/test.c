@@ -134,6 +134,7 @@ int main(int argc, char **argv)
 	printf("Registered less\n");
     }
 
+    pami_transport->extra.expecting_length = buf_size;
     optiq_pami_init(pami_transport);
 
     int nbytes = 32 * 1024;
@@ -159,13 +160,21 @@ int main(int argc, char **argv)
 	}
     }
 
-    if (isSource || isMid) {
+    if (isSource || isMid || isDest) {
 	while (pami_transport->extra.remaining_jobs > 0) {
 	    while (pami_transport->extra.local_headers.size() == 0 && pami_transport->extra.forward_headers.size() == 0) {
 		PAMI_Context_advance(pami_transport->context, 100);
 
 		if (pami_transport->extra.remaining_jobs == 0) {
 		    break;
+		}
+
+		/*This is for the dest node to notify that its job is done*/
+		if (isDest && pami_transport->extra.expecting_length == 0) {
+		    for (int i = 0; i < world_size; i++) {
+			optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
+		    }
+		    pami_transport->extra.expecting_length = -1;
 		}
 	    }
 	    if (pami_transport->extra.remaining_jobs == 0) {
@@ -212,16 +221,6 @@ int main(int argc, char **argv)
 
 	    pami_transport->extra.message_headers.push_back(header);
 	    pami_transport->extra.rput_cookies.push_back(rput_cookie);
-	}
-    }
-
-    if (isDest) {
-	pami_transport->extra.expecting_length = buf_size;
-	while(pami_transport->extra.expecting_length > 0) {
-	    PAMI_Context_advance(pami_transport->context, 100);
-	}
-	for (int i = 0; i < world_size; i++) {
-	    optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
 	}
     }
 
