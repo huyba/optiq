@@ -132,9 +132,6 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
     struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)cookie;
     struct optiq_pami_transport *pami_transport = rput_cookie->pami_transport;
 
-    /*Notify that rput is done*/
-    //optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, rput_cookie->message_header, sizeof(struct optiq_message_header), pami_transport->endpoints[rput_cookie->dest]);
-
     pami_transport->extra.val--;
 }
 
