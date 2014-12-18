@@ -34,6 +34,7 @@ struct optiq_pami_transport;
 struct optiq_rput_cookie {
     struct optiq_pami_transport *pami_transport;
     struct optiq_message_header *message_header;
+    int dest;
 };
 
 struct optiq_pami_extra {

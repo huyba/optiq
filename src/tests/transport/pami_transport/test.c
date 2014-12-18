@@ -69,6 +69,7 @@ void forward(struct optiq_pami_transport *pami_transport) {
 
 	/*Actual rput data*/
 	rput_cookie->message_header = header;
+	rput_cookie->dest = dest;
 	optiq_pami_rput(pami_transport->client, pami_transport->context, &header->mem.mr, header->mem.offset, header->length, pami_transport->endpoints[dest], &pami_transport->extra.far_mr->mr, pami_transport->extra.far_mr->offset, rput_cookie);
 
 	memcpy(&header->mem, pami_transport->extra.far_mr, sizeof(struct optiq_memregion));
@@ -192,7 +193,27 @@ int main(int argc, char **argv)
     uint64_t start = GetTimeBase();
 
     if (isSource) {
-	for (int sent_bytes = 0; sent_bytes < buf_size; sent_bytes += nbytes) {
+	for (int offset = 0; offset < buf_size; offset += nbytes) {
+	    struct optiq_message_header *header = pami_transport->extra.message_headers.back();
+	    pami_transport->extra.message_headers.pop_back();
+
+	    header->length = nbytes;
+            header->source = 0;
+            header->dest = 2;
+            header->flow_id = 0;
+
+	    memcpy(&header->mem, &local_mr, sizeof(struct optiq_memregion));
+	    header->mem.offset = offset;
+
+	    pami_transport->extra.local_headers.push_back(header);
+	}
+    }
+
+    if (isSource) {
+	while (pami_transport->extra.local_headers.size() > 0) {
+	    struct optiq_message_header *header = pami_transport->extra.local_headers.front();
+	    pami_transport->extra.local_headers.erase(pami_transport->extra.local_headers.begin());
+
 	    struct optiq_rput_cookie *rput_cookie = pami_transport->extra.rput_cookies.back();
 	    pami_transport->extra.rput_cookies.pop_back();
 
@@ -200,13 +221,6 @@ int main(int argc, char **argv)
 	    pami_transport->extra.val = 1;
 
 	    /*Notify the size, ask for mem region*/
-	    struct optiq_message_header *header = pami_transport->extra.message_headers.back();
-	    pami_transport->extra.message_headers.pop_back();
-	    header->length = nbytes;
-	    header->source = 0;
-	    header->dest = 2;
-	    header->flow_id = 0;
-
 	    dest = next_dest[header->flow_id];
 	    optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, NULL, 0, &nbytes, sizeof(int), pami_transport->endpoints[dest]);
 
@@ -216,6 +230,7 @@ int main(int argc, char **argv)
 
 	    /*Actual rput data*/
 	    rput_cookie->message_header = header;
+	    rput_cookie->dest = dest;
 	    optiq_pami_rput(pami_transport->client, pami_transport->context, &local_mr.mr, local_mr.offset, nbytes, pami_transport->endpoints[dest], &pami_transport->extra.far_mr->mr, pami_transport->extra.far_mr->offset, rput_cookie);
 
 	    memcpy(&header->mem, pami_transport->extra.far_mr, sizeof(struct optiq_memregion));
@@ -227,6 +242,9 @@ int main(int argc, char **argv)
 
 	    /*Notify that rput is done*/
 	    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
+
+	    pami_transport->extra.message_headers.push_back(header);
+	    pami_transport->extra.rput_cookies.push_back(rput_cookie);
 	}
 
 	/*Wait until job is done*/
