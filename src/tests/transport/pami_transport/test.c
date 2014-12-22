@@ -22,22 +22,28 @@ void flow_create(int world_rank, int *next_dest)
     if (world_rank == 3) {
 	next_dest[0] = 5;
 	next_dest[1] = 1;
+	next_dest[3] = 1;
     }
     if (world_rank == 5) {
 	next_dest[0] = 7;
 	next_dest[1] = 3;
+	next_dest[3] = 3;
     }
     if (world_rank == 7) {
 	next_dest[0] = 6;
 	next_dest[1] = 5;
+	next_dest[3] = 5;
     }
     if (world_rank == 6) {
 	next_dest[0] = 4;
 	next_dest[1] = 7;
+	next_dest[2] = 4;
+	next_dest[3] = 7;
     }
     if (world_rank == 4) {
 	next_dest[0] = 2;
 	next_dest[1] = 6;
+	next_dest[2] = 2;
     }
     if (world_rank == 2) {
 	next_dest[1] = 4;
@@ -74,7 +80,7 @@ int main(int argc, char **argv)
     }
 
     /*Start the configuration for the test*/
-    int next_dest[2];
+    int next_dest[10];
 
     flow_create(world_rank, next_dest);
 
@@ -89,13 +95,27 @@ int main(int argc, char **argv)
 	flow_id[0] = 0;
 	flow_id[1] = 1;
 	num_dests = 2;
-	final_dest[0] = 1;
-	final_dest[1] = 2;
+	final_dest[0] = 2;
+	final_dest[1] = 1;
+    }
+
+    if (world_rank == 6) {
+	isSource = true;
+        flow_id[0] = 2;
+        flow_id[1] = 3;
+        num_dests = 2;
+        final_dest[0] = 2;
+        final_dest[1] = 1;
     }
 
     if (world_rank == 2 || world_rank == 1) {
 	isDest = true;
     }
+
+    int nbytes = 32 * 1024;
+    int buf_size = 1 * 1024 * 1024;
+    int near_buf_size = 1024 * 1024 * 1024;
+    
     /*End the configuration for the test*/
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -117,8 +137,6 @@ int main(int argc, char **argv)
 	pami_transport->extra.message_headers.push_back(message_header);
     }
 
-    int buf_size = 1 * 1024 * 1024;
-    int near_buf_size = 1024 * 1024 * 1024;
     char *near_buf = (char *) malloc(near_buf_size);
     char *local_buf = (char *) malloc(buf_size);
 
@@ -158,8 +176,6 @@ int main(int argc, char **argv)
     }
 
     optiq_pami_init(pami_transport);
-
-    int nbytes = 16 * 1024;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
