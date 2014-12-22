@@ -21,7 +21,7 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = pami_transport.o
+OBJ = pami_transport.o util.o datagen.o topology.o multibfs.o
 
 all: $(OBJ) mpi copy
 

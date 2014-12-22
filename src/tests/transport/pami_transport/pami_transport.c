@@ -233,10 +233,10 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
 
     memcpy(message_header, data, data_size);
 
-    if(pami_transport->rank != message_header->dest) {
-	pami_transport->extra.forward_headers.push_back(message_header);
-    } else {
+    if(pami_transport->rank == message_header->dest) {
 	pami_transport->extra.expecting_length -= message_header->length;
+    } else {
+	pami_transport->extra.forward_headers.push_back(message_header);
     }
 }
 
@@ -249,7 +249,7 @@ void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void 
     //memcpy(pami_transport->extra.far_mr, data, data_size);
     //pami_transport->extra.mr_val--;
 
-    //printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.far_mr->offset);
+    //printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, ((struct optiq_memregion *)data)->offset);
 }
 
 void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -263,4 +263,8 @@ void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void 
     //printf("Rank %d sent a response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.near_mr->offset);
 
     pami_transport->extra.near_mr->offset += (*(int *)data);
+
+    if (pami_transport->extra.near_mr->offset >= 1024 * 1024 * 1024) {
+	pami_transport->extra.near_mr->offset = 0;
+    }
 }
