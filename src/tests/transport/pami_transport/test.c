@@ -6,6 +6,7 @@
 #include <mpi.h>
 
 #include "multibfs.h"
+#include "topology.h"
 #include "pami_transport.h"
 
 using namespace std;
@@ -80,36 +81,54 @@ int main(int argc, char **argv)
     }
 
     /*Start the configuration for the test*/
-    int next_dest[10];
+    int num_dims = 5;
+    int size[5];
+    optiq_topology_get_size_bgq(size);
 
-    flow_create(world_rank, next_dest);
+    int num_dests = 1;
+    int dests[1] = {16};
 
-    int flow_id[2], final_dest[2];
-    int num_dests = 0;
-    int num_jobs = 2;
-    bool isSource = false, isDest = false;
-    int expecting_length = 1024 * 1024;
+    std::vector<struct path> complete_paths;
+    build_paths(complete_paths, num_dims, size, num_dests, dests);
 
     if (world_rank == 0) {
-	isSource = true;
-	flow_id[0] = 0;
-	flow_id[1] = 1;
-	num_dests = 2;
-	final_dest[0] = 2;
-	final_dest[1] = 1;
+	optiq_path_print_paths(complete_paths);
     }
 
-    if (world_rank == 6) {
-	isSource = true;
-        flow_id[0] = 2;
-        flow_id[1] = 3;
-        num_dests = 2;
-        final_dest[0] = 2;
-        final_dest[1] = 1;
+    int *next_dest = (int*)malloc(sizeof(int) * complete_paths.size());
+
+    build_next_dest(world_rank, next_dest, complete_paths);
+
+    int *flow_id = (int *)malloc(sizeof(int) * num_dests);
+    int *final_dest = (int *)malloc(sizeof(int) * num_dests);
+
+    bool isSource = false, isDest = false;
+    int num_jobs = 1;
+    int expecting_length = 31 * 1024 * 1024;
+
+    int index = 0;
+    for (int i = 0; i < complete_paths.size(); i++) {
+	if (complete_paths[i].arcs.front().u == world_rank) {
+	    isDest = true;
+	}
+
+	if (complete_paths[i].arcs.back().v == world_rank) {
+	    isSource = true;
+	    flow_id[index] = i;
+	    final_dest[index] = complete_paths[i].arcs.front().u;
+	    index++;
+	}
     }
 
-    if (world_rank == 2 || world_rank == 1) {
-	isDest = true;
+    if (isDest) {
+	printf("Rank %d is dest\n", world_rank);
+    }
+
+    if (isSource) {
+	printf("Rank %d is source\n", world_rank);
+	for (int i = 0; i < num_dests; i++) {
+	    printf("Rank %d is source flow_id = %d, dest = %d\n", world_rank, flow_id[i], final_dest[i]);
+	}
     }
 
     int nbytes = 32 * 1024;
@@ -120,6 +139,7 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
+    /*Create pami_transport and related variables: rput_cookies, message_headers*/
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
 
     int num_rput_cookies = 512;
@@ -176,6 +196,10 @@ int main(int argc, char **argv)
     }
 
     optiq_pami_init(pami_transport);
+
+    if (world_rank == 0) {
+	printf("num_jobs = %d, expecting_length = %d\n", pami_transport->extra.remaining_jobs, pami_transport->extra.expecting_length);
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
