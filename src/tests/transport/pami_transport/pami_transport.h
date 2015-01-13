@@ -59,6 +59,8 @@ struct optiq_pami_extra {
     int *next_dest;
 
     int expecting_length;
+    int sent_bytes;
+    int *recv_bytes;
     int global_header_id;
 };
 

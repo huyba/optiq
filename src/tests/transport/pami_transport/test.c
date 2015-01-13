@@ -91,9 +91,11 @@ int main(int argc, char **argv)
     std::vector<struct path> complete_paths;
     build_paths(complete_paths, num_dims, size, num_dests, dests);
 
-    if (world_rank == 0) {
+    /*if (world_rank == 0) {
 	optiq_path_print_paths(complete_paths);
-    }
+    }*/
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     int *next_dest = (int*)malloc(sizeof(int) * complete_paths.size());
 
@@ -104,7 +106,7 @@ int main(int argc, char **argv)
 
     bool isSource = false, isDest = false;
     int num_jobs = 1;
-    int expecting_length = 31 * 1024 * 1024;
+    int expecting_length = 32 * 1024 * 1024;
 
     int index = 0;
     for (int i = 0; i < complete_paths.size(); i++) {
@@ -120,7 +122,7 @@ int main(int argc, char **argv)
 	}
     }
 
-    if (isDest) {
+    /*if (isDest) {
 	printf("Rank %d is dest\n", world_rank);
     }
 
@@ -129,12 +131,12 @@ int main(int argc, char **argv)
 	for (int i = 0; i < num_dests; i++) {
 	    printf("Rank %d is source flow_id = %d, dest = %d\n", world_rank, flow_id[i], final_dest[i]);
 	}
-    }
+    }*/
 
     int nbytes = 32 * 1024;
     int buf_size = 1 * 1024 * 1024;
     int near_buf_size = 1024 * 1024 * 1024;
-    
+
     /*End the configuration for the test*/
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -142,7 +144,7 @@ int main(int argc, char **argv)
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
 
-    int num_rput_cookies = 512;
+    int num_rput_cookies = 1024;
 
     for (int i = 0; i < num_rput_cookies; i++) {
 	struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)calloc(1, sizeof(struct optiq_rput_cookie));
@@ -150,7 +152,7 @@ int main(int argc, char **argv)
 	pami_transport->extra.rput_cookies.push_back(rput_cookie);
     }
 
-    int num_message_headers = 512;
+    int num_message_headers = 1024;
 
     for (int i = 0; i < num_message_headers; i++) {
 	struct optiq_message_header *message_header = (struct optiq_message_header *)calloc(1, sizeof(struct optiq_message_header));
@@ -167,6 +169,7 @@ int main(int argc, char **argv)
     pami_transport->extra.remaining_jobs = num_jobs;
     pami_transport->extra.next_dest = next_dest;
     pami_transport->extra.expecting_length = expecting_length;
+    pami_transport->extra.sent_bytes = 0;
 
     struct optiq_memregion local_mr, near_mr, far_mr;
 
@@ -176,7 +179,14 @@ int main(int argc, char **argv)
     pami_transport->extra.local_mr = &local_mr;
     pami_transport->extra.local_mr->offset = 0;
 
+    pami_transport->extra.recv_bytes = (int *)malloc(sizeof(int) * world_size);
+    for (int i = 0; i < world_size; i++) {
+        pami_transport->extra.recv_bytes[i] = 0;
+    }
+
     //pami_transport->extra.far_mr = &far_mr;
+    
+    optiq_pami_init(pami_transport);
 
     size_t bytes;
     pami_result_t result = PAMI_Memregion_create (pami_transport->context, near_buf, near_buf_size, &bytes, &near_mr.mr);
@@ -194,8 +204,6 @@ int main(int argc, char **argv)
     } else if (bytes < buf_size) {
 	printf("Registered less\n");
     }
-
-    optiq_pami_init(pami_transport);
 
     if (world_rank == 0) {
 	printf("num_jobs = %d, expecting_length = %d\n", pami_transport->extra.remaining_jobs, pami_transport->extra.expecting_length);
@@ -239,7 +247,21 @@ int main(int argc, char **argv)
                 optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
             }
             pami_transport->extra.expecting_length = -1;
+	    //printf("Finishing\n");
         }
+
+	/*if (isDest && pami_transport->extra.expecting_length < -512*1024) {
+	    for (int i = 0; i < world_size; i++) {
+		printf("Rank %d received %d bytes from %d\n", world_rank, pami_transport->extra.recv_bytes[i], i);
+	    }
+	    printf("Oooop, it is less than 0 %d\n", pami_transport->extra.expecting_length);
+	}
+	
+	if (isSource && //pami_transport->extra.sent_bytes == buf_size && 
+		pami_transport->extra.local_headers.size() + pami_transport->extra.forward_headers.size() == 0) {
+	    printf("Rank %d done sending/forwarding, sent_bytes = %d\n", world_rank, pami_transport->extra.sent_bytes);
+	    //isSource = false;
+	}*/
 
 	/*If there is a request to send a message*/
 	if (pami_transport->extra.local_headers.size() + pami_transport->extra.forward_headers.size() > 0)
@@ -315,10 +337,12 @@ int main(int argc, char **argv)
 
     uint64_t end = GetTimeBase();
 
-    double t = (double)(end-start)/1.6e3;
-    double bw = buf_size/t/1024/1024*1e6;
+    double max_t, t = (double)(end-start)/1.6e3;
 
-    if (isSource || isDest) {
+    MPI_Reduce(&t, &max_t, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (world_rank == 0) {
+	double bw = expecting_length/max_t/1024/1024*1e6;
 	printf("Rank %d done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", world_rank, t, bw);
     } 
 
