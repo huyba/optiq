@@ -85,8 +85,18 @@ int main(int argc, char **argv)
     int size[5];
     optiq_topology_get_size_bgq(size);
 
-    int num_dests = 1;
-    int dests[1] = {16};
+    int nbytes = 32 * 1024;
+    int buf_size = 1 * 1024 * 1024;
+    int near_buf_size = 1024 * 1024 * 1024;
+
+    int num_dests = 4;
+    int dests[4] = {32, 96, 160, 224};
+
+    int num_jobs = 4;
+    int expecting_length = world_size * 1024 * 1024;
+
+    int num_rput_cookies = 32 * 1024;
+    int num_message_headers = 32 * 1024;
 
     std::vector<struct path> complete_paths;
     build_paths(complete_paths, num_dims, size, num_dests, dests);
@@ -105,8 +115,6 @@ int main(int argc, char **argv)
     int *final_dest = (int *)malloc(sizeof(int) * num_dests);
 
     bool isSource = false, isDest = false;
-    int num_jobs = 1;
-    int expecting_length = 32 * 1024 * 1024;
 
     int index = 0;
     for (int i = 0; i < complete_paths.size(); i++) {
@@ -133,10 +141,6 @@ int main(int argc, char **argv)
 	}
     }*/
 
-    int nbytes = 32 * 1024;
-    int buf_size = 1 * 1024 * 1024;
-    int near_buf_size = 1024 * 1024 * 1024;
-
     /*End the configuration for the test*/
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -144,15 +148,11 @@ int main(int argc, char **argv)
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
 
-    int num_rput_cookies = 1024;
-
     for (int i = 0; i < num_rput_cookies; i++) {
 	struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)calloc(1, sizeof(struct optiq_rput_cookie));
 	rput_cookie->pami_transport = pami_transport;
 	pami_transport->extra.rput_cookies.push_back(rput_cookie);
     }
-
-    int num_message_headers = 1024;
 
     for (int i = 0; i < num_message_headers; i++) {
 	struct optiq_message_header *message_header = (struct optiq_message_header *)calloc(1, sizeof(struct optiq_message_header));
@@ -342,7 +342,7 @@ int main(int argc, char **argv)
     MPI_Reduce(&t, &max_t, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
     if (world_rank == 0) {
-	double bw = expecting_length/max_t/1024/1024*1e6;
+	double bw = num_dests * expecting_length/max_t/1024/1024*1e6;
 	printf("Rank %d done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", world_rank, t, bw);
     } 
 

@@ -11,7 +11,7 @@ CFLAGS  = $(COPT) $(INCLUDE)
 
 LD = g++
 
-LIBS    = -L$(MPICH2_PATH)/lib -l mpi -lm
+LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
 OBJ = util.o topology.o datagen.o
 

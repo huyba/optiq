@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 
     if (world_rank == 0) {
 	max_time = max_time/iters;
-	double bw = nbytes/max_time/1024/1024*1e6;
+	double bw = num_dests * world_size * nbytes/max_time/1024/1024*1e6;
 	printf("t = %8.4f, bw = %8.4f\n", max_time, bw);
     }
 
