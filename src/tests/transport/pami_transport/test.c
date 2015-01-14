@@ -65,6 +65,24 @@ void build_next_dest(int world_rank, int *next_dest, std::vector<struct path> &c
     }
 }
 
+void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, int size)
+{
+    /*Start the configuration for the test*/
+    int num_dims = 5;
+    int size[5];
+    optiq_topology_get_size_bgq(size);
+
+    /*Get number of dests and dests*/
+
+
+    /*Calculate paths to move data*/
+    std::vector<struct path> complete_paths;
+    build_paths(complete_paths, num_dims, size, num_dests, dests);
+
+    int *next_dest = (int*)malloc(sizeof(int) * complete_paths.size());
+
+    build_next_dest(world_rank, next_dest, complete_paths);   
+}
 
 int main(int argc, char **argv)
 {
@@ -75,47 +93,47 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    if (world_size < 8) {
-	printf("Need at least 8 nodes\n");
-	exit(0);
-    }
-
-    /*Start the configuration for the test*/
-    int num_dims = 5;
-    int size[5];
-    optiq_topology_get_size_bgq(size);
-
-    int nbytes = 32 * 1024;
-    int send_buf_size = 1 * 1024 * 1024;
-    int recv_buf_size = world_size * 1024 * 1024;
-    int forward_buf_size = OPTIQ_FORWARD_BUFFER_SIZE;
-
     int num_dests = 4;
     int dests[4] = {32, 96, 160, 224};
 
-    int num_jobs = 4;
-    int expecting_length = world_size * 1024 * 1024;
+    int send_bytes = 1 * 1024 * 1024;
+    int send_buf_size = num_dests * send_bytes;
+    char *send_buf = (char *) malloc(send_buf_size);
 
-    int *rdispls = (int *) malloc (sizeof(int) * world_size);
-    for (int i = 0; i < world_size; i++) {
-	rdispls[i] = i * send_buf_size;
+    int *sendcounts = (int *)calloc(sizeof(int) * world_size);
+    int *sdispls = (int *)calloc(sizeof(int) * world_size);
+    for (int i = 0; i < num_dests; i++) 
+    {
+	sendcounts[dests[i]] = send_bytes;
+	sdispls[dests[i]] = i * send_bytes;
     }
 
-    int num_rput_cookies = 32 * 1024;
-    int num_message_headers = 32 * 1024;
+    int *recvcounts = (int *) calloc(sizeof(int) * world_size);
 
-    std::vector<struct path> complete_paths;
-    build_paths(complete_paths, num_dims, size, num_dests, dests);
+    int recv_buf_size = 0;
+    char *recv_buf = NULL;
 
-    /*if (world_rank == 0) {
-	optiq_path_print_paths(complete_paths);
-    }*/
+    for (int i = 0; i < num_dests; i++) 
+    {
+	if (world_rank == dests[i]) 
+	{
+	    recv_buf_size = world_size * send_bytes;
+	    recv_buf = (char *) malloc(recv_buf_size);
 
-    MPI_Barrier(MPI_COMM_WORLD);
+	    for (int i = 0; i < world_size; i++) 
+	    {
+		recvcounts[i] = send_bytes;
+		rdispls[i] = i * send_bytes;
+	    }
+	}
+    }
 
-    int *next_dest = (int*)malloc(sizeof(int) * complete_paths.size());
+    optiq_pami_alltoallv(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, world_size);
 
-    build_next_dest(world_rank, next_dest, complete_paths);
+    int nbytes = 32 * 1024;
+
+    int num_jobs = 4;
+    int expecting_length = world_size * 1024 * 1024;
 
     int *flow_id = (int *)malloc(sizeof(int) * num_dests);
     int *final_dest = (int *)malloc(sizeof(int) * num_dests);
@@ -154,19 +172,9 @@ int main(int argc, char **argv)
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
 
-    for (int i = 0; i < num_rput_cookies; i++) {
-	struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)calloc(1, sizeof(struct optiq_rput_cookie));
-	rput_cookie->pami_transport = pami_transport;
-	pami_transport->extra.rput_cookies.push_back(rput_cookie);
-    }
-
-    for (int i = 0; i < num_message_headers; i++) {
-	struct optiq_message_header *message_header = (struct optiq_message_header *)calloc(1, sizeof(struct optiq_message_header));
-	pami_transport->extra.message_headers.push_back(message_header);
-    }
+    optiq_pami_init_extra(pami_transport);
 
     char *recv_buf = (char *) malloc(recv_buf_size);
-    char *forward_buf = (char *) malloc(forward_buf_size);
     char *send_buf = (char *) malloc(send_buf_size);
 
     for (int i = 0; i < send_buf_size; i++) {
@@ -178,10 +186,7 @@ int main(int argc, char **argv)
     pami_transport->extra.expecting_length = expecting_length;
     pami_transport->extra.sent_bytes = 0;
 
-    struct optiq_memregion send_mr, forward_mr, recv_mr;
-
-    pami_transport->extra.forward_mr = &forward_mr;
-    pami_transport->extra.forward_mr->offset = 0;
+    struct optiq_memregion send_mr, recv_mr;
 
     pami_transport->extra.send_mr = &send_mr;
     pami_transport->extra.send_mr->offset = 0;
@@ -196,20 +201,10 @@ int main(int argc, char **argv)
         pami_transport->extra.recv_bytes[i] = 0;
     }
 
-    //pami_transport->extra.far_mr = &far_mr;
-    
     optiq_pami_init(pami_transport);
 
     size_t bytes;
-    pami_result_t result = PAMI_Memregion_create (pami_transport->context, forward_buf, forward_buf_size, &bytes, &forward_mr.mr);
-
-    if (result != PAMI_SUCCESS) {
-	printf("No success\n");
-    } else if (bytes < forward_buf_size) {
-	printf("Registered less\n");
-    }
-
-    result = PAMI_Memregion_create (pami_transport->context, send_buf, send_buf_size, &bytes, &send_mr.mr);
+    pami_result_t result = PAMI_Memregion_create (pami_transport->context, send_buf, send_buf_size, &bytes, &send_mr.mr);
 
     if (result != PAMI_SUCCESS) {
 	printf("No success\n");
@@ -253,120 +248,9 @@ int main(int argc, char **argv)
 	}
     }
 
-    while (pami_transport->extra.remaining_jobs > 0) 
-    {
-	PAMI_Context_advance(pami_transport->context, 100);
-
-	/*If all jobs are done*/
-	if (pami_transport->extra.remaining_jobs == 0) {
-            break;
-        }
-
-	/*If a destination has received all of its data*/
-	if (isDest && pami_transport->extra.expecting_length == 0) {
-            for (int i = 0; i < world_size; i++) {
-                optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
-            }
-            pami_transport->extra.expecting_length = -1;
-	    //printf("Finishing\n");
-        }
-
-	/*if (isDest && pami_transport->extra.expecting_length < -512*1024) {
-	    for (int i = 0; i < world_size; i++) {
-		printf("Rank %d received %d bytes from %d\n", world_rank, pami_transport->extra.recv_bytes[i], i);
-	    }
-	    printf("Oooop, it is less than 0 %d\n", pami_transport->extra.expecting_length);
-	}
-	
-	if (isSource && //pami_transport->extra.sent_bytes == buf_size && 
-		pami_transport->extra.send_headers.size() + pami_transport->extra.forward_headers.size() == 0) {
-	    printf("Rank %d done sending/forwarding, sent_bytes = %d\n", world_rank, pami_transport->extra.sent_bytes);
-	    //isSource = false;
-	}*/
-
-	/*If there is a request to send a message*/
-	if (pami_transport->extra.send_headers.size() + pami_transport->extra.forward_headers.size() > 0)
-	{
-	    struct optiq_message_header *header = NULL;
-	    if (pami_transport->extra.send_headers.size() > 0) 
-	    {
-		header = pami_transport->extra.send_headers.front();
-		pami_transport->extra.send_headers.erase(pami_transport->extra.send_headers.begin());
-	    }
-	    else if (pami_transport->extra.forward_headers.size() > 0) 
-	    {
-		header = pami_transport->extra.forward_headers.front();
-		pami_transport->extra.forward_headers.erase(pami_transport->extra.forward_headers.begin());
-	    }
-
-	    header->header_id = pami_transport->extra.global_header_id;
-	    pami_transport->extra.global_header_id++;
-	    pami_transport->extra.processing_headers.push_back(header);
-
-	    /*Notify the size, ask for mem region*/
-            int dest = next_dest[header->flow_id];
-
-	    /*If the next destination is final destination*/
-	    if (dest == header->dest) {
-		optiq_pami_send_immediate(pami_transport->context, MR_DESTINATION_REQUEST, &header->header_id, sizeof(int), &header->source, sizeof(int), pami_transport->endpoints[dest]);
-	    } else {
-		optiq_pami_send_immediate(pami_transport->context, MR_FORWARD_REQUEST, &header->header_id, sizeof(int), &header->length, sizeof(int), pami_transport->endpoints[dest]);
-	    }
-	}
-	
-	/*If there is a mem region ready to be transferred*/
-	if (pami_transport->extra.mr_responses.size() > 0) 
-	{
-	    struct optiq_memregion far_mr = pami_transport->extra.mr_responses.front();
-	    pami_transport->extra.mr_responses.erase(pami_transport->extra.mr_responses.begin());
-
-	    /*Search for the message with the same header_id*/
-	    struct optiq_message_header *header = NULL;
-	    for (int i = 0; i < pami_transport->extra.processing_headers.size(); i++) 
-	    {
-		if (pami_transport->extra.processing_headers[i]->header_id == far_mr.header_id) 
-		{
-		    header = pami_transport->extra.processing_headers[i];
-		    pami_transport->extra.processing_headers.erase(pami_transport->extra.processing_headers.begin() + i);
-		    break;
-		}
-	    }
-	    
-	    /*Actual rput data*/
-	    struct optiq_rput_cookie *rput_cookie = pami_transport->extra.rput_cookies.back();
-            pami_transport->extra.rput_cookies.pop_back();
-
-	    int dest = pami_transport->extra.next_dest[header->flow_id];
-	    rput_cookie->message_header = header;
-	    rput_cookie->dest = dest;
-
-
-	    /*Rput for destination message. This is because if the next dest is final dest, the dest only gives the offset of the source, not offset for each chunk*/
-	    if (dest == header->dest) {
-		far_mr.offset += header->original_offset;
-	    }
-
-	    optiq_pami_rput(pami_transport->client, pami_transport->context, &header->mem.mr, header->mem.offset, header->length, pami_transport->endpoints[dest], &far_mr.mr, far_mr.offset, rput_cookie);
-
-	    /*Now the header will contain the far memregion instead of local memregion*/
-	    memcpy(&header->mem, &far_mr, sizeof(struct optiq_memregion));
-	}
-
-	/*If a put is done, notify the remote destination*/
-	if (pami_transport->extra.complete_rputs.size() > 0) 
-	{
-	    struct optiq_rput_cookie *complete_rput = pami_transport->extra.complete_rputs.front();
-	    pami_transport->extra.complete_rputs.erase(pami_transport->extra.complete_rputs.begin());
-
-	    struct optiq_message_header *complete_header = complete_rput->message_header;
-
-	    /*Notify that rput is done*/
-	    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, complete_header, sizeof(struct optiq_message_header), pami_transport->endpoints[complete_rput->dest]);
-
-	    pami_transport->extra.message_headers.push_back(complete_header);
-	    pami_transport->extra.rput_cookies.push_back(complete_rput);
-	}
-    }
+    pami_transport->extra.isDest = isDest;
+    
+    optiq_execute_jobs(pami_transport);
 
     uint64_t end = GetTimeBase();
 

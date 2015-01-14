@@ -15,9 +15,14 @@
 #define RECV_MESSAGE 13
 #define JOB_DONE 14
 
+#define OPTIQ_NUM_RPUT_COOKIES (32 * 1024)
+#define OPTIQ_NUM_MESSAGE_HEADERS (32* 1024)
+
 #define MAX_SHORT_MESSAGE_LENGTH 128
 
 #define OPTIQ_FORWARD_BUFFER_SIZE (128 * 1024 * 1024)
+
+struct optiq_pami_transport;
 
 struct optiq_memregion {
     pami_memregion_t mr;
@@ -34,8 +39,6 @@ struct optiq_message_header {
     int header_id;
     int original_offset;
 };
-
-struct optiq_pami_transport;
 
 struct optiq_rput_cookie {
     struct optiq_pami_transport *pami_transport;
@@ -66,6 +69,8 @@ struct optiq_pami_extra {
     int *recv_bytes;
     int global_header_id;
     int *rdispls;
+
+    int isDest;
 };
 
 struct optiq_pami_transport {
@@ -80,6 +85,9 @@ struct optiq_pami_transport {
 };
 
 void optiq_pami_init(struct optiq_pami_transport *self);
+void optiq_pami_init_extra(struct optiq_pami_transport *self);
+
+void optiq_execute_jobs(struct optiq_pami_transport *pami_transport);
 
 int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint);
 
