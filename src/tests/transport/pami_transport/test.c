@@ -65,15 +65,19 @@ void build_next_dest(int world_rank, int *next_dest, std::vector<struct path> &c
     }
 }
 
-void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, int size)
+void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, struct optiq_bulk *bulk)
 {
     /*Start the configuration for the test*/
     int num_dims = 5;
     int size[5];
     optiq_topology_get_size_bgq(size);
 
-    /*Get number of dests and dests*/
+    int world_rank = bulk->pami_transport->rank;
+    int world_size = bulk->pami_transport->size;
 
+    /*Get number of dests and dests*/
+    int num_dests = 4;
+    int dests[4] = {32, 96, 160, 224};
 
     /*Calculate paths to move data*/
     std::vector<struct path> complete_paths;
@@ -81,56 +85,7 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 
     int *next_dest = (int*)malloc(sizeof(int) * complete_paths.size());
 
-    build_next_dest(world_rank, next_dest, complete_paths);   
-}
-
-int main(int argc, char **argv)
-{
-    int world_rank, world_size;
-
-    MPI_Init(&argc, &argv);
-
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    int num_dests = 4;
-    int dests[4] = {32, 96, 160, 224};
-
-    int send_bytes = 1 * 1024 * 1024;
-    int send_buf_size = num_dests * send_bytes;
-    char *send_buf = (char *) malloc(send_buf_size);
-
-    int *sendcounts = (int *)calloc(sizeof(int) * world_size);
-    int *sdispls = (int *)calloc(sizeof(int) * world_size);
-    for (int i = 0; i < num_dests; i++) 
-    {
-	sendcounts[dests[i]] = send_bytes;
-	sdispls[dests[i]] = i * send_bytes;
-    }
-
-    int *recvcounts = (int *) calloc(sizeof(int) * world_size);
-
-    int recv_buf_size = 0;
-    char *recv_buf = NULL;
-
-    for (int i = 0; i < num_dests; i++) 
-    {
-	if (world_rank == dests[i]) 
-	{
-	    recv_buf_size = world_size * send_bytes;
-	    recv_buf = (char *) malloc(recv_buf_size);
-
-	    for (int i = 0; i < world_size; i++) 
-	    {
-		recvcounts[i] = send_bytes;
-		rdispls[i] = i * send_bytes;
-	    }
-	}
-    }
-
-    optiq_pami_alltoallv(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, world_size);
-
-    int nbytes = 32 * 1024;
+    build_next_dest(world_rank, next_dest, complete_paths);
 
     int num_jobs = 4;
     int expecting_length = world_size * 1024 * 1024;
@@ -154,102 +109,129 @@ int main(int argc, char **argv)
 	}
     }
 
-    /*if (isDest) {
-	printf("Rank %d is dest\n", world_rank);
-    }
+    bulk->remaining_jobs = num_jobs;
+    bulk->next_dest = next_dest;
+    bulk->expecting_length = expecting_length;
+    bulk->sent_bytes = 0;
 
-    if (isSource) {
-	printf("Rank %d is source\n", world_rank);
-	for (int i = 0; i < num_dests; i++) {
-	    printf("Rank %d is source flow_id = %d, dest = %d\n", world_rank, flow_id[i], final_dest[i]);
-	}
-    }*/
+    bulk->send_mr.offset = 0;
+    bulk->recv_mr.offset = 0;
 
-    /*End the configuration for the test*/
+    bulk->rdispls = rdispls;
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    bulk->recv_bytes = (int *) calloc (1, sizeof(int) * world_size);
 
-    /*Create pami_transport and related variables: rput_cookies, message_headers*/
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
-
-    optiq_pami_init_extra(pami_transport);
-
-    char *recv_buf = (char *) malloc(recv_buf_size);
-    char *send_buf = (char *) malloc(send_buf_size);
-
-    for (int i = 0; i < send_buf_size; i++) {
-	send_buf[i] = i % 128;
-    }
-
-    pami_transport->extra.remaining_jobs = num_jobs;
-    pami_transport->extra.next_dest = next_dest;
-    pami_transport->extra.expecting_length = expecting_length;
-    pami_transport->extra.sent_bytes = 0;
-
-    struct optiq_memregion send_mr, recv_mr;
-
-    pami_transport->extra.send_mr = &send_mr;
-    pami_transport->extra.send_mr->offset = 0;
-
-    pami_transport->extra.recv_mr = &recv_mr;
-    pami_transport->extra.recv_mr->offset = 0;
-
-    pami_transport->extra.rdispls = rdispls;
-
-    pami_transport->extra.recv_bytes = (int *) malloc (sizeof(int) * world_size);
-    for (int i = 0; i < world_size; i++) {
-        pami_transport->extra.recv_bytes[i] = 0;
-    }
-
-    optiq_pami_init(pami_transport);
+    bulk->isDest = isDest;
 
     size_t bytes;
-    pami_result_t result = PAMI_Memregion_create (pami_transport->context, send_buf, send_buf_size, &bytes, &send_mr.mr);
+    pami_result_t result;
+    int send_buf_size = 1 * 1024 * 1024;
+    if (isSource) 
+    {
+	result = PAMI_Memregion_create (bulk->pami_transport->context, send_buf, send_buf_size, &bytes, &bulk->send_mr.mr);
 
-    if (result != PAMI_SUCCESS) {
-	printf("No success\n");
-    } else if (bytes < send_buf_size) {
-	printf("Registered less\n");
+	if (result != PAMI_SUCCESS) {
+	    printf("No success\n");
+	} else if (bytes < send_buf_size) {
+	    printf("Registered less\n");
+	}
     }
 
-    result = PAMI_Memregion_create (pami_transport->context, recv_buf, recv_buf_size, &bytes, &recv_mr.mr);
+    int recv_buf_size = 256 * 1024 * 1024;
+    if (isDest) 
+    {
+	result = PAMI_Memregion_create (bulk->pami_transport->context, recv_buf, recv_buf_size, &bytes, &bulk->recv_mr.mr);
 
-    if (result != PAMI_SUCCESS) {
-        printf("No success\n");
-    } else if (bytes < recv_buf_size) {
-        printf("Registered less\n");
+	if (result != PAMI_SUCCESS) {
+	    printf("No success\n");
+	} else if (bytes < recv_buf_size) {
+	    printf("Registered less\n");
+	}
     }
 
-    if (world_rank == 0) {
-	printf("num_jobs = %d, expecting_length = %d\n", pami_transport->extra.remaining_jobs, pami_transport->extra.expecting_length);
-    }
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    uint64_t start = GetTimeBase();
-
+    int nbytes = 32 * 1024;
     if (isSource) {
 	for (int offset = 0; offset < send_buf_size; offset += nbytes) {
 	    for (int i = 0; i < num_dests; i++) {
-		struct optiq_message_header *header = pami_transport->extra.message_headers.back();
-		pami_transport->extra.message_headers.pop_back();
+		struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
+		bulk->pami_transport->extra.message_headers.pop_back();
 
 		header->length = nbytes;
 		header->source = world_rank;
 		header->dest = final_dest[i];
 		header->flow_id = flow_id[i];
 
-		memcpy(&header->mem, &send_mr, sizeof(struct optiq_memregion));
+		memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
 		header->mem.offset = offset;
 		header->original_offset = offset;
 
-		pami_transport->extra.send_headers.push_back(header);
+		bulk->pami_transport->extra.send_headers.push_back(header);
+	    }
+	}
+    }
+}
+
+int main(int argc, char **argv)
+{
+    int world_rank, world_size;
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    /*Create pami_transport and related variables: rput_cookies, message_headers*/
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
+
+    pami_transport->bulk.pami_transport = pami_transport;
+
+    optiq_pami_init_extra(pami_transport);
+    optiq_pami_init(pami_transport);
+
+    int num_dests = 4;
+    int dests[4] = {32, 96, 160, 224};
+
+    int send_bytes = 1 * 1024 * 1024;
+    int send_buf_size = num_dests * send_bytes;
+    char *send_buf = (char *) malloc(send_buf_size);
+    for (int i = 0; i < send_buf_size; i++) {
+	send_buf[i] = i % 128;
+    }
+
+    int *sendcounts = (int *)calloc(1, sizeof(int) * world_size);
+    int *sdispls = (int *)calloc(1, sizeof(int) * world_size);
+    for (int i = 0; i < num_dests; i++) 
+    {
+	sendcounts[dests[i]] = send_bytes;
+	sdispls[dests[i]] = i * send_bytes;
+    }
+
+    int *recvcounts = (int *) calloc(1, sizeof(int) * world_size);
+
+    int recv_buf_size = 0;
+    char *recv_buf = NULL;
+    int *rdispls = NULL;
+
+    for (int i = 0; i < num_dests; i++) 
+    {
+	if (world_rank == dests[i]) 
+	{
+	    recv_buf_size = world_size * send_bytes;
+	    recv_buf = (char *) malloc(recv_buf_size);
+	    rdispls = (int *) malloc(sizeof(int) * world_size);
+
+	    for (int i = 0; i < world_size; i++) 
+	    {
+		recvcounts[i] = send_bytes;
+		rdispls[i] = i * send_bytes;
 	    }
 	}
     }
 
-    pami_transport->extra.isDest = isDest;
-    
+    uint64_t start = GetTimeBase();
+
+    optiq_pami_alltoallv(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, &pami_transport->bulk);
+
     optiq_execute_jobs(pami_transport);
 
     uint64_t end = GetTimeBase();
@@ -262,18 +244,20 @@ int main(int argc, char **argv)
     MPI_Reduce(&pami_transport->extra.forward_mr->offset, &max_buffer_size, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
 
     if (world_rank == 0) {
-	double bw = num_dests * expecting_length/max_t/1024/1024*1e6;
+	double bw = num_dests * world_size * send_bytes / max_t / 1024 / 1024 * 1e6;
 	printf("Done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", t, bw);
 	printf("Max buffer size = %d\n", max_buffer_size);
     } 
 
-    if (isDest) {
-	char *test_buf = (char *) malloc (recv_buf_size);
-	for (int i = 0; i < recv_buf_size; i++) {
-	    test_buf[i] = i%128;
-	}
-	if (memcmp(test_buf, recv_buf, recv_buf_size) != 0) {
-	    printf("Rank %d Received invalid data\n", world_rank);
+    for (int i = 0; i < num_dests; i++) {
+	if (world_rank == dests[i]) {
+	    char *test_buf = (char *) malloc (recv_buf_size);
+	    for (int i = 0; i < recv_buf_size; i++) {
+		test_buf[i] = i%128;
+	    }
+	    if (memcmp(test_buf, recv_buf, recv_buf_size) != 0) {
+		printf("Rank %d Received invalid data\n", world_rank);
+	    }
 	}
     }
 

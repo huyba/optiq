@@ -46,9 +46,30 @@ struct optiq_rput_cookie {
     int dest;
 };
 
+struct optiq_bulk {
+    int bulkd_id;
+
+    int world_rank;
+
+    int remaining_jobs;
+    int *next_dest;
+
+    int expecting_length;
+    int sent_bytes;
+    int *recv_bytes;
+
+    bool isDest;
+    bool isSource;
+
+    int *rdispls;
+
+    struct optiq_memregion recv_mr;
+    struct optiq_memregion send_mr;
+
+    struct optiq_pami_transport *pami_transport;
+};
+
 struct optiq_pami_extra {
-    struct optiq_memregion *recv_mr;
-    struct optiq_memregion *send_mr;
     struct optiq_memregion *forward_mr;
 
     std::vector<struct optiq_rput_cookie *> rput_cookies;
@@ -61,16 +82,7 @@ struct optiq_pami_extra {
 
     std::vector<struct optiq_memregion> mr_responses;
 
-    int remaining_jobs;
-    int *next_dest;
-
-    int expecting_length;
-    int sent_bytes;
-    int *recv_bytes;
     int global_header_id;
-    int *rdispls;
-
-    int isDest;
 };
 
 struct optiq_pami_transport {
@@ -82,6 +94,7 @@ struct optiq_pami_transport {
     pami_endpoint_t *endpoints;
 
     struct optiq_pami_extra extra;
+    struct optiq_bulk bulk;
 };
 
 void optiq_pami_init(struct optiq_pami_transport *self);
