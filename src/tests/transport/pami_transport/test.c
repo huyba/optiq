@@ -86,14 +86,20 @@ int main(int argc, char **argv)
     optiq_topology_get_size_bgq(size);
 
     int nbytes = 32 * 1024;
-    int buf_size = 1 * 1024 * 1024;
-    int near_buf_size = 1024 * 1024 * 1024;
+    int send_buf_size = 1 * 1024 * 1024;
+    int recv_buf_size = world_size * 1024 * 1024;
+    int forward_buf_size = OPTIQ_FORWARD_BUFFER_SIZE;
 
     int num_dests = 4;
     int dests[4] = {32, 96, 160, 224};
 
     int num_jobs = 4;
     int expecting_length = world_size * 1024 * 1024;
+
+    int *rdispls = (int *) malloc (sizeof(int) * world_size);
+    for (int i = 0; i < world_size; i++) {
+	rdispls[i] = i * send_buf_size;
+    }
 
     int num_rput_cookies = 32 * 1024;
     int num_message_headers = 32 * 1024;
@@ -159,11 +165,12 @@ int main(int argc, char **argv)
 	pami_transport->extra.message_headers.push_back(message_header);
     }
 
-    char *near_buf = (char *) malloc(near_buf_size);
-    char *local_buf = (char *) malloc(buf_size);
+    char *recv_buf = (char *) malloc(recv_buf_size);
+    char *forward_buf = (char *) malloc(forward_buf_size);
+    char *send_buf = (char *) malloc(send_buf_size);
 
-    for (int i = 0; i < buf_size; i++) {
-	local_buf[i] = i % 128;
+    for (int i = 0; i < send_buf_size; i++) {
+	send_buf[i] = i % 128;
     }
 
     pami_transport->extra.remaining_jobs = num_jobs;
@@ -171,15 +178,20 @@ int main(int argc, char **argv)
     pami_transport->extra.expecting_length = expecting_length;
     pami_transport->extra.sent_bytes = 0;
 
-    struct optiq_memregion local_mr, near_mr, far_mr;
+    struct optiq_memregion send_mr, forward_mr, recv_mr;
 
-    pami_transport->extra.near_mr = &near_mr;
-    pami_transport->extra.near_mr->offset = 0;
+    pami_transport->extra.forward_mr = &forward_mr;
+    pami_transport->extra.forward_mr->offset = 0;
 
-    pami_transport->extra.local_mr = &local_mr;
-    pami_transport->extra.local_mr->offset = 0;
+    pami_transport->extra.send_mr = &send_mr;
+    pami_transport->extra.send_mr->offset = 0;
 
-    pami_transport->extra.recv_bytes = (int *)malloc(sizeof(int) * world_size);
+    pami_transport->extra.recv_mr = &recv_mr;
+    pami_transport->extra.recv_mr->offset = 0;
+
+    pami_transport->extra.rdispls = rdispls;
+
+    pami_transport->extra.recv_bytes = (int *) malloc (sizeof(int) * world_size);
     for (int i = 0; i < world_size; i++) {
         pami_transport->extra.recv_bytes[i] = 0;
     }
@@ -189,20 +201,28 @@ int main(int argc, char **argv)
     optiq_pami_init(pami_transport);
 
     size_t bytes;
-    pami_result_t result = PAMI_Memregion_create (pami_transport->context, near_buf, near_buf_size, &bytes, &near_mr.mr);
+    pami_result_t result = PAMI_Memregion_create (pami_transport->context, forward_buf, forward_buf_size, &bytes, &forward_mr.mr);
 
     if (result != PAMI_SUCCESS) {
 	printf("No success\n");
-    } else if (bytes < buf_size) {
+    } else if (bytes < forward_buf_size) {
 	printf("Registered less\n");
     }
 
-    result = PAMI_Memregion_create (pami_transport->context, local_buf, buf_size, &bytes, &local_mr.mr);
+    result = PAMI_Memregion_create (pami_transport->context, send_buf, send_buf_size, &bytes, &send_mr.mr);
 
     if (result != PAMI_SUCCESS) {
 	printf("No success\n");
-    } else if (bytes < buf_size) {
+    } else if (bytes < send_buf_size) {
 	printf("Registered less\n");
+    }
+
+    result = PAMI_Memregion_create (pami_transport->context, recv_buf, recv_buf_size, &bytes, &recv_mr.mr);
+
+    if (result != PAMI_SUCCESS) {
+        printf("No success\n");
+    } else if (bytes < recv_buf_size) {
+        printf("Registered less\n");
     }
 
     if (world_rank == 0) {
@@ -214,7 +234,7 @@ int main(int argc, char **argv)
     uint64_t start = GetTimeBase();
 
     if (isSource) {
-	for (int offset = 0; offset < buf_size; offset += nbytes) {
+	for (int offset = 0; offset < send_buf_size; offset += nbytes) {
 	    for (int i = 0; i < num_dests; i++) {
 		struct optiq_message_header *header = pami_transport->extra.message_headers.back();
 		pami_transport->extra.message_headers.pop_back();
@@ -224,10 +244,11 @@ int main(int argc, char **argv)
 		header->dest = final_dest[i];
 		header->flow_id = flow_id[i];
 
-		memcpy(&header->mem, &local_mr, sizeof(struct optiq_memregion));
+		memcpy(&header->mem, &send_mr, sizeof(struct optiq_memregion));
 		header->mem.offset = offset;
+		header->original_offset = offset;
 
-		pami_transport->extra.local_headers.push_back(header);
+		pami_transport->extra.send_headers.push_back(header);
 	    }
 	}
     }
@@ -258,19 +279,19 @@ int main(int argc, char **argv)
 	}
 	
 	if (isSource && //pami_transport->extra.sent_bytes == buf_size && 
-		pami_transport->extra.local_headers.size() + pami_transport->extra.forward_headers.size() == 0) {
+		pami_transport->extra.send_headers.size() + pami_transport->extra.forward_headers.size() == 0) {
 	    printf("Rank %d done sending/forwarding, sent_bytes = %d\n", world_rank, pami_transport->extra.sent_bytes);
 	    //isSource = false;
 	}*/
 
 	/*If there is a request to send a message*/
-	if (pami_transport->extra.local_headers.size() + pami_transport->extra.forward_headers.size() > 0)
+	if (pami_transport->extra.send_headers.size() + pami_transport->extra.forward_headers.size() > 0)
 	{
 	    struct optiq_message_header *header = NULL;
-	    if (pami_transport->extra.local_headers.size() > 0) 
+	    if (pami_transport->extra.send_headers.size() > 0) 
 	    {
-		header = pami_transport->extra.local_headers.front();
-		pami_transport->extra.local_headers.erase(pami_transport->extra.local_headers.begin());
+		header = pami_transport->extra.send_headers.front();
+		pami_transport->extra.send_headers.erase(pami_transport->extra.send_headers.begin());
 	    }
 	    else if (pami_transport->extra.forward_headers.size() > 0) 
 	    {
@@ -284,7 +305,13 @@ int main(int argc, char **argv)
 
 	    /*Notify the size, ask for mem region*/
             int dest = next_dest[header->flow_id];
-	    optiq_pami_send_immediate(pami_transport->context, MR_REQUEST, &header->header_id, sizeof(int), &header->length, sizeof(int), pami_transport->endpoints[dest]);
+
+	    /*If the next destination is final destination*/
+	    if (dest == header->dest) {
+		optiq_pami_send_immediate(pami_transport->context, MR_DESTINATION_REQUEST, &header->header_id, sizeof(int), &header->source, sizeof(int), pami_transport->endpoints[dest]);
+	    } else {
+		optiq_pami_send_immediate(pami_transport->context, MR_FORWARD_REQUEST, &header->header_id, sizeof(int), &header->length, sizeof(int), pami_transport->endpoints[dest]);
+	    }
 	}
 	
 	/*If there is a mem region ready to be transferred*/
@@ -312,6 +339,12 @@ int main(int argc, char **argv)
 	    int dest = pami_transport->extra.next_dest[header->flow_id];
 	    rput_cookie->message_header = header;
 	    rput_cookie->dest = dest;
+
+
+	    /*Rput for destination message. This is because if the next dest is final dest, the dest only gives the offset of the source, not offset for each chunk*/
+	    if (dest == header->dest) {
+		far_mr.offset += header->original_offset;
+	    }
 
 	    optiq_pami_rput(pami_transport->client, pami_transport->context, &header->mem.mr, header->mem.offset, header->length, pami_transport->endpoints[dest], &far_mr.mr, far_mr.offset, rput_cookie);
 
@@ -341,13 +374,21 @@ int main(int argc, char **argv)
 
     MPI_Reduce(&t, &max_t, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
+    int max_buffer_size;
+    MPI_Reduce(&pami_transport->extra.forward_mr->offset, &max_buffer_size, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+
     if (world_rank == 0) {
 	double bw = num_dests * expecting_length/max_t/1024/1024*1e6;
-	printf("Rank %d done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", world_rank, t, bw);
+	printf("Done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", t, bw);
+	printf("Max buffer size = %d\n", max_buffer_size);
     } 
 
     if (isDest) {
-	if (memcmp(local_buf, near_buf, buf_size) != 0) {
+	char *test_buf = (char *) malloc (recv_buf_size);
+	for (int i = 0; i < recv_buf_size; i++) {
+	    test_buf[i] = i%128;
+	}
+	if (memcmp(test_buf, recv_buf, recv_buf_size) != 0) {
 	    printf("Rank %d Received invalid data\n", world_rank);
 	}
     }
