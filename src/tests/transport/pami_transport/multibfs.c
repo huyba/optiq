@@ -97,10 +97,10 @@ void multibfs_init(struct multibfs *bfs)
 {
     int num_dims = bfs->num_dims;
     int *size = bfs->size;
-    int **all_coords = bfs->all_coords;
-    int **graph = bfs->graph;
-    int **load = bfs->load;
-    bool ** visited = bfs->visited;
+    int **all_coords = NULL;
+    int **graph = NULL;
+    int **load = NULL;
+    bool ** visited = NULL;
 
     int num_nodes = 1;
     for (int i = 0; i < num_dims; i++) {
@@ -160,14 +160,19 @@ void multibfs_init(struct multibfs *bfs)
             visited[i][j] = false;
         }
     }
+
+    bfs->all_coords = all_coords;
+    bfs->graph = graph;
+    bfs->load = load;
+    bfs->visited = visited;
 }
 
 void build_paths(std::vector<struct path> &complete_paths, int num_dests, int *dests, struct multibfs *bfs) 
 {
     int num_dims = bfs->num_dims;
     int *size = bfs->size;
-    int **all_coords = bfs->all_coords;
     int **graph = bfs->graph;
+
     int **load = bfs->load;
     bool ** visited = bfs->visited;
 

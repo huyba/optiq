@@ -71,6 +71,9 @@ struct optiq_bulk {
     struct optiq_pami_transport *pami_transport;
 
     struct multibfs *bfs;
+
+    int *flow_id;
+    int *final_dest;
 };
 
 struct optiq_pami_extra {

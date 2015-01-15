@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
+
 void flow_create(int world_rank, int *next_dest)
 {
     if (world_rank == 0) {
@@ -67,6 +69,8 @@ void build_next_dest(int world_rank, int *next_dest, std::vector<struct path> &c
 
 void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, struct optiq_bulk *bulk)
 {
+    uint64_t t0 = GetTimeBase();
+
     /*Start the configuration for the test*/
     int num_dims = 5;
     int size[5];
@@ -83,15 +87,17 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
     std::vector<struct path> complete_paths;
     build_paths(complete_paths, num_dests, dests, bulk->bfs);
 
-    int *next_dest = (int*)malloc(sizeof(int) * complete_paths.size());
+    uint64_t t1 = GetTimeBase();
 
-    build_next_dest(world_rank, next_dest, complete_paths);
+    build_next_dest(world_rank, bulk->next_dest, complete_paths);
+
+    uint64_t t2 = GetTimeBase();
 
     int num_jobs = 4;
     int expecting_length = world_size * 1024 * 1024;
 
-    int *flow_id = (int *)malloc(sizeof(int) * num_dests);
-    int *final_dest = (int *)malloc(sizeof(int) * num_dests);
+    int *flow_id = bulk->flow_id;
+    int *final_dest = bulk->final_dest;
 
     bool isSource = false, isDest = false;
 
@@ -110,7 +116,6 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
     }
 
     bulk->remaining_jobs = num_jobs;
-    bulk->next_dest = next_dest;
     bulk->expecting_length = expecting_length;
     bulk->sent_bytes = 0;
 
@@ -119,9 +124,9 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 
     bulk->rdispls = rdispls;
 
-    bulk->recv_bytes = (int *) calloc (1, sizeof(int) * world_size);
-
     bulk->isDest = isDest;
+
+    uint64_t t3 = GetTimeBase();
 
     size_t bytes;
     pami_result_t result;
@@ -169,6 +174,15 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 	    }
 	}
     }
+
+    if (bulk->pami_transport->rank == 0) {
+	double t = (double)(t3-t2)/1.6e3;
+	printf("flow id, final dest %f\n", t);
+	t = (double)(t2-t1)/1.6e3;
+	printf("build next dest %f\n", t);
+	t = (double)(t1-t0)/1.6e3;
+        printf("create paths %f\n", t);
+    }
 }
 
 int main(int argc, char **argv)
@@ -181,7 +195,8 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     struct multibfs *bfs = (struct multibfs *) calloc (1, sizeof(struct multibfs));
-    
+    bfs->num_dims = 5;
+    optiq_topology_get_size_bgq(bfs->size);
     multibfs_init(bfs);
 
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
@@ -189,6 +204,12 @@ int main(int argc, char **argv)
 
     pami_transport->bulk.pami_transport = pami_transport;
     pami_transport->bulk.bfs = bfs;
+
+    pami_transport->bulk.recv_bytes = (int *) calloc (1, sizeof(int) * world_size);
+    pami_transport->bulk.final_dest = (int *) calloc (1, sizeof(int) * world_size);
+    pami_transport->bulk.flow_id = (int *) calloc (1, sizeof(int) * world_size);
+
+    pami_transport->bulk.next_dest = (int *) calloc (1, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
 
     optiq_pami_init_extra(pami_transport);
     optiq_pami_init(pami_transport);
@@ -233,9 +254,11 @@ int main(int argc, char **argv)
 	}
     }
 
-    uint64_t start = GetTimeBase();
+//    uint64_t start = GetTimeBase();
 
     optiq_pami_alltoallv(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, &pami_transport->bulk);
+
+    uint64_t start = GetTimeBase();
 
     optiq_execute_jobs(pami_transport);
 
