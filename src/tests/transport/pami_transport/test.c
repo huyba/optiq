@@ -69,7 +69,7 @@ void build_next_dest(int world_rank, int *next_dest, std::vector<struct path> &c
 
 void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, struct optiq_bulk *bulk)
 {
-    uint64_t t0 = GetTimeBase();
+    //uint64_t t0 = GetTimeBase();
 
     /*Start the configuration for the test*/
     int num_dims = 5;
@@ -82,6 +82,8 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
     /*Get number of dests and dests*/
     int num_dests = 4;
     int dests[4] = {32, 96, 160, 224};
+
+    uint64_t t0 = GetTimeBase();
 
     /*Calculate paths to move data*/
     std::vector<struct path> complete_paths;

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #include <mpi.h>
 
@@ -13,7 +14,7 @@ int main(int argc, char **argv)
 
     bfs.num_dims = 5;
     for (int i = 0; i < 5; i++) {
-	bfs.size[i] = size[i];
+        bfs.size[i] = size[i];
     }
 
     multibfs_init(&bfs);
@@ -24,11 +25,20 @@ int main(int argc, char **argv)
     int num_dests = 4;
     int dests[4] = {32, 96, 160, 224};
 
+    struct timeval t1, t2;
+
+    gettimeofday(&t1, NULL);
+
     build_paths(complete_paths, num_dests, dests, &bfs);
 
-    printf("Build done\n");
+    gettimeofday(&t2, NULL);
 
-    optiq_path_print_paths(complete_paths);
+    long int diff = (t2.tv_usec + 1000000 * t2.tv_sec) - (t1.tv_usec + 1000000 * t1.tv_sec);
+
+    printf("Build done in %ld microseconds\n", diff);
+
+    //optiq_path_print_paths(complete_paths);
 
     return 0;
 }
+
