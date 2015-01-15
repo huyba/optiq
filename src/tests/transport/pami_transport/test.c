@@ -81,7 +81,7 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 
     /*Calculate paths to move data*/
     std::vector<struct path> complete_paths;
-    build_paths(complete_paths, num_dims, size, num_dests, dests);
+    build_paths(complete_paths, num_dests, dests, bulk->bfs);
 
     int *next_dest = (int*)malloc(sizeof(int) * complete_paths.size());
 
@@ -180,10 +180,15 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+    struct multibfs *bfs = (struct multibfs *) calloc (1, sizeof(struct multibfs));
+    
+    multibfs_init(bfs);
+
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
 
     pami_transport->bulk.pami_transport = pami_transport;
+    pami_transport->bulk.bfs = bfs;
 
     optiq_pami_init_extra(pami_transport);
     optiq_pami_init(pami_transport);

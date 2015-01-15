@@ -8,6 +8,8 @@
 #include <firmware/include/personality.h>
 #include <pami.h>
 
+#include "multibfs.h"
+
 #define MR_DESTINATION_REQUEST 9
 #define MR_FORWARD_REQUEST 10
 #define MR_RESPONSE 11
@@ -67,6 +69,8 @@ struct optiq_bulk {
     struct optiq_memregion send_mr;
 
     struct optiq_pami_transport *pami_transport;
+
+    struct multibfs *bfs;
 };
 
 struct optiq_pami_extra {
