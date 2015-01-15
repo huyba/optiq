@@ -1,6 +1,8 @@
 #ifndef OPTIQ_MULTIBFS_H
 #define OPTIQ_MULTIBFS_H
 
+#include <vector>
+
 struct arc {
     int u;
     int v;

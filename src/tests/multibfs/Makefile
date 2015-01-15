@@ -5,17 +5,17 @@ COPT = -g -O2 -Wall #-std=c99
 
 MPICH2_PATH=/usr/local/mpich2
 
-INCLUDE = -I. 
+INCLUDE = -I. -I$(MPICH2_PATH)/include
 
 CFLAGS  = $(COPT) $(INCLUDE)
 
 LD = g++
 
-LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
+LIBS    = -L$(MPICH2_PATH)/lib -lm -l mpi
 
 OBJ = util.o topology.o datagen.o multibfs.o
 
-all: util.o topology.o datagen.o  test_multibfs.x
+all: $(OBJ) test_multibfs.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
