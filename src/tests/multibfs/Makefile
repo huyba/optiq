@@ -1,16 +1,34 @@
 #CC = gcc
 #CC = g++
 CC = mpicxx
-
 COPT = -g -O2 -Wall #-std=c99
 
 MPICH2_PATH=/usr/local/mpich2
 
-INCLUDE = -I. -I$(MPICH2_PATH)/include
+ifndef COMPILER
+  COMPILER = XL
+endif
 
-CFLAGS  = $(COPT) $(INCLUDE)
+ifeq ($(COMPILER),GNU)
+  CC      = mpicc
+  COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
+endif
 
-LD = mpixlc_r #g++
+ifeq ($(COMPILER),XL)
+  CC      = mpicxx
+  COPT    = -g -O3 #-DDEBUG
+endif
+
+LD      = mpixlc_r #g++
+
+INCLUDE = -I.
+
+CFLAGS = $(COPT) $(INCLUDE)
+LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
+
+CFLAGS += -DPROGRESS_THREAD
+
+INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
