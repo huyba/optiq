@@ -4,6 +4,15 @@
 
 #include "path.h"
 
+void optiq_path_print_path(struct path *p)
+{
+    printf("Path: max_load = %d, #hops = %d. ", p->max_load, p->arcs.size());
+    for (int j = 0; j < p->arcs.size(); j++) {
+	printf("%d->", p->arcs[j].u);
+    }
+    printf("%d\n", p->arcs[p->arcs.size() - 1].v);
+}
+
 void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes)
 {
     int max_hops = 0;

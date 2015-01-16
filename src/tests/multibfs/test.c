@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 
     bfs.edge_path = (std::vector<struct path *> **) malloc (sizeof(std::vector<struct path *> *) * num_nodes);
     for (int i = 0; i < num_nodes; i++) {
-	bfs.edge_path[i] = (std::vector<struct path *> *)malloc (sizeof(std::vector<struct path *>));
+	bfs.edge_path[i] = (std::vector<struct path *> *) calloc (1, sizeof(std::vector<struct path *>) * num_nodes);
     }
 
     multibfs_init(&bfs);
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
     long int diff = (t2.tv_usec + 1000000 * t2.tv_sec) - (t1.tv_usec + 1000000 * t1.tv_sec);
 
-    printf("Naive build done in %ld microseconds\n", diff);
+    printf("Build done in %ld microseconds\n", diff);
 
     optiq_path_print_paths(complete_paths);
     optiq_path_print_stat(complete_paths, num_nodes);

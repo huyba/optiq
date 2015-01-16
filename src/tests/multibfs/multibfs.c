@@ -75,6 +75,7 @@ void update_max_load(struct path *np, int **load, struct multibfs *bfs)
 void adding_edge_path(std::vector<struct path*> **edge_path, struct path *p)
 {
     for (int i = 0; i < p->arcs.size(); i++) {
+	//printf("edge = %d #arcs = %d u = %d v = %d\n", edge_path[p->arcs[i].u][p->arcs[i].v].size(), p->arcs.size(), p->arcs[i].u, p->arcs[i].v);
 	edge_path[p->arcs[i].u][p->arcs[i].v].push_back(p);
     }
 }
@@ -192,14 +193,18 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 		    a.u = dests[i];
 		    a.v = j;
 		    load[dests[i]][j]++;
-		    struct path *p = (struct path *) malloc (sizeof(struct path));
+		    struct path *p = (struct path *) calloc (1, sizeof(struct path));
 		    p->arcs.push_back(a);
 		    p->max_load = 1;
 		    p->dest_id = i;
 		    adding_edge_path(bfs->edge_path, p);
+		    //printf("added edge path\n");
 		    adding_load_on_path(p, load, 1);
+		    //printf("added load\n");
 		    hp_insert(bfs->heap, p);
+		    //printf("inserted to heap\n");
 		    complete_paths.push_back(p);
+		    //printf("done adding %d %d\n", a.u, a.v);
 		    
 		    visited[i][j] = true;
 		    done = false;
@@ -209,6 +214,8 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 	}
     }
 
+    //printf("Done first step size of complete_paths %d\n", complete_paths.size());
+
     gettimeofday(&t2, NULL);
 
     /*For the current number of paths, start expanding and add more path*/
@@ -216,6 +223,7 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
     int index;
     while(bfs->heap->num_elements != 0) {
 	struct path *p = hp_find_min(bfs->heap);
+	optiq_path_print_path(p);
 	hp_remove_min(bfs->heap);
 
 	struct arc a = p->arcs.back();
@@ -224,7 +232,7 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 	/*Expanding all paths from this point*/
 	for (int i = 0; i < num_nodes; i++) {
 	    if (graph[furthest_point][i] == 1 && !visited[p->dest_id][i]) {
-		struct path *np = (struct path *) malloc (sizeof(struct path));
+		struct path *np = (struct path *) calloc (1, sizeof(struct path));
 		np->arcs = p->arcs;
 		np->max_load = p->max_load;
 		np->dest_id = p->dest_id;

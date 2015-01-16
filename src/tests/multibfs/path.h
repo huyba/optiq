@@ -15,6 +15,8 @@ struct path {
     int hpos;
 };
 
+void optiq_path_print_path(struct path *p);
+
 void optiq_path_print_paths(std::vector<struct path*> &paths);
 
 void optiq_path_print_stat(std::vector<struct path*> &paths, int num_nodes);
