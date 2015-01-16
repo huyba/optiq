@@ -1,12 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-<<<<<<< HEAD:src/tests/multibfs/test1.c
-
-=======
->>>>>>> a1d3db5235a80440fbc3a8c2775ecc431cd3004d:src/tests/multibfs/test_multibfs.c
 #include <mpi.h>
 
+#include "path.h"
 #include "multibfs.h"
 
 int main(int argc, char **argv)
@@ -37,15 +34,11 @@ int main(int argc, char **argv)
     gettimeofday(&t2, NULL);
 
     long int diff = (t2.tv_usec + 1000000 * t2.tv_sec) - (t1.tv_usec + 1000000 * t1.tv_sec);
-<<<<<<< HEAD:src/tests/multibfs/test1.c
 
     printf("Build done in %ld microseconds\n", diff);
 
-=======
-
     printf("Build done in %ld microseconds\n", diff);
 
->>>>>>> a1d3db5235a80440fbc3a8c2775ecc431cd3004d:src/tests/multibfs/test_multibfs.c
     //optiq_path_print_paths(complete_paths);
 
     return 0;

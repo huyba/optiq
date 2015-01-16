@@ -32,9 +32,9 @@ INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = util.o topology.o datagen.o multibfs.o
+OBJ = util.o topology.o datagen.o multibfs.o path.o heap_path.o
 
-all: $(OBJ) test_multibfs.x copy
+all: $(OBJ) test.x copy
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -43,7 +43,7 @@ all: $(OBJ) test_multibfs.x copy
 	$(LD) $(OBJ) $< $(LIBS) -o $@
 
 copy:
-	cp test_multibfs.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/multibfs/
+	cp test.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/multibfs/
 
 rm:
 	rm *.o

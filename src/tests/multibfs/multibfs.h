@@ -3,16 +3,8 @@
 
 #include <vector>
 
-struct arc {
-    int u;
-    int v;
-};
-
-struct path {
-    int max_load;
-    int dest_id;
-    std::vector<struct arc> arcs;
-};
+#include "path.h"
+#include "heap_path.h"
 
 struct multibfs {
     int num_dims;
@@ -21,16 +13,12 @@ struct multibfs {
     int **graph;
     int **load;
     bool ** visited;
+    struct heap_path *heap;
+    std::vector<struct path *> **edge_path;
 };
-
-void optiq_path_print_paths(std::vector<struct path> &paths);
-
-void optiq_path_print_stat(std::vector<struct path> &paths, int num_nodes);
 
 void multibfs_init(struct multibfs *bfs);
 
-void build_paths(std::vector<struct path> &complete_paths, int num_dests, int *dests, struct multibfs *bfs);
-
-void naive_build_paths(std::vector<struct path> &complete_paths, int num_dests, int *dests, struct multibfs *bfs);
+void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int *dests, struct multibfs *bfs);
 
 #endif
