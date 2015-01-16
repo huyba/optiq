@@ -215,9 +215,7 @@ void build_paths(std::vector<struct path> &complete_paths, int num_dests, int *d
     int num_nodes = 1;
     for (int i = 0; i < num_dims; i++) {
 	num_nodes *= size[i];
-	printf("%d ", size[i]);
     }
-    printf("num_nodes %d\n", num_nodes);
 
     /*Clean the arrays*/
     for (int i = 0; i < num_dests; i++) {
