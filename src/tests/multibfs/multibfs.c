@@ -192,11 +192,12 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 		    struct arc a;
 		    a.u = dests[i];
 		    a.v = j;
-		    load[dests[i]][j]++;
+
 		    struct path *p = (struct path *) calloc (1, sizeof(struct path));
 		    p->arcs.push_back(a);
 		    p->max_load = 1;
 		    p->dest_id = i;
+
 		    adding_edge_path(bfs->edge_path, p);
 		    //printf("added edge path\n");
 		    adding_load_on_path(p, load, 1);
@@ -214,7 +215,19 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 	}
     }
 
+    //optiq_path_print_paths(complete_paths);
+    
+    /*for (int i = 0; i < num_nodes; i++) {
+	for (int j = 0; j < num_nodes; j++) {
+	    if (load[i][j] != 0) {
+		printf("load[%d][%d] = %d\n", i, j, load[i][j]);
+	    }
+	}
+    }*/
+
     //printf("Done first step size of complete_paths %d\n", complete_paths.size());
+    
+    hp_print(bfs->heap);
 
     gettimeofday(&t2, NULL);
 
@@ -253,6 +266,8 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 		utime += diff;
 
 		visited[p->dest_id][i] = true;
+
+		//optiq_path_print_path(np);
 	    }
 	}
     }

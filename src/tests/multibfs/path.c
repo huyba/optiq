@@ -61,7 +61,7 @@ void optiq_path_print_paths(std::vector<struct path *> &paths)
     for (int i = 0; i < paths.size(); i++) {
         struct path *p = paths[i];
 
-	printf("path %d num_hops = %ld\n", i, p->arcs.size());
+	printf("path %d num_hops = %ld, max_load = %d\n", i, p->arcs.size(), p->max_load);
 
 	printf("path %d: ", i);
         for (int j = 0; j < p->arcs.size(); j++) {

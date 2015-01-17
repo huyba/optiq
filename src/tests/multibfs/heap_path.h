@@ -23,4 +23,6 @@ void hp_remove_min(struct heap_path *hp);
 
 void hp_heapify(struct heap_path *hp, int index);
 
+void hp_print(struct heap_path *hp);
+
 #endif
