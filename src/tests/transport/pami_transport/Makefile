@@ -14,14 +14,16 @@ endif
 
 LD      = mpixlc_r
 
-INCLUDE = -I.
+MULTIBFS = ../../multibfs
+
+INCLUDE = -I. -I$(MULTIBFS)
 
 CFLAGS = $(COPT) $(INCLUDE) 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = pami_transport.o util.o datagen.o topology.o multibfs.o
+OBJ = pami_transport.o $(MULTIBFS)/util.o $(MULTIBFS)/datagen.o $(MULTIBFS)/topology.o $(MULTIBFS)/multibfs.o $(MULTIBFS)/heap_path.o $(MULTIBFS)/path.o
 
 all: $(OBJ) mpi copy
 
