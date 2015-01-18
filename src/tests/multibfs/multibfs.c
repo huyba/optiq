@@ -113,6 +113,8 @@ void multibfs_init(struct multibfs *bfs)
         }
     }
 
+    bfs->neighbors = (std::vector<int> *) calloc(1, sizeof(std::vector<int>) * num_nodes);
+
     int coord[5], nid = 0, neighbors[10], num_neighbors = 0;
     for (int ad = 0; ad < size[0]; ad++) {
         coord[0] = ad;
@@ -130,8 +132,10 @@ void multibfs_init(struct multibfs *bfs)
                         }
 
                         num_neighbors = optiq_compute_neighbors(num_dims, size, coord, neighbors);
+
                         for(int i = 0; i < num_neighbors; i++) {
                             graph[nid][neighbors[i]] = 1;
+			    bfs->neighbors[nid].push_back(neighbors[i]);
                         }
                     }
                 }
@@ -153,7 +157,7 @@ void multibfs_init(struct multibfs *bfs)
     bfs->visited = visited;
 }
 
-void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int *dests, struct multibfs *bfs) 
+void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int *dest_ranks, struct multibfs *bfs) 
 {
     int num_dims = bfs->num_dims;
     int *size = bfs->size;
@@ -178,25 +182,32 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 
     std::vector<struct path> expanding_paths;
     
-    struct timeval t1, t2, t3, t4, t5;
+    struct timeval t1, t2, t3, t4, t5, t6, t7, t8, t9;
 
     gettimeofday(&t1, NULL);
 
     /*Adding outgoing paths of the destination nodes first*/
     bool done = false;
-    while(!done) {
+    int neighbor_rank;
+
+    while (!done) {
 	done = true;
-	for (int i = 0; i < num_dests; i++) {
-	    for (int j = 0; j < num_nodes; j++) {
-		if ((graph[dests[i]][j] == 1) && !visited[i][j]) {
+	for (int i = 0; i < num_dests; i++) 
+	{
+	    for (int j = 0; j < bfs->neighbors[dest_ranks[i]].size(); j++) 
+	    {
+		neighbor_rank = bfs->neighbors[dest_ranks[i]][j];
+		if (!visited[i][neighbor_rank]) 
+		{
 		    struct arc a;
-		    a.u = dests[i];
-		    a.v = j;
+		    a.u = dest_ranks[i];
+		    a.v = neighbor_rank;
 
 		    struct path *p = (struct path *) calloc (1, sizeof(struct path));
 		    p->arcs.push_back(a);
 		    p->max_load = 1;
 		    p->dest_id = i;
+		    //p->path_id = complete_paths.size();
 
 		    adding_edge_path(bfs->edge_path, p);
 		    //printf("added edge path\n");
@@ -207,7 +218,7 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 		    complete_paths.push_back(p);
 		    //printf("done adding %d %d\n", a.u, a.v);
 		    
-		    visited[i][j] = true;
+		    visited[i][neighbor_rank] = true;
 		    done = false;
 		    break;
 		}
@@ -227,45 +238,71 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 
     //printf("Done first step size of complete_paths %d\n", complete_paths.size());
     
-    hp_print(bfs->heap);
+    //hp_print(bfs->heap);
 
     gettimeofday(&t2, NULL);
 
     /*For the current number of paths, start expanding and add more path*/
-    long int utime = 0L;
-    int index;
-    while(bfs->heap->num_elements != 0) {
+    long int find_time = 0L, update_time = 0L, insert_time = 0L, create_time = 0L, diff = 0L;
+
+    while(bfs->heap->num_elements != 0) 
+    {
+	gettimeofday(&t8, NULL);
+
 	struct path *p = hp_find_min(bfs->heap);
-	optiq_path_print_path(p);
+	//optiq_path_print_path(p);
 	hp_remove_min(bfs->heap);
+
+	gettimeofday(&t9, NULL);
+	diff = (t9.tv_usec + 1000000 * t9.tv_sec) - (t8.tv_usec + 1000000 * t8.tv_sec);
+        find_time += diff;
 
 	struct arc a = p->arcs.back();
 	int furthest_point = a.v;
 
 	/*Expanding all paths from this point*/
-	for (int i = 0; i < num_nodes; i++) {
-	    if (graph[furthest_point][i] == 1 && !visited[p->dest_id][i]) {
+	for (int i = 0; i < bfs->neighbors[furthest_point].size(); i++) 
+	{
+	    neighbor_rank = bfs->neighbors[furthest_point][i];
+
+	    if (!visited[p->dest_id][neighbor_rank]) 
+	    {
+		gettimeofday(&t7, NULL);
+
 		struct path *np = (struct path *) calloc (1, sizeof(struct path));
 		np->arcs = p->arcs;
 		np->max_load = p->max_load;
 		np->dest_id = p->dest_id;
+		//np->path_id = complete_paths.size();
 
 		struct arc na;
 		na.u = a.v;
-		na.v = i;
+		na.v = neighbor_rank;
 		np->arcs.push_back(na);
+
+		gettimeofday(&t6, NULL);
+
 		adding_load_on_path(np, load, 1);
 		adding_edge_path(bfs->edge_path, np);
 		hp_insert(bfs->heap, np);
 		complete_paths.push_back(np);
 
 		gettimeofday(&t4, NULL);
-		update_max_load(np, load, bfs);
-		gettimeofday(&t5, NULL);
-		long int diff = (t5.tv_usec + 1000000 * t5.tv_sec) - (t4.tv_usec + 1000000 * t4.tv_sec);
-		utime += diff;
 
-		visited[p->dest_id][i] = true;
+		update_max_load(np, load, bfs);
+
+		gettimeofday(&t5, NULL);
+
+		diff = (t5.tv_usec + 1000000 * t5.tv_sec) - (t4.tv_usec + 1000000 * t4.tv_sec);
+		update_time += diff;
+
+		diff = (t4.tv_usec + 1000000 * t4.tv_sec) - (t6.tv_usec + 1000000 * t6.tv_sec);
+		insert_time += diff;
+
+		diff = (t6.tv_usec + 1000000 * t6.tv_sec) - (t7.tv_usec + 1000000 * t7.tv_sec);
+                create_time += diff;
+
+		visited[p->dest_id][neighbor_rank] = true;
 
 		//optiq_path_print_path(np);
 	    }
@@ -274,12 +311,14 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 
     gettimeofday(&t3, NULL);
 
-    long int diff = (t3.tv_usec + 1000000 * t3.tv_sec) - (t2.tv_usec + 1000000 * t2.tv_sec);
-
-    printf("Extend 2 in %ld microseconds\n", diff);
-
     diff = (t2.tv_usec + 1000000 * t2.tv_sec) - (t1.tv_usec + 1000000 * t1.tv_sec);
+    //printf("Extend 1 %ld microseconds\n", diff);
 
-    printf("Extend 1 %ld microseconds\n", diff);
-    printf("Total update time is %ld\n", utime);
+    diff = (t3.tv_usec + 1000000 * t3.tv_sec) - (t2.tv_usec + 1000000 * t2.tv_sec);
+    //printf("Extend 2 in %ld microseconds\n", diff);
+
+    //printf("Total find time is %ld\n", find_time);
+    //printf("Total create time is %ld\n", create_time);
+    //printf("Total insert time is %ld\n", insert_time);
+    //printf("Total update time is %ld\n", update_time);
 }

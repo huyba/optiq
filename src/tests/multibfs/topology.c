@@ -25,7 +25,7 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
     int num_neighbors = 0;
     int nid = 0;
 
-    for (int i = 0; i < num_dims; i++) {
+    for (int i = num_dims - 1; i >= 0; i--) {
         if (coord[i] - 1 >= 0) {
             coord[i]--;
             nid = optiq_compute_nid(num_dims, size, coord);
@@ -46,7 +46,7 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
         }
 
         /*Torus neighbors*/
-        for (int i = 0; i < num_dims; i++) {
+        for (int i = num_dims - 1; i >= 0; i--) {
             if (coord[i] == 0) {
                 coord[i] = size[i]-1;
                 nid = optiq_compute_nid(num_dims, size, coord);

@@ -4,6 +4,23 @@
 
 #include "path.h"
 
+int optiq_path_compare(struct path *p1, struct path *p2)
+{
+    if (p1->max_load > p2->max_load) {
+	return 1;
+    } else if (p1->max_load < p2->max_load) {
+	return -1;
+    } else {
+	if (p1->arcs.size() > p2->arcs.size()) {
+	    return 1;
+	} else if (p1->arcs.size() < p2->arcs.size()) {
+	    return -1;
+	} else {
+	    return 0;
+	}
+    }
+}
+
 void optiq_path_print_path(struct path *p)
 {
     printf("Path: max_load = %d, #hops = %d. ", p->max_load, p->arcs.size());

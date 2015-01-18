@@ -15,6 +15,9 @@ struct multibfs {
     bool ** visited;
     struct heap_path *heap;
     std::vector<struct path *> **edge_path;
+    std::vector<int> *neighbors;
+    struct path *paths;
+    int max_avail_path_id;
 };
 
 void multibfs_init(struct multibfs *bfs);

@@ -34,7 +34,7 @@ void swap(struct heap_path *hp, int i1, int i2)
 void hp_shift_up(struct heap_path *hp, int index)
 {
     if (index != 0) {
-	if (hp->heap[index]->max_load < hp->heap[index/2]->max_load) 
+	if (optiq_path_compare(hp->heap[index], hp->heap[index/2]) < 0) 
 	{
 	    swap(hp, index, index/2);
 
@@ -50,10 +50,10 @@ void hp_shift_down(struct heap_path *hp, int index)
     /*If there are 2 children*/
     if (index *2 < hp->num_elements - 2) 
     {
-	if ((hp->heap[index]->max_load > hp->heap[index * 2 + 1]->max_load) || 
-		(hp->heap[index]->max_load > hp->heap[index * 2 + 2]->max_load)) 
+	if (optiq_path_compare(hp->heap[index], hp->heap[index * 2 + 1]) > 0 || 
+		optiq_path_compare(hp->heap[index], hp->heap[index * 2 + 2]) > 0) 
 	{
-	    if (hp->heap[index * 2 + 1]->max_load < hp->heap[index * 2 + 2]->max_load) 
+	    if (optiq_path_compare(hp->heap[index * 2 + 1], hp->heap[index * 2 + 2]) <= 0) 
 	    {
 		swap(hp, index, index * 2 + 1);
 		hp_shift_down(hp, index * 2 + 1);
@@ -68,7 +68,7 @@ void hp_shift_down(struct heap_path *hp, int index)
     /*If there is only one child*/
     else if (index * 2 < hp->num_elements - 1) 
     {
-	if (hp->heap[index]->max_load > hp->heap[index * 2 + 1]->max_load) 
+	if (optiq_path_compare(hp->heap[index], hp->heap[index * 2 + 1]) > 0) 
 	{
 	    swap(hp, index, index * 2 + 1);
 	    hp_shift_down(hp, index * 2 + 1);
@@ -103,7 +103,7 @@ void hp_print(struct heap_path *hp)
 
     for (int i = 0; i < hp->num_elements; i++) 
     {
-	printf("path: %d max_load = %d, num_hops = %ld \n", i, hp->heap[i]->max_load, hp->heap[i]->arcs.size());
+	printf("path: %d max_load = %d, num_hops = %ld. Path: ", i, hp->heap[i]->max_load, hp->heap[i]->arcs.size());
 	for (int j = 0; j < hp->heap[i]->arcs.size(); j++)
 	{
 	    printf("%d->", hp->heap[i]->arcs[j].u);
