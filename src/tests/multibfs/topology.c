@@ -71,6 +71,43 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
     return num_neighbors;
 }
 
+std::vector<int> * optiq_topology_get_all_nodes_neighbors(int num_dims, int *size)
+{
+    int num_nodes = 1;
+    for (int i = 0; i < num_dims; i++) {
+        num_nodes *= size[i];
+    }
+
+    std::vector<int> *all_nodes_neighbors = (std::vector<int> *) calloc(1, sizeof(std::vector<int>) * num_nodes);
+
+    int coord[5], nid = 0, neighbors[10], num_neighbors = 0;
+
+    for (int ad = 0; ad < size[0]; ad++) {
+        coord[0] = ad;
+        for (int bd = 0; bd < size[1]; bd++) {
+            coord[1] = bd;
+            for (int cd = 0; cd < size[2]; cd++) {
+                coord[2] = cd;
+                for (int dd = 0; dd < size[3]; dd++) {
+                    coord[3] = dd;
+                    for (int ed = 0; ed < size[4]; ed++) {
+                        coord[4] = ed;
+
+                        nid = optiq_compute_nid(num_dims, size, coord);
+                        num_neighbors = optiq_compute_neighbors(num_dims, size, coord, neighbors);
+
+                        for(int i = 0; i < num_neighbors; i++) {
+                            all_nodes_neighbors[nid].push_back(neighbors[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return all_nodes_neighbors;
+}
+
 void optiq_topology_move_along_one_dimension_bgq(int num_dims, int *size, int *source, int routing_dimension, int num_hops, int direction, int **path)
 {
     int dimension_value = source[routing_dimension];

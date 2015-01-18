@@ -1,9 +1,13 @@
 #ifndef OPTIQ_TOPOLOGY_BGQ_H
 #define OPTIQ_TOPOLOGY_BGQ_H
 
+#include<vector>
+
 int optiq_compute_nid(int num_dims, int *size, int *coord);
 
 int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors);
+
+std::vector<int> * optiq_topology_get_all_nodes_neighbors(int num_dims, int *size);
 
 void optiq_topology_compute_routing_order_bgq(int num_dims, int *size, int *order);
 

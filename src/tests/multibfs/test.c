@@ -4,6 +4,7 @@
 
 #include <mpi.h>
 
+#include "topology.h"
 #include "path.h"
 #include "multibfs.h"
 
@@ -11,37 +12,31 @@ int main(int argc, char **argv)
 {
     struct multibfs bfs;
 
+    int num_dims = 5;
     int size[5] = {2, 4, 4, 4, 2};
     int num_nodes = 256;
-
-    bfs.num_dims = 5;
-    for (int i = 0; i < 5; i++) {
-        bfs.size[i] = size[i];
-    }
 
     int num_dests = 4;
     int dests[4] = {32, 96, 160, 224};
 
-    /*Create a heap of paths*/
-    bfs.heap = (struct heap_path *) malloc (sizeof (struct heap_path));
-    hp_create(bfs.heap, num_nodes * num_dests);
+    std::vector<int> *neighbors = optiq_topology_get_all_nodes_neighbors(num_dims, size);
 
-    bfs.edge_path = (std::vector<struct path *> **) malloc (sizeof(std::vector<struct path *> *) * num_nodes);
-    for (int i = 0; i < num_nodes; i++) {
-	bfs.edge_path[i] = (std::vector<struct path *> *) calloc (1, sizeof(std::vector<struct path *>) * num_nodes);
+    bfs.num_dims = num_dims;
+    bfs.num_nodes = num_nodes;
+    for (int i = 0; i < 5; i++) {
+        bfs.size[i] = size[i];
     }
-
-    multibfs_init(&bfs);
-
-    printf("Init done\n");
+    bfs.neighbors = neighbors;
 
     std::vector<struct path *> complete_paths;
+    complete_paths.clear();
+
+    printf("Done init\n");
 
     struct timeval t1, t2;
 
-    complete_paths.clear();
-
     gettimeofday(&t1, NULL);
+
     build_paths(complete_paths, num_dests, dests, &bfs);
 
     gettimeofday(&t2, NULL);
@@ -50,8 +45,8 @@ int main(int argc, char **argv)
 
     printf("Build done in %ld microseconds\n", diff);
 
-    optiq_path_print_paths(complete_paths);
-    optiq_path_print_stat(complete_paths, num_nodes);
+    //optiq_path_print_paths(complete_paths);
+    //optiq_path_print_stat(complete_paths, num_nodes);
 
     return 0;
 }
