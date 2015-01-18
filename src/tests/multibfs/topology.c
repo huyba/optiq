@@ -4,6 +4,20 @@
 #include "util.h"
 #include "topology.h"
 
+void optiq_topology_get_size_bgq(int *size)
+{
+#ifdef __bgq__
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
+
+    size[0] = pers.Network_Config.Anodes;
+    size[1] = pers.Network_Config.Bnodes;
+    size[2] = pers.Network_Config.Cnodes;
+    size[3] = pers.Network_Config.Dnodes;
+    size[4] = pers.Network_Config.Enodes;
+#endif
+}
+
 int optiq_compute_nid(int num_dims, int *size, int *coord)
 {
     int node_id = coord[num_dims-1];

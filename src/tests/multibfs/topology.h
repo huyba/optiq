@@ -3,6 +3,14 @@
 
 #include<vector>
 
+#ifdef __bgq__
+#include <spi/include/kernel/location.h>
+#include <spi/include/kernel/process.h>
+#include <firmware/include/personality.h>
+#endif
+
+void optiq_topology_get_size_bgq(int *size);
+
 int optiq_compute_nid(int num_dims, int *size, int *coord);
 
 int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors);
