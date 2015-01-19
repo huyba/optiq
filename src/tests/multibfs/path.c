@@ -58,7 +58,7 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes)
     for (int i = 0; i < num_nodes; i++) {
 	for (int j = 0; j < num_nodes; j++) {
 	    if (load[i][j] != 0) {
-		printf("load %d %d %d\n", i, j, load[i][j]);
+		printf("load on edge %d %d %d\n", i, j, load[i][j]);
 
 		if (max_load < load[i][j]) {
 		    max_load = load[i][j];
