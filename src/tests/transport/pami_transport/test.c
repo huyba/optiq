@@ -5,7 +5,7 @@
 
 #include <mpi.h>
 
-#include "multibfs.h"
+#include "mtonbfs.h"
 #include "topology.h"
 #include "pami_transport.h"
 
@@ -59,9 +59,9 @@ void build_next_dest(int world_rank, int *next_dest, std::vector<struct path *> 
     {
 	for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
 	{
-	    if (complete_paths[i]->arcs[j].v == world_rank) 
+	    if (complete_paths[i]->arcs[j].u == world_rank) 
 	    {
-		next_dest[i] = complete_paths[i]->arcs[j].u;
+		next_dest[i] = complete_paths[i]->arcs[j].v;
 	    }
 	}
     }
@@ -80,14 +80,22 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
     int world_size = bulk->pami_transport->size;
 
     /*Get number of dests and dests*/
-    int num_source = 4;
-    int dests[4] = {32, 96, 160, 224};
+    int num_sources = 256;
+    int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
+    for (int i = 0; i < num_sources; i++) {
+	source_ranks[i] = i;
+    }
+    int num_dests = 4;
+    int dest_ranks[4] = {32, 96, 160, 224};
 
     uint64_t t0 = GetTimeBase();
 
     /*Calculate paths to move data*/
     std::vector<struct path *> complete_paths;
-    build_paths(complete_paths, num_dests, dests, bulk->bfs);
+    complete_paths.clear();
+    mton_build_paths(complete_paths, num_sources, source_ranks, num_dests, dest_ranks, bulk->bfs);
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     uint64_t t1 = GetTimeBase();
 
@@ -105,14 +113,14 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 
     int index = 0;
     for (int i = 0; i < complete_paths.size(); i++) {
-	if (complete_paths[i]->arcs.front().u == world_rank) {
+	if (complete_paths[i]->arcs.back().v == world_rank) {
 	    isDest = true;
 	}
 
-	if (complete_paths[i]->arcs.back().v == world_rank) {
+	if (complete_paths[i]->arcs.front().u == world_rank) {
 	    isSource = true;
 	    flow_id[index] = i;
-	    final_dest[index] = complete_paths[i]->arcs.front().u;
+	    final_dest[index] = complete_paths[i]->arcs.back().v;
 	    index++;
 	}
     }
@@ -196,7 +204,7 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    struct multibfs *bfs = (struct multibfs *) calloc (1, sizeof(struct multibfs));
+    struct mtonbfs *bfs = (struct mtonbfs *) calloc (1, sizeof(struct mtonbfs));
     bfs->num_dims = 5;
     optiq_topology_get_size_bgq(bfs->size);
     bfs->num_nodes = 1;
@@ -204,6 +212,10 @@ int main(int argc, char **argv)
 	bfs->num_nodes *= bfs->size[i];
     }
     bfs->neighbors = optiq_topology_get_all_nodes_neighbors(bfs->num_dims, bfs->size);
+
+    if (world_rank == 0) {
+	printf("num_dims = %d, num_nodes = %d\n", bfs->num_dims, bfs->num_nodes);
+    }
 
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));

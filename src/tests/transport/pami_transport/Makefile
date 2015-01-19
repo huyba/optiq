@@ -23,7 +23,7 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = pami_transport.o $(MULTIBFS)/util.o $(MULTIBFS)/datagen.o $(MULTIBFS)/topology.o $(MULTIBFS)/multibfs.o $(MULTIBFS)/heap_path.o $(MULTIBFS)/path.o
+OBJ = pami_transport.o $(MULTIBFS)/util.o $(MULTIBFS)/datagen.o $(MULTIBFS)/topology.o $(MULTIBFS)/mtonbfs.o $(MULTIBFS)/heap_path.o $(MULTIBFS)/path.o
 
 all: $(OBJ) mpi copy
 
@@ -36,7 +36,7 @@ mpi: test.x
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
-	rm *.x *.o
+	rm $(OBJ) *.x *.o
 
 realclean: clean
 	$(RM) $(RMFLAGS) *.x

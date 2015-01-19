@@ -70,7 +70,7 @@ struct optiq_bulk {
 
     struct optiq_pami_transport *pami_transport;
 
-    struct multibfs *bfs;
+    struct mtonbfs *bfs;
 
     int *flow_id;
     int *final_dest;
