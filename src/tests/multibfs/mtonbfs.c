@@ -71,6 +71,20 @@ void mton_add_edge_path(std::vector<struct path*> *edge_path, struct path *p, in
 
 void mton_build_paths(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs) 
 {
+    bool isReverted = false;
+    /*Revert the sources/dests for less computating*/
+    if (num_sources > num_dests) {
+	isReverted = true;
+
+	int temp = num_sources;
+	num_sources = num_dests;
+	num_dests = temp;
+
+	int *tp = source_ranks;
+	source_ranks = dest_ranks;
+	dest_ranks = tp;
+    }
+
     int num_dims = bfs->num_dims;
     int num_nodes = bfs->num_nodes;
 
@@ -198,6 +212,33 @@ void mton_build_paths(std::vector<struct path *> &complete_paths, int num_source
     free(bfs->edge_path);
     free(load);
     free(visited);
+
+    /*Reverted path again*/
+    if (isReverted) {
+	for (int i = 0; i < complete_paths.size(); i++) {
+	    struct path *p = complete_paths[i];
+
+	    /*Rever edges order*/
+	    for (int j = 0; j < p->arcs.size()/2; j++) 
+	    {
+		struct arc a = p->arcs[j];
+		p->arcs[j] = p->arcs[p->arcs.size() - j -1];
+		p->arcs[p->arcs.size() - j -1] = a;
+	    }
+
+	    /*Revert endpoints order*/
+	    for (int j = 0; j < p->arcs.size(); j++) 
+	    {
+		int temp = p->arcs[j].u;
+		p->arcs[j].u = p->arcs[j].v;
+		p->arcs[j].v = temp;
+	    }
+	}
+
+	int *tp = source_ranks;
+        source_ranks = dest_ranks;
+        dest_ranks = tp;
+    }
 
     /*
     long int diff = 0L;

@@ -80,7 +80,7 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
     int world_size = bulk->pami_transport->size;
 
     /*Get number of dests and dests*/
-    int num_dests = 4;
+    int num_source = 4;
     int dests[4] = {32, 96, 160, 224};
 
     uint64_t t0 = GetTimeBase();

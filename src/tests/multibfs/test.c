@@ -16,12 +16,12 @@ int main(int argc, char **argv)
     int size[5] = {2, 4, 4, 4, 2};
     int num_nodes = 256;
 
-    int num_sources = 4;
-    int source_ranks[4] = {32, 96, 160, 224};
-    int num_dests = 128;
-    int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
-    for (int i = 0; i < num_dests; i++) {
-	dest_ranks[i] = i;
+    int num_dests = 4;
+    int dest_ranks[4] = {32, 96, 160, 224};
+    int num_sources = 256;
+    int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
+    for (int i = 0; i < num_sources; i++) {
+	source_ranks[i] = i;
     }
 
     std::vector<int> *neighbors = optiq_topology_get_all_nodes_neighbors(num_dims, size);
