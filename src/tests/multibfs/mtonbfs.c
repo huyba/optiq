@@ -11,11 +11,11 @@
 #include <sys/time.h>
 
 #include "optiq_perf.h"
-#include "multibfs.h"
+#include "mtonbfs.h"
 
 struct multibfs_perf mperf;
 
-void add_load_on_path(struct path *np, int *load, int adding_load, int num_nodes)
+void mton_add_load_on_path(struct path *np, int *load, int adding_load, int num_nodes)
 {
     struct timeval t0, t1;
     gettimeofday(&t0, NULL);
@@ -29,7 +29,7 @@ void add_load_on_path(struct path *np, int *load, int adding_load, int num_nodes
     mperf.add_load_time += diff;
 }
 
-void update_max_load(struct path *np, int *load, struct multibfs *bfs)
+void mton_update_max_load(struct path *np, int *load, struct mtonbfs *bfs)
 {
     struct timeval t0, t1;
     gettimeofday(&t0, NULL);
@@ -54,7 +54,7 @@ void update_max_load(struct path *np, int *load, struct multibfs *bfs)
     mperf.update_max_load_time += diff;
 }
 
-void add_edge_path(std::vector<struct path*> *edge_path, struct path *p, int num_nodes)
+void mton_add_edge_path(std::vector<struct path*> *edge_path, struct path *p, int num_nodes)
 {
     struct timeval t0, t1;
     gettimeofday(&t0, NULL);
@@ -69,7 +69,7 @@ void add_edge_path(std::vector<struct path*> *edge_path, struct path *p, int num
     mperf.add_edge_path_time += diff;
 }
 
-void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int *dest_ranks, struct multibfs *bfs) 
+void mton_build_paths(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs) 
 {
     int num_dims = bfs->num_dims;
     int num_nodes = bfs->num_nodes;
@@ -80,17 +80,24 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 
     gettimeofday(&t0, NULL);
 
-    int *load = (int *)calloc(1, sizeof(int) * num_nodes * num_nodes);
-    bool *visited = (bool *)calloc(1, sizeof(bool) * num_dests * num_nodes);
+    int *source_dest = (int *)calloc (1, sizeof(int) * num_nodes * num_nodes);
+    for (int i = 0; i < num_sources; i++) {
+	for (int j = 0; j < num_dests; j++) {
+	    source_dest[i * num_nodes + j] = 1;
+	}
+    }
 
-    bfs->paths = (struct path *) calloc (1, sizeof (struct path) * num_dests * num_nodes);
+    int *load = (int *)calloc(1, sizeof(int) * num_nodes * num_nodes);
+    bool *visited = (bool *)calloc(1, sizeof(bool) * num_sources * num_nodes);
+
+    bfs->paths = (struct path *) calloc (1, sizeof (struct path) * num_sources * num_nodes);
     int max_avail_path_id = 0;
 
     bfs->edge_path = (std::vector<struct path *> *) calloc (1, sizeof(std::vector<struct path *>) * num_nodes * num_nodes);
 
     /*Create a heap of paths*/
     bfs->heap = (struct heap_path *) malloc (sizeof (struct heap_path));
-    hp_create(bfs->heap, num_nodes * num_dests);
+    hp_create(bfs->heap, num_sources * num_nodes);
 
     gettimeofday(&t1, NULL);
 
@@ -100,15 +107,15 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 
     while (!done) {
 	done = true;
-	for (int i = 0; i < num_dests; i++) 
+	for (int i = 0; i < num_sources; i++) 
 	{
-	    for (int j = 0; j < bfs->neighbors[dest_ranks[i]].size(); j++) 
+	    for (int j = 0; j < bfs->neighbors[source_ranks[i]].size(); j++) 
 	    {
-		neighbor_rank = bfs->neighbors[dest_ranks[i]][j];
+		neighbor_rank = bfs->neighbors[source_ranks[i]][j];
 		if (!visited[i * num_nodes + neighbor_rank]) 
 		{
 		    struct arc a;
-		    a.u = dest_ranks[i];
+		    a.u = source_ranks[i];
 		    a.v = neighbor_rank;
 
 		    struct path *p = &bfs->paths[max_avail_path_id];
@@ -117,15 +124,16 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 		    p->arcs.push_back(a);
 		    p->max_load = 1;
 		    p->root_id = i;
-		    //p->path_id = complete_paths.size();
 
-		    add_edge_path(bfs->edge_path, p, num_nodes);
+		    mton_add_edge_path(bfs->edge_path, p, num_nodes);
 		    //printf("added edge path\n");
-		    add_load_on_path(p, load, 1, num_nodes);
+		    mton_add_load_on_path(p, load, 1, num_nodes);
 		    //printf("added load\n");
 		    hp_insert(bfs->heap, p);
 		    //printf("inserted to heap\n");
-		    complete_paths.push_back(p);
+		    if (source_dest[source_ranks[i] * num_nodes + a.v] == 1) {
+			complete_paths.push_back(p);
+		    }
 		    //printf("done adding %d %d\n", a.u, a.v);
 		    
 		    visited[i * num_nodes + neighbor_rank] = true;
@@ -135,20 +143,6 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 	    }
 	}
     }
-
-    //optiq_path_print_paths(complete_paths);
-    
-    /*for (int i = 0; i < num_nodes; i++) {
-	for (int j = 0; j < num_nodes; j++) {
-	    if (load[i][j] != 0) {
-		printf("load[%d][%d] = %d\n", i, j, load[i][j]);
-	    }
-	}
-    }*/
-
-    //printf("Done first step size of complete_paths %d\n", complete_paths.size());
-    
-    //hp_print(bfs->heap);
 
     gettimeofday(&t2, NULL);
 
@@ -175,20 +169,22 @@ void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int 
 		np->arcs = p->arcs;
 		np->max_load = p->max_load;
 		np->root_id = p->root_id;
-		//np->path_id = complete_paths.size();
 
 		struct arc na;
 		na.u = a.v;
 		na.v = neighbor_rank;
 		np->arcs.push_back(na);
 
-		add_load_on_path(np, load, 1, num_nodes);
-		add_edge_path(bfs->edge_path, np, num_nodes);
+		mton_add_load_on_path(np, load, 1, num_nodes);
+		mton_add_edge_path(bfs->edge_path, np, num_nodes);
 
 		hp_insert(bfs->heap, np);
-		complete_paths.push_back(np);
 
-		update_max_load(np, load, bfs);
+		if (source_dest[source_ranks[np->root_id] * num_nodes + na.v] == 1) {
+		    complete_paths.push_back(np);
+		}
+
+		mton_update_max_load(np, load, bfs);
 
 		visited[p->root_id * num_nodes + neighbor_rank] = true;
 

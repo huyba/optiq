@@ -10,7 +10,7 @@ struct arc {
 
 struct path {
     int max_load;
-    int dest_id;
+    int root_id;
     std::vector<struct arc> arcs;
     int hpos;
 };

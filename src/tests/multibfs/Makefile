@@ -32,7 +32,7 @@ INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = util.o topology.o datagen.o multibfs.o path.o heap_path.o
+OBJ = util.o topology.o datagen.o mtonbfs.o path.o heap_path.o
 
 all: $(OBJ) test.x copy
 

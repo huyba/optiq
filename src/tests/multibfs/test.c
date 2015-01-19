@@ -6,18 +6,23 @@
 
 #include "topology.h"
 #include "path.h"
-#include "multibfs.h"
+#include "mtonbfs.h"
 
 int main(int argc, char **argv)
 {
-    struct multibfs bfs;
+    struct mtonbfs bfs;
 
     int num_dims = 5;
     int size[5] = {2, 4, 4, 4, 2};
     int num_nodes = 256;
 
-    int num_dests = 4;
-    int dests[4] = {32, 96, 160, 224};
+    int num_sources = 4;
+    int source_ranks[4] = {32, 96, 160, 224};
+    int num_dests = 256;
+    int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
+    for (int i = 0; i < num_dests; i++) {
+	dest_ranks[i] = i;
+    }
 
     std::vector<int> *neighbors = optiq_topology_get_all_nodes_neighbors(num_dims, size);
 
@@ -37,7 +42,7 @@ int main(int argc, char **argv)
 
     gettimeofday(&t1, NULL);
 
-    build_paths(complete_paths, num_dests, dests, &bfs);
+    mton_build_paths(complete_paths, num_sources, source_ranks, num_dests, dest_ranks, &bfs);
 
     gettimeofday(&t2, NULL);
 
