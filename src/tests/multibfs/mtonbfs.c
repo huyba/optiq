@@ -83,7 +83,7 @@ void mton_build_paths(std::vector<struct path *> &complete_paths, int num_source
     int *source_dest = (int *)calloc (1, sizeof(int) * num_nodes * num_nodes);
     for (int i = 0; i < num_sources; i++) {
 	for (int j = 0; j < num_dests; j++) {
-	    source_dest[i * num_nodes + j] = 1;
+	    source_dest[source_ranks[i] * num_nodes + dest_ranks[j]] = 1;
 	}
     }
 

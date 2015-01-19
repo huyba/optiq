@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
     int num_sources = 4;
     int source_ranks[4] = {32, 96, 160, 224};
-    int num_dests = 256;
+    int num_dests = 128;
     int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
     for (int i = 0; i < num_dests; i++) {
 	dest_ranks[i] = i;
@@ -50,8 +50,8 @@ int main(int argc, char **argv)
 
     printf("Build done in %ld microseconds\n", diff);
 
-    //optiq_path_print_paths(complete_paths);
-    //optiq_path_print_stat(complete_paths, num_nodes);
+    optiq_path_print_paths(complete_paths);
+    optiq_path_print_stat(complete_paths, num_nodes);
 
     return 0;
 }
