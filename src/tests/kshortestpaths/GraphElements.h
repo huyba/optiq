@@ -105,6 +105,7 @@ protected:
 
 	int m_nLength;
 	double m_dWeight;
+public:
 	std::vector<BaseVertex*> m_vtVertexList;
 
 public:

@@ -1,3 +1,6 @@
+MULTIBFS = ../multibfs
+
+OBJ = $(MULTIBFS)/datagen.o $(MULTIBFS)/util.o $(MULTIBFS)/topology.o
 
 all:
-	g++ *.cpp
+	g++ $(OBJ) *.cpp

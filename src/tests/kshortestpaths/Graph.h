@@ -24,11 +24,12 @@ public:
 	void PrintOut(std::ostream& out_stream) const
 	{
 		out_stream << "Cost: " << m_dWeight << " Length: " << m_vtVertexList.size() << std::endl;
-		for(std::vector<BaseVertex*>::const_iterator pos=m_vtVertexList.begin(); pos!=m_vtVertexList.end();++pos)
+		
+		/*for(std::vector<BaseVertex*>::const_iterator pos=m_vtVertexList.begin(); pos!=m_vtVertexList.end();++pos)
 		{
 			out_stream << (*pos)->getID() << " ";
 		}
-		out_stream << std::endl <<  "*********************************************" << std::endl;	
+		out_stream << std::endl <<  "*********************************************" << std::endl;*/
 	}
 };
 
