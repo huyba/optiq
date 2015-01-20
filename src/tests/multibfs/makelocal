@@ -1,0 +1,32 @@
+CC = g++
+
+COPT = -g -O2 -Wall #-std=c99
+
+MPICH2_PATH=/usr/local/mpich2
+
+LD = g++
+
+INCLUDE = -I.
+
+CFLAGS = $(COPT) $(INCLUDE)
+LDFLAGS = $(COPT)
+
+INCLUDE += -I$(MPICH2_PATH)/include
+
+LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
+
+OBJ = util.o topology.o
+
+all: $(OBJ) model.x
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.x: %.o
+	$(LD) $(OBJ) $< $(LIBS) -o $@
+
+copy:
+
+clean:
+	rm *.o
+	rm *.x

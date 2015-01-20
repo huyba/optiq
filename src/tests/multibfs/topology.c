@@ -18,6 +18,34 @@ void optiq_topology_get_size_bgq(int *size)
 #endif
 }
 
+void optiq_topology_print_graph(struct topology *topo, int cost)
+{
+    for (int i = 0; i < topo->num_nodes; i++)
+    {
+	for (int j = 0; j < topo->neighbors[i].size(); j++) {
+	    printf("%d %d %d\n", i, topo->neighbors[i][j], cost);
+	}
+    }
+}
+
+void optiq_topology_init(int num_dims, int *size, struct topology *topo)
+{
+    topo->num_dims = num_dims;
+    int num_nodes = 1;
+    for (int i = 0; i < num_dims; i++) {
+        num_nodes *= size[i];
+	topo->size[i] = size[i];
+    }
+    topo->num_nodes = num_nodes;
+   
+    topo->neighbors = optiq_topology_get_all_nodes_neighbors(num_dims, size);
+
+    topo->num_edges = 0;
+    for (int i = 0; i < num_nodes; i++) {
+	topo->num_edges += topo->neighbors[i].size();
+    }
+}
+
 int optiq_compute_nid(int num_dims, int *size, int *coord)
 {
     int node_id = coord[num_dims-1];
