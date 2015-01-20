@@ -60,10 +60,12 @@ void print_Yen_k_shortest_paths(char *filePath, int k, int source, int dest, int
 	BasePath *p = yenAlg.next();
 
 	printf("set Path_Arcs[%d, %d]\n", job_id, path_id);
+
 	for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
 	{
 	    printf("%d %d\n", p->m_vtVertexList[j]->getID(), p->m_vtVertexList[j + 1]->getID());
 	}
+
 	printf(";\n\n");
 
 	path_id++;
@@ -83,6 +85,9 @@ int main(int argc, char **argv)
     int num_dests = 4;
 
     int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
+    for (int i = 0; i < num_sources; i++) {
+	source_ranks[i] = i;
+    }
     int dest_ranks[4] = {32, 96, 160, 224};
 
     int job_id = 0;
