@@ -33,19 +33,24 @@ param Capacity :=
 7 8 100
 ;
 
-param: Jobs: Demand :=
-0 100
-1 100
+set Jobs :=
+0
+1
 ;
 
-set Jobs: Paths :=
+set Paths :=
 0 0
 0 1
 1 2
 1 3
 ;
 
-set Paths: Path_Arcs :=
+param Demand :=
+0 100
+1 100
+;
+
+set Path_Arcs :=
 0 0 2
 0 2 3
 0 3 4
