@@ -111,6 +111,41 @@ void get_Yen_k_shortest_paths(char *filePath, int k, struct job *nj, int &path_i
     }
 }
 
+void get_most_h_hops_paths (char *filePath, int h, struct job *nj, int &path_id)
+{
+    Graph my_graph(filePath);
+
+    YenTopKShortestPathsAlg yenAlg(my_graph, my_graph.get_vertex(nj->source_id), my_graph.get_vertex(nj->dest_id));
+
+    while (yenAlg.has_next())
+    {
+        BasePath *p = yenAlg.next();
+
+	if (p->Weight() > h) {
+	    break;
+	}
+
+        struct path *pa = (struct path *) calloc (1, sizeof(struct path));
+
+        pa->job_id = nj->job_id;
+        pa->path_id = path_id;
+
+        for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
+        {
+            struct arc a;
+
+            a.u = p->m_vtVertexList[j]->getID();
+            a.v = p->m_vtVertexList[j + 1]->getID();
+
+            pa->arcs.push_back(a);
+        }
+
+        nj->paths.push_back(pa);
+
+        path_id++;
+    }
+}
+
 void print_jobs_ampl(struct job *jobs, int num_jobs)
 {
     /*Print jobs*/
@@ -158,9 +193,6 @@ void print_jobs_ampl(struct job *jobs, int num_jobs)
 
 int main(int argc, char **argv)
 {
-    char *filePath = argv[1];
-    int num_shortest_paths = atoi(argv[2]);
-
     int num_dims = 5;
     int size[5] = {2,4,4,4,2};
 
@@ -192,6 +224,10 @@ int main(int argc, char **argv)
     int num_jobs = num_sources * num_dests;
     struct job *jobs = (struct job *) calloc (1, sizeof(struct job) * num_jobs);
 
+    char *filePath = argv[1];
+    int num_shortest_paths = atoi(argv[2]);
+    int max_hops = atoi(argv[2]);
+
     /*Get k shortest paths between each pair of source and destination*/
     int job_id = 0;
     int path_id = 0;
@@ -206,7 +242,8 @@ int main(int argc, char **argv)
 	    jobs[job_id].dest_id = dest_ranks[j];
 	    jobs[job_id].demand = demand;
 
-	    get_Yen_k_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
+	    //get_Yen_k_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
+	    get_most_h_hops_paths(filePath, max_hops, &jobs[job_id], path_id);
 
 	    job_id++;
 	}
