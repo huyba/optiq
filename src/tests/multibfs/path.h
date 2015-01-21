@@ -13,6 +13,8 @@ struct path {
     int root_id;
     std::vector<struct arc> arcs;
     int hpos;
+    int job_id;
+    int path_id;
 };
 
 int optiq_path_compare(struct path *p1, struct path *p2);
