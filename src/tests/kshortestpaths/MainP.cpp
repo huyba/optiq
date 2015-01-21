@@ -111,19 +111,25 @@ void get_Yen_k_shortest_paths(char *filePath, int k, struct job *nj, int &path_i
     }
 }
 
-void get_most_h_hops_paths (char *filePath, int h, struct job *nj, int &path_id)
+void get_most_h_hops_k_shortest_paths (char *filePath, int h, int k, struct job *nj, int &path_id)
 {
     Graph my_graph(filePath);
 
     YenTopKShortestPathsAlg yenAlg(my_graph, my_graph.get_vertex(nj->source_id), my_graph.get_vertex(nj->dest_id));
 
+    int i = 0;
     while (yenAlg.has_next())
     {
         BasePath *p = yenAlg.next();
 
-	if (p->Weight() > h) {
-	    break;
+	if (p->Weight() > h || i > k) 
+	{
+	    /*If i = 0, but even the shortest path has more than h hops, print at least one.*/
+	    if (i > 0) {
+		break;
+	    }
 	}
+	i++;
 
         struct path *pa = (struct path *) calloc (1, sizeof(struct path));
 
@@ -226,7 +232,7 @@ int main(int argc, char **argv)
 
     char *filePath = argv[1];
     int num_shortest_paths = atoi(argv[2]);
-    int max_hops = atoi(argv[2]);
+    int max_hops = atoi(argv[3]);
 
     /*Get k shortest paths between each pair of source and destination*/
     int job_id = 0;
@@ -243,7 +249,7 @@ int main(int argc, char **argv)
 	    jobs[job_id].demand = demand;
 
 	    //get_Yen_k_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
-	    get_most_h_hops_paths(filePath, max_hops, &jobs[job_id], path_id);
+	    get_most_h_hops_k_shortest_paths(filePath, max_hops, num_shortest_paths, &jobs[job_id], path_id);
 
 	    job_id++;
 	}

@@ -1,4 +1,4 @@
-./a.out ./data/graph.dat 4 > model.dat
+./a.out ./data/graph.dat 8 32 > model.dat
 
 #cp model.dat ../../../model/path_based/256to4_8.dat
 #git add ../../../model/path_based/256to4_8.dat
