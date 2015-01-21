@@ -33,6 +33,13 @@ void optiq_print_arcs(int num_dims, int *size, double cap)
                                 printf("%d %d %8.0f\n", nid, neighbors[i], cap);
                             }
                         }
+			/*A node connects to itself*/
+			if (cap < 0.0) {
+                            printf("%d %d\n", nid, nid);
+                        }
+                        else {
+                            printf("%d %d %8.0f\n", nid, nid, cap);
+                        }    
                     }
                 }
             }

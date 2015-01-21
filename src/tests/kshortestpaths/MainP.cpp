@@ -132,9 +132,16 @@ int main(int argc, char **argv)
 	{
 	    printf("set Paths[%d] :=\n", job_id);
 
-	    for (int h = 0; h < num_shortest_paths; h++)
+	    if (source_ranks[i] != dest_ranks[j]) 
 	    {
-		printf("%d\n", path_id + h);
+		for (int h = 0; h < num_shortest_paths; h++)
+		{
+		    printf("%d\n", path_id + h);
+		}
+	    }
+	    else 
+	    {
+		printf("%d\n", path_id);
 	    }
 
 	    printf(";\n\n");
