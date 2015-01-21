@@ -1,2 +1,2 @@
 
-./a.out ./data/graph.dat 8 > model.dat
+./a.out ./data/graph.dat 16 > model.dat
