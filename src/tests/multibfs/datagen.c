@@ -5,6 +5,48 @@
 
 #define INFINITY (8*1024*1024)
 
+void optiq_print_arcs_to_file(int num_dims, int *size, double cap, std::ofstream &myfile)
+{
+    int num_neighbors = 0;
+    int neighbors[10];
+    int coord[5];
+    int nid;
+
+    for (int ad = 0; ad < size[0]; ad++) {
+        coord[0] = ad;
+        for (int bd = 0; bd < size[1]; bd++) {
+            coord[1] = bd;
+            for (int cd = 0; cd < size[2]; cd++) {
+                coord[2] = cd;
+                for (int dd = 0; dd < size[3]; dd++) {
+                    coord[3] = dd;
+                    for (int ed = 0; ed < size[4]; ed++) {
+                        coord[4] = ed;
+                        num_neighbors = 0;
+                        nid = optiq_compute_nid(num_dims, size, coord);
+                        num_neighbors = optiq_compute_neighbors(num_dims, size, coord, neighbors);
+                        for (int i = 0; i < num_neighbors; i++) {
+                            if (cap < 0.0) {
+                                myfile << nid << " " << neighbors[i] << endl;
+                            }
+                            else {
+                                myfile << nid << " " << neighbors[i] << " " << (int)cap << endl;
+                            }
+                        }
+                        /*A node connects to itself*/
+			if (cap < 0.0) {
+                            myfile << nid << " " << nid << endl;
+                        }
+                        else {
+                            myfile << nid << " " << nid << " " << (int)cap << endl;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void optiq_print_arcs(int num_dims, int *size, double cap)
 {
     int num_neighbors = 0;

@@ -17,7 +17,7 @@ LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
 OBJ = util.o topology.o datagen.o
 
-all: $(OBJ) model.x
+all: $(OBJ) model.x readpath.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
