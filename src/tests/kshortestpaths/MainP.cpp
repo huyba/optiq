@@ -104,7 +104,8 @@ int main(int argc, char **argv)
     printf(";\n\n");
 
     printf("param Capacity :=\n");
-    optiq_print_arcs(num_dims, size, 1680);
+    int capacity = 2048;
+    optiq_print_arcs(num_dims, size, 2048);
     printf(";\n\n");
 
     /*Print jobs*/
@@ -116,7 +117,7 @@ int main(int argc, char **argv)
     printf(";\n\n");
 
     /*Print demand*/
-    int demand = 1;
+    int demand = 2048;
     printf("param Demand :=\n");
     for (int i = 0; i < num_sources * num_dests; i++)
     {
