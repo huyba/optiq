@@ -107,15 +107,8 @@ void get_Yen_k_shortest_paths(char *filePath, int k, struct job *nj, int &path_i
 
 	nj->paths.push_back(pa);
 
-        printf(";\n\n");
-
         path_id++;
     }
-}
-
-void print_paths(std::vector<struct path> &paths)
-{
-    
 }
 
 void print_jobs_ampl(struct job *jobs, int num_jobs)
@@ -152,13 +145,13 @@ void print_jobs_ampl(struct job *jobs, int num_jobs)
         {
 	    printf("set Path_Arcs[%d, %d]\n", jobs[i].job_id, jobs[i].paths[j]->path_id);
 
-	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); j++)
+	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
 	    {
 		printf("%d %d\n", jobs[i].paths[j]->arcs[k].u, jobs[i].paths[j]->arcs[k].v);
 	    }
-	}
 
-        printf(";\n\n");
+	    printf(";\n\n");
+	}
     }
 }
 
@@ -209,6 +202,8 @@ int main(int argc, char **argv)
 	for (int j = 0; j < num_dests; j++) 
 	{
 	    jobs[job_id].job_id = job_id;
+	    jobs[job_id].source_id = source_ranks[i];
+	    jobs[job_id].dest_id = dest_ranks[j];
 	    jobs[job_id].demand = demand;
 
 	    get_Yen_k_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
