@@ -338,8 +338,8 @@ int main(int argc, char **argv)
 	    jobs[job_id].dest_id = dest_ranks[j];
 	    jobs[job_id].demand = demand;
 
-	    get_Yen_k_distint_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
-	    //get_Yen_k_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
+	    //get_Yen_k_distint_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
+	    get_Yen_k_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
 	    //get_most_h_hops_k_shortest_paths(filePath, max_hops, num_shortest_paths, &jobs[job_id], path_id);
 
 	    job_id++;
@@ -350,8 +350,8 @@ int main(int argc, char **argv)
 
     myfile.close();
 
-    printf("Get most k disjoint shortest paths k = %d\n", num_shortest_paths);
-    //printf("k shortest paths k = %d\n", num_shortest_paths);
+    //printf("Get most k disjoint shortest paths k = %d\n", num_shortest_paths);
+    printf("k shortest paths k = %d\n", num_shortest_paths);
     //printf("At most k shortest paths with max h hops k = %d, h = %d\n", num_shortest_paths, max_hops);
     print_jobs_stat(jobs, num_jobs, num_nodes);
 }
