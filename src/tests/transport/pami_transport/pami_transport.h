@@ -36,7 +36,7 @@ struct optiq_message_header {
     int length;
     int source;
     int dest;
-    int flow_id;
+    int path_id;
     struct optiq_memregion mem;
     int header_id;
     int original_offset;

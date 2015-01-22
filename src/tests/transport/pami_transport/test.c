@@ -174,7 +174,7 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 		header->length = nbytes;
 		header->source = world_rank;
 		header->dest = final_dest[i];
-		header->flow_id = flow_id[i];
+		header->path_id = flow_id[i];
 
 		memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
 		header->mem.offset = offset;

@@ -14,4 +14,6 @@ struct job {
     std::vector<struct path *> paths;
 };
 
+void optiq_job_print(std::vector<struct job> &jobs, int rank);
+
 #endif

@@ -8,6 +8,7 @@
 #include "mtonbfs.h"
 #include "topology.h"
 #include "pami_transport.h"
+#include "job.h"
 
 using namespace std;
 
@@ -17,6 +18,9 @@ void build_next_dest(int world_rank, int *next_dest, std::vector<struct path *> 
 {
     for (int i = 0; i < complete_paths.size(); i++)
     {
+	/*Reset the path_id*/
+	complete_paths[i]->path_id = i;
+
 	for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
 	{
 	    if (complete_paths[i]->arcs[j].u == world_rank) 
@@ -57,22 +61,53 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
     int num_jobs = 4;
     int expecting_length = world_size * 1024 * 1024;
 
-    int *flow_id = bulk->flow_id;
-    int *final_dest = bulk->final_dest;
-
     bool isSource = false, isDest = false;
 
     int index = 0;
-    for (int i = 0; i < complete_paths.size(); i++) {
-	if (complete_paths[i]->arcs.back().v == world_rank) {
+    vector<struct job> jobs;
+
+    int demand = 1024 * 1024;
+
+    for (int i = 0; i < complete_paths.size(); i++) 
+    {
+	if (complete_paths[i]->arcs.back().v == world_rank) 
+	{
 	    isDest = true;
 	}
 
-	if (complete_paths[i]->arcs.front().u == world_rank) {
+	if (complete_paths[i]->arcs.front().u == world_rank) 
+	{
 	    isSource = true;
-	    flow_id[index] = i;
-	    final_dest[index] = complete_paths[i]->arcs.back().v;
-	    index++;
+
+	    bool existing_job = false;
+	    int k = 0;
+
+	    for (int j = 0; j < jobs.size(); j++)
+	    {
+		if (jobs[j].job_id == complete_paths[i]->job_id) 
+		{
+		    k = j;
+		    existing_job = true;
+		    break;
+		}
+	    }
+
+	    if (!existing_job)
+	    {
+		struct job new_job;
+
+		new_job.job_id = complete_paths[i]->job_id;
+		new_job.paths.push_back(complete_paths[i]);
+		new_job.source_id = complete_paths[i]->arcs.front().u;
+		new_job.dest_id = complete_paths[i]->arcs.back().v;
+		new_job.demand = demand;
+
+		jobs.push_back(new_job);
+	    } 
+	    else 
+	    {
+		jobs[k].paths.push_back(complete_paths[i]);
+	    }
 	}
     }
 
@@ -116,17 +151,29 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
     }
 
     int nbytes = 32 * 1024;
-    int num_dests = 4;
-    if (isSource) {
+
+    int pid = 0;
+    if (isSource)
+    {
 	for (int offset = 0; offset < send_buf_size; offset += nbytes) {
-	    for (int i = 0; i < num_dests; i++) {
+	    for (int i = 0; i < jobs.size(); i++) {
 		struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
 		bulk->pami_transport->extra.message_headers.pop_back();
 
 		header->length = nbytes;
-		header->source = world_rank;
-		header->dest = final_dest[i];
-		header->flow_id = flow_id[i];
+		header->source = jobs[i].source_id;
+		header->dest = jobs[i].dest_id;
+
+		if (jobs[i].paths.size() > 1) 
+		{
+		    pid = pid % jobs[i].paths.size();
+		    header->path_id = jobs[i].paths[pid]->path_id;
+		    pid++;
+		} 
+		else 
+		{
+		    header->path_id = jobs[i].paths[0]->path_id;
+		}
 
 		memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
 		header->mem.offset = offset;
@@ -236,7 +283,7 @@ int main(int argc, char **argv)
 
     uint64_t t3 = GetTimeBase();
 
-    double max_t, t = (double)(t3 - t0)/1.6e3;
+    double max_t, t = (double)(t3 - t1)/1.6e3;
 
     MPI_Reduce(&t, &max_t, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 

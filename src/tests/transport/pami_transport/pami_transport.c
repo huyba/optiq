@@ -210,7 +210,7 @@ void optiq_execute_jobs(struct optiq_pami_transport *pami_transport)
 	    pami_transport->extra.processing_headers.push_back(header);
 
 	    /*Notify the size, ask for mem region*/
-            int dest = pami_transport->bulk.next_dest[header->flow_id];
+            int dest = pami_transport->bulk.next_dest[header->path_id];
 
 	    /*If the next destination is final destination*/
 	    if (dest == header->dest) {
@@ -242,7 +242,7 @@ void optiq_execute_jobs(struct optiq_pami_transport *pami_transport)
 	    struct optiq_rput_cookie *rput_cookie = pami_transport->extra.rput_cookies.back();
             pami_transport->extra.rput_cookies.pop_back();
 
-	    int dest = pami_transport->bulk.next_dest[header->flow_id];
+	    int dest = pami_transport->bulk.next_dest[header->path_id];
 	    rput_cookie->message_header = header;
 	    rput_cookie->dest = dest;
 

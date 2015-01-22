@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "util.h"
 #include "path.h"
@@ -79,7 +80,7 @@ void optiq_path_print_paths(std::vector<struct path *> &paths)
     for (int i = 0; i < paths.size(); i++) {
         struct path *p = paths[i];
 
-	printf("path %d num_hops = %ld, max_load = %d\n", i, p->arcs.size(), p->max_load);
+	printf("path %d num_hops = %ld, max_load = %d, flow = %d\n", i, p->arcs.size(), p->max_load, p->flow);
 
 	printf("path %d: ", i);
         for (int j = 0; j < p->arcs.size(); j++) {
@@ -106,6 +107,7 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
     }
 
     int job_id = 0, path_id = 0, u, v;
+    float flow;
     char temp[256];
 
     while(fgets(line, 80, fp) != NULL)
@@ -115,12 +117,13 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
         if (line[0] == 'J')
         {
             trim(line);
-            sscanf(line, "%s %d %d", temp, &job_id, &path_id);
+            sscanf(line, "%s %d %d %f", temp, &job_id, &path_id, &flow);
             //printf("job_id = %d path_id = %d\n", job_id, path_id);
 
             struct path *p = (struct path *) calloc (1, sizeof(struct path));
             p->job_id = job_id;
             p->path_id = path_id;
+	    p->flow = rintf(flow);
 
             while(fgets(line,80,fp) != NULL)
             {
