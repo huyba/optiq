@@ -27,7 +27,7 @@ OBJ = pami_transport.o $(MULTIBFS)/util.o $(MULTIBFS)/datagen.o $(MULTIBFS)/topo
 
 all: $(OBJ) mpi copy
 
-mpi: test.x
+mpi: test.x test_models.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -45,3 +45,5 @@ realclean: clean
 
 copy:
 	cp test.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/send_recv/
+
+	cp test_models.x  /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/models/
