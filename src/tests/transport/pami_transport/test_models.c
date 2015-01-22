@@ -13,46 +13,6 @@ using namespace std;
 
 #define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
 
-void flow_create(int world_rank, int *next_dest)
-{
-    if (world_rank == 0) {
-	next_dest[0] = 1;
-	next_dest[1] = 2;
-    }
-    if (world_rank == 1) {
-	next_dest[0] = 3;
-    }
-    if (world_rank == 3) {
-	next_dest[0] = 5;
-	next_dest[1] = 1;
-	next_dest[3] = 1;
-    }
-    if (world_rank == 5) {
-	next_dest[0] = 7;
-	next_dest[1] = 3;
-	next_dest[3] = 3;
-    }
-    if (world_rank == 7) {
-	next_dest[0] = 6;
-	next_dest[1] = 5;
-	next_dest[3] = 5;
-    }
-    if (world_rank == 6) {
-	next_dest[0] = 4;
-	next_dest[1] = 7;
-	next_dest[2] = 4;
-	next_dest[3] = 7;
-    }
-    if (world_rank == 4) {
-	next_dest[0] = 2;
-	next_dest[1] = 6;
-	next_dest[2] = 2;
-    }
-    if (world_rank == 2) {
-	next_dest[1] = 4;
-    }
-}
-
 void build_next_dest(int world_rank, int *next_dest, std::vector<struct path *> &complete_paths)
 {
     for (int i = 0; i < complete_paths.size(); i++)
@@ -67,7 +27,7 @@ void build_next_dest(int world_rank, int *next_dest, std::vector<struct path *> 
     }
 }
 
-void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, struct optiq_bulk *bulk)
+void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, struct optiq_bulk *bulk, char *filePath)
 {
     //uint64_t t0 = GetTimeBase();
 
@@ -79,21 +39,12 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
     int world_rank = bulk->pami_transport->rank;
     int world_size = bulk->pami_transport->size;
 
-    /*Get number of dests and dests*/
-    int num_sources = 256;
-    int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
-    for (int i = 0; i < num_sources; i++) {
-	source_ranks[i] = i;
-    }
-    int num_dests = 4;
-    int dest_ranks[4] = {32, 96, 160, 224};
-
     uint64_t t0 = GetTimeBase();
 
     /*Calculate paths to move data*/
     std::vector<struct path *> complete_paths;
     complete_paths.clear();
-    mton_build_paths(complete_paths, num_sources, source_ranks, num_dests, dest_ranks, bulk->bfs);
+    optiq_path_read_from_file(filePath, complete_paths);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -165,6 +116,7 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
     }
 
     int nbytes = 32 * 1024;
+    int num_dests = 4;
     if (isSource) {
 	for (int offset = 0; offset < send_buf_size; offset += nbytes) {
 	    for (int i = 0; i < num_dests; i++) {
@@ -200,6 +152,8 @@ int main(int argc, char **argv)
     int world_rank, world_size;
 
     MPI_Init(&argc, &argv);
+
+    char *filePath = argv[1];
 
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -274,7 +228,7 @@ int main(int argc, char **argv)
 
     uint64_t t0 = GetTimeBase();
 
-    optiq_pami_alltoallv(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, &pami_transport->bulk);
+    optiq_build_paths_from_file(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, &pami_transport->bulk, filePath);
 
     uint64_t t1 = GetTimeBase();
 
