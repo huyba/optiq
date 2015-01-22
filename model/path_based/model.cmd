@@ -1,16 +1,20 @@
 model model.mod;
-data 256to4_16.dat;
+data model8.dat;
 option solver snopt;
 solve;
 
 display _ampl_elapsed_time;
 display _total_solve_elapsed_time;
 
-var k:=0;
-
 for {job in Jobs} {
     for {p in Paths[job]} {
-	printf "Job_Paths_Flow %d %d %8.4f\n", job, p, Flow[job, p];
+	if Flow[job, p] > 0.01 then {
+	    printf "Job_Paths_Flow %d %d %8.4f\n", job, p, Flow[job, p];
+	    for {(u,v) in Path_Arcs[job,p]} {
+		printf "%d %d\n", u, v;
+	    }
+	    printf "\n";
+	}
     }
     printf("\n");
 }

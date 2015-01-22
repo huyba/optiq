@@ -15,7 +15,7 @@ INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = util.o topology.o datagen.o
+OBJ = util.o topology.o datagen.o path.o
 
 all: $(OBJ) model.x readpath.x
 
