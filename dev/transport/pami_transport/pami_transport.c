@@ -71,13 +71,13 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
 
 }
 
-static void decrement (pami_context_t context, void *cookie, pami_result_t result)
+void decrement (pami_context_t context, void *cookie, pami_result_t result)
 {
     unsigned * value = (unsigned *) cookie;
     --*value;
 }
 
-int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie, pami_event_function rput_done_fn, pami_event_function rput_rdone_fn)
+int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie, void *rput_done_fn, void *rput_rdone_fn)
 {
     int ret = 0;
 
@@ -86,7 +86,7 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
     parameters.rma.hints          = (pami_send_hint_t) {0};
     parameters.rma.cookie         = cookie;
 
-    parameters.rma.done_fn        = rput_done_fn;
+    parameters.rma.done_fn        = *(pami_event_function *) rput_done_fn;
     parameters.rdma.local.mr      = local_mr;
     parameters.rdma.local.offset  = local_offset;
     parameters.rma.bytes      = nbytes;
@@ -95,11 +95,32 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
 
     parameters.rdma.remote.mr = remote_mr;
     parameters.rdma.remote.offset = remote_offset;
-    parameters.put.rdone_fn = rput_rdone_fn;
+    parameters.put.rdone_fn = *(pami_event_function *) rput_rdone_fn;
 
     pami_result_t result = PAMI_Rput (context, &parameters);
     if (result != PAMI_SUCCESS) {
         printf("Error in PAMI_Put\n");
+    }
+
+    return ret;
+}
+
+int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint)
+{
+    int ret = 0;
+
+    pami_send_immediate_t parameter;
+    parameter.dispatch = dispatch;
+    parameter.header.iov_base = header_base;
+    parameter.header.iov_len = header_len;
+    parameter.data.iov_base = data_base;
+    parameter.data.iov_len = data_len;
+    parameter.dest = endpoint;
+
+    pami_result_t result = PAMI_Send_immediate (context, &parameter);
+    assert(result == PAMI_SUCCESS);
+    if (result != PAMI_SUCCESS) {
+        return 1;
     }
 
     return ret;
