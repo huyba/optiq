@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "pami_transport.h"
 
@@ -54,6 +55,51 @@ void optiq_pami_transport_init()
     for (int i = 0; i < pami_transport->size; i++) {
         PAMI_Endpoint_create(pami_transport->client, i, 0, &pami_transport->endpoints[i]);
     }
+
+    /*Dispatch IDs register*/
+    pami_dispatch_callback_function fn;
+    pami_dispatch_hint_t options = {};
+
+    /*Message has come notification*/
+    fn.p2p = optiq_recv_mr_request_fn;
+    result = PAMI_Dispatch_set (pami_transport->context,
+            OPTIQ_MEM_REQUEST,
+            fn,
+            (void *) pami_transport,
+            options);
+
+    assert(result == PAMI_SUCCESS);
+    if (result != PAMI_SUCCESS) {
+        return;
+    }
+
+    /*Receive memory response*/
+    fn.p2p = optiq_recv_mr_response_fn;
+    result = PAMI_Dispatch_set (pami_transport->context,
+            OPTIQ_MEM_RESPONSE,
+            fn,
+            (void *) pami_transport,
+            options);
+
+    assert(result == PAMI_SUCCESS);
+    if (result != PAMI_SUCCESS) {
+        return;
+    }
+
+    fn.p2p = optiq_recv_rput_done_fn;
+    result = PAMI_Dispatch_set (pami_transport->context,
+            OPTIQ_RPUT_DONE,
+            fn,
+            (void *) pami_transport,
+            options);
+
+    assert(result == PAMI_SUCCESS);
+    if (result != PAMI_SUCCESS) {
+        return;
+    }
+
+    /*Other initialization*/
+    pami_transport->message_id = 0;
 }
 
 struct optiq_pami_transport* optiq_get_pami_transport()
@@ -125,3 +171,35 @@ int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *heade
 
     return ret;
 }
+
+void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+
+    struct optiq_mem_request request;
+    request.source_rank = origin;
+    request.nbytes = (*(int *)data);
+
+    pami_transport->mem_requests.push_back(request);
+}
+
+void optiq_recv_mr_response_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+
+    struct optiq_mem_response response;
+    memcpy (&response.mr, data, sizeof(pami_memregion_t));
+    response.dest_rank = origin;
+    response.offset = (*(int *)data);
+
+    pami_transport->mem_responses.push_back(response);
+}
+
+void optiq_recv_rput_done_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+    int message_id = (*(int *)data);
+
+    pami_transport->rput_done.push_back(message_id);
+}
+

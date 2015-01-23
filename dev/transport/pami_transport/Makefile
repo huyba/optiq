@@ -39,4 +39,4 @@ realclean: clean
 
 cp:
 	cp test_init.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/init/
-	cp test_init.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/rput/
+	cp test_rput.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/rput/
