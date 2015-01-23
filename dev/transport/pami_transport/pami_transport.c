@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "pami_transport.h"
 
 struct optiq_pami_transport *pami_transport;
 
-void pami_transport_init()
+void optiq_pami_transport_init()
 {
     const char client_name[] = "OPTIQ";
     pami_result_t result;
@@ -55,7 +56,51 @@ void pami_transport_init()
     }
 }
 
-struct optiq_pami_transport* get_pami_transport()
+struct optiq_pami_transport* optiq_get_pami_transport()
 {
     return pami_transport;
+}
+
+void optiq_pami_rput_done_fn(pami_context_t context, void *cookie, pami_result_t result)
+{
+
+}
+
+void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_t result)
+{
+
+}
+
+static void decrement (pami_context_t context, void *cookie, pami_result_t result)
+{
+    unsigned * value = (unsigned *) cookie;
+    --*value;
+}
+
+int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie, pami_event_function rput_done_fn, pami_event_function rput_rdone_fn)
+{
+    int ret = 0;
+
+    pami_rput_simple_t parameters;
+
+    parameters.rma.hints          = (pami_send_hint_t) {0};
+    parameters.rma.cookie         = cookie;
+
+    parameters.rma.done_fn        = rput_done_fn;
+    parameters.rdma.local.mr      = local_mr;
+    parameters.rdma.local.offset  = local_offset;
+    parameters.rma.bytes      = nbytes;
+
+    parameters.rma.dest = endpoint;
+
+    parameters.rdma.remote.mr = remote_mr;
+    parameters.rdma.remote.offset = remote_offset;
+    parameters.put.rdone_fn = rput_rdone_fn;
+
+    pami_result_t result = PAMI_Rput (context, &parameters);
+    if (result != PAMI_SUCCESS) {
+        printf("Error in PAMI_Put\n");
+    }
+
+    return ret;
 }

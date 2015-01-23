@@ -4,9 +4,9 @@
 
 int main(int argc, char **argv)
 {
-    pami_transport_init();
+    optiq_pami_transport_init();
 
-    struct optiq_pami_transport* pami_transport = get_pami_transport();
+    struct optiq_pami_transport* pami_transport = optiq_get_pami_transport();
 
     printf("rank %d size %d\n", pami_transport->rank, pami_transport->size);
 

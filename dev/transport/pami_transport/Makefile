@@ -21,7 +21,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = pami_transport.o
 
-all: $(OBJ) test_init.x
+all: $(OBJ) test_init.x cp
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -37,3 +37,5 @@ realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
+cp:
+	cp test_init.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/init/
