@@ -54,21 +54,15 @@ int main(int argc, char **argv)
 	    }
 	}
 
-        printf("Rank %d recv mem region\n", pami_transport->rank);
-
 	unsigned send_cookie = 1;
 
 	/*Put data*/
 	optiq_pami_rput(pami_transport->client, pami_transport->context, &send_mr, send_offset, send_bytes, pami_transport->endpoints[recv_rank], &response.mr, response.offset, &send_cookie, NULL, decrement);
 
-        printf("Rank %d put req\n", pami_transport->rank);
-
 	/*Wait until the put is done at remote side*/
 	while (send_cookie == 1) {
 	    PAMI_Context_advance (pami_transport->context, 100);
 	}
-
-        printf("Rank %d recv done put\n", pami_transport->rank);
 
 	/*Notify that the rput is done*/
 	optiq_pami_send_immediate (pami_transport->context, OPTIQ_RPUT_DONE, NULL, NULL, &response.message_id, sizeof(int), pami_transport->
@@ -102,8 +96,6 @@ endpoints[recv_rank]);
 
 	optiq_pami_send_immediate (pami_transport->context, OPTIQ_MEM_RESPONSE, NULL, NULL, &response, sizeof(struct optiq_mem_response), pami_transport->endpoints[send_rank]);
 
-        printf("Rank %d send mem region\n", pami_transport->rank);
-
 	/*Wait until put is done*/
 	bool done = false;
 
@@ -119,8 +111,6 @@ endpoints[recv_rank]);
 		}
 	    }
 	}
-
-        printf("Rank %d recv mem\n", pami_transport->rank);
 
 	/*Destroy the mem region*/
 	result = PAMI_Memregion_destroy (pami_transport->context, &response.mr);

@@ -119,7 +119,6 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
 
 void decrement (pami_context_t context, void *cookie, pami_result_t result)
 {
-    printf("decrement\n");
     unsigned * value = (unsigned *) cookie;
     --*value;
 }
@@ -196,7 +195,6 @@ void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void 
 
 void optiq_recv_mr_response_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
-    printf("recv mem response\n");
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
     struct optiq_mem_response response;
