@@ -38,5 +38,5 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 cp:
-	cp test_init.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/init/
-	cp test_rput.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/rput/
+	cp test_init.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/pami_transport/init/
+	cp test_rput.x /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/pami_transport/rput/

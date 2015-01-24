@@ -119,11 +119,12 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
 
 void decrement (pami_context_t context, void *cookie, pami_result_t result)
 {
+    printf("decrement\n");
     unsigned * value = (unsigned *) cookie;
     --*value;
 }
 
-int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie, void *rput_done_fn, void *rput_rdone_fn)
+int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie, void (*rput_done_fn)(void*, void*, pami_result_t), void (*rput_rdone_fn)(void*, void*, pami_result_t))
 {
     int ret = 0;
 
@@ -132,7 +133,12 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
     parameters.rma.hints          = (pami_send_hint_t) {0};
     parameters.rma.cookie         = cookie;
 
-    parameters.rma.done_fn        = *(pami_event_function *) rput_done_fn;
+    if (rput_done_fn == NULL) {
+        parameters.rma.done_fn = NULL;
+    } else {
+        parameters.rma.done_fn        = (*rput_done_fn);
+    }
+
     parameters.rdma.local.mr      = local_mr;
     parameters.rdma.local.offset  = local_offset;
     parameters.rma.bytes      = nbytes;
@@ -141,7 +147,12 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
 
     parameters.rdma.remote.mr = remote_mr;
     parameters.rdma.remote.offset = remote_offset;
-    parameters.put.rdone_fn = *(pami_event_function *) rput_rdone_fn;
+
+    if (rput_rdone_fn == NULL) {
+        parameters.put.rdone_fn = NULL;
+    } else {
+        parameters.put.rdone_fn = (*rput_rdone_fn);
+    }
 
     pami_result_t result = PAMI_Rput (context, &parameters);
     if (result != PAMI_SUCCESS) {
@@ -185,12 +196,12 @@ void optiq_recv_mr_request_fn (pami_context_t context, void *cookie, const void 
 
 void optiq_recv_mr_response_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
+    printf("recv mem response\n");
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
     struct optiq_mem_response response;
-    memcpy (&response.mr, data, sizeof(pami_memregion_t));
-    response.dest_rank = origin;
-    response.offset = (*(int *)data);
+
+    memcpy (&response, data, sizeof(struct optiq_mem_response));
 
     pami_transport->mem_responses.push_back(response);
 }
