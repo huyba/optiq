@@ -291,17 +291,24 @@ int main(int argc, char **argv)
     char *datFile = argv[4];
 
     int num_dims = 5;
-    int size[5] = {2,4,4,4,2};
+    int size[5] = {2,4,4,8,2};
 
-    int num_nodes = 256;
-    int num_sources = 256;
-    int num_dests = 4;
+    int num_nodes = 1;
+    for (int i = 0; i < num_dims; i++) {
+	num_nodes *= size[i];
+    }
 
+    int num_sources = num_nodes;
     int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
     for (int i = 0; i < num_sources; i++) {
 	source_ranks[i] = i;
     }
-    int dest_ranks[4] = {32, 96, 160, 224};
+
+    int num_dests = num_nodes/64;
+    int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
+    for (int i = 0; i < num_dests; i++) {
+	dest_ranks[i] = 32 + i * 64;
+    }
 
     std::ofstream myfile;
     myfile.open (datFile);
