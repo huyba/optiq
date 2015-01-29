@@ -23,7 +23,6 @@ struct optiq_request {
     int num_tokens;
     int remaining_tokens;
     int offset;
-    int current_offset;
     struct path *path;
     struct job *job;
 };
@@ -210,7 +209,6 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
 		struct optiq_request request;
 		request.length = path_demand;
 		request.offset = offset;
-		request.current_offset = offset;
 		request.path = local_jobs[i].paths[j];
 		request.num_tokens = rint (local_jobs[i].paths[j]->flow / min_flow);
 		request.job = &local_jobs[i];
@@ -230,12 +228,11 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
 
 	for (int i = 0; i < requests.size(); i++)
 	{
-	    printf("Rank %d request %d: offset = %d, length = %d, current_offset = %d, job_id = %d, path_id = %d, num_token = %d\n", world_rank, i, requests[i].offset, requests[i].length, requests[i].current_offset, requests[i].job->job_id, requests[i].path->path_id, requests[i].num_tokens);
+	    printf("Rank %d request %d: offset = %d, length = %d, job_id = %d, path_id = %d, num_token = %d\n", world_rank, i, requests[i].offset, requests[i].length, requests[i].job->job_id, requests[i].path->path_id, requests[i].num_tokens);
 	}
 
 	/*Based on the number of tokens, split and add message to queue*/
 	int sent_bytes = 0;
-	int nbytes = TRANSFER_SIZE;
 
 	while (sent_bytes < total_bytes)
 	{
@@ -257,26 +254,27 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
 		    {
 			requests[i].remaining_tokens--;
 
-			/*Get a message from the request and add to queue*/
+			/* Get a message from the request and add to queue */
 			struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
 			bulk->pami_transport->extra.message_headers.pop_back();
 
-			int nbytes = (requests[i].current_offset + TRANSFER_SIZE <= requests[i].length ? TRANSFER_SIZE : requests[i].length - requests[i].current_offset);
+			int nbytes = (requests[i].offset + TRANSFER_SIZE <= requests[i].length ? TRANSFER_SIZE : requests[i].length - requests[i].offset);
+
 			header->length = nbytes;
 			header->source = requests[i].job->source_id;
 			header->dest = requests[i].job->dest_id;
 			header->path_id = requests[i].path->path_id;
 
 			memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
-			header->mem.offset = requests[i].current_offset;
-			header->original_offset = requests[i].current_offset;
+			header->mem.offset = requests[i].offset;
+			header->original_offset = requests[i].offset;
 
-			printf("Rank %d to add message job_id = %d, path_id = %d, source = %d, dest = %d, length = %d, offset = %d\n", world_rank, requests[i].job->job_id, requests[i].path->path_id, requests[i].job->source_id, requests[i].job->dest_id, header->original_offset);
+			printf("Rank %d to add message job_id = %d, path_id = %d, source = %d, dest = %d, length = %d, offset = %d\n", world_rank, requests[i].job->job_id, header->path_id, header->source, header->dest, header->length, header->original_offset);
 
 			bulk->pami_transport->extra.send_headers.push_back(header);
 
 			sent_bytes += nbytes;
-			requests[i].current_offset += nbytes;
+			requests[i].offset += nbytes;
 		    }
 
 		    if (requests[i].remaining_tokens > 0)
