@@ -1,1 +1,1 @@
-./readpath.x ../../../model/path_based/disjoints/path4
+./readpath.x ../../../model/path_based/kpaths/path2
