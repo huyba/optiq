@@ -4,6 +4,8 @@
 #include <string>
 
 #include <mpi.h>
+#include <limits.h>
+#include <math.h>
 
 #include "mtonbfs.h"
 #include "topology.h"
@@ -13,6 +15,18 @@
 using namespace std;
 
 #define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
+#define TRANSFER_SIZE (32 * 1024)
+
+struct optiq_request {
+    int length;
+    char *buf;
+    int num_tokens;
+    int remaining_tokens;
+    int offset;
+    int current_offset;
+    struct path *path;
+    struct job *job;
+};
 
 void build_next_dest(int world_rank, int *next_dest, std::vector<struct path *> &complete_paths)
 {
@@ -64,7 +78,7 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
     bool isSource = false, isDest = false;
 
     int index = 0;
-    vector<struct job> jobs;
+    vector<struct job> local_jobs;
 
     int demand = 1024 * 1024;
 
@@ -82,9 +96,9 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
 	    bool existing_job = false;
 	    int k = 0;
 
-	    for (int j = 0; j < jobs.size(); j++)
+	    for (int j = 0; j < local_jobs.size(); j++)
 	    {
-		if (jobs[j].job_id == complete_paths[i]->job_id) 
+		if (local_jobs[j].job_id == complete_paths[i]->job_id) 
 		{
 		    k = j;
 		    existing_job = true;
@@ -102,11 +116,11 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
 		new_job.dest_id = complete_paths[i]->arcs.back().v;
 		new_job.demand = demand;
 
-		jobs.push_back(new_job);
+		local_jobs.push_back(new_job);
 	    } 
 	    else 
 	    {
-		jobs[k].paths.push_back(complete_paths[i]);
+		local_jobs[k].paths.push_back(complete_paths[i]);
 	    }
 	}
     }
@@ -150,13 +164,136 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
 	}
     }
 
-    int nbytes = 32 * 1024;
+    int total_flow = 0;
+    int total_bytes = 0;
+    std:vector<struct optiq_request> requests;
 
-    int pid = 0;
+    if (isSource)
+    {
+	int min_flow = INT_MAX;
+
+	for (int i = 0; i < local_jobs.size(); i++) 
+	{
+	    total_bytes += local_jobs[i].demand;
+
+	    for (int j = 0; j < local_jobs[i].paths.size(); j++) 
+	    {
+		total_flow += local_jobs[i].paths[j]->flow;
+
+		if (min_flow > local_jobs[i].paths[j]->flow)
+		{
+		    min_flow = local_jobs[i].paths[j]->flow;
+		}
+	    }
+	}
+
+	/*Compute buffer size, offset and number of tokens for each path*/
+	for (int i = 0; i < local_jobs.size(); i++)
+	{
+	    int job_flow = 0;
+
+	    for (int j = 0; j < local_jobs[i].paths.size(); j++)
+            {
+                job_flow += local_jobs[i].paths[j]->flow;
+	    }
+
+	    int offset = 0;
+            int path_demand = 0;
+
+	    for (int j = 0; j < local_jobs[i].paths.size(); j++)
+	    {
+		
+		path_demand = local_jobs[i].paths[j]->flow * local_jobs[i].demand / job_flow;
+
+		printf("Rank %d path_demand = %d, flow = %d, total_flow = %d, demand = %d\n", world_rank, path_demand, local_jobs[i].paths[j]->flow, job_flow, local_jobs[i].demand);
+
+		struct optiq_request request;
+		request.length = path_demand;
+		request.offset = offset;
+		request.current_offset = offset;
+		request.path = local_jobs[i].paths[j];
+		request.num_tokens = rint (local_jobs[i].paths[j]->flow / min_flow);
+		request.job = &local_jobs[i];
+
+		if (j == local_jobs[i].paths.size() - 1)
+		{
+		    request.length = local_jobs[i].demand - offset;
+		}
+
+		requests.push_back(request);
+
+		offset += path_demand;
+	    }
+	}
+
+	printf("Rank %d has %d requests\n", world_rank, requests.size());
+
+	for (int i = 0; i < requests.size(); i++)
+	{
+	    printf("Rank %d request %d: offset = %d, length = %d, current_offset = %d, job_id = %d, path_id = %d, num_token = %d\n", world_rank, i, requests[i].offset, requests[i].length, requests[i].current_offset, requests[i].job->job_id, requests[i].path->path_id, requests[i].num_tokens);
+	}
+
+	/*Based on the number of tokens, split and add message to queue*/
+	int sent_bytes = 0;
+	int nbytes = TRANSFER_SIZE;
+
+	while (sent_bytes < total_bytes)
+	{
+	    bool out_of_tokens = false;
+
+	    /*Assign tokens for each request*/
+	    for (int i = 0; i < requests.size(); i++)
+	    {
+		requests[i].remaining_tokens = requests[i].num_tokens;
+	    }
+
+	    while (!out_of_tokens)
+	    {
+		out_of_tokens = true;
+
+		for (int i = 0; i < requests.size(); i++)
+		{
+		    if (requests[i].remaining_tokens > 0)
+		    {
+			requests[i].remaining_tokens--;
+
+			/*Get a message from the request and add to queue*/
+			struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
+			bulk->pami_transport->extra.message_headers.pop_back();
+
+			int nbytes = (requests[i].current_offset + TRANSFER_SIZE <= requests[i].length ? TRANSFER_SIZE : requests[i].length - requests[i].current_offset);
+			header->length = nbytes;
+			header->source = requests[i].job->source_id;
+			header->dest = requests[i].job->dest_id;
+			header->path_id = requests[i].path->path_id;
+
+			memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
+			header->mem.offset = requests[i].current_offset;
+			header->original_offset = requests[i].current_offset;
+
+			printf("Rank %d to add message job_id = %d, path_id = %d, source = %d, dest = %d, length = %d, offset = %d\n", world_rank, requests[i].job->job_id, requests[i].path->path_id, requests[i].job->source_id, requests[i].job->dest_id, header->original_offset);
+
+			bulk->pami_transport->extra.send_headers.push_back(header);
+
+			sent_bytes += nbytes;
+			requests[i].current_offset += nbytes;
+		    }
+
+		    if (requests[i].remaining_tokens > 0)
+		    {
+			out_of_tokens = false;
+		    }
+		}
+	    }
+	}
+    }
+    
+    /*int pid = 0;
+    int nbytes = 32 * 1024;
     if (isSource)
     {
 	for (int offset = 0; offset < send_buf_size; offset += nbytes) {
-	    for (int i = 0; i < jobs.size(); i++) {
+	    for (int i = 0; i < local_jobs.size(); i++) {
 		struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
 		bulk->pami_transport->extra.message_headers.pop_back();
 
@@ -182,7 +319,7 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
 		bulk->pami_transport->extra.send_headers.push_back(header);
 	    }
 	}
-    }
+    }*/
 
     if (bulk->pami_transport->rank == 0) {
 	double t = (double)(t3-t2)/1.6e3;

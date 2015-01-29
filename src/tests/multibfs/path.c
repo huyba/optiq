@@ -118,7 +118,7 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
         {
             trim(line);
             sscanf(line, "%s %d %d %f", temp, &job_id, &path_id, &flow);
-            //printf("job_id = %d path_id = %d\n", job_id, path_id);
+            //printf("job_id = %d path_id = %d, flow = %f\n", job_id, path_id, flow);
 
             struct path *p = (struct path *) calloc (1, sizeof(struct path));
             p->job_id = job_id;

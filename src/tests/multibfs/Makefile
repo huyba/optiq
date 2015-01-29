@@ -45,6 +45,6 @@ all: $(OBJ) test.x copy
 copy:
 	cp test.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/multibfs/
 
-rm:
+clean:
 	rm *.o
 	rm *.x
