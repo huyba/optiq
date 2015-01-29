@@ -23,6 +23,7 @@ struct optiq_request {
     int num_tokens;
     int remaining_tokens;
     int offset;
+    int current_offset;
     struct path *path;
     struct job *job;
 };
@@ -165,168 +166,169 @@ void optiq_build_paths_from_file(void *send_buf, int *sendcounts, int *sdispls, 
 
     int total_flow = 0;
     int total_bytes = 0;
-    std:vector<struct optiq_request> requests;
+std:vector<struct optiq_request> requests;
 
-    if (isSource)
+    /*if (isSource)
+      {
+      int min_flow = INT_MAX;
+
+      for (int i = 0; i < local_jobs.size(); i++) 
+      {
+      total_bytes += local_jobs[i].demand;
+
+      for (int j = 0; j < local_jobs[i].paths.size(); j++) 
+      {
+      total_flow += local_jobs[i].paths[j]->flow;
+
+      if (min_flow > local_jobs[i].paths[j]->flow)
+      {
+      min_flow = local_jobs[i].paths[j]->flow;
+      }
+      }
+      }
+
+      for (int i = 0; i < local_jobs.size(); i++)
+      {
+      int job_flow = 0;
+
+      for (int j = 0; j < local_jobs[i].paths.size(); j++)
+      {
+      job_flow += local_jobs[i].paths[j]->flow;
+      }
+
+      int offset = 0;
+      int path_demand = 0;
+
+      for (int j = 0; j < local_jobs[i].paths.size(); j++)
+      {
+
+      path_demand = local_jobs[i].paths[j]->flow * local_jobs[i].demand / job_flow;
+
+      printf("Rank %d path_demand = %d, flow = %d, total_flow = %d, demand = %d\n", world_rank, path_demand, local_jobs[i].paths[j]->flow, job_flow, local_jobs[i].demand);
+
+      struct optiq_request request;
+      request.length = path_demand;
+      request.offset = offset;
+      request.current_offset = offset;
+      request.path = local_jobs[i].paths[j];
+      request.num_tokens = rint (local_jobs[i].paths[j]->flow / min_flow);
+      request.job = &local_jobs[i];
+
+      if (j == local_jobs[i].paths.size() - 1)
+      {
+      request.length = local_jobs[i].demand - offset;
+      }
+
+      requests.push_back(request);
+
+      offset += path_demand;
+      }
+      }
+
+    //printf("Rank %d has %d requests\n", world_rank, requests.size());
+
+    for (int i = 0; i < requests.size(); i++)
     {
-	int min_flow = INT_MAX;
+    //printf("Rank %d request %d: offset = %d, length = %d, job_id = %d, path_id = %d, num_token = %d\n", world_rank, i, requests[i].offset, requests[i].length, requests[i].job->job_id, requests[i].path->path_id, requests[i].num_tokens);
+    }
 
-	for (int i = 0; i < local_jobs.size(); i++) 
-	{
-	    total_bytes += local_jobs[i].demand;
+    int sent_bytes = 0;
 
-	    for (int j = 0; j < local_jobs[i].paths.size(); j++) 
-	    {
-		total_flow += local_jobs[i].paths[j]->flow;
+    while (sent_bytes < total_bytes)
+    {
+    bool out_of_tokens = false;
 
-		if (min_flow > local_jobs[i].paths[j]->flow)
-		{
-		    min_flow = local_jobs[i].paths[j]->flow;
-		}
-	    }
-	}
+    for (int i = 0; i < requests.size(); i++)
+    {
+	requests[i].remaining_tokens = requests[i].num_tokens;
+    }
 
-	/*Compute buffer size, offset and number of tokens for each path*/
-	for (int i = 0; i < local_jobs.size(); i++)
-	{
-	    int job_flow = 0;
-
-	    for (int j = 0; j < local_jobs[i].paths.size(); j++)
-            {
-                job_flow += local_jobs[i].paths[j]->flow;
-	    }
-
-	    int offset = 0;
-            int path_demand = 0;
-
-	    for (int j = 0; j < local_jobs[i].paths.size(); j++)
-	    {
-		
-		path_demand = local_jobs[i].paths[j]->flow * local_jobs[i].demand / job_flow;
-
-		printf("Rank %d path_demand = %d, flow = %d, total_flow = %d, demand = %d\n", world_rank, path_demand, local_jobs[i].paths[j]->flow, job_flow, local_jobs[i].demand);
-
-		struct optiq_request request;
-		request.length = path_demand;
-		request.offset = offset;
-		request.path = local_jobs[i].paths[j];
-		request.num_tokens = rint (local_jobs[i].paths[j]->flow / min_flow);
-		request.job = &local_jobs[i];
-
-		if (j == local_jobs[i].paths.size() - 1)
-		{
-		    request.length = local_jobs[i].demand - offset;
-		}
-
-		requests.push_back(request);
-
-		offset += path_demand;
-	    }
-	}
-
-	printf("Rank %d has %d requests\n", world_rank, requests.size());
+    while (!out_of_tokens)
+    {
+	out_of_tokens = true;
 
 	for (int i = 0; i < requests.size(); i++)
 	{
-	    printf("Rank %d request %d: offset = %d, length = %d, job_id = %d, path_id = %d, num_token = %d\n", world_rank, i, requests[i].offset, requests[i].length, requests[i].job->job_id, requests[i].path->path_id, requests[i].num_tokens);
-	}
-
-	/*Based on the number of tokens, split and add message to queue*/
-	int sent_bytes = 0;
-
-	while (sent_bytes < total_bytes)
-	{
-	    bool out_of_tokens = false;
-
-	    /*Assign tokens for each request*/
-	    for (int i = 0; i < requests.size(); i++)
+	    if (requests[i].current_offset - requests[i].offset < requests[i].length)
 	    {
-		requests[i].remaining_tokens = requests[i].num_tokens;
-	    }
-
-	    while (!out_of_tokens)
-	    {
-		out_of_tokens = true;
-
-		for (int i = 0; i < requests.size(); i++)
+		if (requests[i].remaining_tokens > 0) 
 		{
-		    if (requests[i].remaining_tokens > 0)
-		    {
-			requests[i].remaining_tokens--;
+		    requests[i].remaining_tokens--;
 
-			/* Get a message from the request and add to queue */
-			struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
-			bulk->pami_transport->extra.message_headers.pop_back();
+		    struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
+		    bulk->pami_transport->extra.message_headers.pop_back();
 
-			int nbytes = (requests[i].offset + TRANSFER_SIZE <= requests[i].length ? TRANSFER_SIZE : requests[i].length - requests[i].offset);
+		    int nbytes = (requests[i].current_offset - requests[i].offset + TRANSFER_SIZE <= requests[i].length ? TRANSFER_SIZE : requests[i].length - (requests[i].current_offset - requests[i].offset));
 
-			header->length = nbytes;
-			header->source = requests[i].job->source_id;
-			header->dest = requests[i].job->dest_id;
-			header->path_id = requests[i].path->path_id;
+		    header->length = nbytes;
+		    header->source = requests[i].job->source_id;
+		    header->dest = requests[i].job->dest_id;
+		    header->path_id = requests[i].path->path_id;
 
-			memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
-			header->mem.offset = requests[i].offset;
-			header->original_offset = requests[i].offset;
+		    memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
+		    header->mem.offset = requests[i].current_offset;
+		    header->original_offset = requests[i].current_offset;
 
-			printf("Rank %d to add message job_id = %d, path_id = %d, source = %d, dest = %d, length = %d, offset = %d\n", world_rank, requests[i].job->job_id, header->path_id, header->source, header->dest, header->length, header->original_offset);
+		    printf("Rank %d to add message job_id = %d, path_id = %d, source = %d, dest = %d, length = %d, offset = %d\n", world_rank, requests[i].job->job_id, header->path_id, header->source, header->dest, header->length, header->original_offset);
 
-			bulk->pami_transport->extra.send_headers.push_back(header);
+		    bulk->pami_transport->extra.send_headers.push_back(header);
 
-			sent_bytes += nbytes;
-			requests[i].offset += nbytes;
-		    }
+		    sent_bytes += nbytes;
+		    requests[i].current_offset += nbytes;
+		}
 
-		    if (requests[i].remaining_tokens > 0)
-		    {
-			out_of_tokens = false;
-		    }
+		if (requests[i].remaining_tokens > 0 && requests[i].current_offset - requests[i].offset < requests[i].length)
+		{
+		    out_of_tokens = false;
 		}
 	    }
 	}
     }
-    
-    /*int pid = 0;
-    int nbytes = 32 * 1024;
-    if (isSource)
-    {
-	for (int offset = 0; offset < send_buf_size; offset += nbytes) {
-	    for (int i = 0; i < local_jobs.size(); i++) {
-		struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
-		bulk->pami_transport->extra.message_headers.pop_back();
+}
+}
+*/
 
-		header->length = nbytes;
-		header->source = jobs[i].source_id;
-		header->dest = jobs[i].dest_id;
+int pid = 0;
+int nbytes = 32 * 1024;
+if (isSource)
+{
+    for (int offset = 0; offset < send_buf_size; offset += nbytes) {
+	for (int i = 0; i < local_jobs.size(); i++) {
+	    struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
+	    bulk->pami_transport->extra.message_headers.pop_back();
 
-		if (jobs[i].paths.size() > 1) 
-		{
-		    pid = pid % jobs[i].paths.size();
-		    header->path_id = jobs[i].paths[pid]->path_id;
-		    pid++;
-		} 
-		else 
-		{
-		    header->path_id = jobs[i].paths[0]->path_id;
-		}
+	    header->length = nbytes;
+	    header->source = local_jobs[i].source_id;
+	    header->dest = local_jobs[i].dest_id;
 
-		memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
-		header->mem.offset = offset;
-		header->original_offset = offset;
-
-		bulk->pami_transport->extra.send_headers.push_back(header);
+	    if (local_jobs[i].paths.size() > 1) 
+	    {
+		pid = pid % local_jobs[i].paths.size();
+		header->path_id = local_jobs[i].paths[pid]->path_id;
+		pid++;
+	    } 
+	    else 
+	    {
+		header->path_id = local_jobs[i].paths[0]->path_id;
 	    }
-	}
-    }*/
 
-    if (bulk->pami_transport->rank == 0) {
-	double t = (double)(t3-t2)/1.6e3;
-	printf("flow id, final dest %f\n", t);
-	t = (double)(t2-t1)/1.6e3;
-	printf("build next dest %f\n", t);
-	t = (double)(t1-t0)/1.6e3;
-        printf("create paths %f\n", t);
+	    memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
+	    header->mem.offset = offset;
+	    header->original_offset = offset;
+
+	    bulk->pami_transport->extra.send_headers.push_back(header);
+	}
     }
+}
+
+if (bulk->pami_transport->rank == 0) {
+    double t = (double)(t3-t2)/1.6e3;
+    printf("compute: flow id, final dest %f\n", t);
+    t = (double)(t2-t1)/1.6e3;
+    printf("build next dest %f\n", t);
+    t = (double)(t1-t0)/1.6e3;
+    printf("create paths %f\n", t);
+}
 }
 
 int main(int argc, char **argv)

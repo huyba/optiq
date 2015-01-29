@@ -23,6 +23,6 @@ all: util.o topology.o datagen.o patterngen.x pathreconstruct.x multibfs.x
 %.x: %.o
 	$(LD) $(OBJ) $< $(LIBS) -o $@
 
-rm:
+clean:
 	rm *.o
 	rm *.x
