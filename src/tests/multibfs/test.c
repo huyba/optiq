@@ -13,16 +13,16 @@ int main(int argc, char **argv)
     struct mtonbfs bfs;
 
     int num_dims = 5;
-    int size[5] = {4, 4, 8, 8, 2};
-    int num_nodes = 2048;
+    int size[5] = {2, 4, 4, 8, 2};
+    int num_nodes = 512;
 
-    int num_dests = 2048;
+    int num_dests = num_nodes/64;
     int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
     for (int i = 0; i < num_dests; i++) {
-	dest_ranks[i] = i;
+	dest_ranks[i] = i * 64 + 32;
     }
 
-    int num_sources = 2048;
+    int num_sources = num_nodes;
     int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
     for (int i = 0; i < num_sources; i++) {
 	source_ranks[i] = i;
