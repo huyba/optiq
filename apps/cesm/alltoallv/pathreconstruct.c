@@ -5,13 +5,8 @@
 #include "datagen.h"
 #include "topology.h"
 
-int main(int argc, char **argv) 
+void reconstruct_paths(int num_dims, int *size, int *torus)
 {
-    int num_dims = 5;
-    int size[5] = {2, 4, 4, 4, 2};
-    int torus[5] = {0, 1, 1, 1, 1};
-    int order[5] = {0, 0, 0, 0, 0};
-
     int num_nodes = 1;
     for (int i = 0; i < num_dims; i++) {
 	num_nodes *= size[i];
@@ -53,6 +48,8 @@ int main(int argc, char **argv)
 	    graph[i][j] = 0;
 	}
     }
+
+    int order[5];
 
     optiq_topology_compute_routing_order_bgq(num_dims, size, order);
 
@@ -113,4 +110,15 @@ int main(int argc, char **argv)
     }
 
     printf("Max #paths/link (%d, %d) = %d\n", u, v, max_paths);
+}
+
+int main(int argc, char **argv)
+{
+    int num_dims = 5;
+    int size[5] = {2, 4, 4, 8, 2};
+    int torus[5] = {0, 1, 1, 1, 1};
+
+    reconstruct_paths(num_dims, size, torus);
+
+    return 0;   
 }
