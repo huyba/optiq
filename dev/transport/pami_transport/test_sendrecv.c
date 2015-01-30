@@ -39,5 +39,10 @@ int main(int argc, char **argv)
 	}
     }
 
+    free(send_buf);
+    free(recv_buf);
+
+    optiq_pami_transport_finalize();
+
     return 0;
 }
