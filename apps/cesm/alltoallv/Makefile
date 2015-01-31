@@ -5,7 +5,11 @@ COPT = -g -O2 -Wall #-std=c99
 
 MPICH2_PATH=/usr/local/mpich2
 
-INCLUDE = -I. 
+OPTIQ = ../../..
+UTIL = $(OPTIQ)/dev/util
+TOPOLOGY = $(OPTIQ)/dev/topology
+
+INCLUDE = -I. -I$(UTIL) -I$(TOPOLOGY)
 
 CFLAGS  = $(COPT) $(INCLUDE)
 
@@ -13,16 +17,17 @@ LD = g++
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = util.o topology.o datagen.o
+OBJ = datagen.o $(UTIL)/util.o $(TOPOLOGY)/topology.o
 
-all: util.o topology.o datagen.o patterngen.x pathreconstruct.x multibfs.x
+all: $(OBJ) patterngen.x pathreconstruct.x multibfs.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.x: %.o
+%.x: %.o $(OBJ)
 	$(LD) $(OBJ) $< $(LIBS) -o $@
 
 clean:
-	rm *.o
+	rm $(OBJ)
 	rm *.x
+	rm *.o

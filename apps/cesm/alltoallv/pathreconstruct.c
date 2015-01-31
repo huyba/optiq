@@ -31,7 +31,7 @@ void reconstruct_paths(int num_dims, int *size, int *torus)
                     coord[3] = dd;
                     for (int ed = 0; ed < size[4]; ed++) {
                         coord[4] = ed;
-			nid = optiq_compute_nid(num_dims, size, coord);
+			nid = optiq_topology_compute_node_id(num_dims, size, coord);
 			for (int i = 0; i < num_dims; i++) {
 			    all_coords[nid][i] = coord[i];
 			}
@@ -83,8 +83,8 @@ void reconstruct_paths(int num_dims, int *size, int *torus)
 			    //printf("Done constructing path, #hops = %d\n", num_hops);
 
 			    for (int h = 0; h < num_hops; h ++) {
-				u = optiq_compute_nid(num_dims, size, path[h]);
-				v = optiq_compute_nid(num_dims, size, path[h+1]);
+				u = optiq_topology_compute_node_id(num_dims, size, path[h]);
+				v = optiq_topology_compute_node_id(num_dims, size, path[h+1]);
 				graph[u][v]++;
 			    }
 			}

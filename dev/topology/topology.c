@@ -1,10 +1,53 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "util.h"
 #include "topology.h"
 
-int optiq_compute_nid(int num_dims, int *size, int *coord)
+void optiq_topology_get_size_bgq(int *size)
+{
+#ifdef __bgq__
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
+
+    size[0] = pers.Network_Config.Anodes;
+    size[1] = pers.Network_Config.Bnodes;
+    size[2] = pers.Network_Config.Cnodes;
+    size[3] = pers.Network_Config.Dnodes;
+    size[4] = pers.Network_Config.Enodes;
+#endif
+}
+
+void optiq_topology_print_graph(struct topology *topo, int cost)
+{
+    for (int i = 0; i < topo->num_nodes; i++)
+    {
+	for (int j = 0; j < topo->neighbors[i].size(); j++) {
+	    printf("%d %d %d\n", i, topo->neighbors[i][j], cost);
+	}
+    }
+}
+
+void optiq_topology_init(int num_dims, int *size, struct topology *topo)
+{
+    topo->num_dims = num_dims;
+    int num_nodes = 1;
+    for (int i = 0; i < num_dims; i++) {
+        num_nodes *= size[i];
+	topo->size[i] = size[i];
+    }
+    topo->num_nodes = num_nodes;
+   
+    topo->neighbors = optiq_topology_get_all_nodes_neighbors(num_dims, size);
+
+    topo->num_edges = 0;
+    for (int i = 0; i < num_nodes; i++) {
+	topo->num_edges += topo->neighbors[i].size();
+    }
+}
+
+int optiq_topology_compute_node_id(int num_dims, int *size, int *coord)
 {
     int node_id = coord[num_dims-1];
     int  pre_size = 1;
@@ -25,10 +68,10 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
     int num_neighbors = 0;
     int nid = 0;
 
-    for (int i = 0; i < num_dims; i++) {
+    for (int i = num_dims - 1; i >= 0; i--) {
         if (coord[i] - 1 >= 0) {
             coord[i]--;
-            nid = optiq_compute_nid(num_dims, size, coord);
+            nid = optiq_topology_compute_node_id(num_dims, size, coord);
             if (optiq_check_existing(num_neighbors, neighbors, nid) != 1) {
                 neighbors[num_neighbors] = nid;
                 num_neighbors++;
@@ -37,7 +80,7 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
         }
         if (coord[i] + 1 < size[i]) {
             coord[i]++;
-            nid = optiq_compute_nid(num_dims, size, coord);
+            nid = optiq_topology_compute_node_id(num_dims, size, coord);
             if (optiq_check_existing(num_neighbors, neighbors, nid) != 1) {
                 neighbors[num_neighbors] = nid;
                 num_neighbors++;
@@ -46,10 +89,10 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
         }
 
         /*Torus neighbors*/
-        for (int i = 0; i < num_dims; i++) {
+        for (int i = num_dims - 1; i >= 0; i--) {
             if (coord[i] == 0) {
                 coord[i] = size[i]-1;
-                nid = optiq_compute_nid(num_dims, size, coord);
+                nid = optiq_topology_compute_node_id(num_dims, size, coord);
                 if (optiq_check_existing(num_neighbors, neighbors, nid) != 1) {
                     neighbors[num_neighbors] = nid;
                     num_neighbors++;
@@ -59,7 +102,7 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
 
             if (coord[i] == size[i]-1) {
                 coord[i] = 0;
-                nid = optiq_compute_nid(num_dims, size, coord);
+                nid = optiq_topology_compute_node_id(num_dims, size, coord);
                 if (optiq_check_existing(num_neighbors, neighbors, nid) != 1) {
                     neighbors[num_neighbors] = nid;
                     num_neighbors++;
@@ -69,6 +112,43 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
         }
     }
     return num_neighbors;
+}
+
+std::vector<int> * optiq_topology_get_all_nodes_neighbors(int num_dims, int *size)
+{
+    int num_nodes = 1;
+    for (int i = 0; i < num_dims; i++) {
+        num_nodes *= size[i];
+    }
+
+    std::vector<int> *all_nodes_neighbors = (std::vector<int> *) calloc(1, sizeof(std::vector<int>) * num_nodes);
+
+    int coord[5], nid = 0, neighbors[10], num_neighbors = 0;
+
+    for (int ad = 0; ad < size[0]; ad++) {
+        coord[0] = ad;
+        for (int bd = 0; bd < size[1]; bd++) {
+            coord[1] = bd;
+            for (int cd = 0; cd < size[2]; cd++) {
+                coord[2] = cd;
+                for (int dd = 0; dd < size[3]; dd++) {
+                    coord[3] = dd;
+                    for (int ed = 0; ed < size[4]; ed++) {
+                        coord[4] = ed;
+
+                        nid = optiq_topology_compute_node_id(num_dims, size, coord);
+                        num_neighbors = optiq_compute_neighbors(num_dims, size, coord, neighbors);
+
+                        for(int i = 0; i < num_neighbors; i++) {
+                            all_nodes_neighbors[nid].push_back(neighbors[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return all_nodes_neighbors;
 }
 
 void optiq_topology_move_along_one_dimension_bgq(int num_dims, int *size, int *source, int routing_dimension, int num_hops, int direction, int **path)
