@@ -21,7 +21,12 @@ endif
 
 LD      = mpixlc_r #g++
 
-INCLUDE = -I.
+OPTIQ = ../../..
+UTIL = $(OPTIQ)/dev/util
+TOPOLOGY = $(OPTIQ)/dev/topology
+STRUCTURE = $(OPTIQ)/dev/structures
+
+INCLUDE = -I. -I$(UTIL) -I$(TOPOLOGY) -I$(STRUCTURE)
 
 CFLAGS = $(COPT) $(INCLUDE)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
@@ -32,7 +37,7 @@ INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = util.o topology.o datagen.o mtonbfs.o path.o heap_path.o job.o
+OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  mtonbfs.o
 
 all: $(OBJ) test.x copy
 
