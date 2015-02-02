@@ -14,8 +14,10 @@ endif
 
 LD      = mpixlc_r
 
-CFLAGS  = $(COPT) -I.
-LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
+GLPK = /home/abui/lib/glpk
+
+CFLAGS  = $(COPT) -I. -I$(GLPK)/include
+LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib -L$(GLPK)/lib -lglpk
 
 CFLAGS += -DPROGRESS_THREAD
 
