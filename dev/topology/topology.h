@@ -35,4 +35,6 @@ void optiq_topology_move_along_one_dimension_bgq(int num_dims, int *size, int *s
 
 void optiq_topology_reconstruct_path_bgq(int num_dims, int *size, int *torus, int *order, int *source, int *dest, int **path);
 
+void optiq_topology_print_all_arcs(int num_dims, int *size, double cap);
+
 #endif

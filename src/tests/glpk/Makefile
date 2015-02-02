@@ -14,18 +14,16 @@ endif
 
 LD      = mpixlc_r
 
-UTIL = ../util
-
-CFLAGS  = $(COPT) -I. -I$(UTIL)
+CFLAGS  = $(COPT) -I.
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/util.o
+OBJ = 
 
-all: $(OBJ) topology.o
+all: test_glpk.x cp
 
-%.o: %.c $(OBJ)
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o $(OBJ)
@@ -33,10 +31,11 @@ all: $(OBJ) topology.o
 
 clean: $(OBJ)
 	rm $(OBJ)
-	rm *.o
+	rm *.o *.x
 
 realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
 cp:
+	cp test_glpk.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/glpk

@@ -229,3 +229,38 @@ void optiq_topology_compute_routing_order_bgq(int num_dims, int *size, int *orde
         dims[longest_dimension] = -1;
     }
 }
+
+void optiq_topology_print_all_arcs(int num_dims, int *size, double cap)
+{
+    int num_neighbors = 0;
+    int neighbors[10];
+    int coord[5];
+    int nid;
+
+    for (int ad = 0; ad < size[0]; ad++) {
+        coord[0] = ad;
+        for (int bd = 0; bd < size[1]; bd++) {
+            coord[1] = bd;
+            for (int cd = 0; cd < size[2]; cd++) {
+                coord[2] = cd;
+                for (int dd = 0; dd < size[3]; dd++) {
+                    coord[3] = dd;
+                    for (int ed = 0; ed < size[4]; ed++) {
+                        coord[4] = ed;
+                        num_neighbors = 0;
+                        nid = optiq_topology_compute_node_id(num_dims, coord, size);
+                        num_neighbors = optiq_compute_neighbors(num_dims, coord, size, neighbors);
+                        for (int i = 0; i < num_neighbors; i++) {
+                            if (cap < 0.0) {
+                                printf("%d %d\n", nid, neighbors[i]);
+                            }
+                            else {
+                                printf("%d %d %8.0f\n", nid, neighbors[i], cap);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
