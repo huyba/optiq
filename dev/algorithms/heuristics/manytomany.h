@@ -16,6 +16,6 @@ struct mtonbfs {
     std::vector<struct path *> *edge_path;
 };
 
-void optiq_path_search_manytomany(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs);
+void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs);
 
 #endif

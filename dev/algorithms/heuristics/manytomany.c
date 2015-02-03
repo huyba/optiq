@@ -68,7 +68,7 @@ void mton_add_edge_path(std::vector<struct path*> *edge_path, struct path *p, in
     mperf1.add_edge_path_time += diff;
 }
 
-void optiq_path_search_manytomany(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs) 
+void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs) 
 {
     bool isReverted = false;
     /*Revert the sources/dests for less computating*/

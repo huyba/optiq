@@ -68,7 +68,7 @@ void add_edge_path(std::vector<struct path*> *edge_path, struct path *p, int num
     mperf.add_edge_path_time += diff;
 }
 
-void optiq_path_search_alltomany(std::vector<struct path *> &complete_paths, int num_dests, int *dest_ranks, struct multibfs *bfs) 
+void optiq_alg_heuristic_search_alltomany(std::vector<struct path *> &complete_paths, int num_dests, int *dest_ranks, struct multibfs *bfs) 
 {
     int num_dims = bfs->num_dims;
     int num_nodes = bfs->num_nodes;
