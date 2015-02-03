@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
     gettimeofday(&t1, NULL);
 
-    optiq_path_search_manytomany(complete_paths, num_sources, source_ranks, num_dests, dest_ranks, &bfs);
+    optiq_alg_heuristic_search_manytomany(complete_paths, num_sources, source_ranks, num_dests, dest_ranks, &bfs);
 
     gettimeofday(&t2, NULL);
 

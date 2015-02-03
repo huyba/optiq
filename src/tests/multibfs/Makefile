@@ -25,8 +25,9 @@ OPTIQ = ../../..
 UTIL = $(OPTIQ)/dev/util
 TOPOLOGY = $(OPTIQ)/dev/topology
 STRUCTURE = $(OPTIQ)/dev/structures
+HEURISTICS = $(OPTIQ)/dev/algorithms/heuristics
 
-INCLUDE = -I. -I$(UTIL) -I$(TOPOLOGY) -I$(STRUCTURE)
+INCLUDE = -I. -I$(UTIL) -I$(TOPOLOGY) -I$(STRUCTURE) -I$(HEURISTICS)
 
 CFLAGS = $(COPT) $(INCLUDE)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
@@ -37,7 +38,7 @@ INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  alltomany.o manytomany.o
+OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/alltomany.o $(HEURISTICS)/manytomany.o
 
 all: $(OBJ) test_alltomany.x test_manytomany.x copy
 
