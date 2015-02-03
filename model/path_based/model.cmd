@@ -1,5 +1,5 @@
 model model.mod;
-data ./kpaths/512to8_3.dat;
+data model.dat;
 option solver snopt;
 solve;
 
