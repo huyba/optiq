@@ -13,6 +13,91 @@ using namespace std;
 
 #define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
 
+void gather_print_time(uint64_t start, uint64_t end, int iters, long int nbytes, int world_rank)
+{
+    double elapsed_time = (double)(end - start)/1.6e3;
+    double max_time = 0.0;
+
+    MPI_Reduce (&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (world_rank == 0)
+    {
+        max_time = max_time / iters;
+        double bw = (double) nbytes / max_time / 1024 / 1024 * 1e6;
+        printf("total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", nbytes/1024/1024, max_time, bw);
+    }
+}
+
+void mpi_alltoallv(int nbytes)
+{
+    int world_size, world_rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    int ratio = 64;
+    int num_dests = world_size/ratio;
+    
+    void *sendbuf = malloc(nbytes * num_dests);
+    void *recvbuf = malloc(nbytes * world_size);
+
+    int *sendcounts = (int *)malloc(sizeof(int) * world_size);
+    int *sdispls = (int *)malloc(sizeof(int) * world_size);
+    int *recvcounts = (int *)malloc(sizeof(int) * world_size);
+    int *rdispls = (int *)malloc(sizeof(int) * world_size);
+
+    for (int i = 0; i < world_size; i++) {
+	sendcounts[i] = 0;
+	sdispls[i] = 0;
+	recvcounts[i] = 0;
+	rdispls[i] = 0;
+    }
+
+    int dest, source;
+
+    /*At sending side*/
+    for (int i = 0; i < num_dests; i++) {
+	dest = i * ratio + ratio/2;
+        sendcounts[dest] = nbytes;
+        sdispls[i] = i * nbytes ;
+    }
+
+    /*At receiving side*/
+    if (world_rank % ratio == ratio/2) {
+	printf("receiving rank %d\n", world_rank);
+
+	for (int i = 0; i < world_size; i++) {
+	    recvcounts[i] = nbytes;
+	    rdispls[i] = i * nbytes;
+	}
+    }
+
+    int iters = 30;
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    uint64_t start = GetTimeBase();
+
+    for (int i = 0; i < iters; i++) 
+    {
+	MPI_Alltoallv(sendbuf, sendcounts, sdispls, MPI_BYTE, recvbuf, recvcounts, rdispls, MPI_BYTE, MPI_COMM_WORLD);
+    }
+
+    uint64_t end = GetTimeBase();
+
+    long int data_size = (long int) num_dests * world_size * nbytes;
+    gather_print_time(start, end, iters, data_size, world_rank);
+
+    free(sendbuf);
+    free(recvbuf);
+
+    free(sendcounts);
+    free(sdispls);
+    free(recvcounts);
+    free(rdispls);
+}
+
 void flow_create(int world_rank, int *next_dest)
 {
     if (world_rank == 0) {
@@ -67,7 +152,7 @@ void build_next_dest(int world_rank, int *next_dest, std::vector<struct path *> 
     }
 }
 
-void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, struct optiq_bulk *bulk)
+std::vector<struct path *> optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, struct optiq_bulk *bulk)
 {
     //uint64_t t0 = GetTimeBase();
 
@@ -80,13 +165,21 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
     int world_size = bulk->pami_transport->size;
 
     /*Get number of dests and dests*/
-    int num_sources = 256;
+    int num_sources = world_size;
     int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
     for (int i = 0; i < num_sources; i++) {
 	source_ranks[i] = i;
     }
-    int num_dests = 4;
-    int dest_ranks[4] = {32, 96, 160, 224};
+
+    int ratio = 64;
+    int num_dests = world_size/ratio;
+
+    int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
+
+    for (int i = 0; i < num_dests; i++) {
+        dest_ranks[i] = i * ratio + ratio/2;
+    }
+
 
     uint64_t t0 = GetTimeBase();
 
@@ -103,7 +196,7 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 
     uint64_t t2 = GetTimeBase();
 
-    int num_jobs = 4;
+    int num_jobs = num_dests;
     int expecting_length = world_size * 1024 * 1024;
 
     int *flow_id = bulk->flow_id;
@@ -152,7 +245,7 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 	}
     }
 
-    int recv_buf_size = 256 * 1024 * 1024;
+    int recv_buf_size = world_size * 1024 * 1024;
     if (isDest) 
     {
 	result = PAMI_Memregion_create (bulk->pami_transport->context, recv_buf, recv_buf_size, &bytes, &bulk->recv_mr.mr);
@@ -193,6 +286,8 @@ void optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *r
 	t = (double)(t1-t0)/1.6e3;
         printf("create paths %f\n", t);
     }
+
+    return complete_paths;
 }
 
 int main(int argc, char **argv)
@@ -211,6 +306,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < bfs->num_dims; i++) {
 	bfs->num_nodes *= bfs->size[i];
     }
+
     bfs->neighbors = optiq_topology_get_all_nodes_neighbors(bfs->num_dims, bfs->size);
 
     if (world_rank == 0) {
@@ -232,8 +328,14 @@ int main(int argc, char **argv)
     optiq_pami_init_extra(pami_transport);
     optiq_pami_init(pami_transport);
 
-    int num_dests = 4;
-    int dests[4] = {32, 96, 160, 224};
+    int ratio = 64;
+    int num_dests = world_size/ratio;
+
+    int *dests = (int *) malloc (sizeof(int) * num_dests);
+
+    for (int i = 0; i < num_dests; i++) {
+        dests[i] = i * ratio + ratio/2;
+    }
 
     int send_bytes = 1 * 1024 * 1024;
     int send_buf_size = num_dests * send_bytes;
@@ -274,7 +376,7 @@ int main(int argc, char **argv)
 
     uint64_t t0 = GetTimeBase();
 
-    optiq_pami_alltoallv(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, &pami_transport->bulk);
+    std::vector<struct path *> complete_paths = optiq_pami_alltoallv(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, &pami_transport->bulk);
 
     uint64_t t1 = GetTimeBase();
 
@@ -282,18 +384,10 @@ int main(int argc, char **argv)
 
     uint64_t t3 = GetTimeBase();
 
-    double max_t, t = (double)(t3 - t0)/1.6e3;
+    double max_t, t = (double)(t3 - t1)/1.6e3;
 
-    MPI_Reduce(&t, &max_t, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-
-    int max_buffer_size;
-    MPI_Reduce(&pami_transport->extra.forward_mr->offset, &max_buffer_size, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
-
-    if (world_rank == 0) {
-	double bw = num_dests * world_size * send_bytes / max_t / 1024 / 1024 * 1e6;
-	printf("Done test t = %8.4f (microsecond), bw = %8.4f (MB/s)\n", t, bw);
-	printf("Max buffer size = %d\n", max_buffer_size);
-    } 
+    long int data_size = (long int) num_dests * world_size * send_bytes;
+    gather_print_time(t1, t3, 1, data_size, world_rank);
 
     for (int i = 0; i < num_dests; i++) {
 	if (world_rank == dests[i]) {
@@ -306,6 +400,14 @@ int main(int argc, char **argv)
 	    }
 	}
     }
+
+    if (world_rank == 0)
+    {
+	optiq_path_print_stat(complete_paths, bfs->num_nodes);
+    }
+
+    int nbytes = send_bytes;
+    mpi_alltoallv(nbytes);
 
     MPI_Finalize();
 
