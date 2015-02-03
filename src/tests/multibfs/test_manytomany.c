@@ -6,7 +6,7 @@
 
 #include "topology.h"
 #include "path.h"
-#include "mtonbfs.h"
+#include "manytomany.h"
 
 int main(int argc, char **argv)
 {
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
     gettimeofday(&t1, NULL);
 
-    mton_build_paths(complete_paths, num_sources, source_ranks, num_dests, dest_ranks, &bfs);
+    optiq_path_search_manytomany(complete_paths, num_sources, source_ranks, num_dests, dest_ranks, &bfs);
 
     gettimeofday(&t2, NULL);
 

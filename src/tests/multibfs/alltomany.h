@@ -16,6 +16,6 @@ struct multibfs {
     std::vector<struct path *> *edge_path;
 };
 
-void build_paths(std::vector<struct path *> &complete_paths, int num_dests, int *dests, struct multibfs *bfs);
+void optiq_path_search_alltomany(std::vector<struct path *> &complete_paths, int num_dests, int *dests, struct multibfs *bfs);
 
 #endif

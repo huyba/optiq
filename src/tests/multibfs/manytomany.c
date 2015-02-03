@@ -10,9 +10,9 @@
 #include <sys/time.h>
 
 #include "optiq_perf.h"
-#include "mtonbfs.h"
+#include "manytomany.h"
 
-struct multibfs_perf mperf;
+struct multibfs_perf mperf1;
 
 void mton_add_load_on_path(struct path *np, int *load, int adding_load, int num_nodes)
 {
@@ -25,7 +25,7 @@ void mton_add_load_on_path(struct path *np, int *load, int adding_load, int num_
 
     gettimeofday(&t1, NULL);
     long int diff = (t1.tv_usec + 1000000 * t1.tv_sec) - (t0.tv_usec + 1000000 * t0.tv_sec);
-    mperf.add_load_time += diff;
+    mperf1.add_load_time += diff;
 }
 
 void mton_update_max_load(struct path *np, int *load, struct mtonbfs *bfs)
@@ -50,7 +50,7 @@ void mton_update_max_load(struct path *np, int *load, struct mtonbfs *bfs)
 
     gettimeofday(&t1, NULL);
     long int diff = (t1.tv_usec + 1000000 * t1.tv_sec) - (t0.tv_usec + 1000000 * t0.tv_sec);
-    mperf.update_max_load_time += diff;
+    mperf1.update_max_load_time += diff;
 }
 
 void mton_add_edge_path(std::vector<struct path*> *edge_path, struct path *p, int num_nodes)
@@ -65,10 +65,10 @@ void mton_add_edge_path(std::vector<struct path*> *edge_path, struct path *p, in
 
     gettimeofday(&t1, NULL);
     long int diff = (t1.tv_usec + 1000000 * t1.tv_sec) - (t0.tv_usec + 1000000 * t0.tv_sec);
-    mperf.add_edge_path_time += diff;
+    mperf1.add_edge_path_time += diff;
 }
 
-void mton_build_paths(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs) 
+void optiq_path_search_manytomany(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs) 
 {
     bool isReverted = false;
     /*Revert the sources/dests for less computating*/
@@ -254,8 +254,8 @@ void mton_build_paths(std::vector<struct path *> &complete_paths, int num_source
     diff = (t3.tv_usec + 1000000 * t3.tv_sec) - (t2.tv_usec + 1000000 * t2.tv_sec);
     printf("Extend 2 in %ld microseconds\n", diff);
 
-    printf("Total edge time is %ld\n", mperf.add_edge_path_time);
-    printf("Total load time is %ld\n", mperf.add_load_time);
-    printf("Total update time is %ld\n", mperf.update_max_load_time);
+    printf("Total edge time is %ld\n", mperf1.add_edge_path_time);
+    printf("Total load time is %ld\n", mperf1.add_load_time);
+    printf("Total update time is %ld\n", mperf1.update_max_load_time);
     */
 }

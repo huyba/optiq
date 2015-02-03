@@ -5,7 +5,7 @@
 
 #include "path.h"
 #include "topology.h"
-#include "multibfs.h"
+#include "alltomany.h"
 
 int main(int argc, char **argv)
 {
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
     gettimeofday(&t1, NULL);
 
-    build_paths(complete_paths, num_dests, dests, &bfs);
+    optiq_path_search_alltomany(complete_paths, num_dests, dests, &bfs);
 
     gettimeofday(&t2, NULL);
 
