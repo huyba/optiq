@@ -6,7 +6,12 @@ MPICH2_PATH=/usr/local/mpich2
 
 LD = g++
 
-INCLUDE = -I.
+OPTIQ = ../../..
+UTIL = $(OPTIQ)/dev/util
+TOPOLOGY = $(OPTIQ)/dev/topology
+STRUCTURE = $(OPTIQ)/dev/structures
+
+INCLUDE = -I. -I$(UTIL) -I$(TOPOLOGY) -I$(STRUCTURE)
 
 CFLAGS = $(COPT) $(INCLUDE)
 LDFLAGS = $(COPT)
@@ -15,9 +20,9 @@ INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = util.o topology.o datagen.o path.o
+OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  multibfs.o
 
-all: $(OBJ) graph_gen.x readpath.x
+all: $(OBJ) test_multibfs.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
