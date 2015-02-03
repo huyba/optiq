@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "util.h"
-#include "datagen.h"
 #include "topology.h"
 
 #include <sys/time.h>

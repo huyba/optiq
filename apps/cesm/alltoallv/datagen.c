@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include <datagen.h>
-#include <topology.h>
+#include "topology.h"
+#include "datagen.h"
 
 #define INFINITY (8*1024*1024)
 
@@ -23,7 +23,7 @@ void optiq_print_arcs(int num_dims, int *size, double cap)
                     for (int ed = 0; ed < size[4]; ed++) {
                         coord[4] = ed;
                         num_neighbors = 0;
-                        nid = optiq_compute_nid(num_dims, size, coord);
+                        nid = optiq_topology_compute_node_id(num_dims, size, &coord[0]);
                         num_neighbors = optiq_compute_neighbors(num_dims, size, coord, neighbors);
                         for (int i = 0; i < num_neighbors; i++) {
                             if (cap < 0.0) {

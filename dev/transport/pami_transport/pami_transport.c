@@ -411,3 +411,33 @@ endpoints[remote_rank]);
 
     return ret;
 }
+
+int optiq_pami_transport_finalize()
+{
+    struct optiq_pami_transport* pami_transport = optiq_pami_transport_get();
+   
+    /* Free memory */
+    free(pami_transport->endpoints);
+
+    /* Destroy context */
+    pami_result_t result;
+    result = PAMI_Context_destroyv(&pami_transport->context, pami_transport->num_contexts);
+    if (result != PAMI_SUCCESS)
+    {
+	fprintf (stderr, "Error. Unable to destroy pami context. result = %d\n", result);
+	return 1;
+    }
+
+    /* Destroy client */
+    result = PAMI_Client_destroy(&pami_transport->client);
+    if (result != PAMI_SUCCESS)
+    {
+	fprintf (stderr, "Error. Unable to finalize pami client. result = %d\n", result);
+	return 1;
+    }
+
+    /* Free the pami_transport itself*/
+    free(pami_transport);
+
+    return 0;
+}

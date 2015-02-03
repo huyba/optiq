@@ -10,5 +10,7 @@ int main(int argc, char **argv)
 
     printf("rank %d size %d\n", pami_transport->rank, pami_transport->size);
 
+    optiq_pami_transport_finalize();
+
     return 0;
 }

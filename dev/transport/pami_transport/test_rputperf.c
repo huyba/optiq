@@ -60,5 +60,10 @@ int main(int argc, char **argv)
 	}
     }
 
+    free(local_buf);
+    free(remote_buf);
+
+    optiq_pami_transport_finalize();
+
     return 0;
 }
