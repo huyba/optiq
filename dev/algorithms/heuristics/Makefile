@@ -15,18 +15,21 @@ endif
 LD      = mpixlc_r
 
 OPTIQ = ../../..
-UTIL = $(OPTIQ)/dev/util
+DEV = $(OPTIQ)/dev
+UTIL = $(DEV)/util
+STRUCTURE = $(DEV)/structures
+TOPOLOGY = $(DEV)/topology
 
-CFLAGS  = $(COPT) -I. -I$(UTIL)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCTURE) -I$(TOPOLOGY)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/util.o
+OBJ = $(UTIL)/util.o $(STRUCTURE)/path.o $(STRUCTURE)/heap_path.o $(TOPOLOGY)/topology.o
 
 all: $(OBJ) alltomany.o manytomany.o
 
-%.o: %.c $(OBJ)
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o $(OBJ)
