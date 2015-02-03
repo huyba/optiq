@@ -13,17 +13,24 @@ int main(int argc, char **argv)
     int size[5] = {2, 4, 4, 4, 2};
 
     bfs.num_dims = 5;
+    int num_nodes = 1;
     for (int i = 0; i < 5; i++) {
         bfs.size[i] = size[i];
+	num_nodes *= size[i];
     }
 
-    multibfs_init(&bfs);
+    //multibfs_init(&bfs);
 
     printf("Init done\n");
 
-    std::vector<struct path> complete_paths;
-    int num_dests = 4;
-    int dests[4] = {32, 96, 160, 224};
+    std::vector<struct path *> complete_paths;
+    int ratio = 64;
+    int num_dests = num_nodes/64;
+    int *dests = (int *) malloc (sizeof(int) * num_dests);
+    for (int i = 0; i < num_dests; i++)
+    {
+	dests[i] = i * ratio + 32;
+    }
 
     struct timeval t1, t2;
 
@@ -39,7 +46,7 @@ int main(int argc, char **argv)
 
     printf("Build done in %ld microseconds\n", diff);
 
-    //optiq_path_print_paths(complete_paths);
+    optiq_path_print_stat(complete_paths, num_nodes);
 
     return 0;
 }
