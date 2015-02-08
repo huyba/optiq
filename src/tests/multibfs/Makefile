@@ -1,25 +1,26 @@
-#CC = gcc
-#CC = g++
-CC = mpicxx
-COPT = -g -O2 -Wall #-std=c99
-
-MPICH2_PATH=/usr/local/mpich2
-
 ifndef COMPILER
-  COMPILER = XL
+    COMPILER = gxx#XL
+endif
+
+ifeq ($(COMPILER),gxx)
+    CC = g++
+    COPT = -g -Wall
+    LD = g++
 endif
 
 ifeq ($(COMPILER),GNU)
   CC      = mpicc
   COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
+  LD = mpixlc_r
 endif
 
 ifeq ($(COMPILER),XL)
   CC      = mpicxx
   COPT    = -g -O3 #-DDEBUG
+  LD = mpixlc_r
 endif
 
-LD      = mpixlc_r #g++
+MPICH2_PATH=/usr/local/mpich2
 
 OPTIQ = ../../..
 UTIL = $(OPTIQ)/dev/util
@@ -53,5 +54,4 @@ copy:
 	cp test_manytomany.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/multibfs/
 
 clean:
-	rm *.o
-	rm *.x
+	rm *.o *.x

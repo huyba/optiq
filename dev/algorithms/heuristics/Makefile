@@ -1,18 +1,24 @@
 ifndef COMPILER
-  COMPILER = XL
+  COMPILER = gxx#XL
 endif
 
 ifeq ($(COMPILER),GNU)
   CC      = mpicc
   COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
+  LD	  = mpixlc_r
 endif
 
 ifeq ($(COMPILER),XL)
   CC      = mpicxx
   COPT    = -g -O3 #-DDEBUG
+  LD	  = mpixlc_r
 endif
 
-LD      = mpixlc_r
+ifeq ($(COMPILER),gxx)
+    CC	    = g++
+    COPT    = -g -Wall
+    LG	    = g++
+endif
 
 OPTIQ = ../../..
 DEV = $(OPTIQ)/dev
