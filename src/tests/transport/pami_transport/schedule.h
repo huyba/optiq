@@ -16,13 +16,17 @@ struct optiq_schedule {
     int *next_dests;
 
     int expecting_length;
-    int sent_bytes;
-    int *recv_bytes;
+
+    char *send_buf;
+    int *sendcounts;
+    int *sdispls;
+
+    char *recv_buf;
+    int *recvcounts;
+    int *rdispls;
 
     bool isDest;
     bool isSource;
-
-    int *rdispls;
 
     struct optiq_memregion recv_mr;
     struct optiq_memregion send_mr;

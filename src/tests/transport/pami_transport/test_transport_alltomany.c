@@ -135,10 +135,10 @@ int main(int argc, char **argv)
         dest_ranks[i] = i * ratio + ratio/2;
     }
 
-    int send_bytes = 1 * 1024 * 1024;
-    int send_buf_size = num_dests * send_bytes;
-    char *send_buf = (char *) malloc(send_buf_size);
-    for (int i = 0; i < send_buf_size; i++) {
+    int count = 1 * 1024 * 1024;
+    int send_bytes = count * num_dests;
+    char *send_buf = (char *) malloc(send_bytes);
+    for (int i = 0; i < send_bytes; i++) {
 	send_buf[i] = i % 128;
     }
 
@@ -146,13 +146,13 @@ int main(int argc, char **argv)
     int *sdispls = (int *)calloc(1, sizeof(int) * world_size);
     for (int i = 0; i < num_dests; i++) 
     {
-	sendcounts[dest_ranks[i]] = send_bytes;
-	sdispls[dest_ranks[i]] = i * send_bytes;
+	sendcounts[dest_ranks[i]] = count;
+	sdispls[dest_ranks[i]] = i * count;
     }
 
     int *recvcounts = (int *) calloc(1, sizeof(int) * world_size);
 
-    int recv_buf_size = 0;
+    int recv_bytes = 0;
     char *recv_buf = NULL;
     int *rdispls = NULL;
 
@@ -160,14 +160,14 @@ int main(int argc, char **argv)
     {
 	if (world_rank == dest_ranks[i]) 
 	{
-	    recv_buf_size = world_size * send_bytes;
-	    recv_buf = (char *) malloc(recv_buf_size);
+	    recv_bytes = world_size * count;
+	    recv_buf = (char *) malloc(recv_bytes);
 	    rdispls = (int *) malloc(sizeof(int) * world_size);
 
 	    for (int i = 0; i < world_size; i++) 
 	    {
-		recvcounts[i] = send_bytes;
-		rdispls[i] = i * send_bytes;
+		recvcounts[i] = count;
+		rdispls[i] = i * count;
 	    }
 	}
     }
@@ -175,6 +175,7 @@ int main(int argc, char **argv)
     uint64_t t0 = GetTimeBase();
 
     max_path_length = bfs.diameter/2;
+
     std::vector<struct path *> complete_paths;
     complete_paths.clear();
 
@@ -191,14 +192,17 @@ int main(int argc, char **argv)
     struct optiq_schedule schedule;
     schedule.world_rank = world_rank;
     schedule.world_size = world_size;
-    schedule.send_buf = send_buf;
-    schedule.send_bytes = 1024 * 1024;
-    schedule.recv_buf = recv_buf;
-    schedule.recv_bytes = world_size * 1024 * 1024;
 
+    schedule.send_buf = send_buf;
+    schedule.sendcounts = sendcounts;
+    schedule.sdispls = sdispls;
+
+    schedule.recv_buf = recv_buf;
+    schedule.recvcounts = recvcounts;
     schedule.rdispls = rdispls;
+
     schedule.remaining_jobs = num_dests;
-    schedule.expecting_length = world_size * 1024 * 1024;
+    schedule.expecting_length = recv_bytes;
     schedule.sent_bytes = 0;
 
     optiq_schedule_init(schedule);

@@ -85,6 +85,14 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
     int nbytes = 32 * 1024;
     if (isSource) {
+	for (int i = 0; i < schedule.world_size; i++)
+	{
+	    if (schedule.sendcounts[i] != 0) {
+		
+	    }
+	}
+
+
         for (int offset = 0; offset < schedule.send_bytes; offset += nbytes) {
             for (int i = 0; i < num_dests; i++) {
                 struct optiq_message_header *header = pami_transport->extra.message_headers.back();
