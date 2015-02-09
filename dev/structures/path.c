@@ -6,7 +6,9 @@
 #include "util.h"
 #include "path.h"
 
-int optiq_path_compare(struct path *p1, struct path *p2)
+int max_path_length = 0;
+
+int optiq_path_compare_by_max_load(struct path *p1, struct path *p2)
 {
     if (p1->max_load > p2->max_load) {
 	return 1;
@@ -23,9 +25,46 @@ int optiq_path_compare(struct path *p1, struct path *p2)
     }
 }
 
+int optiq_path_compare(struct path *p1, struct path *p2)
+{
+    if (max_path_length == 0) {
+	return optiq_path_compare_by_max_load(p1, p2);
+    }
+
+    int radius = max_path_length;
+
+    if (p1->arcs.size() >= radius && p2->arcs.size() >= radius) {
+	if (p1->arcs.size() > p2->arcs.size()) {
+            return 1;
+        } else if (p1->arcs.size() < p2->arcs.size()) {
+            return -1;
+        }
+    }
+    else if (p1->arcs.size() >= radius && p2->arcs.size() < radius) {
+	return 1;
+    }
+    else if (p1->arcs.size() < radius && p2->arcs.size() >= radius) {
+	return -1;
+    }
+    
+    if (p1->max_load > p2->max_load) {
+        return 1;
+    } else if (p1->max_load < p2->max_load) {
+        return -1;
+    } else {
+        if (p1->arcs.size() > p2->arcs.size()) {
+            return 1;
+        } else if (p1->arcs.size() < p2->arcs.size()) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+}
+
 void optiq_path_print_path(struct path *p)
 {
-    printf("Path: max_load = %d, #hops = %d. ", p->max_load, p->arcs.size());
+    printf("Path: max_load = %d, #hops = %ld. ", p->max_load, p->arcs.size());
     for (int j = 0; j < p->arcs.size(); j++) {
 	printf("%d->", p->arcs[j].u);
     }

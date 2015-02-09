@@ -54,4 +54,5 @@ copy:
 	cp test_manytomany.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/multibfs/
 
 clean:
+	rm $(OBJ)
 	rm *.o *.x

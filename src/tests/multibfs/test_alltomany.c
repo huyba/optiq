@@ -46,6 +46,8 @@ int main(int argc, char **argv)
 	dests[i] = i * ratio + ratio/2;
     }
 
+    max_path_length = diameter/2;
+
     struct timeval t1, t2;
 
     gettimeofday(&t1, NULL);

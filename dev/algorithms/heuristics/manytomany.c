@@ -84,7 +84,6 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
 	dest_ranks = tp;
     }
 
-    int num_dims = bfs->num_dims;
     int num_nodes = bfs->num_nodes;
 
     std::vector<struct path> expanding_paths;
