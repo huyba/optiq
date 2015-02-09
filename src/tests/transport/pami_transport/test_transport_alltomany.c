@@ -11,8 +11,6 @@
 
 using namespace std;
 
-#define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
-
 void gather_print_time(uint64_t start, uint64_t end, int iters, long int nbytes, int world_rank)
 {
     double elapsed_time = (double)(end - start)/1.6e3;
@@ -98,177 +96,6 @@ void mpi_alltoallv(int nbytes)
     free(rdispls);
 }
 
-void build_next_dest(int world_rank, int *next_dest, std::vector<struct path *> &complete_paths)
-{
-    for (int i = 0; i < complete_paths.size(); i++)
-    {
-	for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
-	{
-	    if (complete_paths[i]->arcs[j].u == world_rank) 
-	    {
-		next_dest[i] = complete_paths[i]->arcs[j].v;
-	    }
-	}
-    }
-}
-
-std::vector<struct path *> optiq_pami_alltoallv(void *send_buf, int *sendcounts, int *sdispls, void *recv_buf, int *recvcounts, int *rdispls, struct optiq_bulk *bulk)
-{
-    //uint64_t t0 = GetTimeBase();
-
-    /*Start the configuration for the test*/
-    int num_dims = 5;
-    int size[5];
-    optiq_topology_get_size_bgq(size);
-
-    int world_rank = bulk->pami_transport->rank;
-    int world_size = bulk->pami_transport->size;
-
-    /*Get number of dests and dests*/
-    int num_sources = world_size;
-    int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
-    for (int i = 0; i < num_sources; i++) {
-	source_ranks[i] = i;
-    }
-
-    int ratio = 64;
-    int num_dests = world_size/ratio;
-
-    int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
-
-    for (int i = 0; i < num_dests; i++) {
-        dest_ranks[i] = i * ratio + ratio/2;
-    }
-
-    struct multibfs bfs;
-
-    int num_nodes = 1;
-    int diameter = 0;
-    for (int i = 0; i < num_dims; i++) {
-        bfs.size[i] = size[i];
-        num_nodes *= size[i];
-        diameter += size[i];
-    }
-    bfs.num_dims = num_dims;
-    bfs.num_nodes = num_nodes;
-    bfs.neighbors = optiq_topology_get_all_nodes_neighbors(num_dims, size);
-
-    max_path_length = diameter/2;
-
-    uint64_t t0 = GetTimeBase();
-
-    /*Calculate paths to move data*/
-    std::vector<struct path *> complete_paths;
-    complete_paths.clear();
-
-    optiq_alg_heuristic_search_alltomany(complete_paths, num_dests, dest_ranks, &bfs);
-
-    if (world_rank == 0) {
-	optiq_path_print_paths(complete_paths);
-    }
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    uint64_t t1 = GetTimeBase();
-
-    build_next_dest(world_rank, bulk->next_dest, complete_paths);
-
-    uint64_t t2 = GetTimeBase();
-
-    int num_jobs = num_dests;
-    int expecting_length = world_size * 1024 * 1024;
-
-    int *flow_id = bulk->flow_id;
-    int *final_dest = bulk->final_dest;
-
-    bool isSource = false, isDest = false;
-
-    int index = 0;
-    for (int i = 0; i < complete_paths.size(); i++) {
-	if (complete_paths[i]->arcs.back().v == world_rank) {
-	    isDest = true;
-	}
-
-	if (complete_paths[i]->arcs.front().u == world_rank) {
-	    isSource = true;
-	    flow_id[index] = i;
-	    final_dest[index] = complete_paths[i]->arcs.back().v;
-	    index++;
-	}
-    }
-
-    bulk->remaining_jobs = num_jobs;
-    bulk->expecting_length = expecting_length;
-    bulk->sent_bytes = 0;
-
-    bulk->send_mr.offset = 0;
-    bulk->recv_mr.offset = 0;
-
-    bulk->rdispls = rdispls;
-
-    bulk->isDest = isDest;
-
-    uint64_t t3 = GetTimeBase();
-
-    size_t bytes;
-    pami_result_t result;
-    int send_buf_size = 1 * 1024 * 1024;
-    if (isSource) 
-    {
-	result = PAMI_Memregion_create (bulk->pami_transport->context, send_buf, send_buf_size, &bytes, &bulk->send_mr.mr);
-
-	if (result != PAMI_SUCCESS) {
-	    printf("No success\n");
-	} else if (bytes < send_buf_size) {
-	    printf("Registered less\n");
-	}
-    }
-
-    int recv_buf_size = world_size * 1024 * 1024;
-    if (isDest) 
-    {
-	result = PAMI_Memregion_create (bulk->pami_transport->context, recv_buf, recv_buf_size, &bytes, &bulk->recv_mr.mr);
-
-	if (result != PAMI_SUCCESS) {
-	    printf("No success\n");
-	} else if (bytes < recv_buf_size) {
-	    printf("Registered less\n");
-	}
-    }
-
-    int nbytes = 32 * 1024;
-    if (isSource) {
-	for (int offset = 0; offset < send_buf_size; offset += nbytes) {
-	    for (int i = 0; i < num_dests; i++) {
-		struct optiq_message_header *header = bulk->pami_transport->extra.message_headers.back();
-		bulk->pami_transport->extra.message_headers.pop_back();
-
-		header->length = nbytes;
-		header->source = world_rank;
-		header->dest = final_dest[i];
-		header->path_id = flow_id[i];
-
-		memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
-		header->mem.offset = offset;
-		header->original_offset = offset;
-
-		bulk->pami_transport->extra.send_headers.push_back(header);
-	    }
-	}
-    }
-
-    if (bulk->pami_transport->rank == 0) {
-	double t = (double)(t3-t2)/1.6e3;
-	printf("flow id, final dest %f\n", t);
-	t = (double)(t2-t1)/1.6e3;
-	printf("build next dest %f\n", t);
-	t = (double)(t1-t0)/1.6e3;
-        printf("create paths %f\n", t);
-    }
-
-    return complete_paths;
-}
-
 int main(int argc, char **argv)
 {
     int world_rank, world_size;
@@ -278,33 +105,26 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    struct multibfs *bfs = (struct multibfs *) calloc (1, sizeof(struct multibfs));
-    bfs->num_dims = 5;
-    optiq_topology_get_size_bgq(bfs->size);
-    bfs->num_nodes = 1;
-    for (int i = 0; i < bfs->num_dims; i++) {
-	bfs->num_nodes *= bfs->size[i];
+    struct multibfs bfs;
+    bfs.num_dims = 5;
+    optiq_topology_get_size_bgq(bfs.size);
+    bfs.num_nodes = 1;
+
+    for (int i = 0; i < bfs.num_dims; i++) {
+	bfs.num_nodes *= bfs.size[i];
+	bfs.diameter += bfs.size[i];
     }
 
-    bfs->neighbors = optiq_topology_get_all_nodes_neighbors(bfs->num_dims, bfs->size);
+    bfs.neighbors = optiq_topology_get_all_nodes_neighbors(bfs.num_dims, bfs.size);
 
     if (world_rank == 0) {
-	printf("num_dims = %d, num_nodes = %d\n", bfs->num_dims, bfs->num_nodes);
+	printf("Topology: \n");
+	for (int i = 0; i < bfs.num_dims; i++) {
+	    printf("%d ", bfs.size[i]);
+	}
+	printf("\n");
+	printf("num_dims = %d, num_nodes = %d\n", bfs.num_dims, bfs.num_nodes);
     }
-
-    /*Create pami_transport and related variables: rput_cookies, message_headers*/
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
-
-    pami_transport->bulk.pami_transport = pami_transport;
-
-    pami_transport->bulk.recv_bytes = (int *) calloc (1, sizeof(int) * world_size);
-    pami_transport->bulk.final_dest = (int *) calloc (1, sizeof(int) * world_size);
-    pami_transport->bulk.flow_id = (int *) calloc (1, sizeof(int) * world_size);
-
-    pami_transport->bulk.next_dest = (int *) calloc (1, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
-
-    optiq_pami_init_extra(pami_transport);
-    optiq_pami_init(pami_transport);
 
     int ratio = 64;
     int num_dests = world_size/ratio;
@@ -354,18 +174,59 @@ int main(int argc, char **argv)
 
     uint64_t t0 = GetTimeBase();
 
-    std::vector<struct path *> complete_paths = optiq_pami_alltoallv(send_buf, sendcounts, sdispls, recv_buf, recvcounts, rdispls, &pami_transport->bulk);
+    max_path_length = bfs.diameter/2;
+    std::vector<struct path *> complete_paths;
+    complete_paths.clear();
+
+    optiq_alg_heuristic_search_alltomany(complete_paths, num_dests, dest_ranks, &bfs);
+
+    if (world_rank == 0) {
+        optiq_path_print_paths(complete_paths);
+    }
 
     uint64_t t1 = GetTimeBase();
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    struct optiq_schedule schedule;
+    schedule.world_rank = world_rank;
+    schedule.world_size = world_size;
+    schedule.send_buf = send_buf;
+    schedule.send_bytes = 1024 * 1024;
+    schedule.recv_buf = recv_buf;
+    schedule.recv_bytes = world_size * 1024 * 1024;
+
+    schedule.rdispls = rdispls;
+    schedule.remaining_jobs = num_dests;
+    schedule.expecting_length = world_size * 1024 * 1024;
+    schedule.sent_bytes = 0;
+
+    optiq_schedule_init(schedule);
+
+     /*Create pami_transport and related variables: rput_cookies, message_headers*/
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
+
+    pami_transport->sched = &schedule;
+
+    pami_transport->sched.pami_transport = pami_transport;
+
+    optiq_pami_init_extra(pami_transport);
+    optiq_pami_init(pami_transport);
+
+    uint64_t t1 = GetTimeBase();
+
+    optiq_schedule_create(schedule, complete_paths);
+
+    uint64_t t2 = GetTimeBase();
 
     optiq_execute_jobs(pami_transport);
 
     uint64_t t3 = GetTimeBase();
 
-    double max_t, t = (double)(t3 - t1)/1.6e3;
+    double max_t, t = (double)(t3 - t2)/1.6e3;
 
     long int data_size = (long int) num_dests * world_size * send_bytes;
-    gather_print_time(t1, t3, 1, data_size, world_rank);
+    gather_print_time(t2, t3, 1, data_size, world_rank);
 
     for (int i = 0; i < num_dests; i++) {
 	if (world_rank == dest_ranks[i]) {

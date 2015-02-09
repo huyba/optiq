@@ -1,5 +1,5 @@
 ifndef COMPILER
-  COMPILER = XL
+  COMPILER = gxx#XL
 endif
 
 ifeq ($(COMPILER),GNU)

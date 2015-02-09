@@ -8,6 +8,7 @@
 #include <firmware/include/personality.h>
 #include <pami.h>
 
+#include "schedule.h"
 #include "alltomany.h"
 
 #define MR_DESTINATION_REQUEST 9
@@ -48,34 +49,6 @@ struct optiq_rput_cookie {
     int dest;
 };
 
-struct optiq_bulk {
-    int bulkd_id;
-
-    int world_rank;
-
-    int remaining_jobs;
-    int *next_dest;
-
-    int expecting_length;
-    int sent_bytes;
-    int *recv_bytes;
-
-    bool isDest;
-    bool isSource;
-
-    int *rdispls;
-
-    //struct mutibfs *bfs;
-
-    struct optiq_memregion recv_mr;
-    struct optiq_memregion send_mr;
-
-    struct optiq_pami_transport *pami_transport;
-
-    int *flow_id;
-    int *final_dest;
-};
-
 struct optiq_pami_extra {
     struct optiq_memregion *forward_mr;
 
@@ -101,7 +74,7 @@ struct optiq_pami_transport {
     pami_endpoint_t *endpoints;
 
     struct optiq_pami_extra extra;
-    struct optiq_bulk bulk;
+    struct optiq_schedule &sched;
 };
 
 void optiq_pami_init(struct optiq_pami_transport *self);

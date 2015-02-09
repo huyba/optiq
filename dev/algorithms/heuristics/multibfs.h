@@ -7,6 +7,7 @@ struct multibfs {
     int num_dims;
     int num_nodes;
     int size[5];
+    int diameter;
     struct heap_path *heap;
     std::vector<int> *neighbors;
     struct path *paths;
