@@ -22,44 +22,45 @@ void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *
     }
 }
 
-void optiq_schedule_assign_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs)
+void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs)
 {
-bool done = false;
-        int nbytes = 32 * 1024;
+    bool done = false;
 
-        while(!done)
-        {
-            done = true;
+    while(!done)
+    {
+	done = true;
 
-            for (int i = 0; i < jobs.size(); i++)
-            {
-                if (jobs[i].buf_offset < jobs[i].buf_length) {
+	for (int i = 0; i < jobs.size(); i++)
+	{
+	    int nbytes = 32 * 1024;
 
-                    if (nbytes > jobs[i].buf_length - jobs[i].buf_offset) {
-                        nbytes = jobs[i].buf_length - jobs[i].buf_offset;
-                    }
+	    if (jobs[i].buf_offset < jobs[i].buf_length) 
+	    {
+		if (nbytes > jobs[i].buf_length - jobs[i].buf_offset) {
+		    nbytes = jobs[i].buf_length - jobs[i].buf_offset;
+		}
 
-                    struct optiq_message_header *header = pami_transport->extra.message_headers.back();
-                    pami_transport->extra.message_headers.pop_back();
+		struct optiq_message_header *header = pami_transport->extra.message_headers.back();
+		pami_transport->extra.message_headers.pop_back();
 
-                    header->length = nbytes;
-                    header->source = jobs[i].source_rank;
-                    header->dest = jobs[i].dest_rank;
-                    header->path_id = jobs[i].paths[0]->path_id;
+		header->length = nbytes;
+		header->source = jobs[i].source_rank;
+		header->dest = jobs[i].dest_rank;
+		header->path_id = jobs[i].paths[0]->path_id;
 
-                    memcpy(&header->mem, &jobs[i]->send_mr, sizeof(struct optiq_memregion));
-                    header->mem.offset = jobs[i].buf_offset;
-                    header->original_offset = jobs[i].buf_offset;
-                    jobs[i].buf_offset += nbytes;
+		memcpy(&header->mem, &jobs[i]->send_mr, sizeof(struct optiq_memregion));
+		header->mem.offset = jobs[i].buf_offset;
+		header->original_offset = jobs[i].buf_offset;
+		jobs[i].buf_offset += nbytes;
 
-                    pami_transport->extra.send_headers.push_back(header);
+		pami_transport->extra.send_headers.push_back(header);
 
-                    if (jobs[i].buf_offset < jobs[i].buf_length) {
-                        done = false;
-                    }
-                }
-            }
-        }
+		if (jobs[i].buf_offset < jobs[i].buf_length) {
+		    done = false;
+		}
+	    }
+	}
+    }
 }
 
 void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths)
@@ -139,6 +140,6 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 	    }
 	}
 
-	optiq_schedule_assign_jobs(pami_transport, jobs);
+	optiq_schedule_split_jobs(pami_transport, jobs);
     }
 }
