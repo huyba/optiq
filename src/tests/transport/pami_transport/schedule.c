@@ -5,8 +5,6 @@
 void optiq_schedule_init(struct optiq_schedule &schedule)
 {
     schedule.next_dests = (int *) calloc (1, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
-    schedule.final_dest = (int *) calloc (1, sizeof(int) * schedule.world_size);
-    schedule.flow_id = (int *) calloc (1, sizeof(int) * schedule.world_size);
     schedule.recv_bytes = (int *) calloc (1, sizeof(int) * world_size);
 }
 
@@ -14,14 +12,54 @@ void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *
 {
     for (int i = 0; i < complete_paths.size(); i++)
     {
-        for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
+	for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
+	{
+	    if (complete_paths[i]->arcs[j].u == world_rank)
+	    {
+		next_dests[i] = complete_paths[i]->arcs[j].v;
+	    }
+	}
+    }
+}
+
+void optiq_schedule_assign_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs)
+{
+bool done = false;
+        int nbytes = 32 * 1024;
+
+        while(!done)
         {
-            if (complete_paths[i]->arcs[j].u == world_rank)
+            done = true;
+
+            for (int i = 0; i < jobs.size(); i++)
             {
-                next_dests[i] = complete_paths[i]->arcs[j].v;
+                if (jobs[i].buf_offset < jobs[i].buf_length) {
+
+                    if (nbytes > jobs[i].buf_length - jobs[i].buf_offset) {
+                        nbytes = jobs[i].buf_length - jobs[i].buf_offset;
+                    }
+
+                    struct optiq_message_header *header = pami_transport->extra.message_headers.back();
+                    pami_transport->extra.message_headers.pop_back();
+
+                    header->length = nbytes;
+                    header->source = jobs[i].source_rank;
+                    header->dest = jobs[i].dest_rank;
+                    header->path_id = jobs[i].paths[0]->path_id;
+
+                    memcpy(&header->mem, &jobs[i]->send_mr, sizeof(struct optiq_memregion));
+                    header->mem.offset = jobs[i].buf_offset;
+                    header->original_offset = jobs[i].buf_offset;
+                    jobs[i].buf_offset += nbytes;
+
+                    pami_transport->extra.send_headers.push_back(header);
+
+                    if (jobs[i].buf_offset < jobs[i].buf_length) {
+                        done = false;
+                    }
+                }
             }
         }
-    }
 }
 
 void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths)
@@ -32,25 +70,30 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
     build_next_dests(schedule.world_rank, schedule.next_dests, complete_paths);
 
-    int *final_dest = schedule.final_dest;
-    int *flow_id = schedule.flow_id;
-
     int world_rank = schedule.world_rank;
 
     bool isSource = false, isDest = false;
 
-    int index = 0;
-    for (int i = 0; i < complete_paths.size(); i++) {
-        if (complete_paths[i]->arcs.back().v == world_rank) {
-            isDest = true;
-        }
+    std::vector<struct optiq_job> jobs;
 
-        if (complete_paths[i]->arcs.front().u == world_rank) {
-            isSource = true;
-            flow_id[index] = i;
-            final_dest[index] = complete_paths[i]->arcs.back().v;
-            index++;
-        }
+    for (int i = 0; i < complete_paths.size(); i++) 
+    {
+	if (complete_paths[i]->arcs.back().v == world_rank) {
+	    isDest = true;
+	}
+
+	if (complete_paths[i]->arcs.front().u == world_rank) {
+	    isSource = true;
+
+	    struct optiq_job new_job;
+
+	    new_job.source_rank = world_rank;
+	    new_job.dest_rank = complete_paths[i]->arcs.back().v;
+	    new_job.paths.push_back(complete_paths[i]);
+	    new_job.buf_offset = 0;
+
+	    jobs.push_back(new_job);
+	}
     }
 
     schedule.isDest = isDest;
@@ -61,54 +104,41 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
     size_t bytes;
     pami_result_t result;
 
-    if (isSource)
-    {
-        result = PAMI_Memregion_create (pami_transport->context, schedule.send_buf, schedule.send_bytes, &bytes, &schedule.send_mr.mr);
-
-        if (result != PAMI_SUCCESS) {
-            printf("No success\n");
-        } else if (bytes < schedule.send_bytes) {
-            printf("Registered less\n");
-        }
-    }
-
     if (isDest)
     {
-        result = PAMI_Memregion_create (pami_transport->context, schedule.recv_buf, schedule.recv_bytes, &bytes, &schedule.recv_mr.mr);
+	result = PAMI_Memregion_create (pami_transport->context, schedule.recv_buf, schedule.recv_bytes, &bytes, &schedule.recv_mr.mr);
 
-        if (result != PAMI_SUCCESS) {
-            printf("No success\n");
-        } else if (bytes < schedule.recv_bytes) {
-            printf("Registered less\n");
-        }
+	if (result != PAMI_SUCCESS) {
+	    printf("No success\n");
+	} else if (bytes < schedule.recv_bytes) {
+	    printf("Registered less\n");
+	}
     }
 
-    int nbytes = 32 * 1024;
-    if (isSource) {
+    if (isSource) 
+    {
 	for (int i = 0; i < schedule.world_size; i++)
 	{
-	    if (schedule.sendcounts[i] != 0) {
-		
+	    if (schedule.sendcounts[i] != 0)
+	    {
+		for (int j = 0; j < jobs.size(); j++)
+		{
+		    if (jobs[j].dest_id == i)
+		    {
+			jobs[j].length = schedule.sendcounts[i];
+
+			result = PAMI_Memregion_create (pami_transport->context, &schedule.send_buf[schedule.sdispls[i]], schedule.sendcounts[i], &bytes, &jobs[j].send_mr.mr);
+
+			if (result != PAMI_SUCCESS) {
+			    printf("No success\n");
+			} else if (bytes < schedule.sendcounts[i]) {
+			    printf("Registered less\n");
+			}
+		    }
+		}
 	    }
 	}
 
-
-        for (int offset = 0; offset < schedule.send_bytes; offset += nbytes) {
-            for (int i = 0; i < num_dests; i++) {
-                struct optiq_message_header *header = pami_transport->extra.message_headers.back();
-                pami_transport->extra.message_headers.pop_back();
-
-                header->length = nbytes;
-                header->source = world_rank;
-                header->dest = final_dest[i];
-                header->path_id = flow_id[i];
-
-                memcpy(&header->mem, &bulk->send_mr, sizeof(struct optiq_memregion));
-                header->mem.offset = offset;
-                header->original_offset = offset;
-
-                pami_transport->extra.send_headers.push_back(header);
-            }
-        }
+	optiq_schedule_assign_jobs(pami_transport, jobs);
     }
 }

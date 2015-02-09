@@ -188,3 +188,11 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
 
     fclose(fp);
 }
+
+void optiq_path_assign_ids(std::vector<struct path *> &complete_paths)
+{
+    for (int i = 0; i < complete_paths.size(); i++)
+    {
+	complete_paths[i]->path_id = i;
+    }
+}

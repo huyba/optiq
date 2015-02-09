@@ -32,9 +32,6 @@ struct optiq_schedule {
     struct optiq_memregion send_mr;
 
     struct optiq_pami_transport *pami_transport;
-
-    int *flow_id;
-    int *final_dest;
 };
 
 void optiq_schedule_init(struct optiq_schedule &schedule);
