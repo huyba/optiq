@@ -2,14 +2,12 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <sys/time.h>
+
 #include <vector>
 
 #include "util.h"
 #include "topology.h"
-
-#include <sys/time.h>
-
-#include "optiq_perf.h"
 #include "alltomany.h"
 
 struct multibfs_perf mperf;

@@ -2,14 +2,12 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <sys/time.h>
+
 #include <vector>
 
 #include "util.h"
 #include "topology.h"
-
-#include <sys/time.h>
-
-#include "optiq_perf.h"
 #include "manytomany.h"
 
 struct multibfs_perf mperf1;
@@ -28,7 +26,7 @@ void mton_add_load_on_path(struct path *np, int *load, int adding_load, int num_
     mperf1.add_load_time += diff;
 }
 
-void mton_update_max_load(struct path *np, int *load, struct mtonbfs *bfs)
+void mton_update_max_load(struct path *np, int *load, struct multibfs *bfs)
 {
     struct timeval t0, t1;
     gettimeofday(&t0, NULL);
@@ -68,7 +66,7 @@ void mton_add_edge_path(std::vector<struct path*> *edge_path, struct path *p, in
     mperf1.add_edge_path_time += diff;
 }
 
-void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct mtonbfs *bfs) 
+void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct multibfs *bfs) 
 {
     bool isReverted = false;
     /*Revert the sources/dests for less computating*/

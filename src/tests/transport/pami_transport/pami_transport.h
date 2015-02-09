@@ -8,7 +8,7 @@
 #include <firmware/include/personality.h>
 #include <pami.h>
 
-#include "multibfs.h"
+#include "alltomany.h"
 
 #define MR_DESTINATION_REQUEST 9
 #define MR_FORWARD_REQUEST 10
@@ -65,12 +65,12 @@ struct optiq_bulk {
 
     int *rdispls;
 
+    //struct mutibfs *bfs;
+
     struct optiq_memregion recv_mr;
     struct optiq_memregion send_mr;
 
     struct optiq_pami_transport *pami_transport;
-
-    struct mtonbfs *bfs;
 
     int *flow_id;
     int *final_dest;
