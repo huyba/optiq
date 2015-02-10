@@ -69,6 +69,12 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 	    }
 	}
     }
+
+    /*Clean the jobs*/
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	jobs[i].buf_offset = 0;
+    }
 }
 
 void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths)
@@ -83,8 +89,7 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
     bool isSource = false, isDest = false;
 
-    std::vector<struct optiq_job> jobs;
-    jobs.clear();
+    schedule.local_jobs.clear();
 
     for (int i = 0; i < complete_paths.size(); i++) 
     {
@@ -102,7 +107,7 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 	    new_job.paths.push_back(complete_paths[i]);
 	    new_job.buf_offset = 0;
 
-	    jobs.push_back(new_job);
+	    schedule.local_jobs.push_back(new_job);
 	}
     }
 
@@ -134,13 +139,13 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 	{
 	    if (schedule.sendcounts[i] != 0)
 	    {
-		for (int j = 0; j < jobs.size(); j++)
+		for (int j = 0; j < schedule.local_jobs.size(); j++)
 		{
-		    if (jobs[j].dest_rank == i)
+		    if (schedule.local_jobs[j].dest_rank == i)
 		    {
-			jobs[j].buf_length = schedule.sendcounts[i];
+			schedule.local_jobs[j].buf_length = schedule.sendcounts[i];
 
-			result = PAMI_Memregion_create (pami_transport->context, &schedule.send_buf[schedule.sdispls[i]], schedule.sendcounts[i], &bytes, &jobs[j].send_mr.mr);
+			result = PAMI_Memregion_create (pami_transport->context, &schedule.send_buf[schedule.sdispls[i]], schedule.sendcounts[i], &bytes, &schedule.local_jobs[j].send_mr.mr);
 
 			if (result != PAMI_SUCCESS) {
 			    printf("No success\n");
@@ -151,7 +156,5 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 		}
 	    }
 	}
-
-	optiq_schedule_split_jobs(pami_transport, jobs, schedule.chunk_size);
     }
 }

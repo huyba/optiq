@@ -182,9 +182,9 @@ int main(int argc, char **argv)
 
     optiq_alg_heuristic_search_alltomany(complete_paths, num_dests, dest_ranks, &bfs);
 
-    if (world_rank == 0) {
+    /*if (world_rank == 0) {
         optiq_path_print_paths(complete_paths);
-    }
+    }*/
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
 
     optiq_schedule_init(schedule);
 
-     /*Create pami_transport and related variables: rput_cookies, message_headers*/
+    /*Create pami_transport and related variables: rput_cookies, message_headers*/
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
 
     pami_transport->sched = &schedule;
@@ -221,24 +221,46 @@ int main(int argc, char **argv)
 
     optiq_schedule_create(schedule, complete_paths);
 
-    uint64_t t2 = GetTimeBase();
+    for (int chunk_size = 16 * 1024; chunk_size <= 1024 * 1024; chunk_size *=2)
+    {
+	if (world_rank == 0)
+	{
+	    printf("chunk_size = %d\n", chunk_size);
+	}
 
-    optiq_execute_jobs(pami_transport);
+	schedule.chunk_size = chunk_size;
+	optiq_schedule_split_jobs(pami_transport, schedule.local_jobs, schedule.chunk_size);
 
-    uint64_t t3 = GetTimeBase();
+	schedule.remaining_jobs = num_dests;
+	schedule.expecting_length = recv_bytes;
+	schedule.sent_bytes = 0;
+	memset(schedule.recv_bytes, 0, sizeof (int) * world_size);
 
-    double max_t, t = (double)(t3 - t2)/1.6e3;
+	uint64_t t2 = GetTimeBase();
 
-    long int data_size = (long int) num_dests * world_size * count;
-    gather_print_time(t2, t3, 1, data_size, world_rank);
+	optiq_execute_jobs(pami_transport);
 
-    for (int i = 0; i < num_dests; i++) {
-	if (world_rank == dest_ranks[i]) {
+	uint64_t t3 = GetTimeBase();
+
+	double max_t, t = (double)(t3 - t2)/1.6e3;
+
+	long int data_size = (long int) num_dests * world_size * count;
+	gather_print_time(t2, t3, 1, data_size, world_rank);
+    }
+
+    for (int i = 0; i < num_dests; i++) 
+    {
+	if (world_rank == dest_ranks[i]) 
+	{
 	    char *test_buf = (char *) malloc (recv_bytes);
-	    for (int i = 0; i < recv_bytes; i++) {
+
+	    for (int i = 0; i < recv_bytes; i++) 
+	    {
 		test_buf[i] = i%128;
 	    }
-	    if (memcmp(test_buf, recv_buf, recv_bytes) != 0) {
+
+	    if (memcmp(test_buf, recv_buf, recv_bytes) != 0) 
+	    {
 		printf("Rank %d Received invalid data\n", world_rank);
 	    }
 	}

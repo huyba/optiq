@@ -24,7 +24,7 @@
 
 #define MAX_SHORT_MESSAGE_LENGTH 128
 
-#define OPTIQ_FORWARD_BUFFER_SIZE (128 * 1024 * 1024)
+#define OPTIQ_FORWARD_BUFFER_SIZE (256 * 1024 * 1024)
 
 struct optiq_pami_transport;
 struct optiq_schedule;
