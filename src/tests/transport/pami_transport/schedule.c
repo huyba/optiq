@@ -5,7 +5,9 @@
 void optiq_schedule_init(struct optiq_schedule &schedule)
 {
     schedule.next_dests = (int *) calloc (1, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
-    schedule.recv_bytes = (int *) calloc (1, sizeof(int) * world_size);
+    schedule.recv_bytes = (int *) calloc (1, sizeof(int) * schedule.world_size);
+
+    schedule.recv_memregions = (struct optiq_memregion *) malloc (sizeof (struct optiq_memregion) * schedule.world_size);
 }
 
 void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *> &complete_paths)
@@ -107,12 +109,18 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
     if (isDest)
     {
-	result = PAMI_Memregion_create (pami_transport->context, schedule.recv_buf, schedule.recv_bytes, &bytes, &schedule.recv_mr.mr);
+	for (int i = 0; i < schedule.world_size; i++)
+	{
+	    if (schedule.recvcounts[i] != 0)
+	    {
+		result = PAMI_Memregion_create (pami_transport->context, &schedule.recv_buf[schedule.rdspls[i]], schedule.recvcounts[i], &bytes, &schedule.recv_memregions[i].mr);
 
-	if (result != PAMI_SUCCESS) {
-	    printf("No success\n");
-	} else if (bytes < schedule.recv_bytes) {
-	    printf("Registered less\n");
+		if (result != PAMI_SUCCESS) {
+		    printf("No success\n");
+		} else if (bytes < schedule.recvcounts[i]) {
+		    printf("Registered less\n");
+		}
+	    }
 	}
     }
 

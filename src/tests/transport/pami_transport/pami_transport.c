@@ -429,12 +429,11 @@ void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie,
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
     int source = (*(int *)data);
-    int offset = pami_transport->sched->rdispls[source];
 
-    pami_transport->sched->recv_mr.header_id = *((int*)header);
-    pami_transport->sched->recv_mr.offset = offset;
+    pami_transport->sched->recv_memergions[source].header_id = *((int*)header);
+    pami_transport->sched->recv_memregions[source].offset = 0;
 
-    optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &pami_transport->sched->recv_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
+    optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &pami_transport->sched->recv_memregions[source], sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
     //printf("Rank %d sent a destination mem response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.recv_mr->offset);
 }

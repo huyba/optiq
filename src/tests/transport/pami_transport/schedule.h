@@ -28,8 +28,8 @@ struct optiq_schedule {
     bool isDest;
     bool isSource;
 
-    struct optiq_memregion recv_mr;
-    struct optiq_memregion send_mr;
+    struct optiq_memregion *recv_memregions;
+    struct optiq_memregion *send_memregions;
 
     struct optiq_pami_transport *pami_transport;
 };
