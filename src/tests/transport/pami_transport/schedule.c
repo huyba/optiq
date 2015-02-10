@@ -1,4 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <vector>
+#include <pami.h>
+
 #include "schedule.h"
+
 
 #define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
 
@@ -50,7 +57,7 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 		header->dest = jobs[i].dest_rank;
 		header->path_id = jobs[i].paths[0]->path_id;
 
-		memcpy(&header->mem, &jobs[i]->send_mr, sizeof(struct optiq_memregion));
+		memcpy(&header->mem, &jobs[i].send_mr, sizeof(struct optiq_memregion));
 		header->mem.offset = jobs[i].buf_offset;
 		header->original_offset = jobs[i].buf_offset;
 		jobs[i].buf_offset += nbytes;
@@ -101,9 +108,6 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
     schedule.isDest = isDest;
 
-    schedule.send_mr.offset = 0;
-    scheudle.recv_mr.offset = 0;
-
     size_t bytes;
     pami_result_t result;
 
@@ -113,7 +117,7 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 	{
 	    if (schedule.recvcounts[i] != 0)
 	    {
-		result = PAMI_Memregion_create (pami_transport->context, &schedule.recv_buf[schedule.rdspls[i]], schedule.recvcounts[i], &bytes, &schedule.recv_memregions[i].mr);
+		result = PAMI_Memregion_create (pami_transport->context, &schedule.recv_buf[schedule.rdispls[i]], schedule.recvcounts[i], &bytes, &schedule.recv_memregions[i].mr);
 
 		if (result != PAMI_SUCCESS) {
 		    printf("No success\n");
@@ -132,9 +136,9 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 	    {
 		for (int j = 0; j < jobs.size(); j++)
 		{
-		    if (jobs[j].dest_id == i)
+		    if (jobs[j].dest_rank == i)
 		    {
-			jobs[j].length = schedule.sendcounts[i];
+			jobs[j].buf_length = schedule.sendcounts[i];
 
 			result = PAMI_Memregion_create (pami_transport->context, &schedule.send_buf[schedule.sdispls[i]], schedule.sendcounts[i], &bytes, &jobs[j].send_mr.mr);
 

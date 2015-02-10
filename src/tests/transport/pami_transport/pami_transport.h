@@ -26,6 +26,7 @@
 #define OPTIQ_FORWARD_BUFFER_SIZE (128 * 1024 * 1024)
 
 struct optiq_pami_transport;
+struct optiq_schedule;
 
 struct optiq_memregion {
     pami_memregion_t mr;
@@ -74,7 +75,7 @@ struct optiq_pami_transport {
     pami_endpoint_t *endpoints;
 
     struct optiq_pami_extra extra;
-    struct optiq_schedule &sched;
+    struct optiq_schedule *sched;
 };
 
 void optiq_pami_init(struct optiq_pami_transport *self);

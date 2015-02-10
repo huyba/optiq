@@ -185,8 +185,6 @@ int main(int argc, char **argv)
         optiq_path_print_paths(complete_paths);
     }
 
-    uint64_t t1 = GetTimeBase();
-
     MPI_Barrier(MPI_COMM_WORLD);
 
     struct optiq_schedule schedule;
@@ -212,7 +210,7 @@ int main(int argc, char **argv)
 
     pami_transport->sched = &schedule;
 
-    pami_transport->sched.pami_transport = pami_transport;
+    pami_transport->sched->pami_transport = pami_transport;
 
     optiq_pami_init_extra(pami_transport);
     optiq_pami_init(pami_transport);
@@ -234,11 +232,11 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < num_dests; i++) {
 	if (world_rank == dest_ranks[i]) {
-	    char *test_buf = (char *) malloc (recv_buf_size);
-	    for (int i = 0; i < recv_buf_size; i++) {
+	    char *test_buf = (char *) malloc (recv_bytes);
+	    for (int i = 0; i < recv_bytes; i++) {
 		test_buf[i] = i%128;
 	    }
-	    if (memcmp(test_buf, recv_buf, recv_buf_size) != 0) {
+	    if (memcmp(test_buf, recv_buf, recv_bytes) != 0) {
 		printf("Rank %d Received invalid data\n", world_rank);
 	    }
 	}
@@ -246,11 +244,10 @@ int main(int argc, char **argv)
 
     if (world_rank == 0)
     {
-	optiq_path_print_stat(complete_paths, bfs->num_nodes);
+	optiq_path_print_stat(complete_paths, bfs.num_nodes);
     }
 
-    int nbytes = send_bytes;
-    mpi_alltoallv(nbytes);
+    mpi_alltoallv(count);
 
     MPI_Finalize();
 

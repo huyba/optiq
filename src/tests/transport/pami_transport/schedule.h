@@ -1,10 +1,24 @@
-#ifndef OPTIQ_SCHEDULE
-#define OPTIQ_SCHEDULE
+#ifndef OPTIQ_SCHEDULE_H
+#define OPTIQ_SCHEDULE_H
 
 #include "path.h"
+#include "job.h"
+#include "pami_transport.h"
 
 struct optiq_pami_transport;
 struct optiq_memregion;
+
+struct optiq_job {
+    int job_id;
+    int source_node_id;
+    int source_rank;
+    int dest_node_id;
+    int dest_rank;
+    struct optiq_memregion send_mr;
+    int buf_offset;
+    int buf_length;
+    std::vector<struct path *> paths;
+};
 
 struct optiq_schedule {
     int schedule_id;
@@ -32,6 +46,9 @@ struct optiq_schedule {
     struct optiq_memregion *send_memregions;
 
     struct optiq_pami_transport *pami_transport;
+
+    int sent_bytes;
+    int *recv_bytes;
 };
 
 void optiq_schedule_init(struct optiq_schedule &schedule);

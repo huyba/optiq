@@ -430,7 +430,7 @@ void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie,
 
     int source = (*(int *)data);
 
-    pami_transport->sched->recv_memergions[source].header_id = *((int*)header);
+    pami_transport->sched->recv_memregions[source].header_id = *((int*)header);
     pami_transport->sched->recv_memregions[source].offset = 0;
 
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &pami_transport->sched->recv_memregions[source], sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
