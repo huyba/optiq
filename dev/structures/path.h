@@ -37,4 +37,6 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
 
 void optiq_path_assign_ids(std::vector<struct path *> &complete_paths);
 
+void optiq_path_reverse_paths (std::vector<struct path *> &complete_paths);
+
 #endif

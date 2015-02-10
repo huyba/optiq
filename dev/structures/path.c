@@ -196,3 +196,26 @@ void optiq_path_assign_ids(std::vector<struct path *> &complete_paths)
 	complete_paths[i]->path_id = i;
     }
 }
+
+void optiq_path_reverse_paths (std::vector<struct path *> &complete_paths)
+{
+    for (int i = 0; i < complete_paths.size(); i++)
+    {
+	struct path *p = complete_paths[i];
+	int n = p->arcs.size();
+
+	for (int j = 0; j < n/2; j++)
+	{
+	    struct arc a = p->arcs[j];
+	    p->arcs[j] = p->arcs[n - j - 1];
+	    p->arcs[n - j - 1] = a;
+	}
+
+	for (int j = 0; j < n; j++)
+	{
+	    int temp = p->arcs[j].u;
+	    p->arcs[j].u = p->arcs[j].v;
+	    p->arcs[j].v = temp;
+	}
+    }
+}

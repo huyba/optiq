@@ -201,6 +201,8 @@ void optiq_alg_heuristic_search_alltomany(std::vector<struct path *> &complete_p
 
     optiq_path_assign_ids(complete_paths);
 
+    optiq_path_reverse_paths(complete_paths);
+
     /*
     long int diff = 0L;
 

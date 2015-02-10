@@ -85,6 +85,7 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
     bool isSource = false, isDest = false;
 
     std::vector<struct optiq_job> jobs;
+    jobs.clear();
 
     for (int i = 0; i < complete_paths.size(); i++) 
     {

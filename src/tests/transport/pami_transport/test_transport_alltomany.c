@@ -227,7 +227,7 @@ int main(int argc, char **argv)
 
     double max_t, t = (double)(t3 - t2)/1.6e3;
 
-    long int data_size = (long int) num_dests * world_size * send_bytes;
+    long int data_size = (long int) num_dests * world_size * count;
     gather_print_time(t2, t3, 1, data_size, world_rank);
 
     for (int i = 0; i < num_dests; i++) {
