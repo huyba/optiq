@@ -269,9 +269,25 @@ int main(int argc, char **argv)
     if (world_rank == 0)
     {
 	optiq_path_print_stat(complete_paths, bfs.num_nodes);
+
+	printf("\nTest with MPI_Alltoallv\n");
     }
 
-    mpi_alltoallv(count);
+    int iters = 30;
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    uint64_t start = GetTimeBase();
+
+    for (int i = 0; i < iters; i++)
+    {
+        MPI_Alltoallv(send_buf, sendcounts, sdispls, MPI_BYTE, recv_buf, recvcounts, rdispls, MPI_BYTE, MPI_COMM_WORLD);
+    }
+
+    uint64_t end = GetTimeBase();
+
+    long int data_size = (long int) num_dests * world_size * count;
+    gather_print_time(start, end, iters, data_size, world_rank);
 
     MPI_Finalize();
 
