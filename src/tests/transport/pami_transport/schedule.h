@@ -1,12 +1,12 @@
 #ifndef OPTIQ_SCHEDULE_H
 #define OPTIQ_SCHEDULE_H
 
+#include "optiq_struct.h"
 #include "path.h"
 #include "job.h"
 #include "pami_transport.h"
 
 struct optiq_pami_transport;
-struct optiq_memregion;
 
 struct optiq_job {
     int job_id;

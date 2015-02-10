@@ -8,6 +8,7 @@
 #include <firmware/include/personality.h>
 #include <pami.h>
 
+#include "optiq_struct.h"
 #include "schedule.h"
 #include "alltomany.h"
 
@@ -27,22 +28,6 @@
 
 struct optiq_pami_transport;
 struct optiq_schedule;
-
-struct optiq_memregion {
-    pami_memregion_t mr;
-    int offset;
-    int header_id;
-};
-
-struct optiq_message_header {
-    int length;
-    int source;
-    int dest;
-    int path_id;
-    struct optiq_memregion mem;
-    int header_id;
-    int original_offset;
-};
 
 struct optiq_rput_cookie {
     struct optiq_pami_transport *pami_transport;
