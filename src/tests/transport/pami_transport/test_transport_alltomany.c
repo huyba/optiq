@@ -137,6 +137,12 @@ int main(int argc, char **argv)
     }
 
     int count = 1 * 1024 * 1024;
+
+    if (argc > 1)
+    {
+	count = atoi(argv[1]);
+    }
+
     int send_bytes = count * num_dests;
     char *send_buf = (char *) malloc(send_bytes);
     for (int i = 0; i < send_bytes; i++) {
@@ -221,7 +227,7 @@ int main(int argc, char **argv)
 
     optiq_schedule_create(schedule, complete_paths);
 
-    for (int chunk_size = 16 * 1024; chunk_size <= 1024 * 1024; chunk_size *=2)
+    for (int chunk_size = 16 * 1024; chunk_size <= count; chunk_size *=2)
     {
 	if (world_rank == 0)
 	{

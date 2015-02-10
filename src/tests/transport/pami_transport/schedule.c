@@ -138,6 +138,8 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
         int mem_size = max_offset + schedule.recvcounts[max_offset_index] - min_offset;
 
+	printf("size_t = %d bytes, mem_size = %zd, min_offset= %d, max_offset = %d, count = %d,  max_offset_index = %d\n", sizeof(size_t), mem_size, min_offset, max_offset, schedule.recvcounts[max_offset_index], max_offset_index);
+
         result = PAMI_Memregion_create (pami_transport->context, &schedule.recv_buf[min_offset], mem_size, &bytes, &schedule.recv_mr.mr);
 
         if (result != PAMI_SUCCESS) {
@@ -150,7 +152,7 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
     if (isSource) 
     {
         int max_offset = INT_MIN;
-        int min_offset = INT_MAX;
+	int min_offset = INT_MAX;
         int max_offset_index = 0;
 
         for (int i = 0; i < schedule.world_size; i++)
