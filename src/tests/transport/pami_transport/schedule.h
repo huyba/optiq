@@ -31,6 +31,9 @@ struct optiq_schedule {
 
     int expecting_length;
 
+    struct optiq_memregion recv_mr;
+    struct optiq_memregion send_mr;
+
     char *send_buf;
     int *sendcounts;
     int *sdispls;

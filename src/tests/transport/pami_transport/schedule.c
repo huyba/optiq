@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include <vector>
 #include <pami.h>
@@ -20,13 +21,13 @@ void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *
 {
     for (int i = 0; i < complete_paths.size(); i++)
     {
-	for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
-	{
-	    if (complete_paths[i]->arcs[j].u == world_rank)
-	    {
-		next_dests[i] = complete_paths[i]->arcs[j].v;
-	    }
-	}
+        for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
+        {
+            if (complete_paths[i]->arcs[j].u == world_rank)
+            {
+                next_dests[i] = complete_paths[i]->arcs[j].v;
+            }
+        }
     }
 }
 
@@ -36,44 +37,44 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 
     while(!done)
     {
-	done = true;
+        done = true;
 
-	for (int i = 0; i < jobs.size(); i++)
-	{
-	    int nbytes = chunk_size;
+        for (int i = 0; i < jobs.size(); i++)
+        {
+            int nbytes = chunk_size;
 
-	    if (jobs[i].buf_offset < jobs[i].buf_length) 
-	    {
-		if (nbytes > jobs[i].buf_length - jobs[i].buf_offset) {
-		    nbytes = jobs[i].buf_length - jobs[i].buf_offset;
-		}
+            if (jobs[i].buf_offset < jobs[i].buf_length) 
+            {
+                if (nbytes > jobs[i].buf_length - jobs[i].buf_offset) {
+                    nbytes = jobs[i].buf_length - jobs[i].buf_offset;
+                }
 
-		struct optiq_message_header *header = pami_transport->extra.message_headers.back();
-		pami_transport->extra.message_headers.pop_back();
+                struct optiq_message_header *header = pami_transport->extra.message_headers.back();
+                pami_transport->extra.message_headers.pop_back();
 
-		header->length = nbytes;
-		header->source = jobs[i].source_rank;
-		header->dest = jobs[i].dest_rank;
-		header->path_id = jobs[i].paths[0]->path_id;
+                header->length = nbytes;
+                header->source = jobs[i].source_rank;
+                header->dest = jobs[i].dest_rank;
+                header->path_id = jobs[i].paths[0]->path_id;
 
-		memcpy(&header->mem, &jobs[i].send_mr, sizeof(struct optiq_memregion));
-		header->mem.offset = jobs[i].buf_offset;
-		header->original_offset = jobs[i].buf_offset;
-		jobs[i].buf_offset += nbytes;
+                memcpy(&header->mem, &jobs[i].send_mr, sizeof(struct optiq_memregion));
+                header->mem.offset = jobs[i].send_mr.offset + jobs[i].buf_offset;
+                header->original_offset = jobs[i].buf_offset;
+                jobs[i].buf_offset += nbytes;
 
-		pami_transport->extra.send_headers.push_back(header);
+                pami_transport->extra.send_headers.push_back(header);
 
-		if (jobs[i].buf_offset < jobs[i].buf_length) {
-		    done = false;
-		}
-	    }
-	}
+                if (jobs[i].buf_offset < jobs[i].buf_length) {
+                    done = false;
+                }
+            }
+        }
     }
 
     /*Clean the jobs*/
     for (int i = 0; i < jobs.size(); i++)
     {
-	jobs[i].buf_offset = 0;
+        jobs[i].buf_offset = 0;
     }
 }
 
@@ -93,22 +94,22 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
     for (int i = 0; i < complete_paths.size(); i++) 
     {
-	if (complete_paths[i]->arcs.back().v == world_rank) {
-	    isDest = true;
-	}
+        if (complete_paths[i]->arcs.back().v == world_rank) {
+            isDest = true;
+        }
 
-	if (complete_paths[i]->arcs.front().u == world_rank) {
-	    isSource = true;
+        if (complete_paths[i]->arcs.front().u == world_rank) {
+            isSource = true;
 
-	    struct optiq_job new_job;
+            struct optiq_job new_job;
 
-	    new_job.source_rank = world_rank;
-	    new_job.dest_rank = complete_paths[i]->arcs.back().v;
-	    new_job.paths.push_back(complete_paths[i]);
-	    new_job.buf_offset = 0;
+            new_job.source_rank = world_rank;
+            new_job.dest_rank = complete_paths[i]->arcs.back().v;
+            new_job.paths.push_back(complete_paths[i]);
+            new_job.buf_offset = 0;
 
-	    schedule.local_jobs.push_back(new_job);
-	}
+            schedule.local_jobs.push_back(new_job);
+        }
     }
 
     schedule.isDest = isDest;
@@ -118,43 +119,69 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
     if (isDest)
     {
-	for (int i = 0; i < schedule.world_size; i++)
-	{
-	    if (schedule.recvcounts[i] != 0)
-	    {
-		result = PAMI_Memregion_create (pami_transport->context, &schedule.recv_buf[schedule.rdispls[i]], schedule.recvcounts[i], &bytes, &schedule.recv_memregions[i].mr);
+        int max_offset = INT_MIN;
+        int min_offset = INT_MAX;
+        int max_offset_index = 0;
 
-		if (result != PAMI_SUCCESS) {
-		    printf("No success\n");
-		} else if (bytes < schedule.recvcounts[i]) {
-		    printf("Registered less\n");
-		}
-	    }
-	}
+        for (int i = 0; i < schedule.world_size; i++)
+        {
+            if (max_offset < schedule.rdispls[i])
+            {
+                max_offset = schedule.rdispls[i];
+                max_offset_index = i;
+            }
+            if (min_offset > schedule.rdispls[i])
+            {
+                min_offset = schedule.rdispls[i];
+            }
+        }
+
+        int mem_size = max_offset + schedule.recvcounts[max_offset_index] - min_offset;
+
+        result = PAMI_Memregion_create (pami_transport->context, &schedule.recv_buf[min_offset], mem_size, &bytes, &schedule.recv_mr.mr);
+
+        if (result != PAMI_SUCCESS) {
+            printf("No success\n");
+        } else if (bytes < mem_size) {
+            printf("Registered less\n");
+        }
     }
 
     if (isSource) 
     {
-	for (int i = 0; i < schedule.world_size; i++)
-	{
-	    if (schedule.sendcounts[i] != 0)
-	    {
-		for (int j = 0; j < schedule.local_jobs.size(); j++)
-		{
-		    if (schedule.local_jobs[j].dest_rank == i)
-		    {
-			schedule.local_jobs[j].buf_length = schedule.sendcounts[i];
+        int max_offset = INT_MIN;
+        int min_offset = INT_MAX;
+        int max_offset_index = 0;
 
-			result = PAMI_Memregion_create (pami_transport->context, &schedule.send_buf[schedule.sdispls[i]], schedule.sendcounts[i], &bytes, &schedule.local_jobs[j].send_mr.mr);
+        for (int i = 0; i < schedule.world_size; i++)
+        {
+            if (max_offset < schedule.sdispls[i])
+            {
+                max_offset = schedule.sdispls[i];
+                max_offset_index = i;
+            }
+            if (min_offset > schedule.sdispls[i])
+            {
+                min_offset = schedule.sdispls[i];
+            }
+        }
 
-			if (result != PAMI_SUCCESS) {
-			    printf("No success\n");
-			} else if (bytes < schedule.sendcounts[i]) {
-			    printf("Registered less\n");
-			}
-		    }
-		}
-	    }
-	}
+        int mem_size = max_offset + schedule.recvcounts[max_offset_index] - min_offset;
+
+        result = PAMI_Memregion_create (pami_transport->context, &schedule.send_buf[min_offset], mem_size, &bytes, &schedule.send_mr.mr);
+
+        if (result != PAMI_SUCCESS) {
+            printf("No success\n");
+        } else if (bytes < mem_size) {
+            printf("Registered less\n");
+        }
+
+        for (int j = 0; j < schedule.local_jobs.size(); j++)
+        {
+            int d = schedule.local_jobs[j].dest_rank;
+            schedule.local_jobs[j].buf_length = schedule.sendcounts[d];
+            schedule.local_jobs[j].send_mr = schedule.send_mr;
+            schedule.local_jobs[j].send_mr.offset = schedule.sdispls[d];
+        }
     }
 }
