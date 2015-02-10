@@ -109,6 +109,7 @@ int main(int argc, char **argv)
     bfs.num_dims = 5;
     optiq_topology_get_size_bgq(bfs.size);
     bfs.num_nodes = 1;
+    bfs.diameter = 0;
 
     for (int i = 0; i < bfs.num_dims; i++) {
 	bfs.num_nodes *= bfs.size[i];
@@ -202,6 +203,7 @@ int main(int argc, char **argv)
     schedule.remaining_jobs = num_dests;
     schedule.expecting_length = recv_bytes;
     schedule.sent_bytes = 0;
+    schedule.chunk_size = 256 * 1024;
 
     optiq_schedule_init(schedule);
 

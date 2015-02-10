@@ -49,6 +49,7 @@ struct optiq_schedule {
 
     int sent_bytes;
     int *recv_bytes;
+    int chunk_size;
 };
 
 void optiq_schedule_init(struct optiq_schedule &schedule);

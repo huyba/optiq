@@ -6,7 +6,6 @@
 
 #include "schedule.h"
 
-
 #define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
 
 void optiq_schedule_init(struct optiq_schedule &schedule)
@@ -31,7 +30,7 @@ void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *
     }
 }
 
-void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs)
+void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size)
 {
     bool done = false;
 
@@ -41,7 +40,7 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 
 	for (int i = 0; i < jobs.size(); i++)
 	{
-	    int nbytes = 32 * 1024;
+	    int nbytes = chunk_size;
 
 	    if (jobs[i].buf_offset < jobs[i].buf_length) 
 	    {
@@ -153,6 +152,6 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 	    }
 	}
 
-	optiq_schedule_split_jobs(pami_transport, jobs);
+	optiq_schedule_split_jobs(pami_transport, jobs, schedule.chunk_size);
     }
 }
