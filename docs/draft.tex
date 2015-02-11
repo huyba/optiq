@@ -23,9 +23,10 @@ In this work, we propose a set of approaches that improve network performance fo
 
 \subsection{Heuristic approaches}
 
-\subsubsection{Heuristic Huy}
+\subsubsection{Heuristic 1}
+In this approach, we search for paths to 
 
-\subsubsection{Heuristic Preeti}
+\subsubsection{Heuristic 2}
 
 \subsection{Formal approaches}
 
@@ -39,14 +40,30 @@ Limitation, move the second one.
 \subsubsection{Path-based formulation}
 Present the approach, explain and see how it fixes the issues.
 
+\subsection{OPTIQ framework}
+
 \section{Benchmarks}
-\subsection{Compare to MPI\_Alltoallv}
 
-\subsection{PIO}
+\subsection{Experimental }
+\subsubsection{Chunk size for pipeline}
+\subsubsection{Various message sizes}
+\subsubsection{Many ranks}
+\subsubsection{Scaling}
 
-\subsubsection{Current data movement on PIO}
+\subsection{Communication patterns}
+In this paper we demostrate data movement performance of our OPTIQ framework and existing MPI's routines on the following communication patters:
 
-\subsubsection{}
+\begin{itemize}
+\item All to many, many to all
+\item I/O Aggregation: a special case of All to many (or many to many)
+\item Many to many: disjoint/exclusive
+\item Many to many: subset
+\item Many to many: partially joint (not subset, not disjoint)
+\item Many to many: sparse
+\item Nearest neighbors
+\end{itemize}
+
+\subsection{All to many or Many to all}
 
 \section{Conclusion}
 
