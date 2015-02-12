@@ -20,9 +20,9 @@ void gather_print_time(uint64_t start, uint64_t end, int iters, long int nbytes,
 
     if (world_rank == 0)
     {
-        max_time = max_time / iters;
-        double bw = (double) nbytes / max_time / 1024 / 1024 * 1e6;
-        printf("total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", nbytes/1024/1024, max_time, bw);
+	max_time = max_time / iters;
+	double bw = (double) nbytes / max_time / 1024 / 1024 * 1e6;
+	printf("total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", nbytes/1024/1024, max_time, bw);
     }
 }
 
@@ -36,7 +36,7 @@ void mpi_alltoallv(int nbytes)
 
     int ratio = 64;
     int num_dests = world_size/ratio;
-    
+
     void *sendbuf = malloc(nbytes * num_dests);
     void *recvbuf = malloc(nbytes * world_size);
 
@@ -57,8 +57,8 @@ void mpi_alltoallv(int nbytes)
     /*At sending side*/
     for (int i = 0; i < num_dests; i++) {
 	dest = i * ratio + ratio/2;
-        sendcounts[dest] = nbytes;
-        sdispls[i] = i * nbytes ;
+	sendcounts[dest] = nbytes;
+	sdispls[i] = i * nbytes ;
     }
 
     /*At receiving side*/
@@ -111,7 +111,8 @@ int main(int argc, char **argv)
     bfs.num_nodes = 1;
     bfs.diameter = 0;
 
-    for (int i = 0; i < bfs.num_dims; i++) {
+    for (int i = 0; i < bfs.num_dims; i++) 
+    {
 	bfs.num_nodes *= bfs.size[i];
 	bfs.diameter += bfs.size[i];
     }
@@ -133,14 +134,14 @@ int main(int argc, char **argv)
     int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
 
     for (int i = 0; i < num_dests; i++) {
-        dest_ranks[i] = i * ratio + ratio/2;
+	dest_ranks[i] = i * ratio + ratio/2;
     }
 
     int count = 1 * 1024 * 1024;
 
     if (argc > 1)
     {
-	count = atoi(argv[1]);
+	count = atoi(argv[1]) * 1024;
     }
 
     int send_bytes = count * num_dests;
@@ -189,8 +190,8 @@ int main(int argc, char **argv)
     optiq_alg_heuristic_search_alltomany(complete_paths, num_dests, dest_ranks, &bfs);
 
     /*if (world_rank == 0) {
-        optiq_path_print_paths(complete_paths);
-    }*/
+      optiq_path_print_paths(complete_paths);
+      }*/
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -225,33 +226,48 @@ int main(int argc, char **argv)
 
     uint64_t t1 = GetTimeBase();
 
-    optiq_schedule_create(schedule, complete_paths);
+    optiq_schedule_create (schedule, complete_paths);
 
-    for (int chunk_size = 16 * 1024; chunk_size <= count; chunk_size *=2)
+    for (int nbytes = 256*1024; nbytes <= count; nbytes *= 2)
     {
-	if (world_rank == 0)
+	for (int i = 0; i < schedule.local_jobs.size(); i++)
 	{
-	    printf("chunk_size = %d\n", chunk_size);
+	    schedule.local_jobs[i].buf_length = nbytes;
 	}
 
-	schedule.chunk_size = chunk_size;
-	optiq_schedule_split_jobs(pami_transport, schedule.local_jobs, schedule.chunk_size);
+	if (world_rank == 0) {
+	    printf("\nnbytes = %d\n", nbytes);
+        }
 
-	schedule.remaining_jobs = num_dests;
-	schedule.expecting_length = recv_bytes;
-	schedule.sent_bytes = 0;
-	memset(schedule.recv_bytes, 0, sizeof (int) * world_size);
+	for (int chunk_size = 1024; chunk_size <= nbytes; chunk_size *=2)
+	{
+	    if (world_rank == 0) {
+		printf("chunk_size = %d\n", chunk_size);
+	    }
 
-	uint64_t t2 = GetTimeBase();
+	    schedule.chunk_size = chunk_size;
+	    optiq_schedule_split_jobs (pami_transport, schedule.local_jobs, schedule.chunk_size);
 
-	optiq_execute_jobs(pami_transport);
+	    schedule.remaining_jobs = num_dests;
+	    schedule.expecting_length = nbytes * world_size;
+	    schedule.sent_bytes = 0;
+	    memset (schedule.recv_bytes, 0, sizeof (int) * world_size);
 
-	uint64_t t3 = GetTimeBase();
+	    MPI_Barrier (MPI_COMM_WORLD);
 
-	double max_t, t = (double)(t3 - t2)/1.6e3;
+	    uint64_t t2 = GetTimeBase();
 
-	long int data_size = (long int) num_dests * world_size * count;
-	gather_print_time(t2, t3, 1, data_size, world_rank);
+	    optiq_execute_jobs (pami_transport);
+
+	    uint64_t t3 = GetTimeBase();
+
+	    MPI_Barrier(MPI_COMM_WORLD);
+
+	    double max_t, t = (double)(t3 - t2)/1.6e3;
+
+	    long int data_size = (long int) num_dests * world_size * nbytes;
+	    gather_print_time(t2, t3, 1, data_size, world_rank);
+	}
     }
 
     for (int i = 0; i < num_dests; i++) 
@@ -260,14 +276,12 @@ int main(int argc, char **argv)
 	{
 	    char *test_buf = (char *) malloc (recv_bytes);
 
-	    for (int i = 0; i < recv_bytes; i++) 
-	    {
+	    for (int i = 0; i < recv_bytes; i++) {
 		test_buf[i] = i%128;
 	    }
 
-	    if (memcmp(test_buf, recv_buf, recv_bytes) != 0) 
-	    {
-		printf("Rank %d Received invalid data\n", world_rank);
+	    if (memcmp (test_buf, recv_buf, recv_bytes) != 0) {
+		printf ("Rank %d Received invalid data\n", world_rank);
 	    }
 	}
     }
@@ -287,7 +301,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < iters; i++)
     {
-        MPI_Alltoallv(send_buf, sendcounts, sdispls, MPI_BYTE, recv_buf, recvcounts, rdispls, MPI_BYTE, MPI_COMM_WORLD);
+	MPI_Alltoallv(send_buf, sendcounts, sdispls, MPI_BYTE, recv_buf, recvcounts, rdispls, MPI_BYTE, MPI_COMM_WORLD);
     }
 
     uint64_t end = GetTimeBase();
