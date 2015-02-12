@@ -19,6 +19,8 @@ struct path {
     int path_id;
     int nd_id;
     int flow;
+    int source_rank;
+    int dest_rank;
 };
 
 extern int max_path_length;
