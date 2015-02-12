@@ -17,11 +17,20 @@ struct topology {
 
     int **coords;
     std::vector<int> *neighbors;
+
+    int world_size;
+    int num_ranks_per_node;
 };
+
+extern struct topology topo;
 
 void optiq_topology_init();
 
+void optiq_topology_init_with_params(int num_dims, int *size, struct topology *topo);
+
 void optiq_topology_get_size_bgq(int *size);
+
+int optiq_topology_get_node_id(int world_rank);
 
 int optiq_topology_compute_node_id(int num_dims, int *size, int *coord);
 

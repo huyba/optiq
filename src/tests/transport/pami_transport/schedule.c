@@ -119,8 +119,8 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
 
     if (isDest)
     {
-        int max_offset = INT_MIN;
-        int min_offset = INT_MAX;
+	size_t max_offset = 0;
+        size_t min_offset = 0;
         int max_offset_index = 0;
 
         for (int i = 0; i < schedule.world_size; i++)
@@ -136,15 +136,19 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
             }
         }
 
-        int mem_size = max_offset + schedule.recvcounts[max_offset_index] - min_offset;
+        size_t mem_size = max_offset + (size_t)schedule.recvcounts[max_offset_index] - min_offset;
 
-	printf("size_t = %d bytes, mem_size = %zd, min_offset= %d, max_offset = %d, count = %d,  max_offset_index = %d\n", sizeof(size_t), mem_size, min_offset, max_offset, schedule.recvcounts[max_offset_index], max_offset_index);
+	/*printf("size_t = %d bytes, mem_size = %zu, min_offset= %zu, max_offset = %zu, count = %d,  max_offset_index = %d\n", sizeof(size_t), mem_size, min_offset, max_offset, schedule.recvcounts[max_offset_index], max_offset_index);
+	*/
 
         result = PAMI_Memregion_create (pami_transport->context, &schedule.recv_buf[min_offset], mem_size, &bytes, &schedule.recv_mr.mr);
 
-        if (result != PAMI_SUCCESS) {
+        if (result != PAMI_SUCCESS) 
+	{
             printf("No success\n");
-        } else if (bytes < mem_size) {
+        } 
+	else if (bytes < mem_size) 
+	{
             printf("Registered less\n");
         }
     }
@@ -168,13 +172,16 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
             }
         }
 
-        int mem_size = max_offset + schedule.recvcounts[max_offset_index] - min_offset;
+        int mem_size = max_offset + schedule.sendcounts[max_offset_index] - min_offset;
 
         result = PAMI_Memregion_create (pami_transport->context, &schedule.send_buf[min_offset], mem_size, &bytes, &schedule.send_mr.mr);
 
-        if (result != PAMI_SUCCESS) {
+        if (result != PAMI_SUCCESS) 
+	{
             printf("No success\n");
-        } else if (bytes < mem_size) {
+        } 
+	else if (bytes < mem_size) 
+	{
             printf("Registered less\n");
         }
 

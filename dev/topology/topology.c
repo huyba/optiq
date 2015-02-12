@@ -5,6 +5,8 @@
 #include "util.h"
 #include "topology.h"
 
+struct topology topo;
+
 void optiq_topology_get_size_bgq(int *size)
 {
 #ifdef __bgq__
@@ -29,7 +31,14 @@ void optiq_topology_print_graph(struct topology *topo, int cost)
     }
 }
 
-void optiq_topology_init(int num_dims, int *size, struct topology *topo)
+void optiq_topology_init()
+{
+    int num_dims = 5;
+    optiq_topology_get_size_bgq(topo.size);
+    optiq_topology_init_with_params(num_dims, topo.size, &topo);
+}
+
+void optiq_topology_init_with_params(int num_dims, int *size, struct topology *topo)
 {
     topo->num_dims = num_dims;
     int num_nodes = 1;
@@ -45,6 +54,11 @@ void optiq_topology_init(int num_dims, int *size, struct topology *topo)
     for (int i = 0; i < num_nodes; i++) {
 	topo->num_edges += topo->neighbors[i].size();
     }
+}
+
+int optiq_topology_get_node_id(int world_rank)
+{
+    return world_rank/topo.num_ranks_per_node;
 }
 
 int optiq_topology_compute_node_id(int num_dims, int *size, int *coord)

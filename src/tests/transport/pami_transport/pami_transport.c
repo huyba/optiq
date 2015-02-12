@@ -141,14 +141,16 @@ void optiq_pami_init_extra(struct optiq_pami_transport *pami_transport)
     int num_message_headers = OPTIQ_NUM_MESSAGE_HEADERS;
 
     /*Allocate memory for rput cookies*/
-    for (int i = 0; i < num_rput_cookies; i++) {
+    for (int i = 0; i < num_rput_cookies; i++) 
+    {
         struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)calloc(1, sizeof(struct optiq_rput_cookie));
         rput_cookie->pami_transport = pami_transport;
         pami_transport->extra.rput_cookies.push_back(rput_cookie);
     }
 
     /*Allocate memory for message headers*/
-    for (int i = 0; i < num_message_headers; i++) {
+    for (int i = 0; i < num_message_headers; i++) 
+    {
         struct optiq_message_header *message_header = (struct optiq_message_header *)calloc(1, sizeof(struct optiq_message_header));
         pami_transport->extra.message_headers.push_back(message_header);
     }
@@ -213,9 +215,12 @@ void optiq_execute_jobs(struct optiq_pami_transport *pami_transport)
             int dest = pami_transport->sched->next_dests[header->path_id];
 
 	    /*If the next destination is final destination*/
-	    if (dest == header->dest) {
+	    if (dest == header->dest) 
+	    {
 		optiq_pami_send_immediate(pami_transport->context, MR_DESTINATION_REQUEST, &header->header_id, sizeof(int), &header->source, sizeof(int), pami_transport->endpoints[dest]);
-	    } else {
+	    } 
+	    else 
+	    {
 		optiq_pami_send_immediate(pami_transport->context, MR_FORWARD_REQUEST, &header->header_id, sizeof(int), &header->length, sizeof(int), pami_transport->endpoints[dest]);
 	    }
 	}
@@ -248,7 +253,8 @@ void optiq_execute_jobs(struct optiq_pami_transport *pami_transport)
 
 
 	    /*Rput for destination message. This is because if the next dest is final dest, the dest only gives the offset of the source, not offset for each chunk*/
-	    if (dest == header->dest) {
+	    if (dest == header->dest) 
+	    {
 		far_mr.offset += header->original_offset;
 	    }
 
@@ -309,7 +315,9 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
     parameters.put.rdone_fn = optiq_pami_rput_rdone_fn;
 
     pami_result_t result = PAMI_Rput (context, &parameters);
-    if (result != PAMI_SUCCESS) {
+
+    if (result != PAMI_SUCCESS) 
+    {
         printf("Error in PAMI_Put\n");
     }
 
