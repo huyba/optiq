@@ -32,16 +32,24 @@ int main(int argc, char **argv)
     }
     bfs.neighbors = optiq_topology_get_all_nodes_neighbors(bfs.num_dims, size);
 
-    int num_dests = bfs.num_nodes/64;
-    int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
-    for (int i = 0; i < num_dests; i++) {
-	dest_ranks[i] = i * 64 + 32;
-    }
+    std::vector<std::pair<int, std::vector<int> > > source_dests;
+    source_dests.clear();
 
     int num_sources = bfs.num_nodes;
-    int *source_ranks = (int *) malloc (sizeof(int) * num_sources);
+    std::vector<int> sources;
+    sources.clear();
+
     for (int i = 0; i < num_sources; i++) {
-	source_ranks[i] = i;
+        sources.push_back(i);
+    }
+
+    int num_dests = bfs.num_nodes/64;
+    int dest_id;
+
+    for (int i = 0; i < num_dests; i++) {
+	dest_id = i * 64 + 32;
+	std::pair<int, std::vector<int> > p = std::make_pair(dest_id, sources);
+	source_dests.push_back(p);
     }
 
     max_path_length = bfs.diameter/2;
@@ -55,7 +63,7 @@ int main(int argc, char **argv)
 
     gettimeofday(&t1, NULL);
 
-    optiq_alg_heuristic_search_manytomany(complete_paths, num_sources, source_ranks, num_dests, dest_ranks, &bfs);
+    optiq_alg_heuristic_search_manytomany(complete_paths, source_dests, &bfs);
 
     gettimeofday(&t2, NULL);
 
@@ -63,7 +71,7 @@ int main(int argc, char **argv)
 
     printf("Build done in %ld microseconds\n", diff);
 
-    //optiq_path_print_paths(complete_paths);
+    optiq_path_print_paths(complete_paths);
     optiq_path_print_stat(complete_paths, bfs.num_nodes);
 
     return 0;

@@ -3,6 +3,9 @@
 
 #include <vector>
 
+#include "path.h"
+#include "heap_path.h"
+
 struct multibfs {
     int num_dims;
     int num_nodes;
@@ -19,5 +22,11 @@ struct multibfs_perf {
     long int add_load_time;
     long int add_edge_path_time;
 };
+
+void add_load_on_path(struct path *np, int *load, int adding_load, int num_nodes);
+
+void update_max_load(struct path *np, int *load, struct multibfs *bfs);
+
+void add_edge_path(std::vector<struct path*> *edge_path, struct path *p, int num_nodes);
 
 #endif
