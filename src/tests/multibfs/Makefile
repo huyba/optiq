@@ -39,7 +39,7 @@ INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/alltomany.o $(HEURISTICS)/manytomany.o
+OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/alltomany.o $(HEURISTICS)/manytomany.o $(HEURISTICS)/multibfs.o
 
 all: $(OBJ) test_alltomany.x test_manytomany.x copy
 
