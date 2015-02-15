@@ -14,24 +14,27 @@ endif
 
 LD      = mpixlc_r
 
-DEV = ../../../../dev
+OPTIQ = ../../../..
+DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
 TOPO = $(DEV)/topology
 STRUCT = $(DEV)/structures
 ALG = $(DEV)/algorithms
+CESM = $(OPTIQ)/apps/cesm
+CESM_COMM = $(CESM)/comm_graph
 
-INCLUDE = -I. -I$(UTIL) -I$(TOPO)/ -I$(STRUCT) -I$(ALG)/heuristics/
+INCLUDE = -I. -I$(UTIL) -I$(TOPO)/ -I$(STRUCT) -I$(ALG)/heuristics/ -I$(CESM_COMM)
 
 CFLAGS = $(COPT) $(INCLUDE) 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o schedule.o
+OBJ = pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(CESM_COMM)/cesm.o schedule.o
 
 all: $(OBJ) mpi copy
 
-mpi: test_transport_alltomany.x
+mpi: test_transport_alltomany.x test_transport_cesm.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

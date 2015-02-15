@@ -17,8 +17,9 @@ struct path {
 
     int job_id;
     int path_id;
-    int nd_id;
     int flow;
+    int source_id;
+    int dest_id;
     int source_rank;
     int dest_rank;
 };
