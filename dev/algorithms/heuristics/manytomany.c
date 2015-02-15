@@ -234,7 +234,7 @@ bool check_and_reverse(std::vector<std::pair<int, std::vector<int> > > &all_sd, 
 
     int num_sources = all_sd.size();
 
-    if (num_dests > num_sources)
+    if (num_dests < num_sources)
     {
 	isReverted = true;
 
@@ -264,12 +264,19 @@ bool check_and_reverse(std::vector<std::pair<int, std::vector<int> > > &all_sd, 
 
 void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > all_sd, struct multibfs *bfs) 
 {
+    struct timeval t0, t1, t2, t3;
+
+    gettimeofday(&t0, NULL);
+
     int num_nodes = bfs->num_nodes;
 
     std::vector<std::pair<int, std::vector<int> > > sd;
     sd.clear();
 
     bool isReverted = check_and_reverse (all_sd, sd, num_nodes);
+    if (!isReverted) {
+	sd = all_sd;
+    }
     
     int num_sources = sd.size();
 
@@ -282,10 +289,6 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
     }
 
     std::vector<struct path> expanding_paths;
-
-    struct timeval t0, t1, t2, t3;
-
-    gettimeofday(&t0, NULL);
 
     int *load = (int *)calloc(1, sizeof(int) * num_nodes * num_nodes);
     bool *visited = (bool *)calloc(1, sizeof(bool) * num_sources * num_nodes);
@@ -326,6 +329,7 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
 		    p->arcs.push_back(a);
 		    p->max_load = 1;
 		    p->root_id = i;
+		    p->source_id = source_id;
 
 		    add_edge_path(bfs->edge_path, p, num_nodes);
 		    //printf("added edge path\n");
@@ -371,6 +375,7 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
 		np->arcs = p->arcs;
 		np->max_load = p->max_load;
 		np->root_id = p->root_id;
+		np->source_id = p->source_id;
 
 		struct arc na;
 		na.u = a.v;
@@ -423,4 +428,13 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
 	    }
 	}
     }
+
+    long int diff = (t1.tv_usec + 1000000 * t1.tv_sec) - (t0.tv_usec + 1000000 * t0.tv_sec);
+    printf("Init time = %ld\n", diff);   
+
+    diff = (t2.tv_usec + 1000000 * t2.tv_sec) - (t1.tv_usec + 1000000 * t1.tv_sec);
+    printf("Phase 1 time = %ld\n", diff);
+
+    diff = (t3.tv_usec + 1000000 * t3.tv_sec) - (t2.tv_usec + 1000000 * t2.tv_sec);
+    printf("Phase 2 time = %ld\n", diff);
 }

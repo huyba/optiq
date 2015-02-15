@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
     printf("Build done in %ld microseconds\n", diff);
 
-    optiq_path_print_paths(complete_paths);
+    //optiq_path_print_paths(complete_paths);
     optiq_path_print_stat(complete_paths, bfs.num_nodes);
 
     return 0;
