@@ -7,6 +7,7 @@
 #include "topology.h"
 #include "path.h"
 #include "manytomany.h"
+#include "cesm.h"
 
 void gen_source_dests_test(std::vector<std::pair<int, std::vector<int> > > &source_dests, struct multibfs &bfs)
 {
@@ -22,23 +23,6 @@ void gen_source_dests_test(std::vector<std::pair<int, std::vector<int> > > &sour
 
     for (int i = 0; i < bfs.num_nodes; i++) {
         std::pair<int, std::vector<int> > p = std::make_pair(i, dests);
-        source_dests.push_back(p);
-    }
-}
-
-void gen_cesm_ocn_cpl(std::vector<std::pair<int, std::vector<int> > > &source_dests, struct multibfs &bfs)
-{
-    source_dests.clear();
-
-    std::vector<int> dests;
-    dests.clear();
-
-    for (int i = 0; i < bfs.num_nodes / 8 * 7; i++) {
-	dests.push_back(i);
-    }
-
-    for (int i = bfs.num_nodes / 8 * 7; i < bfs.num_nodes; i++) {
-	std::pair<int, std::vector<int> > p = std::make_pair(i, dests);
         source_dests.push_back(p);
     }
 }
@@ -71,7 +55,7 @@ int main(int argc, char **argv)
 {
     struct multibfs bfs;
 
-    int size[5] = {2, 4, 4, 4, 2};
+    int size[5] = {4, 4, 4, 4, 2};
     if (argc > 5)
     {
         size[0] = atoi(argv[1]);
@@ -96,7 +80,8 @@ int main(int argc, char **argv)
     std::vector<std::pair<int, std::vector<int> > > source_dests;
     source_dests.clear();
 
-    gen_source_dests_test(source_dests, bfs);
+    //gen_source_dests_test(source_dests, bfs);
+    optiq_cesm_gen_ice_cpl(source_dests, bfs);
 
     std::vector<struct path *> complete_paths;
     complete_paths.clear();
