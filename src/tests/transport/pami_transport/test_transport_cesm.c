@@ -49,25 +49,26 @@ int main(int argc, char **argv)
     }
 
     vector<int> cpl, land, ice, ocn, atm;
-
-    std::vector<std::pair<int, std::vector<int> > > ocn_cpl, cpl_ocn;
-
     optiq_cesm_gen(cpl, land, ice, ocn, atm, bfs.num_nodes);
-   
-    optiq_cesm_gen_couple(cpl, ocn, cpl_ocn);
+
+    std::vector<int> source_ranks = cpl;
+    std::vector<int> dest_ranks = land;
+
+    if (world_rank == 0) {
+	printf("From Coupler to Land\n");
+    }
+
+    std::vector<std::pair<int, std::vector<int> > > source_dests;
+    optiq_cesm_gen_couple(source_ranks, dest_ranks, source_dests);
+
+    int num_dests = dest_ranks.size();
+    int num_sources = source_ranks.size();
 
     int count = 1 * 1024 * 1024;
 
     if (argc > 1) {
-	count = atoi(argv[1]) * 1024;
+        count = atoi(argv[1]) * 1024;
     }
-
-    std::vector<int> source_ranks = cpl;
-    std::vector<int> dest_ranks = ocn;
-    std::vector<std::pair<int, std::vector<int> > > source_dests = cpl_ocn;
-
-    int num_dests = dest_ranks.size();
-    int num_sources = source_ranks.size();
 
     int send_bytes = 0;
     char *send_buf;
@@ -174,7 +175,7 @@ int main(int argc, char **argv)
 	    printf("\nnbytes = %d\n", nbytes);
         }
 
-	for (int chunk_size = nbytes; chunk_size <= nbytes; chunk_size *=2)
+	for (int chunk_size = 16 * 1024; chunk_size <= nbytes; chunk_size *=2)
 	{
 	    if (world_rank == 0) {
 		printf("chunk_size = %d\n", chunk_size);
