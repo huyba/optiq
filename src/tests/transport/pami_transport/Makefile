@@ -30,7 +30,7 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(CESM_COMM)/cesm.o schedule.o
+OBJ = pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(ALG)/heuristics/manytomany.o $(CESM_COMM)/cesm.o $(ALG)/heuristics/multibfs.o schedule.o
 
 all: $(OBJ) mpi copy
 
@@ -51,4 +51,5 @@ realclean: clean
 	$(RM) $(RMFLAGS) $(libobj)
 
 copy:
+	cp test_transport_cesm.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/cesm/
 	cp test_transport_alltomany.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/send_recv/

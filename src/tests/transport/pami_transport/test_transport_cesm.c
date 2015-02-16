@@ -5,7 +5,7 @@
 
 #include <mpi.h>
 
-#include "alltomany.h"
+#include "manytomany.h"
 #include "topology.h"
 #include "pami_transport.h"
 #include "cesm.h"
@@ -25,76 +25,6 @@ void gather_print_time(uint64_t start, uint64_t end, int iters, long int nbytes,
 	double bw = (double) nbytes / max_time / 1024 / 1024 * 1e6;
 	printf("total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", nbytes/1024/1024, max_time, bw);
     }
-}
-
-void mpi_alltoallv(int nbytes)
-{
-    int world_size, world_rank;
-
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    int ratio = 64;
-    int num_dests = world_size/ratio;
-
-    void *sendbuf = malloc(nbytes * num_dests);
-    void *recvbuf = malloc(nbytes * world_size);
-
-    int *sendcounts = (int *)malloc(sizeof(int) * world_size);
-    int *sdispls = (int *)malloc(sizeof(int) * world_size);
-    int *recvcounts = (int *)malloc(sizeof(int) * world_size);
-    int *rdispls = (int *)malloc(sizeof(int) * world_size);
-
-    for (int i = 0; i < world_size; i++) {
-	sendcounts[i] = 0;
-	sdispls[i] = 0;
-	recvcounts[i] = 0;
-	rdispls[i] = 0;
-    }
-
-    int dest, source;
-
-    /*At sending side*/
-    for (int i = 0; i < num_dests; i++) {
-	dest = i * ratio + ratio/2;
-	sendcounts[dest] = nbytes;
-	sdispls[i] = i * nbytes ;
-    }
-
-    /*At receiving side*/
-    if (world_rank % ratio == ratio/2) {
-	printf("receiving rank %d\n", world_rank);
-
-	for (int i = 0; i < world_size; i++) {
-	    recvcounts[i] = nbytes;
-	    rdispls[i] = i * nbytes;
-	}
-    }
-
-    int iters = 30;
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    uint64_t start = GetTimeBase();
-
-    for (int i = 0; i < iters; i++) 
-    {
-	MPI_Alltoallv(sendbuf, sendcounts, sdispls, MPI_BYTE, recvbuf, recvcounts, rdispls, MPI_BYTE, MPI_COMM_WORLD);
-    }
-
-    uint64_t end = GetTimeBase();
-
-    long int data_size = (long int) num_dests * world_size * nbytes;
-    gather_print_time(start, end, iters, data_size, world_rank);
-
-    free(sendbuf);
-    free(recvbuf);
-
-    free(sendcounts);
-    free(sdispls);
-    free(recvcounts);
-    free(rdispls);
 }
 
 int main(int argc, char **argv)
@@ -118,54 +48,67 @@ int main(int argc, char **argv)
 	printf("num_dims = %d, num_nodes = %d\n", bfs.num_dims, bfs.num_nodes);
     }
 
-    int ratio = 64;
-    int num_dests = world_size/ratio;
+    vector<int> cpl, land, ice, ocn, atm;
 
-    int *dest_ranks = (int *) malloc (sizeof(int) * num_dests);
+    std::vector<std::pair<int, std::vector<int> > > ocn_cpl, cpl_ocn;
 
-    for (int i = 0; i < num_dests; i++) {
-	dest_ranks[i] = i * ratio + ratio/2;
-    }
+    optiq_cesm_gen(cpl, land, ice, ocn, atm, bfs.num_nodes);
+   
+    optiq_cesm_gen_couple(cpl, ocn, cpl_ocn);
 
     int count = 1 * 1024 * 1024;
 
-    if (argc > 1)
-    {
+    if (argc > 1) {
 	count = atoi(argv[1]) * 1024;
     }
 
-    int send_bytes = count * num_dests;
-    char *send_buf = (char *) malloc(send_bytes);
-    for (int i = 0; i < send_bytes; i++) {
-	send_buf[i] = i % 128;
-    }
+    std::vector<int> source_ranks = cpl;
+    std::vector<int> dest_ranks = ocn;
+    std::vector<std::pair<int, std::vector<int> > > source_dests = cpl_ocn;
 
+    int num_dests = dest_ranks.size();
+    int num_sources = source_ranks.size();
+
+    int send_bytes = 0;
+    char *send_buf;
     int *sendcounts = (int *)calloc(1, sizeof(int) * world_size);
     int *sdispls = (int *)calloc(1, sizeof(int) * world_size);
-    for (int i = 0; i < num_dests; i++) 
-    {
-	sendcounts[dest_ranks[i]] = count;
-	sdispls[dest_ranks[i]] = i * count;
-    }
 
-    int *recvcounts = (int *) calloc(1, sizeof(int) * world_size);
+    for (int i = 0; i < num_sources; i++)
+    {
+	if (world_rank == source_ranks[i])
+	{
+	    send_bytes = count * num_dests;
+	    send_buf = (char *) malloc(send_bytes);
+
+	    for (int j = 0; j < send_bytes; j++) {
+		send_buf[j] = j % 128;
+	    }
+
+	    for (int j = 0; j < num_dests; j++)
+	    {
+		sendcounts[dest_ranks[j]] = count;
+		sdispls[dest_ranks[j]] = j * count;
+	    }
+	}
+    }
 
     int recv_bytes = 0;
     char *recv_buf = NULL;
-    int *rdispls = NULL;
+    int *rdispls = (int *) malloc(sizeof(int) * world_size);
+    int *recvcounts = (int *) calloc(1, sizeof(int) * world_size);
 
     for (int i = 0; i < num_dests; i++) 
     {
 	if (world_rank == dest_ranks[i]) 
 	{
-	    recv_bytes = world_size * count;
+	    recv_bytes = num_sources * count;
 	    recv_buf = (char *) malloc(recv_bytes);
-	    rdispls = (int *) malloc(sizeof(int) * world_size);
 
-	    for (int i = 0; i < world_size; i++) 
+	    for (int j = 0; j < num_sources; j++) 
 	    {
-		recvcounts[i] = count;
-		rdispls[i] = i * count;
+		recvcounts[source_ranks[j]] = count;
+		rdispls[source_ranks[j]] = j * count;
 	    }
 	}
     }
@@ -177,11 +120,11 @@ int main(int argc, char **argv)
     std::vector<struct path *> complete_paths;
     complete_paths.clear();
 
-    optiq_alg_heuristic_search_alltomany(complete_paths, num_dests, dest_ranks, &bfs);
+    optiq_alg_heuristic_search_manytomany(complete_paths, source_dests, &bfs);
 
     /*if (world_rank == 0) {
       optiq_path_print_paths(complete_paths);
-      }*/
+    }*/
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -200,7 +143,7 @@ int main(int argc, char **argv)
     schedule.remaining_jobs = num_dests;
     schedule.expecting_length = recv_bytes;
     schedule.sent_bytes = 0;
-    schedule.chunk_size = 256 * 1024;
+    schedule.chunk_size = 64 * 1024;
 
     optiq_schedule_init(schedule);
 
@@ -218,7 +161,9 @@ int main(int argc, char **argv)
 
     optiq_schedule_create (schedule, complete_paths);
 
-    for (int nbytes = 256*1024; nbytes <= count; nbytes *= 2)
+    //optiq_schedule_print_jobs(schedule);
+
+    for (int nbytes = count; nbytes <= count; nbytes *= 2)
     {
 	for (int i = 0; i < schedule.local_jobs.size(); i++)
 	{
@@ -229,7 +174,7 @@ int main(int argc, char **argv)
 	    printf("\nnbytes = %d\n", nbytes);
         }
 
-	for (int chunk_size = 1024; chunk_size <= nbytes; chunk_size *=2)
+	for (int chunk_size = nbytes; chunk_size <= nbytes; chunk_size *=2)
 	{
 	    if (world_rank == 0) {
 		printf("chunk_size = %d\n", chunk_size);
@@ -238,8 +183,18 @@ int main(int argc, char **argv)
 	    schedule.chunk_size = chunk_size;
 	    optiq_schedule_split_jobs (pami_transport, schedule.local_jobs, schedule.chunk_size);
 
+	    /*if (pami_transport->extra.send_headers.size() > 0)
+	    {
+		printf("Rank %d send_header size = %d\n", world_rank, pami_transport->extra.send_headers.size());
+		for (int h = 0; h < pami_transport->extra.send_headers.size() ;h++)
+		{
+		    struct optiq_message_header *hd = pami_transport->extra.send_headers[h];
+		    printf("Rank %d Message size %d from %d to %d follow path_id %d\n", world_rank, hd->length, hd->source, hd->dest, hd->path_id);
+		}
+	    }*/
+
 	    schedule.remaining_jobs = num_dests;
-	    schedule.expecting_length = nbytes * world_size;
+	    schedule.expecting_length = nbytes * num_sources;
 	    schedule.sent_bytes = 0;
 	    memset (schedule.recv_bytes, 0, sizeof (int) * world_size);
 
@@ -255,7 +210,7 @@ int main(int argc, char **argv)
 
 	    double max_t, t = (double)(t3 - t2)/1.6e3;
 
-	    long int data_size = (long int) num_dests * world_size * nbytes;
+	    long int data_size = (long int) num_dests * num_sources * nbytes;
 	    gather_print_time(t2, t3, 1, data_size, world_rank);
 	}
     }
@@ -273,6 +228,7 @@ int main(int argc, char **argv)
 	    if (memcmp (test_buf, recv_buf, recv_bytes) != 0) {
 		printf ("Rank %d Received invalid data\n", world_rank);
 	    }
+	    memset(recv_buf, 0, recv_bytes);
 	}
     }
 
@@ -296,8 +252,24 @@ int main(int argc, char **argv)
 
     uint64_t end = GetTimeBase();
 
-    long int data_size = (long int) num_dests * world_size * count;
+    long int data_size = (long int) num_dests * num_sources * count;
     gather_print_time(start, end, iters, data_size, world_rank);
+
+    for (int i = 0; i < num_dests; i++)
+    {
+        if (world_rank == dest_ranks[i])
+        {
+            char *test_buf = (char *) malloc (recv_bytes);
+
+            for (int i = 0; i < recv_bytes; i++) {
+                test_buf[i] = i%128;
+            }
+
+            if (memcmp (test_buf, recv_buf, recv_bytes) != 0) {
+                printf ("Rank %d Received invalid data\n", world_rank);
+            }
+        }
+    }
 
     MPI_Finalize();
 

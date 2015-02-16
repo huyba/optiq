@@ -194,3 +194,20 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
         }
     }
 }
+
+void optiq_schedule_print_jobs(struct optiq_schedule &schedule)
+{
+    std::vector<struct optiq_job> jobs = schedule.local_jobs;
+    int world_rank = schedule.world_rank;
+
+    printf("Rank %d has %ld jobs\n", world_rank, jobs.size());
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        printf("Rank %d job_id = %d source = %d dest = %d\n", world_rank, jobs[i].job_id, jobs[i].source_rank, jobs[i].dest_rank);
+        for (int j = 0; j < jobs[i].paths.size(); j++)
+        {
+            printf("Rank %d job_id = %d #paths = %ld path_id = %d flow = %d\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
+        }
+    }
+}

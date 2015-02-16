@@ -396,7 +396,7 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
 
     if(pami_transport->rank == message_header->dest) {
 	pami_transport->sched->expecting_length -= message_header->length;
-	//printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->extra.expecting_length);
+	//printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->sched->expecting_length);
 	//printf("Rank %d received data from %d size = %d\n", pami_transport->rank, message_header->source, message_header->length);
 	pami_transport->sched->recv_bytes[message_header->source] += message_header->length;
     } else {

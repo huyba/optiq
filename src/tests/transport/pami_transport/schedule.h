@@ -63,4 +63,6 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 
 void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths);
 
+void optiq_schedule_print_jobs(struct optiq_schedule &schedule);
+
 #endif

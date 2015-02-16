@@ -1,5 +1,6 @@
 #include <sys/time.h>
 
+#include "topology.h"
 #include "multibfs.h"
 
 struct multibfs_perf mperf;
