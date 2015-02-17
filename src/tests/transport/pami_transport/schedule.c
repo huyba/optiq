@@ -17,6 +17,13 @@ void optiq_schedule_init(struct optiq_schedule &schedule)
     schedule.recv_memregions = (struct optiq_memregion *) malloc (sizeof (struct optiq_memregion) * schedule.world_size);
 }
 
+void optiq_schedule_finalize(struct optiq_schedule &schedule)
+{
+    free(schedule.next_dests);
+    free(schedule.recv_bytes);
+    free(schedule.recv_memregions);
+}
+
 void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *> &complete_paths)
 {
     for (int i = 0; i < complete_paths.size(); i++)
