@@ -27,6 +27,20 @@ void gather_print_time(uint64_t start, uint64_t end, int iters, long int nbytes,
     }
 }
 
+void optiq_transport(std::vector<int> sources, std::vector<int> dests)
+{
+    
+}
+
+void test_cesm(int num_nodes)
+{
+    std::vector<int> cpl, land, ice, ocn, atm;
+
+    optiq_cesm_gen(cpl, land, ice, ocn, atm, num_nodes);
+
+    optiq_transport(cpl, ocn);
+}
+
 int main(int argc, char **argv)
 {
     int world_rank, world_size;
@@ -164,7 +178,7 @@ int main(int argc, char **argv)
 
     //optiq_schedule_print_jobs(schedule);
 
-    for (int nbytes = count; nbytes <= count; nbytes *= 2)
+    for (int nbytes = 64*1024; nbytes <= count; nbytes *= 2)
     {
 	for (int i = 0; i < schedule.local_jobs.size(); i++)
 	{
@@ -175,7 +189,7 @@ int main(int argc, char **argv)
 	    printf("\nnbytes = %d\n", nbytes);
         }
 
-	for (int chunk_size = 16 * 1024; chunk_size <= nbytes; chunk_size *=2)
+	for (int chunk_size =64*1024; chunk_size <= nbytes; chunk_size *=2)
 	{
 	    if (world_rank == 0) {
 		printf("chunk_size = %d\n", chunk_size);
