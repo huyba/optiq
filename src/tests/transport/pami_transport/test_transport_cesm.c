@@ -27,14 +27,37 @@ struct optiq_comm_mem {
 void optiq_comm_mem_generate (struct optiq_comm_mem &comm_mem, int world_size, int send_len, int recv_len)
 {
     comm_mem.send_len = send_len;
-    comm_mem.send_buf = (char *) malloc (send_len);
+    if (send_len > 0) {
+	comm_mem.send_buf = (char *) malloc (send_len);
+    } else {
+	comm_mem.send_buf = NULL;
+    }
     comm_mem.sendcounts = (int *)calloc(1, sizeof(int) * world_size);
     comm_mem.sdispls = (int *)calloc(1, sizeof(int) * world_size);
 
     comm_mem.recv_len = recv_len;
-    comm_mem.recv_buf = (char *) malloc (recv_len);
+    if (recv_len > 0) {
+	comm_mem.recv_buf = (char *) malloc (recv_len);
+    } else {
+	comm_mem.recv_buf = NULL;
+    }
     comm_mem.rdispls = (int *) malloc(sizeof(int) * world_size);
     comm_mem.recvcounts = (int *) calloc(1, sizeof(int) * world_size);   
+}
+
+/* Allocate mem for send/recv, also assign displacement*/
+void optiq_mem_comm_create(std::vector<std::pair<int, std::vector<int> > > &source_dests, int count, struct optiq_comm_mem &comm_mem, int rank)
+{
+    int send_len = 0;
+    int recv_len = 0;
+
+    for (int i = 0; i < source_dests; i++)
+    {
+	if (source_dests[i].first == rank)
+	{
+	    send_len = count * source_dests[i].second.size();
+	}
+    }
 }
 
 void gather_print_time(uint64_t start, uint64_t end, int iters, long int nbytes, int world_rank)
@@ -94,6 +117,13 @@ void test_cems_actual_execution(int nbytes, int chunk_size, int num_dests, int e
     double max_t, t = (double)(t3 - t2)/1.6e3;
 
     gather_print_time(t2, t3, 1, expecting_length, world_rank);
+}
+
+void optiq_schedule_assign_job_demand(struct optiq_schedule &schedule, int nbytes)
+{
+    for (int i = 0; i < schedule.local_jobs.size(); i++) {
+        schedule.local_jobs[i].buf_length = nbytes;
+    }
 }
 
 void optiq_schedule_execute(struct optiq_schedule &schedule,  struct multibfs &bfs, struct optiq_pami_transport *pami_transport)
@@ -156,26 +186,6 @@ void optiq_schedule_execute(struct optiq_schedule &schedule,  struct multibfs &b
 
     uint64_t t0 = GetTimeBase();
 
-    max_path_length = bfs.diameter/2;
-
-    std::vector<struct path *> complete_paths;
-    complete_paths.clear();
-
-    std::vector<std::pair<int, std::vector<int> > > source_dests;
-    optiq_cesm_gen_couple(source_ranks, dest_ranks, source_dests);
-
-    optiq_alg_heuristic_search_manytomany(complete_paths, source_dests, &bfs);
-
-    /*if (world_rank == 0) {
-      optiq_path_print_paths(complete_paths);
-      }*/
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    struct optiq_schedule schedule;
-    schedule.world_rank = world_rank;
-    schedule.world_size = world_size;
-
     schedule.send_buf = send_buf;
     schedule.sendcounts = sendcounts;
     schedule.sdispls = sdispls;
@@ -184,14 +194,7 @@ void optiq_schedule_execute(struct optiq_schedule &schedule,  struct multibfs &b
     schedule.recvcounts = recvcounts;
     schedule.rdispls = rdispls;
 
-    optiq_schedule_init(schedule);
-
-    pami_transport->sched = &schedule;
-    pami_transport->sched->pami_transport = pami_transport;
-
     uint64_t t1 = GetTimeBase();
-
-    optiq_schedule_create (schedule, complete_paths);
 
     //optiq_schedule_print_jobs(schedule);
 
@@ -229,8 +232,6 @@ void optiq_schedule_execute(struct optiq_schedule &schedule,  struct multibfs &b
 
 	printf("\nTest with MPI_Alltoallv\n");
     }
-
-    optiq_schedule_finalize(schedule);
 
     int iters = 20;
 
@@ -292,9 +293,14 @@ void test_cesm_coupling(std::vector<int> &source_ranks, std::vector<int> &dest_r
     optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
 
     /*With the comm pattern, allocate memories, set offsets, displacements*/
-    optiq_mem_comm_create(source_dests, count, mem_comm);
+    optiq_mem_comm_create(source_ranks, dest_ranks, source_dests, count, mem_comm);
 
     struct optiq_schedule schedule;
+    schedule.world_size = pami_transport->size;
+    schedule.world_rank = pami_tranpsort->rank;
+    schedule.pami_transport = pami_transport;
+    pami_transport->sched = &schedule;
+
     optiq_schedule_init (schedule);
 
     /*Add paths and mem_comm to schedule*/
@@ -305,9 +311,11 @@ void test_cesm_coupling(std::vector<int> &source_ranks, std::vector<int> &dest_r
     int chunk_size = 256 * 1024;
 
     /*Assign job size, chunk size and execute schedule*/
-    optiq_schedule_assign_job_size(nbytes);
+    optiq_schedule_assign_job_demand(nbytes);
     optiq_schedule_split_jobs (pami_transport, schedule.local_jobs,chunk_size);
     optiq_schedule_execute(schedule, bfs, pami_transport);
+
+    optiq_schedule_finalize(schedule);
 
     /*Free the mem_comm*/
     optiq_mem_comm_delete(mem_comm);
