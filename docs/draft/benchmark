@@ -1,0 +1,21 @@
+\section{Benchmarks}
+
+\subsection{Experimental }
+\subsubsection{Chunk size for pipeline}
+\subsubsection{Various message sizes}
+\subsubsection{Many ranks}
+\subsubsection{Scaling}
+
+\subsection{Communication patterns}
+In this paper we demostrate data movement performance of our OPTIQ framework and existing MPI's routines on the following communication patters:
+
+\begin{itemize}
+\item All to many, many to all
+\item I/O Aggregation: a special case of All to many (or many to many)
+\item Many to many: disjoint/exclusive
+\item Many to many: subset
+\item Many to many: partially joint (not subset, not disjoint)
+\item Many to many: sparse
+\end{itemize}
+
+\subsection{All to many or Many to all}
