@@ -158,7 +158,7 @@ void optiq_pami_init_extra(struct optiq_pami_transport *pami_transport)
     /*Allocate and register forward memory*/
     int forward_buf_size = OPTIQ_FORWARD_BUFFER_SIZE;
     char *forward_buf = (char *) malloc(forward_buf_size);
-    struct optiq_memregion *forward_mr = (struct optiq_memregion *) malloc (sizeof(struct optiq_memregion));
+    struct optiq_memregion *forward_mr = (struct optiq_memregion *) calloc (1, sizeof(struct optiq_memregion));
 
     size_t bytes;
     pami_result_t result = PAMI_Memregion_create (pami_transport->context, forward_buf, forward_buf_size, &bytes, &forward_mr->mr);
@@ -173,8 +173,38 @@ void optiq_pami_init_extra(struct optiq_pami_transport *pami_transport)
     pami_transport->extra.forward_mr->offset = 0;
 }
 
+void optiq_pami_transport_extra_status(struct optiq_pami_extra &extra, int rank)
+{
+    printf("Rank = %d, forward_mr->offset = %d\n", rank, extra.forward_mr->offset);
+
+    printf("Rank = %d, rput_cookies.size() = %d\n", rank, extra.rput_cookies.size());
+    printf("Rank = %d, complete_rputs.size() = %d\n", rank, extra.complete_rputs.size());
+
+    printf("Rank = %d, forward_headers.size() = %d\n", rank, extra.forward_headers.size());
+    printf("Rank = %d, message_headers.size() = %d\n", rank, extra.message_headers.size());
+    printf("Rank = %d, send_headers.size() = %d\n", rank, extra.send_headers.size());
+    printf("Rank = %d, processing_headers.size() = %d\n", rank, extra.processing_headers.size());
+
+    printf("Rank = %d, mr_responses.size() = %d\n", rank, extra.mr_responses.size());
+    printf("Rank = %d, global_header_id = %d\n", rank, extra.global_header_id);
+}
+
+void optiq_pami_transport_sched_status(struct optiq_schedule *sched, int rank)
+{
+    printf("Rank = %d, Remain job = %d\n", rank, sched->remaining_jobs);
+    printf("Rank = %d, expecting_length = %d\n", rank, sched->expecting_length);
+}
+
+void optiq_pami_transport_status(struct optiq_pami_transport *pami_transport)
+{
+    optiq_pami_transport_extra_status(pami_transport->extra, pami_transport->rank);
+    optiq_pami_transport_sched_status(pami_transport->sched, pami_transport->rank);
+}
+
 void optiq_execute_jobs(struct optiq_pami_transport *pami_transport)
 {
+    //optiq_pami_transport_status(pami_transport);
+
     while (pami_transport->sched->remaining_jobs > 0) 
     {
 	PAMI_Context_advance(pami_transport->context, 100);
@@ -345,6 +375,12 @@ int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *heade
     return ret;
 }
 
+int optiq_pami_send_memregion(struct optiq_memregion mr, int dest, struct optiq_pami_transport *pami_transport)
+{
+    fprintf(stderr, "Rank %d send memregion to %d\n", pami_transport->rank, dest);
+    optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &mr, sizeof(struct optiq_memregion), pami_transport->endpoints[dest]);
+}
+
 void optiq_send_done_fn(pami_context_t context, void *cookie, pami_result_t result)
 {
 }
@@ -396,7 +432,7 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
 
     if(pami_transport->rank == message_header->dest) {
 	pami_transport->sched->expecting_length -= message_header->length;
-	//printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->extra.expecting_length);
+	//printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->sched->expecting_length);
 	//printf("Rank %d received data from %d size = %d\n", pami_transport->rank, message_header->source, message_header->length);
 	pami_transport->sched->recv_bytes[message_header->source] += message_header->length;
     } else {
@@ -420,11 +456,10 @@ void optiq_recv_mr_forward_request_fn (pami_context_t context, void *cookie, con
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
     pami_transport->extra.forward_mr->header_id = *((int*)header);
-
+    
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, pami_transport->extra.forward_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
     //printf("Rank %d sent a forward mem response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.forward_mr->offset);
-
     pami_transport->extra.forward_mr->offset += (*(int *)data);
 
     if (pami_transport->extra.forward_mr->offset >= OPTIQ_FORWARD_BUFFER_SIZE) {

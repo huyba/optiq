@@ -17,6 +17,13 @@ void optiq_schedule_init(struct optiq_schedule &schedule)
     schedule.recv_memregions = (struct optiq_memregion *) malloc (sizeof (struct optiq_memregion) * schedule.world_size);
 }
 
+void optiq_schedule_finalize(struct optiq_schedule &schedule)
+{
+    free(schedule.next_dests);
+    free(schedule.recv_bytes);
+    free(schedule.recv_memregions);
+}
+
 void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *> &complete_paths)
 {
     for (int i = 0; i < complete_paths.size(); i++)
@@ -78,7 +85,7 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
     }
 }
 
-void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths)
+void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths)
 {
     struct optiq_pami_transport *pami_transport = schedule.pami_transport;
 
@@ -113,7 +120,11 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
     }
 
     schedule.isDest = isDest;
+    schedule.isSource = isSource;
+}
 
+void optiq_schedule_reg_memory (struct optiq_schedule &schedule)
+{
     size_t bytes;
     pami_result_t result;
 
@@ -191,6 +202,23 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
             schedule.local_jobs[j].buf_length = schedule.sendcounts[d];
             schedule.local_jobs[j].send_mr = schedule.send_mr;
             schedule.local_jobs[j].send_mr.offset = schedule.sdispls[d];
+        }
+    }
+}
+
+void optiq_schedule_print_jobs(struct optiq_schedule &schedule)
+{
+    std::vector<struct optiq_job> jobs = schedule.local_jobs;
+    int world_rank = schedule.world_rank;
+
+    printf("Rank %d has %ld jobs\n", world_rank, jobs.size());
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        printf("Rank %d job_id = %d source = %d dest = %d\n", world_rank, jobs[i].job_id, jobs[i].source_rank, jobs[i].dest_rank);
+        for (int j = 0; j < jobs[i].paths.size(); j++)
+        {
+            printf("Rank %d job_id = %d #paths = %ld path_id = %d flow = %d\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
         }
     }
 }

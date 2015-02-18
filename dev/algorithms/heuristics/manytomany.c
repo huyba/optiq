@@ -429,6 +429,9 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
 	}
     }
 
+    optiq_path_assign_ids(complete_paths);
+
+    /*
     long int diff = (t1.tv_usec + 1000000 * t1.tv_sec) - (t0.tv_usec + 1000000 * t0.tv_sec);
     printf("Init time = %ld\n", diff);   
 
@@ -437,4 +440,5 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
 
     diff = (t3.tv_usec + 1000000 * t3.tv_sec) - (t2.tv_usec + 1000000 * t2.tv_sec);
     printf("Phase 2 time = %ld\n", diff);
+    */
 }
