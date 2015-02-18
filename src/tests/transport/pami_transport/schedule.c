@@ -85,7 +85,7 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
     }
 }
 
-void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths)
+void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths)
 {
     struct optiq_pami_transport *pami_transport = schedule.pami_transport;
 
@@ -120,7 +120,11 @@ void optiq_schedule_create (struct optiq_schedule &schedule, std::vector<struct 
     }
 
     schedule.isDest = isDest;
+    schedule.isSource = isSource;
+}
 
+void optiq_schedule_reg_memory (struct optiq_schedule &schedule)
+{
     size_t bytes;
     pami_result_t result;
 
