@@ -47,10 +47,11 @@ int optiq_comm_mem_allocate (std::vector<std::pair<int, std::vector<int> > > &so
 	    {
 		int dest_id = source_dests[i].second[j];
 		comm_mem.sendcounts[dest_id] = count;
-		comm_mem.sdispls[dest_id] = i * count;
+		comm_mem.sdispls[dest_id] = j * count;
 	    }
 	}
     }
+
     comm_mem.send_len = send_len;
 
     int num_sources = 0;
@@ -95,49 +96,71 @@ void optiq_comm_mem_delete(struct optiq_comm_mem &comm_mem)
 
 void optiq_schedule_mem_destroy(struct optiq_schedule &schedule, struct optiq_pami_transport *pami_transport)
 {
-     size_t bytes;
+    size_t bytes;
 
     pami_result_t result;
 
     result = PAMI_Memregion_destroy (pami_transport->context, &schedule.send_mr.mr);
     if (result != PAMI_SUCCESS)
     {
-        printf("Destroy send_mr : No success\n");
+	printf("Destroy send_mr : No success\n");
     }
 
     result = PAMI_Memregion_destroy (pami_transport->context, &schedule.recv_mr.mr);
     if (result != PAMI_SUCCESS)
     {
-        printf("Destroy recv_mr : No success\n");
+	printf("Destroy recv_mr : No success\n");
     }
 }
 
+/* Register memory for sending and receiving and assign mem region for local_jobs*/
 void optiq_schedule_mem_reg (struct optiq_schedule &schedule, struct optiq_comm_mem &comm_mem, struct optiq_pami_transport *pami_transport)
 {
+    schedule.rdispls = comm_mem.rdispls;
+
     size_t bytes;
 
     pami_result_t result;
 
-    result = PAMI_Memregion_create (pami_transport->context, comm_mem.send_buf, comm_mem.send_len, &bytes, &schedule.send_mr.mr);
+    /* Register memory for sending data */
+    if (comm_mem.send_len > 0) 
+    {
+	result = PAMI_Memregion_create (pami_transport->context, comm_mem.send_buf, comm_mem.send_len, &bytes, &schedule.send_mr.mr);
+	schedule.send_mr.offset = 0;
 
-    if (result != PAMI_SUCCESS)
-    {
-	printf("No success\n");
-    }
-    else if (bytes < comm_mem.send_len)
-    {
-	printf("Registered less\n");
+	if (result != PAMI_SUCCESS)
+	{
+	    printf("No success\n");
+	}
+	else if (bytes < comm_mem.send_len)
+	{
+	    printf("Registered less\n");
+	}
     }
 
-    result = PAMI_Memregion_create (pami_transport->context, comm_mem.recv_buf, comm_mem.recv_len, &bytes, &schedule.recv_mr.mr);
-
-    if (result != PAMI_SUCCESS)
+    /* Assign mem region for local jobs */
+    int dest_rank;
+    for (int i = 0; i < schedule.local_jobs.size(); i++)
     {
-	printf("No success\n");
+	dest_rank = schedule.local_jobs[i].dest_rank;
+	schedule.local_jobs[i].send_mr = schedule.send_mr;
+	schedule.local_jobs[i].send_mr.offset = comm_mem.sdispls[dest_rank];
     }
-    else if (bytes < comm_mem.recv_len)
+
+    /* Create memory region for receiving data*/
+    if (comm_mem.recv_len > 0)
     {
-	printf("Registered less\n");
+	result = PAMI_Memregion_create (pami_transport->context, comm_mem.recv_buf, comm_mem.recv_len, &bytes, &schedule.recv_mr.mr);
+	schedule.recv_mr.offset = 0;
+
+	if (result != PAMI_SUCCESS)
+	{
+	    printf("No success\n");
+	}
+	else if (bytes < comm_mem.recv_len)
+	{
+	    printf("Registered less\n");
+	}
     }
 }
 
@@ -201,6 +224,7 @@ void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_
 
     /*Create pairs of sources and destinations*/
     std::vector<std::pair<int, std::vector<int> > > source_dests;
+    source_dests.clear();
     optiq_cesm_gen_couple (source_ranks, dest_ranks, source_dests);
 
     /*Search for paths for each pair*/
@@ -218,7 +242,7 @@ void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_
 
     optiq_schedule_init (schedule);
 
-    /*Add paths and mem_comm to schedule*/
+    /* Add paths and mem_comm to schedule */
     optiq_schedule_add_paths (schedule, complete_paths);
     optiq_schedule_mem_reg (schedule, comm_mem, pami_transport);
 
@@ -226,9 +250,18 @@ void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_
     int chunk_size = 256 * 1024;
     schedule.recv_len = demand * num_sources;
 
-    /*Assign job size, chunk size and execute schedule*/
+    /* Assign job size, chunk size and execute schedule */
     optiq_schedule_assign_job_demand (schedule.local_jobs, demand);
     optiq_schedule_split_jobs (pami_transport, schedule.local_jobs, chunk_size);
+
+    for (int i = 0; i < pami_transport->extra.send_headers.size(); i++)
+    {
+	struct optiq_message_header *mh = pami_transport->extra.send_headers[i];
+	//printf ("Rank %d send %d bytes to %d using path_id = %d, original_offset = %d\n", pami_transport->rank, mh->length, mh->dest, mh->path_id, mh->original_offset);
+    }
+
+    MPI_Barrier (MPI_COMM_WORLD);
+
     optiq_schedule_set (schedule, dest_ranks.size(), pami_transport->size);
     optiq_schedule_execute (schedule, pami_transport);
 
@@ -247,7 +280,13 @@ void test_cesm(int count, struct multibfs &bfs, struct optiq_pami_transport *pam
 
     std::vector<int> cpl, land, ice, ocn, atm;
 
-    optiq_cesm_gen(cpl, land, ice, ocn, atm, bfs.num_nodes);
+    optiq_cesm_gen (cpl, land, ice, ocn, atm, bfs.num_nodes);
+
+    if (rank == 0) {
+        printf ("\nFrom Oceanto Coupler\n");
+    }
+
+    test_cesm_coupling(ocn, cpl, count, bfs, pami_transport);
 
     if (rank == 0) {
 	printf ("\nFrom Coupler to Ice\n");
@@ -278,12 +317,6 @@ void test_cesm(int count, struct multibfs &bfs, struct optiq_pami_transport *pam
     }
 
     test_cesm_coupling(cpl, ocn, count, bfs, pami_transport);
-
-    if (rank == 0) {
-	printf ("\nFrom Oceanto Coupler\n");
-    }
-
-    test_cesm_coupling(ocn, cpl, count, bfs, pami_transport);
 }
 
 int main(int argc, char **argv)

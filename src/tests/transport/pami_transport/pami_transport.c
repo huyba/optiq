@@ -157,7 +157,7 @@ void optiq_pami_init_extra(struct optiq_pami_transport *pami_transport)
 
     /*Allocate and register forward memory*/
     int forward_buf_size = OPTIQ_FORWARD_BUFFER_SIZE;
-    char *forward_buf = (char *) malloc(forward_buf_size);
+    char *forward_buf = (char *) malloc (forward_buf_size);
     struct optiq_memregion *forward_mr = (struct optiq_memregion *) calloc (1, sizeof(struct optiq_memregion));
 
     size_t bytes;
@@ -377,7 +377,7 @@ int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *heade
 
 int optiq_pami_send_memregion(struct optiq_memregion mr, int dest, struct optiq_pami_transport *pami_transport)
 {
-    fprintf(stderr, "Rank %d send memregion to %d\n", pami_transport->rank, dest);
+    //fprintf(stderr, "Rank %d send memregion to %d\n", pami_transport->rank, dest);
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &mr, sizeof(struct optiq_memregion), pami_transport->endpoints[dest]);
 }
 
@@ -478,5 +478,5 @@ void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie,
 
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &pami_transport->sched->recv_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
-    //printf("Rank %d sent a destination mem response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->extra.recv_mr->offset);
+    //printf("Rank %d sent a destination mem response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->sched->recv_mr.offset);
 }
