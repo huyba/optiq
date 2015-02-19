@@ -5,6 +5,7 @@
 #include "path.h"
 #include "job.h"
 #include "pami_transport.h"
+#include "comm_mem.h"
 
 struct optiq_pami_transport;
 
@@ -70,5 +71,13 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths);
 
 void optiq_schedule_print_jobs(struct optiq_schedule &schedule);
+
+void optiq_schedule_mem_destroy(struct optiq_schedule &schedule, struct optiq_pami_transport *pami_transport);
+
+void optiq_schedule_mem_reg (struct optiq_schedule &schedule, struct optiq_comm_mem &comm_mem, struct optiq_pami_transport *pami_transport);
+
+void optiq_schedule_assign_job_demand(std::vector<struct optiq_job> &local_jobs, int nbytes);
+
+void optiq_schedule_set(struct optiq_schedule &schedule, int num_jobs, int world_size);
 
 #endif

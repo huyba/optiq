@@ -139,3 +139,89 @@ void optiq_schedule_print_jobs(struct optiq_schedule &schedule)
         }
     }
 }
+
+
+void optiq_schedule_mem_destroy(struct optiq_schedule &schedule, struct optiq_pami_transport *pami_transport)
+{
+    size_t bytes;
+
+    pami_result_t result;
+
+    result = PAMI_Memregion_destroy (pami_transport->context, &schedule.send_mr.mr);
+    if (result != PAMI_SUCCESS)
+    {
+	printf("Destroy send_mr : No success\n");
+    }
+
+    result = PAMI_Memregion_destroy (pami_transport->context, &schedule.recv_mr.mr);
+    if (result != PAMI_SUCCESS)
+    {
+	printf("Destroy recv_mr : No success\n");
+    }
+}
+
+/* Register memory for sending and receiving and assign mem region for local_jobs*/
+void optiq_schedule_mem_reg (struct optiq_schedule &schedule, struct optiq_comm_mem &comm_mem, struct optiq_pami_transport *pami_transport)
+{
+    schedule.rdispls = comm_mem.rdispls;
+
+    size_t bytes;
+
+    pami_result_t result;
+
+    /* Register memory for sending data */
+    if (comm_mem.send_len > 0) 
+    {
+	result = PAMI_Memregion_create (pami_transport->context, comm_mem.send_buf, comm_mem.send_len, &bytes, &schedule.send_mr.mr);
+	schedule.send_mr.offset = 0;
+
+	if (result != PAMI_SUCCESS)
+	{
+	    printf("No success\n");
+	}
+	else if (bytes < comm_mem.send_len)
+	{
+	    printf("Registered less\n");
+	}
+    }
+
+    /* Assign mem region for local jobs */
+    int dest_rank;
+    for (int i = 0; i < schedule.local_jobs.size(); i++)
+    {
+	dest_rank = schedule.local_jobs[i].dest_rank;
+	schedule.local_jobs[i].send_mr = schedule.send_mr;
+	schedule.local_jobs[i].send_mr.offset = comm_mem.sdispls[dest_rank];
+    }
+
+    /* Create memory region for receiving data*/
+    if (comm_mem.recv_len > 0)
+    {
+	result = PAMI_Memregion_create (pami_transport->context, comm_mem.recv_buf, comm_mem.recv_len, &bytes, &schedule.recv_mr.mr);
+	schedule.recv_mr.offset = 0;
+
+	if (result != PAMI_SUCCESS)
+	{
+	    printf("No success\n");
+	}
+	else if (bytes < comm_mem.recv_len)
+	{
+	    printf("Registered less\n");
+	}
+    }
+}
+
+void optiq_schedule_set(struct optiq_schedule &schedule, int num_jobs, int world_size)
+{
+    schedule.remaining_jobs = num_jobs;
+    schedule.expecting_length = schedule.recv_len;
+    schedule.sent_bytes = 0;
+    memset (schedule.recv_bytes, 0, sizeof (int) * world_size);
+}
+
+void optiq_schedule_assign_job_demand(std::vector<struct optiq_job> &local_jobs, int nbytes)
+{
+    for (int i = 0; i < local_jobs.size(); i++) {
+        local_jobs[i].buf_length = nbytes;
+    }
+}

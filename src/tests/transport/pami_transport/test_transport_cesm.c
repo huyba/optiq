@@ -8,160 +8,30 @@
 #include "manytomany.h"
 #include "topology.h"
 #include "pami_transport.h"
+#include "comm_mem.h"
+#include "schedule.h"
+
 #include "cesm.h"
 
 using namespace std;
 
-struct optiq_comm_mem {
-    char *send_buf;
-    int send_len;
-    int *sendcounts;
-    int *sdispls;
-
-    char *recv_buf;
-    int recv_len;
-    int *recvcounts;
-    int *rdispls;
-};
-
-/* Allocate mem for send/recv, also assign counts, displacements*/
-int optiq_comm_mem_allocate (std::vector<std::pair<int, std::vector<int> > > &source_dests, int count, struct optiq_comm_mem &comm_mem, int rank, int world_size)
+int get_chunk_size(int num_nodes, int message_size)
 {
-    comm_mem.sendcounts = (int *)calloc(1, sizeof(int) * world_size);
-    comm_mem.sdispls = (int *)calloc(1, sizeof(int) * world_size);
+    int chunk_size = 1;
 
-    comm_mem.rdispls = (int *) malloc(sizeof(int) * world_size);
-    comm_mem.recvcounts = (int *) calloc(1, sizeof(int) * world_size);
+    if (message_size <= 128 * 1024) {
+	chunk_size = message_size;
+    } else if (128 * 1024 < message_size && message_size <= 256 * 1024) {
+	chunk_size = 128 * 1024;
+    } else if (256 * 1024< message_size && message_size <= 512 * 1024) {
+	chunk_size = 256 * 1024;
+    } else if (512 * 1024 < message_size && message_size <= 1024 * 1024) {
+	chunk_size = 512 * 1024;
+    } else if (message_size > 1024 * 1024) {
+	chunk_size = 1024 * 1024;
+    } 
 
-    int send_len = 0;
-    int recv_len = 0;
-
-    for (int i = 0; i < source_dests.size(); i++)
-    {
-	if (source_dests[i].first == rank)
-	{
-	    send_len = count * source_dests[i].second.size();
-	    comm_mem.send_buf = (char *) malloc (send_len);
-
-	    for (int j = 0; j < source_dests[i].second.size(); j++)
-	    {
-		int dest_id = source_dests[i].second[j];
-		comm_mem.sendcounts[dest_id] = count;
-		comm_mem.sdispls[dest_id] = j * count;
-	    }
-	}
-    }
-
-    comm_mem.send_len = send_len;
-
-    int num_sources = 0;
-
-    for (int i = 0; i < source_dests.size(); i++)
-    {
-	for (int j = 0; j < source_dests[i].second.size(); j++)
-	{
-	    if (source_dests[i].second[j] == rank)
-	    {
-		int source_id = source_dests[i].first;
-		comm_mem.recvcounts[source_id] = count;
-		comm_mem.rdispls[source_id] = num_sources * count;
-		num_sources++;
-	    }
-	}
-    }
-
-    if (num_sources > 0) {
-	recv_len = num_sources * count;
-	comm_mem.recv_buf = (char *) malloc (recv_len);
-    }
-    comm_mem.recv_len = recv_len;
-
-    return num_sources;
-}
-
-void optiq_comm_mem_delete(struct optiq_comm_mem &comm_mem)
-{
-    free(comm_mem.sendcounts);
-    free(comm_mem.sdispls);
-    if (comm_mem.send_len > 0) {
-	free(comm_mem.send_buf);
-    }
-
-    free(comm_mem.recvcounts);
-    free(comm_mem.rdispls);
-    if (comm_mem.recv_len > 0) {
-	free(comm_mem.recv_buf);
-    }
-}
-
-void optiq_schedule_mem_destroy(struct optiq_schedule &schedule, struct optiq_pami_transport *pami_transport)
-{
-    size_t bytes;
-
-    pami_result_t result;
-
-    result = PAMI_Memregion_destroy (pami_transport->context, &schedule.send_mr.mr);
-    if (result != PAMI_SUCCESS)
-    {
-	printf("Destroy send_mr : No success\n");
-    }
-
-    result = PAMI_Memregion_destroy (pami_transport->context, &schedule.recv_mr.mr);
-    if (result != PAMI_SUCCESS)
-    {
-	printf("Destroy recv_mr : No success\n");
-    }
-}
-
-/* Register memory for sending and receiving and assign mem region for local_jobs*/
-void optiq_schedule_mem_reg (struct optiq_schedule &schedule, struct optiq_comm_mem &comm_mem, struct optiq_pami_transport *pami_transport)
-{
-    schedule.rdispls = comm_mem.rdispls;
-
-    size_t bytes;
-
-    pami_result_t result;
-
-    /* Register memory for sending data */
-    if (comm_mem.send_len > 0) 
-    {
-	result = PAMI_Memregion_create (pami_transport->context, comm_mem.send_buf, comm_mem.send_len, &bytes, &schedule.send_mr.mr);
-	schedule.send_mr.offset = 0;
-
-	if (result != PAMI_SUCCESS)
-	{
-	    printf("No success\n");
-	}
-	else if (bytes < comm_mem.send_len)
-	{
-	    printf("Registered less\n");
-	}
-    }
-
-    /* Assign mem region for local jobs */
-    int dest_rank;
-    for (int i = 0; i < schedule.local_jobs.size(); i++)
-    {
-	dest_rank = schedule.local_jobs[i].dest_rank;
-	schedule.local_jobs[i].send_mr = schedule.send_mr;
-	schedule.local_jobs[i].send_mr.offset = comm_mem.sdispls[dest_rank];
-    }
-
-    /* Create memory region for receiving data*/
-    if (comm_mem.recv_len > 0)
-    {
-	result = PAMI_Memregion_create (pami_transport->context, comm_mem.recv_buf, comm_mem.recv_len, &bytes, &schedule.recv_mr.mr);
-	schedule.recv_mr.offset = 0;
-
-	if (result != PAMI_SUCCESS)
-	{
-	    printf("No success\n");
-	}
-	else if (bytes < comm_mem.recv_len)
-	{
-	    printf("Registered less\n");
-	}
-    }
+    return chunk_size;
 }
 
 void gather_print_time(uint64_t start, uint64_t end, int iters, long int nbytes, int world_rank)
@@ -183,14 +53,6 @@ void gather_print_time(uint64_t start, uint64_t end, int iters, long int nbytes,
     }
 }
 
-void optiq_schedule_set(struct optiq_schedule &schedule, int num_jobs, int world_size)
-{
-    schedule.remaining_jobs = num_jobs;
-    schedule.expecting_length = schedule.recv_len;
-    schedule.sent_bytes = 0;
-    memset (schedule.recv_bytes, 0, sizeof (int) * world_size);
-}
-
 void optiq_schedule_execute(struct optiq_schedule &schedule, struct optiq_pami_transport *pami_transport)
 {
     MPI_Barrier (MPI_COMM_WORLD);
@@ -206,13 +68,6 @@ void optiq_schedule_execute(struct optiq_schedule &schedule, struct optiq_pami_t
     double max_t, t = (double)(t3 - t2)/1.6e3;
 
     gather_print_time(t2, t3, 1, schedule.recv_len, pami_transport->rank);
-}
-
-void optiq_schedule_assign_job_demand(std::vector<struct optiq_job> &local_jobs, int nbytes)
-{
-    for (int i = 0; i < local_jobs.size(); i++) {
-	local_jobs[i].buf_length = nbytes;
-    }
 }
 
 void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_ranks, int count, struct multibfs &bfs, struct optiq_pami_transport *pami_transport)
@@ -246,24 +101,25 @@ void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_
     optiq_schedule_add_paths (schedule, complete_paths);
     optiq_schedule_mem_reg (schedule, comm_mem, pami_transport);
 
-    int demand = 1024 * 1024;
-    int chunk_size = 256 * 1024;
-    schedule.recv_len = demand * num_sources;
-
-    /* Assign job size, chunk size and execute schedule */
-    optiq_schedule_assign_job_demand (schedule.local_jobs, demand);
-    optiq_schedule_split_jobs (pami_transport, schedule.local_jobs, chunk_size);
-
-    for (int i = 0; i < pami_transport->extra.send_headers.size(); i++)
+    for (int demand = count; demand <= count; demand *= 2)
     {
-	struct optiq_message_header *mh = pami_transport->extra.send_headers[i];
-	//printf ("Rank %d send %d bytes to %d using path_id = %d, original_offset = %d\n", pami_transport->rank, mh->length, mh->dest, mh->path_id, mh->original_offset);
+	schedule.recv_len = demand * num_sources;
+
+	/* Assign job size, chunk size and execute schedule */
+	optiq_schedule_assign_job_demand (schedule.local_jobs, demand);
+
+	for (int chunk_size = demand/4; chunk_size <= demand; chunk_size *= 2) 
+	{
+	    if (pami_transport->rank == 0) {
+		printf("demand = %d chunk_size = %d ", demand, chunk_size);
+	    }
+
+	    optiq_schedule_split_jobs (pami_transport, schedule.local_jobs, chunk_size);
+
+	    optiq_schedule_set (schedule, dest_ranks.size(), pami_transport->size);
+	    optiq_schedule_execute (schedule, pami_transport);
+	}
     }
-
-    MPI_Barrier (MPI_COMM_WORLD);
-
-    optiq_schedule_set (schedule, dest_ranks.size(), pami_transport->size);
-    optiq_schedule_execute (schedule, pami_transport);
 
     /*Deregister meme*/
     optiq_schedule_mem_destroy(schedule, pami_transport);
@@ -283,7 +139,7 @@ void test_cesm(int count, struct multibfs &bfs, struct optiq_pami_transport *pam
     optiq_cesm_gen (cpl, land, ice, ocn, atm, bfs.num_nodes);
 
     if (rank == 0) {
-        printf ("\nFrom Oceanto Coupler\n");
+	printf ("\nFrom Oceanto Coupler\n");
     }
 
     test_cesm_coupling(ocn, cpl, count, bfs, pami_transport);
@@ -340,7 +196,7 @@ int main(int argc, char **argv)
 	printf("num_dims = %d, num_nodes = %d\n", bfs.num_dims, bfs.num_nodes);
     }
 
-    int count = 1 * 1024 * 1024;
+    int count = 2 * 1024 * 1024;
 
     if (argc > 1) {
 	count = atoi (argv[1]) * 1024;
