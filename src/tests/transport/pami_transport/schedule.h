@@ -29,10 +29,14 @@ struct optiq_schedule {
     int remaining_jobs;
     int *next_dests;
 
+    int recv_len;
     int expecting_length;
 
     struct optiq_memregion recv_mr;
     struct optiq_memregion send_mr;
+
+    int num_sources;
+    int total_num_jobs;
 
     char *send_buf;
     int *sendcounts;
@@ -64,8 +68,6 @@ void optiq_schedule_finalize(struct optiq_schedule &schedule);
 void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
 
 void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths);
-
-void optiq_schedule_reg_memory (struct optiq_schedule &schedule);
 
 void optiq_schedule_print_jobs(struct optiq_schedule &schedule);
 

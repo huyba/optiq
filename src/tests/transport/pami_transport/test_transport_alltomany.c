@@ -215,7 +215,7 @@ int main(int argc, char **argv)
 
     uint64_t t1 = GetTimeBase();
 
-    optiq_schedule_create (schedule, complete_paths);
+    //optiq_schedule_create (schedule, complete_paths);
 
     for (int nbytes = 256*1024; nbytes <= count; nbytes *= 2)
     {
