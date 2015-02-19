@@ -1,0 +1,60 @@
+\section{Approaches}
+
+\subsection{Heuristic approaches}
+
+\subsubsection{Heuristic 1}
+In this approach, we search for paths to 
+
+Centric algorithm, run at every node. Need information in advance.
+
+%\begin{algorithm}[H]
+
+%\begin{algorithmic}
+%\KwData{Set of all pairs of source-destination \textit{s$_i$, d$_i$}, number of nodes \textit{n}}
+%\KwResult{A path for each pair of source-destination}
+
+%queue$<$struct path$>$ exploring\_paths;
+%queue$<$struct path$>$ complete\_paths;
+
+%Init:
+%\For {0 $<=$ i, j $<$ \textit{n}} {visisted[i][j] = false;}
+
+%\Function{add\_new\_path}{bool visited[][], int s$_i$, path op}
+%\For {each neighbor v of s$_i$} {\
+%        \If \({!visited[s$_i$][v]}\) {
+%            create an arc \textit{a<s$_i$, v>} \;
+%            create a path \textit{np = op} \;
+%            enqueue arc \textit{a} to \textit{np} \;
+%            enqueue \textit{np} to \textit{exploring\_paths} \;
+%            \If{t is one of the destinations of s$_i$} {
+%                enqueue \textit{np} to \textit{complete\_paths} \;
+%            }
+%            visited[s$_i$][v] = true \;
+%            break\;
+%        }
+%    }
+%\EndFunction
+
+
+%Main algorithm:\
+
+%\For{each source \textit{s$_i$}} {
+%	check\_and\_add\_new\_path(s$_i$, null)
+%    }
+%}
+
+%\While {(exploring\_path != empty)} {
+%    path p = exploring\_paths.pop() \;
+%    get the furthest point u of p \;
+%    check\_and\_add\_new\_path(s$_i$, p)
+%}
+
+%\caption{Heuristic Alg I: Exploring all paths}
+
+%\label{alg:h1}
+%\end{algorithmic}
+%\end{algorithm}
+
+In the \textbf{Algorithm \ref{alg:h1}}, we start by adding 
+
+\subsubsection{Heuristic 2}
