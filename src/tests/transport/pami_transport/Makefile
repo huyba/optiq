@@ -30,11 +30,11 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(ALG)/heuristics/manytomany.o $(CESM_COMM)/cesm.o $(ALG)/heuristics/multibfs.o schedule.o comm_mem.o
+OBJ = pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(ALG)/heuristics/manytomany.o $(CESM_COMM)/cesm.o $(ALG)/heuristics/multibfs.o schedule.o comm_mem.o patterns.o
 
 all: $(OBJ) mpi copy
 
-mpi: test_transport_alltomany.x test_transport_cesm.x
+mpi: test_transport_alltomany.x test_transport_cesm.x test_transport_patterns.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -53,4 +53,5 @@ realclean: clean
 copy:
 	cp test_transport_cesm.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/cesm/
 	cp test_transport_cesm.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/cesm/message_size
+	cp test_transport_patterns.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/patterns/
 	cp test_transport_alltomany.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/pami_transport/send_recv/
