@@ -104,6 +104,10 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
     /*Search for paths for each pair*/
     optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
 
+    if (pami_transport->rank == 0) {
+	optiq_path_print_stat(complete_paths, bfs.num_nodes);
+    }
+
     /*With the comm pattern, allocate memories, set offsets, displacements*/
     struct optiq_comm_mem comm_mem;
     int num_sources = optiq_comm_mem_allocate (source_dests, count, comm_mem, pami_transport->rank, pami_transport->size);
@@ -133,7 +137,7 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
 		printf("demand = %d chunk_size = %d ", demand, chunk_size);
 	    }
 
-	    optiq_schedule_split_jobs (pami_transport, schedule.local_jobs, chunk_size);
+	    optiq_schedule_split_jobs_multipaths (pami_transport, schedule.local_jobs, chunk_size);
 
 	    optiq_schedule_set (schedule, num_jobs, pami_transport->size);
 	    optiq_schedule_execute (schedule, pami_transport);
@@ -170,8 +174,8 @@ void test_patterns(int count, struct multibfs &bfs, struct optiq_pami_transport 
 	    printf ("\nDisjoint - Contigous - Source:Dest ratio : %d : 1 c1\n", ratio);
 	}
 
-	disjoint_contigous_highratio(bfs.num_nodes, sources, dests, source_dests, ratio);
-	test_coupling(source_dests, dests.size(), count, bfs, pami_transport);
+	disjoint_contigous (bfs.num_nodes, sources, dests, source_dests, ratio);
+	test_coupling (source_dests, dests.size(), count, bfs, pami_transport);
     }
 
     for (int i = 1; i <= 6; i++)

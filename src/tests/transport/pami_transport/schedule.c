@@ -85,6 +85,54 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
     }
 }
 
+void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size)
+{
+    bool done = false;
+
+    while(!done)
+    {
+        done = true;
+
+        for (int i = 0; i < jobs.size(); i++)
+        {
+            int nbytes = chunk_size;
+
+            if (jobs[i].buf_offset < jobs[i].buf_length) 
+            {
+                if (nbytes > jobs[i].buf_length - jobs[i].buf_offset) {
+                    nbytes = jobs[i].buf_length - jobs[i].buf_offset;
+                }
+
+                struct optiq_message_header *header = pami_transport->extra.message_headers.back();
+                pami_transport->extra.message_headers.pop_back();
+
+                header->length = nbytes;
+                header->source = jobs[i].source_rank;
+                header->dest = jobs[i].dest_rank;
+                header->path_id = jobs[i].paths[jobs[i].last_path_index]->path_id;
+		jobs[i].last_path_index = (jobs[i].last_path_index + 1) % jobs[i].paths.size();
+
+                memcpy(&header->mem, &jobs[i].send_mr, sizeof(struct optiq_memregion));
+                header->mem.offset = jobs[i].send_mr.offset + jobs[i].buf_offset;
+                header->original_offset = jobs[i].buf_offset;
+                jobs[i].buf_offset += nbytes;
+
+                pami_transport->extra.send_headers.push_back(header);
+
+                if (jobs[i].buf_offset < jobs[i].buf_length) {
+                    done = false;
+                }
+            }
+        }
+    }
+
+    /*Clean the jobs*/
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        jobs[i].buf_offset = 0;
+    }
+}
+
 void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths)
 {
     struct optiq_pami_transport *pami_transport = schedule.pami_transport;
@@ -114,6 +162,7 @@ void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<stru
             new_job.dest_rank = complete_paths[i]->arcs.back().v;
             new_job.paths.push_back(complete_paths[i]);
             new_job.buf_offset = 0;
+	    new_job.last_path_index = 0;
 
             schedule.local_jobs.push_back(new_job);
         }

@@ -20,9 +20,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../multibfs/datagen.h"
-#include "../multibfs/path.h"
-#include "../multibfs/job.h"
+#include "path.h"
+#include "job.h"
 
 using namespace std;
 
@@ -283,13 +282,8 @@ void print_jobs_stat(struct job *jobs, int num_jobs, int num_nodes)
     printf("max_hops = %d\n", max_hops);
 }
 
-int yen_k_shortest_paths(char *graphFile, int max_hops, int num_shortest_paths, char *kpathsFile)
+int yen_k_shortest_paths(char *graphFile, int max_hops, int num_shortest_paths, char *datFile)
 {
-    char *filePath = argv[1];
-    int max_hops = atoi(argv[2]);
-    int num_shortest_paths = atoi(argv[3]);
-    char *datFile = argv[4];
-
     int num_dims = 5;
     int size[5] = {2,4,4,8,2};
 
@@ -320,12 +314,12 @@ int yen_k_shortest_paths(char *graphFile, int max_hops, int num_shortest_paths, 
     myfile << ";\n\n";
 
     myfile << "set Arcs :=\n";
-    optiq_print_arcs_to_file(num_dims, size, -1, myfile);
+    //optiq_print_arcs_to_file(num_dims, size, -1, myfile);
     myfile << ";\n\n";
 
     myfile << "param Capacity :=\n";
     int capacity = 2048;
-    optiq_print_arcs_to_file(num_dims, size, 2048, myfile);
+    //optiq_print_arcs_to_file(num_dims, size, 2048, myfile);
     myfile << ";\n\n";
 
     int num_jobs = num_sources * num_dests;
@@ -346,7 +340,7 @@ int yen_k_shortest_paths(char *graphFile, int max_hops, int num_shortest_paths, 
 	    jobs[job_id].demand = demand;
 
 	    //get_Yen_k_distint_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
-	    get_Yen_k_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
+	    //get_Yen_k_shortest_paths(filePath, num_shortest_paths, &jobs[job_id], path_id);
 	    //get_most_h_hops_k_shortest_paths(filePath, max_hops, num_shortest_paths, &jobs[job_id], path_id);
 
 	    job_id++;
@@ -361,4 +355,18 @@ int yen_k_shortest_paths(char *graphFile, int max_hops, int num_shortest_paths, 
     printf("k shortest paths k = %d\n", num_shortest_paths);
     //printf("At most k shortest paths with max h hops k = %d, h = %d\n", num_shortest_paths, max_hops);
     print_jobs_stat(jobs, num_jobs, num_nodes);
+
+    return 0;
+}
+
+int main(int argc, char **argv)
+{
+    char *filePath = argv[1];
+    int max_hops = atoi(argv[2]);
+    int num_shortest_paths = atoi(argv[3]);
+    char *datFile = argv[4];
+
+    yen_k_shortest_paths(filePath, max_hops, num_shortest_paths, datFile);
+
+    return 0;
 }

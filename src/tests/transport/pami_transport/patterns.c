@@ -4,7 +4,7 @@
 
 #include "patterns.h"
 
-void disjoint_contigous_highratio(int num_nodes, std::vector<int> &sources, std::vector<int> &dests, std::vector<std::pair<int, std::vector<int> > > &source_dests, int ratio)
+void disjoint_contigous (int num_nodes, std::vector<int> &sources, std::vector<int> &dests, std::vector<std::pair<int, std::vector<int> > > &source_dests, int ratio)
 {
     if (! (ratio == 1 || ratio == 3 || ratio == 7)) {
 	printf("Not accepted ratio\n");

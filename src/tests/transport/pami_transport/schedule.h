@@ -19,6 +19,7 @@ struct optiq_job {
     int buf_offset;
     int buf_length;
     std::vector<struct path *> paths;
+    int last_path_index;
 };
 
 struct optiq_schedule {
@@ -67,6 +68,8 @@ void optiq_schedule_init(struct optiq_schedule &schedule);
 void optiq_schedule_finalize(struct optiq_schedule &schedule);
 
 void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
+
+void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
 
 void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths);
 
