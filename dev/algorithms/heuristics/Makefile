@@ -9,7 +9,7 @@ ifeq ($(COMPILER),GNU)
 endif
 
 ifeq ($(COMPILER),XL)
-  CC      = mpixlcxx
+  CC      = mpicxx
   COPT    = -g -O3 #-DDEBUG
   LD	  = mpixlc_r
 endif
@@ -32,9 +32,9 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/util.o $(STRUCTURE)/path.o $(STRUCTURE)/heap_path.o $(TOPOLOGY)/topology.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/YenTopKShortestPathsAlg.o
+OBJ =
 
-all: $(OBJ) alltomany.o manytomany.o multipaths.o
+all: manytomany.o alltomany.o multipaths.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -42,8 +42,7 @@ all: $(OBJ) alltomany.o manytomany.o multipaths.o
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clean: $(OBJ)
-	rm $(OBJ)
+clean:
 	rm *.o
 
 realclean: clean

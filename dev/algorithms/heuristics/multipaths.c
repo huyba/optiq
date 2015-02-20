@@ -1,46 +1,29 @@
+#include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "multibfs.h"
 #include "multipaths.h"
+#include "yen.h"
 
-#include "Graph.h"
-#include "YenTopKShortestPathsAlg.h"
-
-void optiq_alg_heuristic_search_kpaths(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > source_dests, struct multibfs *bfs, int num_paths, char *graphFilePath)
+void optiq_graph_print_graph(struct multibfs &bfs, int cost, char *filePath)
 {
-    Graph my_graph(graphFilePath);
+    std::ofstream myfile;
+    myfile.open (filePath);
+    myfile << bfs.num_nodes << "\n\n";
 
-    for (int i = 0; i < source_dests.size(); i++)
+    for (int i = 0; i < bfs.num_nodes; i++)
     {
-	int source_rank = source_dests[i].first;
-
-	for (int j = 0; j < source_dests[i].second.size(); j++)
+	for (int j = 0; j < bfs.neighbors[i].size(); j++)
 	{
-	    int dest_rank = source_dests[i].second[j];
-
-	    YenTopKShortestPathsAlg yenAlg (my_graph, my_graph.get_vertex(source_rank), my_graph.get_vertex(dest_rank));
-
-	    int k = 0;
-	    while (yenAlg.has_next() && k < num_paths)
-	    {
-		BasePath *p = yenAlg.next();
-
-		struct path *pa = (struct path *) calloc (1, sizeof(struct path));
-
-		for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
-		{
-		    struct arc a;
-
-		    a.u = p->m_vtVertexList[j]->getID();
-		    a.v = p->m_vtVertexList[j + 1]->getID();
-
-		    pa->arcs.push_back(a);
-		}
-
-		complete_paths.push_back(pa);
-		k++;
-	    }
+	    myfile << i << " " << bfs.neighbors[i][j] << " " << cost << "\n";
 	}
     }
 
-    for (int i = 0; i < complete_paths.size(); i++) {
-	complete_paths[i]->path_id = i;
-    }
+    myfile.close();
+}
+
+void optiq_alg_heuristic_search_kpaths(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > source_dests, int num_paths, char *graphFilePath)
+{
+    get_yen_k_shortest_paths(complete_paths, source_dests, num_paths, graphFilePath);
 }

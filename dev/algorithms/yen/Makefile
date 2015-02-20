@@ -8,11 +8,11 @@ ifeq ($(COMPILER),GNU)
 endif
 
 ifeq ($(COMPILER),XL)
-  CC      = mpixlcxx
+  CC      = mpicxx
   COPT    = -g -O3 #-DDEBUG
 endif
 
-LD      = mpixlcxx_r
+LD      = mpixlc_r
 
 DEV = ../..
 UTIL = $(DEV)/util
@@ -23,9 +23,12 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(STRUCT)/path.o $(STRUCT)/job.o $(UTIL)/util.o YenTopKShortestPathsAlg.o Graph.o DijkstraShortestPathAlg.o
+OBJ = $(STRUCT)/path.o $(STRUCT)/job.o $(UTIL)/util.o YenTopKShortestPathsAlg.o Graph.o DijkstraShortestPathAlg.o yen.o
 
-all: $(OBJ) yen.x
+all: optiq YenTopKShortestPathsAlg.o Graph.o DijkstraShortestPathAlg.o yen.o test.x
+
+optiq:
+	cd $(DEV)/structures && $(MAKE) -f Makefile
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -1,5 +1,5 @@
 ifndef COMPILER
-    COMPILER = gxx#XL
+    COMPILER = XL
 endif
 
 ifeq ($(COMPILER),gxx)
@@ -23,14 +23,16 @@ endif
 MPICH2_PATH=/usr/local/mpich2
 
 OPTIQ = ../../..
-UTIL = $(OPTIQ)/dev/util
-TOPOLOGY = $(OPTIQ)/dev/topology
-STRUCTURE = $(OPTIQ)/dev/structures
-HEURISTICS = $(OPTIQ)/dev/algorithms/heuristics
+DEV = $(OPTIQ)/dev
+UTIL = $(DEV)/util
+TOPOLOGY = $(DEV)/topology
+STRUCTURE = $(DEV)/structures
+HEURISTICS = $(DEV)/algorithms/heuristics
 CESM = $(OPTIQ)/apps/cesm
 CESM_COMM = $(CESM)/comm_graph
+YEN = $(DEV)/algorithms/yen
 
-INCLUDE = -I. -I$(UTIL) -I$(TOPOLOGY) -I$(STRUCTURE) -I$(HEURISTICS) -I$(CESM_COMM)
+INCLUDE = -I. -I$(UTIL) -I$(TOPOLOGY) -I$(STRUCTURE) -I$(HEURISTICS) -I$(CESM_COMM) -I$(YEN)
 
 CFLAGS = $(COPT) $(INCLUDE)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
@@ -41,19 +43,25 @@ INCLUDE += -I$(MPICH2_PATH)/include
 
 LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
-OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/alltomany.o $(HEURISTICS)/manytomany.o $(HEURISTICS)/multibfs.o $(CESM_COMM)/cesm.o
+YEN_OBJ = $(YEN)/yen.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/YenTopKShortestPathsAlg.o
 
-all: $(OBJ) test_cesm.x test_alltomany.x test_manytomany.x copy
+OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/alltomany.o $(HEURISTICS)/manytomany.o $(HEURISTICS)/multibfs.o $(CESM_COMM)/cesm.o $(HEURISTICS)/multipaths.o
+
+all: $(OBJ) yen test_cesm.x test_alltomany.x test_manytomany.x test_multipaths.x copy
+
+yen:
+	cd $(YEN)/ && $(MAKE) -f Makefile
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o
-	$(LD) $(OBJ) $< $(LIBS) -o $@
+	$(LD) $(OBJ) $(YEN_OBJ) $< $(LIBS) -o $@
 
 copy:
 	cp test_alltomany.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/multibfs/
 	cp test_manytomany.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/multibfs/
+	cp test_multipaths.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/multibfs/
 
 clean:
 	rm $(OBJ)

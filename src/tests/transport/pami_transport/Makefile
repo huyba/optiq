@@ -22,25 +22,31 @@ STRUCT = $(DEV)/structures
 ALG = $(DEV)/algorithms
 CESM = $(OPTIQ)/apps/cesm
 CESM_COMM = $(CESM)/comm_graph
+YEN = $(ALG)/yen
 
-INCLUDE = -I. -I$(UTIL) -I$(TOPO)/ -I$(STRUCT) -I$(ALG)/heuristics/ -I$(CESM_COMM)
+INCLUDE = -I. -I$(UTIL) -I$(TOPO)/ -I$(STRUCT) -I$(ALG)/heuristics/ -I$(CESM_COMM) -I$(YEN)
 
 CFLAGS = $(COPT) $(INCLUDE) 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(ALG)/heuristics/manytomany.o $(CESM_COMM)/cesm.o $(ALG)/heuristics/multibfs.o schedule.o comm_mem.o patterns.o
+YEN_OBJ = $(YEN)/yen.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/YenTopKShortestPathsAlg.o
 
-all: $(OBJ) mpi copy
+OBJ = pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(ALG)/heuristics/manytomany.o $(CESM_COMM)/cesm.o $(ALG)/heuristics/multibfs.o schedule.o comm_mem.o patterns.o $(ALG)/heuristics/multipaths.o
+
+all: $(OBJ) yen mpi copy
 
 mpi: test_transport_alltomany.x test_transport_cesm.x test_transport_patterns.x
+
+yen:
+	cd $(YEN)/ && $(MAKE) -f Makefile
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.x: %.o $(OBJ)
-	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
+%.x: %.o $(OBJ) $(YEN_OBJ)
+	$(LD) $< $(OBJ) $(YEN_OBJ) -o $@ $(LDFLAGS)
 
 clean:
 	rm $(OBJ) *.x *.o

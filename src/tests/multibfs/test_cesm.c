@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     source_dests.clear();
 
     //gen_source_dests_test(source_dests, bfs);
-    optiq_cesm_gen_ice_cpl(source_dests, bfs);
+    optiq_cesm_gen_ice_cpl(source_dests, bfs.num_nodes);
 
     std::vector<struct path *> complete_paths;
     complete_paths.clear();

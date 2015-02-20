@@ -3,10 +3,11 @@
 #include <vector>
 #include <string>
 #include <math.h>
-
+#include <unistd.h>
 #include <mpi.h>
 
 #include "manytomany.h"
+#include "multipaths.h"
 #include "topology.h"
 #include "pami_transport.h"
 #include "comm_mem.h"
@@ -15,6 +16,8 @@
 #include "patterns.h"
 
 using namespace std;
+
+char *graphFilePath;
 
 int get_chunk_size(int num_nodes, int message_size)
 {
@@ -102,7 +105,9 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
     complete_paths.clear();
 
     /*Search for paths for each pair*/
-    optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
+    //optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
+    int k = 3;
+    optiq_alg_heuristic_search_kpaths(complete_paths, source_dests, k, graphFilePath);
 
     if (pami_transport->rank == 0) {
 	optiq_path_print_stat(complete_paths, bfs.num_nodes);
@@ -245,6 +250,17 @@ int main(int argc, char **argv)
 
     optiq_pami_init_extra (pami_transport);
     optiq_pami_init (pami_transport);
+
+    graphFilePath = "graph";
+
+    if (world_rank == 0) {
+	int cost = 1;
+        optiq_graph_print_graph (bfs, cost, graphFilePath);
+    }
+
+    sleep(10);
+
+    MPI_Barrier (MPI_COMM_WORLD);
 
     test_patterns (count, bfs, pami_transport);
 
