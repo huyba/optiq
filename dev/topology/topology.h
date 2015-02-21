@@ -11,16 +11,18 @@
 
 struct topology {
     int num_dims;
-    int *size;
-    int *torus;
-    int *order;
     int num_nodes;
     int num_edges;
 
-    int **coords;
-    std::vector<int> *neighbors;
-    int **all_coords;
+    int size[5];
+    int torus[5];
+    int order[5];
 
+    int **coords;
+    int **all_coords;
+    std::vector<int> *neighbors;
+
+    int world_rank;
     int world_size;
     int num_ranks_per_node;
 };
@@ -40,6 +42,10 @@ int optiq_topology_compute_node_id(int num_dims, int *size, int *coord);
 int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors);
 
 std::vector<int> * optiq_topology_get_all_nodes_neighbors(int num_dims, int *size);
+
+int** optiq_topology_get_all_coords (int num_dims, int *size);
+
+void optiq_topology_get_torus(int *torus);
 
 void optiq_topology_compute_routing_order_bgq(int num_dims, int *size, int *order);
 

@@ -31,6 +31,17 @@ void optiq_topology_print_graph(struct topology *topo, int cost)
     }
 }
 
+/*
+ * Will init the topology with:
+ *  1. num_dims
+ *  2. size
+ *  3. num_nodes
+ *  4. num_edges
+ *  5. neighbors's node ids
+ *  6. torus
+ *  7. routing order
+ *  8. coords of all nodes.
+ * */
 void optiq_topology_init()
 {
     int num_dims = 5;
@@ -54,6 +65,12 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct topology *t
     for (int i = 0; i < num_nodes; i++) {
 	topo->num_edges += topo->neighbors[i].size();
     }
+
+    optiq_topology_get_torus(topo->torus);
+
+    optiq_topology_compute_routing_order_bgq(topo->num_dims, topo->size, topo->order);
+
+    topo->all_coords = optiq_topology_get_all_coords (topo->num_dims, topo->size);
 }
 
 int optiq_topology_get_node_id(int world_rank)
@@ -202,6 +219,21 @@ std::vector<int> * optiq_topology_get_all_nodes_neighbors(int num_dims, int *siz
     }
 
     return all_nodes_neighbors;
+}
+
+void optiq_topology_get_torus(int *torus)
+{
+#ifdef __bgq__
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
+
+    uint64_t Nflags = pers.Network_Config.NetFlags;
+    if (Nflags & ND_ENABLE_TORUS_DIM_A) torus[0] = 1; else torus[0] = 0;
+    if (Nflags & ND_ENABLE_TORUS_DIM_B) torus[1] = 1; else torus[1] = 0;
+    if (Nflags & ND_ENABLE_TORUS_DIM_C) torus[2] = 1; else torus[2] = 0;
+    if (Nflags & ND_ENABLE_TORUS_DIM_D) torus[3] = 1; else torus[3] = 0;
+    if (Nflags & ND_ENABLE_TORUS_DIM_E) torus[4] = 1; else torus[4] = 0;
+#endif
 }
 
 void optiq_topology_move_along_one_dimension_bgq(int num_dims, int *size, int *source, int routing_dimension, int num_hops, int direction, int **path)
