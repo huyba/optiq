@@ -12,11 +12,14 @@
 struct topology {
     int num_dims;
     int *size;
+    int *torus;
+    int *order;
     int num_nodes;
     int num_edges;
 
     int **coords;
     std::vector<int> *neighbors;
+    int **all_coords;
 
     int world_size;
     int num_ranks_per_node;

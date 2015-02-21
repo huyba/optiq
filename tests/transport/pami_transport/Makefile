@@ -14,7 +14,7 @@ endif
 
 LD      = mpixlc_r
 
-OPTIQ = ../../../..
+OPTIQ = ../../../
 DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
 TOPO = $(DEV)/topology

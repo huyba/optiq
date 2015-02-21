@@ -15,17 +15,18 @@ endif
 LD      = mpixlc_r
 
 UTIL = ../util
+STRUCT = ../structures
 
-CFLAGS  = $(COPT) -I. -I$(UTIL)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/util.o
+OBJ = $(UTIL)/util.o $(STRUCT)/path.o
 
-all: $(OBJ) topology.o
+all: $(OBJ) topology.o pathreconstruct.o
 
-%.o: %.c $(OBJ)
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o $(OBJ)

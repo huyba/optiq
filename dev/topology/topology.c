@@ -128,6 +128,45 @@ int optiq_compute_neighbors(int num_dims, int *size, int *coord, int *neighbors)
     return num_neighbors;
 }
 
+int** optiq_topology_get_all_coords (int num_dims, int *size)
+{
+    int num_nodes = 1;
+    for (int i = 0; i < num_dims; i++) {
+        num_nodes *= size[i];
+    }
+
+    int **all_coords = (int **)malloc(sizeof(int *) * num_nodes);
+    for (int i = 0; i < num_nodes; i++) {
+        all_coords[i] = (int *)malloc(sizeof(int) * num_dims);
+        for (int j = 0; j < num_dims; j++) {
+            all_coords[i][j] = 0;
+        }
+    }
+
+    int coord[5], nid = 0;
+    for (int ad = 0; ad < size[0]; ad++) {
+        coord[0] = ad;
+        for (int bd = 0; bd < size[1]; bd++) {
+            coord[1] = bd;
+            for (int cd = 0; cd < size[2]; cd++) {
+                coord[2] = cd;
+                for (int dd = 0; dd < size[3]; dd++) {
+                    coord[3] = dd;
+                    for (int ed = 0; ed < size[4]; ed++) {
+                        coord[4] = ed;
+                        nid = optiq_topology_compute_node_id(num_dims, size, coord);
+                        for (int i = 0; i < num_dims; i++) {
+                            all_coords[nid][i] = coord[i];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return all_coords;
+}
+
 std::vector<int> * optiq_topology_get_all_nodes_neighbors(int num_dims, int *size)
 {
     int num_nodes = 1;

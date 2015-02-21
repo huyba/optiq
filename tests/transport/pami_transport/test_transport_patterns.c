@@ -106,7 +106,7 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
 
     /*Search for paths for each pair*/
     //optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
-    int k = 3;
+    int k = 2;
     optiq_alg_heuristic_search_kpaths(complete_paths, source_dests, k, graphFilePath);
 
     if (pami_transport->rank == 0) {

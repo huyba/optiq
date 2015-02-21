@@ -19,7 +19,7 @@ LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
 OBJ = datagen.o $(UTIL)/util.o $(TOPOLOGY)/topology.o
 
-all: $(OBJ) patterngen.x pathreconstruct.x multibfs.x
+all: $(OBJ) patterngen.x  multibfs.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
