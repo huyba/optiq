@@ -28,11 +28,11 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/path.o $(PAT)/patterns.o $(PAT)/cesm.o
+OBJ = $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/path.o $(PAT)/patterns.o $(PAT)/cesm.o $(TOPO)/pathreconstruct.o
 
 all: $(OBJ) mpi copy
 
-mpi: test_pathreconstruct.x
+mpi: test_pathreconstruct.x test_topology.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -49,3 +49,5 @@ realclean: clean
 	$(RM) $(RMFLAGS) $(libobj)
 
 copy:
+	cp test_pathreconstruct.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/topology
+	cp test_topology.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/topology
