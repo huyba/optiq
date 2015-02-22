@@ -1,13 +1,39 @@
-#ifndef OPTIQ_PAMI_TRANSPORT
-#define OPTIQ_PAMI_TRANSPORT
+#ifndef OPTIQ_PAMI_TRANSPORT_H
+#define OPTIQ_PAMI_TRANSPORT_H
 
 #include <vector>
+
+#ifdef __bgq__
+
+#include <spi/include/kernel/location.h>
+#include <spi/include/kernel/process.h>
+#include <firmware/include/personality.h>
 #include <pami.h>
+
+#endif
+
+#include "optiq_struct.h"
+#include "schedule.h"
 
 #define OPTIQ_MEM_REQUEST 0
 #define OPTIQ_MEM_RESPONSE 1
 
-#define OPTIQ_RPUT_DONE 11
+#define MR_DESTINATION_REQUEST 9
+#define MR_FORWARD_REQUEST 10
+#define MR_RESPONSE 11
+#define OPTIQ_RPUT_DONE 12
+#define RECV_MESSAGE 13
+#define JOB_DONE 14
+
+#define OPTIQ_NUM_RPUT_COOKIES (1024 * 1024)
+#define OPTIQ_NUM_MESSAGE_HEADERS (1024* 1024)
+
+#define MAX_SHORT_MESSAGE_LENGTH 128
+
+#define OPTIQ_FORWARD_BUFFER_SIZE (256 * 1024 * 1024)
+
+struct optiq_pami_transport;
+struct optiq_schedule;
 
 struct optiq_mem_request {
     int source_rank;
