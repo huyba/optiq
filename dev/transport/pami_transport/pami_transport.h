@@ -22,8 +22,9 @@
 #define MR_FORWARD_REQUEST 10
 #define MR_RESPONSE 11
 #define OPTIQ_RPUT_DONE 12
-#define RECV_MESSAGE 13
-#define JOB_DONE 14
+#define RPUT_DONE 13
+#define RECV_MESSAGE 14
+#define JOB_DONE 15
 
 #define OPTIQ_NUM_RPUT_COOKIES (1024 * 1024)
 #define OPTIQ_NUM_MESSAGE_HEADERS (1024* 1024)
@@ -47,6 +48,28 @@ struct optiq_mem_response {
     int message_id;
 };
 
+struct optiq_rput_cookie {
+    struct optiq_pami_transport *pami_transport;
+    struct optiq_message_header *message_header;
+    int dest;
+};
+
+struct optiq_transport_info {
+    struct optiq_memregion *forward_mr;
+
+    std::vector<struct optiq_rput_cookie *> rput_cookies;
+    std::vector<struct optiq_rput_cookie *> complete_rputs;
+
+    std::vector<struct optiq_message_header *> forward_headers;
+    std::vector<struct optiq_message_header *> message_headers;
+    std::vector<struct optiq_message_header *> send_headers;
+    std::vector<struct optiq_message_header *> processing_headers;
+
+    std::vector<struct optiq_memregion> mr_responses;
+
+    int global_header_id;
+};
+
 struct optiq_pami_transport {
     int rank;
     int size;
@@ -55,16 +78,20 @@ struct optiq_pami_transport {
     pami_context_t context;
     pami_endpoint_t *endpoints;
 
-    std::vector<struct optiq_mem_request> mem_requests;
-    std::vector<struct optiq_mem_response> mem_responses;
-
     int message_id;
     std::vector<int> rput_done;
+
+    struct optiq_transport_info transport_info;
+    struct optiq_schedule *sched;
 };
 
 extern "C" struct optiq_pami_transport *pami_transport;
 
-void optiq_pami_transport_init();
+void optiq_pami_transport_init(struct optiq_pami_transport *pami_transport);
+
+void optiq_transport_info_init(struct optiq_transport_info &transport_info);
+
+void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport);
 
 int optiq_pami_transport_finalize();
 
@@ -76,6 +103,8 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
 
 int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint);
 
+int optiq_pami_send(pami_context_t context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t endpoint, void *cookie);
+
 int optiq_pami_transport_send(void *buf, int count, int dest);
 
 int optiq_pami_transport_recv(void *buf, int count, int source);
@@ -83,16 +112,6 @@ int optiq_pami_transport_recv(void *buf, int count, int source);
 int optiq_pami_transport_rput(void *local_buf, int rput_bytes, int local_rank, void *remote_buf, int remote_rank);
 
 void optiq_recv_mr_response_fn (
-        pami_context_t    context,      /**< IN: PAMI context */
-        void            *cookie,       /**< IN: dispatch cookie */
-        const void      *header,       /**< IN: header address */
-        size_t            header_size,  /**< IN: header size */
-        const void      *data,         /**< IN: address of PAMI pipe buffer */
-        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
-        pami_endpoint_t   origin,
-        pami_recv_t     *recv);        /**< OUT: receive message structure */
-
-void optiq_recv_mr_request_fn (
         pami_context_t    context,      /**< IN: PAMI context */
         void            *cookie,       /**< IN: dispatch cookie */
         const void      *header,       /**< IN: header address */
@@ -111,5 +130,46 @@ void optiq_recv_rput_done_fn (
         size_t            data_size,    /**< IN: size of PAMI pipe buffer */
         pami_endpoint_t   origin,
         pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_mr_forward_request_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_mr_destination_request_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_job_done_notification_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_rput_done_notification_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
 
 #endif
