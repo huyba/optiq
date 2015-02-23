@@ -61,10 +61,36 @@ void optiq_pami_transport_init()
     pami_dispatch_callback_function fn;
     pami_dispatch_hint_t options = {};
 
-    /*Receive memory response*/
+    /*Receive memory request*/
+    fn.p2p = optiq_recv_mem_request_fn;
+    result = PAMI_Dispatch_set (pami_transport->context,
+            OPTIQ_MEM_REQUEST,
+            fn,
+            (void *) pami_transport,
+            options);
+
+    assert(result == PAMI_SUCCESS);
+    if (result != PAMI_SUCCESS) {
+        return;
+    }
+
+    /*Receive memory response - for general rput/send*/
+    fn.p2p = optiq_recv_mem_response_fn;
+    result = PAMI_Dispatch_set (pami_transport->context,
+            OPTIQ_MEM_RESPONSE,
+            fn,
+            (void *) pami_transport,
+            options);
+
+    assert(result == PAMI_SUCCESS);
+    if (result != PAMI_SUCCESS) {
+        return;
+    }
+
+    /*Receive memory response - for forwarding/destination request*/
     fn.p2p = optiq_recv_mr_response_fn;
     result = PAMI_Dispatch_set (pami_transport->context,
-	    OPTIQ_MEM_RESPONSE,
+	    MR_RESPONSE,
 	    fn,
 	    (void *) pami_transport,
 	    options);
@@ -137,7 +163,46 @@ void optiq_pami_transport_init()
     }
 
     /*Other initialization*/
-    pami_transport->message_id = 0;
+}
+
+void optiq_transport_info_init(struct optiq_pami_transport *pami_transport)
+{
+    int num_rput_cookies = OPTIQ_NUM_RPUT_COOKIES;
+    int num_message_headers = OPTIQ_NUM_MESSAGE_HEADERS;
+
+    /*Allocate memory for rput cookies*/
+    for (int i = 0; i < num_rput_cookies; i++)
+    {
+        struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)calloc(1, sizeof(struct optiq_rput_cookie));
+        rput_cookie->pami_transport = pami_transport;
+        pami_transport->transport_info.rput_cookies.push_back(rput_cookie);
+    }
+
+    /*Allocate memory for message headers*/
+    for (int i = 0; i < num_message_headers; i++)
+    {
+        struct optiq_message_header *message_header = (struct optiq_message_header *)calloc(1, sizeof(struct optiq_message_header));
+        pami_transport->transport_info.message_headers.push_back(message_header);
+    }
+
+    /*Allocate and register forward memory*/
+    int forward_buf_size = OPTIQ_FORWARD_BUFFER_SIZE;
+    char *forward_buf = (char *) malloc (forward_buf_size);
+    struct optiq_memregion *forward_mr = (struct optiq_memregion *) calloc (1, sizeof(struct optiq_memregion));
+
+    size_t bytes;
+    pami_result_t result = PAMI_Memregion_create (pami_transport->context, forward_buf, forward_buf_size, &bytes, &forward_mr->mr);
+
+    if (result != PAMI_SUCCESS) {
+        printf("No success\n");
+    } else if (bytes < forward_buf_size) {
+        printf("Registered less\n");
+    }
+
+    pami_transport->transport_info.forward_buf = forward_buf;
+    pami_transport->transport_info.forward_mr = forward_mr;
+    pami_transport->transport_info.forward_mr->offset = 0;
+    pami_transport->transport_info.global_header_id = 0;
 }
 
 struct optiq_pami_transport* optiq_pami_transport_get()
@@ -212,10 +277,21 @@ int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *heade
 
 int optiq_pami_transport_send (void *send_buf, int send_bytes, int dest_rank)
 {
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+
+    struct optiq_mem_request request;
+    request.message_id = pami_transport->transport_info.global_header_id;
+    pami_transport->transport_info.global_header_id = (pami_transport->transport_info.global_header_id++) % INT_MAX;
+    request.length = send_bytes;
+    request.source_id = pami_transport->rank;
+
+    /*Request a memory region from sender side*/
+    optiq_pami_send_immediate(pami_transport->context, OPTIQ_MEM_REQUEST, NULL, 0, &request, sizeof (struct optiq_mem_request), pami_transport->endpoints[dest_rank])
+
     int ret = 0;
 
     size_t bytes;
-    pami_memregion_t send_mr;
+    struct optiq_mem_region send_mr;
     int send_offset = 0;
 
     /*Register its own memory*/
@@ -227,16 +303,16 @@ int optiq_pami_transport_send (void *send_buf, int send_bytes, int dest_rank)
     }
 
     /*Wait until there is a mem region for it*/
-    struct optiq_mem_response *response;
+    struct optiq_mem_response response;
     bool found = false;
 
     while (!found) {
 	PAMI_Context_advance (pami_transport->context, 100);
 
-	for (int i = 0; i < pami_transport->transport_info.mr_responses.size(); i++) {
-	    if (pami_transport->transport_info.mr_responses[i].dest_rank == dest_rank) {
-		response = pami_transport->transport_info.mr_responses[i];
-		pami_transport->transport_info.mr_responses.erase (pami_transport->transport_info.mr_responses.begin() + i);
+	for (int i = 0; i < pami_transport->transport_info.mem_responses.size(); i++) {
+	    if (pami_transport->transport_info.mem_responses[i].message_id == request.message_id) {
+		response = pami_transport->transport_info.mem_responses[i];
+		pami_transport->transport_info.mem_responses.erase (pami_transport->transport_info.mem_responses.begin() + i);
 		found = true;
 
 		break;
@@ -268,18 +344,37 @@ int optiq_pami_transport_send (void *send_buf, int send_bytes, int dest_rank)
 
 int optiq_pami_transport_recv (void *recv_buf, int recv_bytes, int source_rank)
 {
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+
+    struct optiq_mem_request request;
+    bool found = false;
+
+    while (!found) 
+    {
+        PAMI_Context_advance (pami_transport->context, 100);
+
+	for (int i = 0; i < pami_transport->transport_info.mem_requests.size(); i++)
+	{
+	    if (pami_transport->transport_info.mem_requests[i].dest_rank == source_rank && pami_transport->transport_info.mem_requests[i].length = recv_bytes) 
+	    {
+		request = pami_transport->transport_info.mem_requests[i];
+		found = true;
+		break;
+	    }
+	}
+    }
+
     int ret = 0;
 
     size_t bytes;
 
-    /*Send the mem region back to the dest*/
+    /* Send the mem region back to the dest */
     struct optiq_mem_response response;
     response.dest_rank = pami_transport->rank;
     response.offset = 0;
-    response.message_id = pami_transport->message_id;
-    pami_transport->message_id = (pami_transport->message_id++) % INT_MAX;
+    response.message_id = request.message_id;
 
-    /*Register for its own mem region*/
+    /* Register for its own mem region */
     pami_result_t result = PAMI_Memregion_create (pami_transport->context, recv_buf, recv_bytes, &bytes, &response.mr);
     if (result != PAMI_SUCCESS) {
 	printf("No success\n");
@@ -289,14 +384,17 @@ int optiq_pami_transport_recv (void *recv_buf, int recv_bytes, int source_rank)
 
     optiq_pami_send_immediate (pami_transport->context, OPTIQ_MEM_RESPONSE, NULL, NULL, &response, sizeof(struct optiq_mem_response), pami_transport->endpoints[source_rank]);
 
-    /*Wait until put is done*/
+    /* Wait until put is done */
     bool done = false;
 
-    while (!done) {
+    while (!done) 
+    {
 	PAMI_Context_advance (pami_transport->context, 100);
 
-	for (int i = 0; i < pami_transport->rput_done.size(); i++) {
-	    if (pami_transport->rput_done[i] == response.message_id) {
+	for (int i = 0; i < pami_transport->rput_done.size(); i++) 
+	{
+	    if (pami_transport->rput_done[i] == response.message_id) 
+	    {
 		done = true;
 		pami_transport->rput_done.erase(pami_transport->rput_done.begin() + i);
 
@@ -336,11 +434,14 @@ int optiq_pami_transport_rput(void *local_buf, int rput_bytes, int local_rank, v
 	struct optiq_mem_response response;
 	bool found = false;
 
-	while (!found) {
+	while (!found) 
+	{
 	    PAMI_Context_advance (pami_transport->context, 100);
 
-	    for (int i = 0; i < pami_transport->transport_info.mr_responses.size(); i++) {
-		if (pami_transport->transport_info.mr_responses[i].dest_rank == remote_rank) {
+	    for (int i = 0; i < pami_transport->transport_info.mem_responses.size(); i++) 
+	    {
+		if (pami_transport->transport_info.mem_responses[i].dest_rank == remote_rank)
+		{
 		    response = pami_transport->transport_info.mr_responses[i];
 		    pami_transport->transport_info.mr_responses.erase (pami_transport->transport_info.mr_responses.begin() + i);
 		    found = true;
@@ -361,8 +462,7 @@ int optiq_pami_transport_rput(void *local_buf, int rput_bytes, int local_rank, v
 	}
 
 	/*Notify that the rput is done*/
-	optiq_pami_send_immediate (pami_transport->context, OPTIQ_RPUT_DONE, NULL, NULL, &response->message_id, sizeof(int), pami_transport->
-		endpoints[remote_rank]);
+	optiq_pami_send_immediate (pami_transport->context, OPTIQ_RPUT_DONE, NULL, NULL, &response->message_id, sizeof(int), pami_transport->endpoints[remote_rank]);
 
 	/*Destroy the memregion was used*/
 	result = PAMI_Memregion_destroy (pami_transport->context, &send_mr);
@@ -375,12 +475,12 @@ int optiq_pami_transport_rput(void *local_buf, int rput_bytes, int local_rank, v
     {
 	size_t bytes;
 
-	/*Send the mem region back to the dest*/
+	/* Send the mem region back to the dest */
 	struct optiq_mem_response response;
 	response.dest_rank = pami_transport->rank;
 	response.offset = 0;
-	response.message_id = pami_transport->message_id;
-	pami_transport->message_id = (pami_transport->message_id++) % INT_MAX;
+	response.message_id = pami_transport->transport_info.global_header_id;
+	pami_transport->transport_info.global_header_id = (pami_transport->transport_info.global_header_id++) % INT_MAX;
 
 	/*Register for its own mem region*/
 	pami_result_t result = PAMI_Memregion_create (pami_transport->context, remote_buf, rput_bytes, &bytes, &response.mr);
@@ -418,34 +518,26 @@ int optiq_pami_transport_rput(void *local_buf, int rput_bytes, int local_rank, v
     return ret;
 }
 
-int optiq_pami_transport_finalize()
+void optiq_recv_mem_request_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
-    struct optiq_pami_transport* pami_transport = optiq_pami_transport_get();
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    /* Free memory */
-    free(pami_transport->endpoints);
+    pami_transport->transport_info.mem_requests.push_back(*(struct optiq_memregion *)data);
+}
 
-    /* Destroy context */
-    pami_result_t result;
-    result = PAMI_Context_destroyv(&pami_transport->context, pami_transport->num_contexts);
-    if (result != PAMI_SUCCESS)
-    {
-	fprintf (stderr, "Error. Unable to destroy pami context. result = %d\n", result);
-	return 1;
-    }
+void optiq_recv_mem_response_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    /* Destroy client */
-    result = PAMI_Client_destroy(&pami_transport->client);
-    if (result != PAMI_SUCCESS)
-    {
-	fprintf (stderr, "Error. Unable to finalize pami client. result = %d\n", result);
-	return 1;
-    }
+    pami_transport->transport_info.mr_responses.push_back(*(struct optiq_memregion *)data);
+}
 
-    /* Free the pami_transport itself*/
-    free(pami_transport);
+void optiq_recv_rput_done_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+    int message_id = (*(int *)data);
 
-    return 0;
+    pami_transport->transport_info.rput_done.push_back(message_id);
 }
 
 void optiq_recv_mr_forward_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -476,14 +568,6 @@ void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie,
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &pami_transport->sched->recv_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
     /*printf("Rank %d sent a destination mem response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->sched->recv_mr.offset);*/
-}
-
-void optiq_recv_rput_done_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
-{
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
-    int message_id = (*(int *)data);
-
-    pami_transport->rput_done.push_back(message_id);
 }
 
 void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -677,41 +761,59 @@ void optiq_pami_transport_status(struct optiq_pami_transport *pami_transport)
     optiq_pami_transport_sched_status(pami_transport->sched, pami_transport->rank);
 }
 
-void optiq_transport_info_init(struct optiq_pami_transport *pami_transport)
+void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport)
 {
-    int num_rput_cookies = OPTIQ_NUM_RPUT_COOKIES;
-    int num_message_headers = OPTIQ_NUM_MESSAGE_HEADERS;
-
-    /*Allocate memory for rput cookies*/
-    for (int i = 0; i < num_rput_cookies; i++)
-    {
-	struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)calloc(1, sizeof(struct optiq_rput_cookie));
-	rput_cookie->pami_transport = pami_transport;
-	pami_transport->transport_info.rput_cookies.push_back(rput_cookie);
-    }
-
-    /*Allocate memory for message headers*/
-    for (int i = 0; i < num_message_headers; i++)
-    {
-	struct optiq_message_header *message_header = (struct optiq_message_header *)calloc(1, sizeof(struct optiq_message_header));
-	pami_transport->transport_info.message_headers.push_back(message_header);
-    }
-
-    /*Allocate and register forward memory*/
-    int forward_buf_size = OPTIQ_FORWARD_BUFFER_SIZE;
-    char *forward_buf = (char *) malloc (forward_buf_size);
-    struct optiq_memregion *forward_mr = (struct optiq_memregion *) calloc (1, sizeof(struct optiq_memregion));
-
-    size_t bytes;
-    pami_result_t result = PAMI_Memregion_create (pami_transport->context, forward_buf, forward_buf_size, &bytes, &forward_mr->mr);
+    /*Destroy memregion*/
+    pami_result_t result = PAMI_Memregion_destroy (pami_transport->context, &pami_transport->transport_info.forward_mr->mr);
 
     if (result != PAMI_SUCCESS) {
-	printf("No success\n");
+        printf("No success\n");
     } else if (bytes < forward_buf_size) {
-	printf("Registered less\n");
+        printf("Registered less\n");
     }
 
-    pami_transport->transport_info.forward_mr = forward_mr;
-    pami_transport->transport_info.forward_mr->offset = 0;
+    /*Free memory*/
+    free(pami_transport->transport_info.forward_buf);
+
+    for (int i = 0; i < pami_transport->transport_info.rput_cookies.size(); i++)
+    {
+	free(pami_transport->transport_info.rput_cookies[i]);
+    }
+
+    for (int i = 0; i < pami_transport->transport_info.message_headers.size(); i++)
+    {
+	free(pami_transport->transport_info.message_headers[i]);
+    }
 }
+
+int optiq_pami_transport_finalize()
+{
+    struct optiq_pami_transport* pami_transport = optiq_pami_transport_get();
+
+    /* Free memory */
+    free(pami_transport->endpoints);
+
+    /* Destroy context */
+    pami_result_t result;
+    result = PAMI_Context_destroyv(&pami_transport->context, pami_transport->num_contexts);
+    if (result != PAMI_SUCCESS)
+    {
+        fprintf (stderr, "Error. Unable to destroy pami context. result = %d\n", result);
+        return 1;
+    }
+
+    /* Destroy client */
+    result = PAMI_Client_destroy(&pami_transport->client);
+    if (result != PAMI_SUCCESS)
+    {
+        fprintf (stderr, "Error. Unable to finalize pami client. result = %d\n", result);
+        return 1;
+    }
+
+    /* Free the pami_transport itself*/
+    free(pami_transport);
+
+    return 0;
+}
+
 
