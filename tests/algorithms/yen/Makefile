@@ -5,44 +5,41 @@ endif
 ifeq ($(COMPILER),GNU)
   CC      = mpicc
   COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
-  LD	  = mpixlc_r
 endif
 
 ifeq ($(COMPILER),XL)
   CC      = mpicxx
   COPT    = -g -O3 #-DDEBUG
-  LD	  = mpixlc_r
 endif
 
-ifeq ($(COMPILER),gxx)
-    CC	    = g++
-    COPT    = -g -Wall
-    LG	    = g++
-endif
+LD      = mpixlc_r
 
-OPTIQ = ../../..
+OPTIQ = ../../../
 DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
-STRUCTURE = $(DEV)/structures
-TOPOLOGY = $(DEV)/topology
+STRUCT = $(DEV)/structures
 YEN = $(DEV)/algorithms/yen
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCTURE) -I$(TOPOLOGY) -I$(YEN)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(YEN)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ =
+OBJ = $(STRUCT)/path.o $(STRUCT)/job.o $(UTIL)/util.o $(YEN)/YenTopKShortestPathsAlg.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/yen.o
 
-all: multibfs.o manytomany.o alltomany.o multipaths.o
+all: test_yen.x
 
-%.o: %.c
+optiq:
+	cd $(DEV) && $(MAKE) -f Makefile
+
+%.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clean:
+clean: $(OBJ)
+	rm $(OBJ)
 	rm *.o
 
 realclean: clean

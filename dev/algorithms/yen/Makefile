@@ -14,7 +14,8 @@ endif
 
 LD      = mpixlc_r
 
-DEV = ../..
+OPTIQ = ../../../
+DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 
@@ -25,10 +26,10 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(STRUCT)/path.o $(STRUCT)/job.o $(UTIL)/util.o YenTopKShortestPathsAlg.o Graph.o DijkstraShortestPathAlg.o yen.o
 
-all: optiq YenTopKShortestPathsAlg.o Graph.o DijkstraShortestPathAlg.o yen.o test.x
+all: struct YenTopKShortestPathsAlg.o Graph.o DijkstraShortestPathAlg.o yen.o
 
-optiq:
-	cd $(DEV)/structures && $(MAKE) -f Makefile
+struct:
+	cd $(STRUCT) && $(MAKE) -f Makefile
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
