@@ -8,7 +8,7 @@ In this approach, we search for paths to
 Centric algorithm, run at every node. Need information in advance.
 
 \begin{algorithm}
-\textbf{Input:} Set of pairs of source-destination \textit{s$_i$, d$_i$}. Number of nodes \textit{n} \\
+\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
 \textbf{Output:} Set of paths: one path for a pair of source-destination \\
 \\
 Init:
@@ -61,3 +61,27 @@ Main:
 In the \textbf{Algorithm \ref{alg:h1}}, we start by adding 
 
 \subsubsection{Heuristic 2}
+
+\begin{algorithm}
+\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
+\textbf{Output:} Set of paths: \textit{k} paths for a pair of source-destination\\
+Init:
+    \begin{algorithmic}
+        \State queue$<$struct path$>$ \textit{complete\_paths};
+    \end{algorithmic}
+Main:
+\begin{algorithmic}
+    \Function {Heuristic\_search\_II}{}
+	\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
+	    \State Use Yen's algorithm to search for \textit{k} shortest paths
+	    \State Add \textit{k} shortest paths into \textit{complete\_paths}
+	\EndFor
+    \EndFunction
+\end{algorithmic}
+
+\caption{Heuristic Alg II: k shortest paths}
+\label{alg:h2}
+
+\end{algorithm}
+
+In the \textbf{Algorithm \ref{alg:h2}}, we use Yen's algorithm to search for k shortest paths between \textit{s$_i$, d$_i$}.
