@@ -15,8 +15,9 @@ Init:
     \begin{algorithmic}
 	\State queue$<$struct path$>$ \textit{exploring\_paths};
 	\State queue$<$struct path$>$ \textit{complete\_paths};
+	\State bool \textit{visisted}[\textit{n}][\textit{n}];
 	\For {0 $<=$ {\it i}, \textit{j} $<$ \textit{n}} 
-	    \State visisted[{\it i}][{\it j}] = false;
+	    \State \textit{visited}[{\it i}][{\it j}] = false;
 	\EndFor
     \end{algorithmic}
 Main:
@@ -36,18 +37,17 @@ Main:
 
     \EndFunction
 \\
-    \Function{check\_and\_add\_new\_path}{bool \textit{visited}[][], int \textit{s$_i$}, int \textit{u}, path {\it op}}
+    \Function{check\_and\_add\_new\_path}{int \textit{s$_i$}, int \textit{u}, path {\it op}}
 	\For {each neighbor {\it v} of \textit{u}}
 	    \If {(!{\it visited}[{\it s$_i$}][{\it v}])}
 		\State create an arc \textit{a}$<$\textit{u}, \textit{v}$>$
                 \State create a path \textit{np} = {\it op}
 	        \State enqueue arc \textit{a} to \textit{np}
 	        \State enqueue \textit{np} to \textit{exploring\_paths}
-		\If {v is one of the destinations of s$_i$}
+		\If {{\it v} is one of the destinations of \textit{s$_i$}}
 		    \State enqueue \textit{np} to \textit{complete\_paths}
                 \EndIf
-	        \State {\it visited}[s$_i$][v] = true;
-	        \State break;
+	        \State {\it visited}[\textit{s$_i$}][\textit{v}] = true;
 	    \EndIf
 	\EndFor
     \EndFunction
@@ -58,7 +58,9 @@ Main:
 
 \end{algorithm}
 
-In the \textbf{Algorithm \ref{alg:h1}}, we start by adding 
+In the \textbf{Algorithm \ref{alg:h1}}, we start by adding \\
+
+Time complexity: The graph has V vertices and E edges. We have M sources and N destination making K pairs of (source, destinatinon), then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is XXXX.
 
 \subsubsection{Heuristic 2}
 
