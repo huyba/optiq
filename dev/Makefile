@@ -20,12 +20,13 @@ ifeq ($(COMPILER),gxx)
     LG	    = g++
 endif
 
-OPTIQ = ../../..
+OPTIQ = ..
 DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 TOPOLOGY = $(DEV)/topology
-ALG = $(DEV)/algorithms
+HEU = $(DEV)/algorithms/heuristics
+YEN = $(DEV)/algorithms/yen
 PAT = $(DEV)/comm_patterns
 SCHED = $(DEV)/schedule
 TRANS = $(DEV)/transport/pami_transport
@@ -37,7 +38,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/heuristics/*.o $(ALG)/yen/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
 
-all: util struct topo alg pat sched trans
+all: util struct topo heu yen pat sched trans
 
 util:
 	cd $(UTIL) && $(MAKE) -f Makefile
@@ -45,8 +46,10 @@ struct:
 	cd $(STRUCT) && $(MAKE) -f Makefile
 topo:
 	cd $(TOPOLOGY) && $(MAKE) -f Makefile
-alg:
-	cd $(ALG) && $(MAKE) -f Makefile
+heu:
+	cd $(HEU) && $(MAKE) -f Makefile
+yen:
+	cd $(YEN) && $(MAKE) -f Makefile
 pat:
 	cd $(PAT) && $(MAKE) -f Makefile
 sched:
