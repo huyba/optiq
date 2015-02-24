@@ -21,15 +21,15 @@ ifeq ($(COMPILER),gxx)
 endif
 
 OPTIQ = ..
-DEV = $(OPTIQ)/dev
-UTIL = $(DEV)/util
-STRUCT = $(DEV)/structures
-TOPOLOGY = $(DEV)/topology
-HEU = $(DEV)/algorithms/heuristics
-YEN = $(DEV)/algorithms/yen
-PAT = $(DEV)/comm_patterns
-SCHED = $(DEV)/schedule
-TRANS = $(DEV)/transport/pami_transport
+BENCHMARKS = $(OPTIQ)/benchmarks
+UTIL = $(BENCHMARKS)/util
+STRUCT = $(BENCHMARKS)/structures
+TOPOLOGY = $(BENCHMARKS)/topology
+HEU = $(BENCHMARKS)/algorithms/heuristics
+YEN = $(BENCHMARKS)/algorithms/yen
+PAT = $(BENCHMARKS)/comm_patterns
+SCHED = $(BENCHMARKS)/schedule
+TRANS = $(BENCHMARKS)/transport/pami_transport
 
 CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(PAT) -I$(SCHED) -I$(TRANS)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
@@ -38,7 +38,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
 
-all: util struct topo heu yen pat sched trans
+all: heu trans
 
 util:
 	cd $(UTIL) && $(MAKE) -f Makefile

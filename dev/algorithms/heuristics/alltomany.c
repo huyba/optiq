@@ -148,7 +148,7 @@ void optiq_alg_heuristic_search_alltomany(std::vector<struct path *> &complete_p
     optiq_path_reverse_paths(complete_paths);
 
 
-    long int diff = 0L;
+/*    long int diff = 0L;
 
     diff = (t1.tv_usec + 1000000 * t1.tv_sec) - (t0.tv_usec + 1000000 * t0.tv_sec);
     printf("Init %ld microseconds\n", diff);
@@ -161,6 +161,7 @@ void optiq_alg_heuristic_search_alltomany(std::vector<struct path *> &complete_p
 
     diff = (t3.tv_usec + 1000000 * t3.tv_sec) - (t2.tv_usec + 1000000 * t2.tv_sec);
     printf("Extend 2 in %ld microseconds\n", diff);
+*/
     /*
     printf("Total edge time is %ld\n", mperf.add_edge_path_time);
     printf("Total load time is %ld\n", mperf.add_load_time);
