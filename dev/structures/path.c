@@ -76,13 +76,13 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes)
     int total_hops = 0;
     int max_hops = 0;
     int min_hops = 1000;
-    int avg_hops = 0;
+    float avg_hops = 0;
     int med_hops = 0;
 
     int total_loads = 0;
     int max_load = 0;
     int min_load = 1000;
-    int avg_load = 0;
+    float avg_load = 0;
     int med_load = 0;
     
 
@@ -111,12 +111,16 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes)
 	total_hops += p->arcs.size();
     }
 
-    avg_hops = total_hops/paths.size();
-
-    for (int i = 0; i < num_nodes; i++) {
-	for (int j = 0; j < num_nodes; j++) {
-	    if (load[i][j] != 0) {
+    avg_hops = (float)total_hops/paths.size();
+    int loaded_links = 0;
+    for (int i = 0; i < num_nodes; i++) 
+    {
+	for (int j = 0; j < num_nodes; j++) 
+	{
+	    if (load[i][j] != 0) 
+	    {
 		//printf("load on edge %d %d %d\n", i, j, load[i][j]);
+		loaded_links++;
 
 		if (max_load < load[i][j]) {
 		    max_load = load[i][j];
@@ -131,17 +135,17 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes)
 	}
     }
 
-    avg_load = total_loads/paths.size();
+    avg_load = (float)total_loads/loaded_links;
 
-    printf("#paths = %d, total_hops = %d, total_loads = %d\n", paths.size(), total_hops, total_loads);
+    printf("#paths = %d, total_hops = %d, total_loads = %d, #loaded_links = %d\n", paths.size(), total_hops, total_loads, loaded_links);
 
     printf("max_hop = %d\n", max_hops);
     printf("min_hop = %d\n", min_hops);
-    printf("avg_hop = %d\n", avg_hops);
+    printf("avg_hop = %4.2f\n", avg_hops);
 
     printf("max_load = %d\n", max_load);
     printf("min_load = %d\n", min_load);
-    printf("avg_load = %d\n", avg_load);
+    printf("avg_load = %4.2f\n", avg_load);
 }
 
 void optiq_path_print_paths(std::vector<struct path *> &paths)
