@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 	    if (memcmp(local_buf, remote_buf, nbytes) != 0) {
 		printf("Invalid data recv\n");
 	    } else {
-		printf("Valid data recv\n");
+		printf("%d bytes. Valid data recv\n", nbytes);
 	    }
 	}
 
@@ -46,6 +46,8 @@ int main(int argc, char **argv)
     free(remote_buf);
 
     optiq_pami_transport_finalize();
+
+    printf("Rank %d Complete the test\n", pami_transport->rank);
 
     return 0;
 }

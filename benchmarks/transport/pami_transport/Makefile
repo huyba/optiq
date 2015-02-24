@@ -14,7 +14,7 @@ endif
 
 LD      = mpixlc_r
 
-OPTIQ = ../..
+OPTIQ = ../../..
 DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
 TOPO = $(DEV)/topology
@@ -61,7 +61,7 @@ realclean: clean
 BENCHMARK_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 
 copy:
-	cp perf_rput.x $(BENCHMARK_DIR)/rput
+	cp perf_rput.x $(BENCHMARK_DIR)/pami_transport/rput
 	cp perf_transport_cesm.x $(BENCHMARK_DIR)/cesm
 	cp perf_transport_patterns.x $(BENCHMARK_DIR)/patterns
 	cp perf_transport_alltomany.x $(BENCHMARK_DIR)/alltomany

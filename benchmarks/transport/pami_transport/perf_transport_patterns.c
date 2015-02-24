@@ -169,6 +169,17 @@ void test_patterns(int count, struct multibfs &bfs, struct optiq_pami_transport 
     std::vector<int> dests;
     std::vector<std::pair<int, std::vector<int> > > source_dests;
 
+    for (int i = 4; i < 16; i *= 2) {
+	int k = bfs.num_nodes/i;
+
+	if (rank == 0) {
+            printf ("\nDisjoint - Contigous - First %d nodes communicate with last %d nodes\n", k, k);
+        }
+
+	disjoint_contiguous_firstk_lastk(bfs.num_nodes, sources, dests, source_dests, k);
+	test_coupling (source_dests, dests.size(), count, bfs, pami_transport);
+    }
+
     int ratio = 0;
 
     for (int i = 1; i < 4; i++) 
@@ -247,8 +258,6 @@ int main(int argc, char **argv)
 
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     optiq_pami_transport_init ();
-    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-    optiq_transport_info_init (pami_transport);
 
     graphFilePath = "graph";
 

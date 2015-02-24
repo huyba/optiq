@@ -4,6 +4,31 @@
 
 #include "patterns.h"
 
+/*The first k nodes communicate with the last k nodes. 1-1*/
+void disjoint_contiguous_firstk_lastk(int num_nodes, std::vector<int> &sources, std::vector<int> &dests, std::vector<std::pair<int, std::vector<int> > > &source_dests, int k)
+{
+    sources.clear();
+    dests.clear();
+    source_dests.clear();
+
+    if (k > num_nodes) {
+        return;
+    }
+
+    for (int i = 0; i < k; i++) {
+	sources.push_back(i);
+    }
+
+    for (int i = num_nodes - k; i < num_nodes; i++) 
+    {
+	dests.push_back(i);
+	std::vector<int> d;
+        d.push_back (i);
+        std::pair<int, std::vector<int> > p = make_pair (i + k - num_nodes, d);
+	source_dests.push_back(p);
+    }
+}
+
 void disjoint_contigous (int num_nodes, std::vector<int> &sources, std::vector<int> &dests, std::vector<std::pair<int, std::vector<int> > > &source_dests, int ratio)
 {
     if (! (ratio == 1 || ratio == 3 || ratio == 7)) {
