@@ -90,7 +90,7 @@ struct optiq_pami_transport {
 
 extern "C" struct optiq_pami_transport *pami_transport;
 
-void optiq_pami_transport_init(struct optiq_pami_transport *pami_transport);
+void optiq_pami_transport_init();
 
 void optiq_transport_info_init(struct optiq_transport_info &transport_info);
 
