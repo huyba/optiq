@@ -204,14 +204,12 @@ int main(int argc, char **argv)
     optiq_schedule_init(schedule);
 
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)calloc(1, sizeof(struct optiq_pami_transport));
+    optiq_pami_transport_init();
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    optiq_transport_info_init(pami_transport);
 
     pami_transport->sched = &schedule;
-
     pami_transport->sched->pami_transport = pami_transport;
-
-    optiq_pami_init_extra(pami_transport);
-    optiq_pami_init(pami_transport);
 
     uint64_t t1 = GetTimeBase();
 
@@ -246,7 +244,7 @@ int main(int argc, char **argv)
 
 	    uint64_t t2 = GetTimeBase();
 
-	    optiq_execute_jobs (pami_transport);
+	    optiq_pami_transport_execute (pami_transport);
 
 	    uint64_t t3 = GetTimeBase();
 

@@ -59,7 +59,7 @@ void optiq_schedule_execute(struct optiq_schedule &schedule, struct optiq_pami_t
 
     uint64_t t2 = GetTimeBase();
 
-    optiq_execute_jobs (pami_transport);
+    optiq_pami_transport_execute (pami_transport);
 
     uint64_t t3 = GetTimeBase();
 
@@ -203,10 +203,10 @@ int main(int argc, char **argv)
     }
 
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
-    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *) calloc (1, sizeof(struct optiq_pami_transport));
+    optiq_pami_transport_init ();
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
 
-    optiq_pami_init_extra (pami_transport);
-    optiq_pami_init (pami_transport);
+    optiq_transport_info_init (pami_transport);
 
     test_cesm (count, bfs, pami_transport);
 
