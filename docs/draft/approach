@@ -7,54 +7,83 @@ In this approach, we search for paths to
 
 Centric algorithm, run at every node. Need information in advance.
 
-%\begin{algorithm}[H]
+\begin{algorithm}
+\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
+\textbf{Output:} Set of paths: one path for a pair of source-destination \\
+\\
+Init:
+    \begin{algorithmic}
+	\State queue$<$struct path$>$ \textit{exploring\_paths};
+	\State queue$<$struct path$>$ \textit{complete\_paths};
+	\State bool \textit{visisted}[\textit{n}][\textit{n}];
+	\For {0 $<=$ {\it i}, \textit{j} $<$ \textit{n}} 
+	    \State \textit{visited}[{\it i}][{\it j}] = false;
+	\EndFor
+    \end{algorithmic}
+Main:
 
-%\begin{algorithmic}
-%\KwData{Set of all pairs of source-destination \textit{s$_i$, d$_i$}, number of nodes \textit{n}}
-%\KwResult{A path for each pair of source-destination}
+\begin{algorithmic}
+    \Function {Heuristic\_search\_I}{}
 
-%queue$<$struct path$>$ exploring\_paths;
-%queue$<$struct path$>$ complete\_paths;
+    \For {each source \textit{s$_i$}}
+	\State check\_and\_add\_new\_path({\it s}$_i$, {\it s}$_i$, null)
+    \EndFor
 
-%Init:
-%\For {0 $<=$ i, j $<$ \textit{n}} {visisted[i][j] = false;}
+    \While {(\textit{exploring\_path} != empty)}
+	\State path \textit{p} = \textit{exploring\_paths}.pop()
+	\State get the furthest point {\it u} of {\it p}
+	\State check\_and\_add\_new\_path({\it s}$_i$, \textit{u}, {\it p})
+    \EndWhile
 
-%\Function{add\_new\_path}{bool visited[][], int s$_i$, path op}
-%\For {each neighbor v of s$_i$} {\
-%        \If \({!visited[s$_i$][v]}\) {
-%            create an arc \textit{a<s$_i$, v>} \;
-%            create a path \textit{np = op} \;
-%            enqueue arc \textit{a} to \textit{np} \;
-%            enqueue \textit{np} to \textit{exploring\_paths} \;
-%            \If{t is one of the destinations of s$_i$} {
-%                enqueue \textit{np} to \textit{complete\_paths} \;
-%            }
-%            visited[s$_i$][v] = true \;
-%            break\;
-%        }
-%    }
-%\EndFunction
+    \EndFunction
+\\
+    \Function{check\_and\_add\_new\_path}{int \textit{s$_i$}, int \textit{u}, path {\it op}}
+	\For {each neighbor {\it v} of \textit{u}}
+	    \If {(!{\it visited}[{\it s$_i$}][{\it v}])}
+		\State create an arc \textit{a}$<$\textit{u}, \textit{v}$>$
+                \State create a path \textit{np} = {\it op}
+	        \State enqueue arc \textit{a} to \textit{np}
+	        \State enqueue \textit{np} to \textit{exploring\_paths}
+		\If {{\it v} is one of the destinations of \textit{s$_i$}}
+		    \State enqueue \textit{np} to \textit{complete\_paths}
+                \EndIf
+	        \State {\it visited}[\textit{s$_i$}][\textit{v}] = true;
+	    \EndIf
+	\EndFor
+    \EndFunction
+\end{algorithmic}
 
+\caption{Heuristic Alg I: Exploring all paths}
+\label{alg:h1}
 
-%Main algorithm:\
+\end{algorithm}
 
-%\For{each source \textit{s$_i$}} {
-%	check\_and\_add\_new\_path(s$_i$, null)
-%    }
-%}
+In the \textbf{Algorithm \ref{alg:h1}}, we start by adding \\
 
-%\While {(exploring\_path != empty)} {
-%    path p = exploring\_paths.pop() \;
-%    get the furthest point u of p \;
-%    check\_and\_add\_new\_path(s$_i$, p)
-%}
-
-%\caption{Heuristic Alg I: Exploring all paths}
-
-%\label{alg:h1}
-%\end{algorithmic}
-%\end{algorithm}
-
-In the \textbf{Algorithm \ref{alg:h1}}, we start by adding 
+Time complexity: The graph has V vertices and E edges. We have M sources and N destination making K pairs of (source, destinatinon), then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is XXXX.
 
 \subsubsection{Heuristic 2}
+
+\begin{algorithm}
+\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
+\textbf{Output:} Set of paths: \textit{k} paths for a pair of source-destination\\
+Init:
+    \begin{algorithmic}
+        \State queue$<$struct path$>$ \textit{complete\_paths};
+    \end{algorithmic}
+Main:
+\begin{algorithmic}
+    \Function {Heuristic\_search\_II}{}
+	\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
+	    \State Use Yen's algorithm to search for \textit{k} shortest paths
+	    \State Add \textit{k} shortest paths into \textit{complete\_paths}
+	\EndFor
+    \EndFunction
+\end{algorithmic}
+
+\caption{Heuristic Alg II: k shortest paths}
+\label{alg:h2}
+
+\end{algorithm}
+
+In the \textbf{Algorithm \ref{alg:h2}}, we use Yen's algorithm to search for k shortest paths between \textit{s$_i$, d$_i$}.
