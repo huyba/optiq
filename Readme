@@ -54,5 +54,5 @@ Folders organization:
 ./docs: contains all the docs, papers, slides, results.
     
 ./apps: contains the kernels, apps that use the libs.
-    
-./src: will be removed soon after code refactoring.
+
+./misc: contains misc codes for various purpose and garbage codes.
