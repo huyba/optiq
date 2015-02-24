@@ -146,6 +146,7 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes)
     printf("max_load = %d\n", max_load);
     printf("min_load = %d\n", min_load);
     printf("avg_load = %4.2f\n", avg_load);
+    printf("\n");
 }
 
 void optiq_path_print_paths(std::vector<struct path *> &paths)

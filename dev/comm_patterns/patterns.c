@@ -29,7 +29,7 @@ void disjoint_contiguous_firstk_lastk(int num_nodes, std::vector<int> &sources, 
     }
 }
 
-void disjoint_contigous (int num_nodes, std::vector<int> &sources, std::vector<int> &dests, std::vector<std::pair<int, std::vector<int> > > &source_dests, int ratio)
+void disjoint_contiguous (int num_nodes, std::vector<int> &sources, std::vector<int> &dests, std::vector<std::pair<int, std::vector<int> > > &source_dests, int ratio)
 {
     if (! (ratio == 1 || ratio == 3 || ratio == 7)) {
 	printf("Not accepted ratio\n");

@@ -48,6 +48,8 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 	$(RM) $(RMFLAGS) $(libobj)
 
+TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
+
 copy:
-	cp test_pathreconstruct.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/topology
+	cp test_pathreconstruct.x $(TEST_DIR)/topology
 	cp test_topology.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/topology
