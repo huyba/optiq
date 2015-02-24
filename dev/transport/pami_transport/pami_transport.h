@@ -98,7 +98,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport);
 
 int optiq_pami_transport_finalize();
 
-void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport)
+void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport);
 
 struct optiq_pami_transport* optiq_pami_transport_get();
 

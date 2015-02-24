@@ -56,8 +56,8 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 		    nbytes = jobs[i].buf_length - jobs[i].buf_offset;
 		}
 
-		struct optiq_message_header *header = pami_transport->extra.message_headers.back();
-		pami_transport->extra.message_headers.pop_back();
+		struct optiq_message_header *header = pami_transport->transport_info.message_headers.back();
+		pami_transport->transport_info.message_headers.pop_back();
 
 		header->length = nbytes;
 		header->source = jobs[i].source_rank;
@@ -69,7 +69,7 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 		header->original_offset = jobs[i].buf_offset;
 		jobs[i].buf_offset += nbytes;
 
-		pami_transport->extra.send_headers.push_back(header);
+		pami_transport->transport_info.send_headers.push_back(header);
 
 		if (jobs[i].buf_offset < jobs[i].buf_length) {
 		    done = false;
@@ -103,8 +103,8 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 		    nbytes = jobs[i].buf_length - jobs[i].buf_offset;
 		}
 
-		struct optiq_message_header *header = pami_transport->extra.message_headers.back();
-		pami_transport->extra.message_headers.pop_back();
+		struct optiq_message_header *header = pami_transport->transport_info.message_headers.back();
+		pami_transport->transport_info.message_headers.pop_back();
 
 		header->length = nbytes;
 		header->source = jobs[i].source_rank;
@@ -117,7 +117,7 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 		header->original_offset = jobs[i].buf_offset;
 		jobs[i].buf_offset += nbytes;
 
-		pami_transport->extra.send_headers.push_back(header);
+		pami_transport->transport_info.send_headers.push_back(header);
 
 		if (jobs[i].buf_offset < jobs[i].buf_length) {
 		    done = false;
