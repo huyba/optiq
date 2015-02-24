@@ -163,10 +163,17 @@ void optiq_pami_transport_init()
     }
 
     /*Other initialization*/
+    optiq_transport_info_init(pami_transport);
 }
 
-void optiq_transport_info_init(struct optiq_pami_transport *pami_transport)
+void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
 {
+    if (pami_transport->transport_info.initialized) {
+	return;
+    }
+
+    pami_transport->transport_info.initialized = true;
+
     int num_rput_cookies = OPTIQ_NUM_RPUT_COOKIES;
     int num_message_headers = OPTIQ_NUM_MESSAGE_HEADERS;
 
