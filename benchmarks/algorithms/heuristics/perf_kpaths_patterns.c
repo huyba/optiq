@@ -190,7 +190,7 @@ void test_patterns(int count, struct multibfs &bfs, struct optiq_pami_transport 
 	    printf ("\nDisjoint - Contigous - Source:Dest ratio : %d : 1 c1\n", ratio);
 	}
 
-	disjoint_contigous (bfs.num_nodes, sources, dests, source_dests, ratio);
+	disjoint_contiguous (bfs.num_nodes, sources, dests, source_dests, ratio);
 	test_coupling (source_dests, dests.size(), count, bfs, pami_transport);
     }
 

@@ -5,14 +5,14 @@
 
 #include "pathreconstruct.h"
 
-void reconstruct_paths(std::vector<std::pair<int, std::vector<int> > > &source_dests, struct topology &topo, std::vector<struct path *> &mpi_paths)
+void optiq_topology_path_reconstruct(std::vector<std::pair<int, std::vector<int> > > &source_dests, struct topology *topo, std::vector<struct path *> &mpi_paths)
 {
-    int num_nodes = topo.num_nodes;
-    int num_dims = topo.num_dims;
-    int *size = topo.size;
-    int *torus = topo.torus;
-    int *order = topo.order;
-    int **all_coords = topo.all_coords;
+    int num_nodes = topo->num_nodes;
+    int num_dims = topo->num_dims;
+    int *size = topo->size;
+    int *torus = topo->torus;
+    int *order = topo->order;
+    int **all_coords = topo->all_coords;
 
     int max_hops = num_nodes * 2;
     int **path = (int **)malloc(sizeof(int *) * max_hops);

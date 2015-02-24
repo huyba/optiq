@@ -7,7 +7,7 @@
 #include <mpi.h>
 
 #include "manytomany.h"
-#include "multipaths.h"
+#include "pathreconstruct.h"
 #include "topology.h"
 #include "pami_transport.h"
 #include "comm_mem.h"
@@ -105,12 +105,16 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
     complete_paths.clear();
 
     /*Search for paths for each pair*/
-    //optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
-    int k = 2;
-    optiq_alg_heuristic_search_kpaths(complete_paths, source_dests, k, graphFilePath);
+    optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
 
     if (pami_transport->rank == 0) {
+	printf("OPTIQ path construction stat:\n");
 	optiq_path_print_stat(complete_paths, bfs.num_nodes);
+
+	printf("MPI path reconstruction stat:\n");
+	std::vector<struct path *> mpi_paths;
+	optiq_topology_path_reconstruct(source_dests, topo, mpi_paths);
+	optiq_path_print_stat(mpi_paths, bfs.num_nodes);
     }
 
     /*With the comm pattern, allocate memories, set offsets, displacements*/
@@ -173,7 +177,7 @@ void test_patterns(int count, struct multibfs &bfs, struct optiq_pami_transport 
 	int k = bfs.num_nodes/i;
 
 	if (rank == 0) {
-            printf ("\nDisjoint - Contigous - First %d nodes communicate with last %d nodes\n", k, k);
+            printf ("\nDisjoint - Contiguous - First %d nodes communicate with last %d nodes\n", k, k);
         }
 
 	disjoint_contiguous_firstk_lastk(bfs.num_nodes, sources, dests, source_dests, k);
@@ -187,10 +191,10 @@ void test_patterns(int count, struct multibfs &bfs, struct optiq_pami_transport 
 	ratio = pow(2, i) - 1;
 
 	if (rank == 0) {
-	    printf ("\nDisjoint - Contigous - Source:Dest ratio : %d : 1 c1\n", ratio);
+	    printf ("\nDisjoint - Contiguous - Source:Dest ratio : %d : 1 c1\n", ratio);
 	}
 
-	disjoint_contigous (bfs.num_nodes, sources, dests, source_dests, ratio);
+	disjoint_contiguous (bfs.num_nodes, sources, dests, source_dests, ratio);
 	test_coupling (source_dests, dests.size(), count, bfs, pami_transport);
     }
 
@@ -259,14 +263,7 @@ int main(int argc, char **argv)
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     optiq_pami_transport_init ();
 
-    graphFilePath = "graph";
-
-    if (world_rank == 0) {
-	int cost = 1;
-        optiq_graph_print_graph (bfs, cost, graphFilePath);
-    }
-
-    sleep(10);
+    optiq_topology_init();
 
     MPI_Barrier (MPI_COMM_WORLD);
 

@@ -5,31 +5,7 @@
 #include "util.h"
 #include "topology.h"
 
-//struct topotogy topo;
-
-void optiq_topology_get_size_bgq(int *size)
-{
-#ifdef __bgq__
-    Personality_t pers;
-    Kernel_GetPersonality(&pers, sizeof(pers));
-
-    size[0] = pers.Network_Config.Anodes;
-    size[1] = pers.Network_Config.Bnodes;
-    size[2] = pers.Network_Config.Cnodes;
-    size[3] = pers.Network_Config.Dnodes;
-    size[4] = pers.Network_Config.Enodes;
-#endif
-}
-
-void optiq_topology_print_graph(struct topology *topo, int cost)
-{
-    for (int i = 0; i < topo->num_nodes; i++)
-    {
-	for (int j = 0; j < topo->neighbors[i].size(); j++) {
-	    printf("%d %d %d\n", i, topo->neighbors[i][j], cost);
-	}
-    }
-}
+struct topology *topo;
 
 /*
  * Will init the topology with:
@@ -42,8 +18,10 @@ void optiq_topology_print_graph(struct topology *topo, int cost)
  *  7. routing order
  *  8. coords of all nodes.
  * */
-void optiq_topology_init (struct topology *topo)
+void optiq_topology_init ()
 {
+    topo = (struct topology *) calloc (1, sizeof (struct topology));
+
     int num_dims = 5;
     optiq_topology_get_size_bgq(topo->size);
     optiq_topology_init_with_params(num_dims, topo->size, topo);
@@ -112,6 +90,30 @@ void optiq_topology_print(struct topology &topo)
 	}
 	printf("\n");
     }
+}
+
+void optiq_topology_print_graph(struct topology *topo, int cost)
+{
+    for (int i = 0; i < topo->num_nodes; i++)
+    {
+        for (int j = 0; j < topo->neighbors[i].size(); j++) {
+            printf("%d %d %d\n", i, topo->neighbors[i][j], cost);
+        }
+    }
+}
+
+void optiq_topology_get_size_bgq(int *size)
+{
+#ifdef __bgq__
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
+
+    size[0] = pers.Network_Config.Anodes;
+    size[1] = pers.Network_Config.Bnodes;
+    size[2] = pers.Network_Config.Cnodes;
+    size[3] = pers.Network_Config.Dnodes;
+    size[4] = pers.Network_Config.Enodes;
+#endif
 }
 
 int optiq_topology_get_node_id(int world_rank, int num_ranks_per_node)

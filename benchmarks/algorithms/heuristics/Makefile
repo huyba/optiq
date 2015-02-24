@@ -35,7 +35,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 YEN_OBJ = $(YEN)/yen.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/YenTopKShortestPathsAlg.o
 
-OBJ = $(TRANS)/pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(ALG)/heuristics/manytomany.o $(PAT)/cesm.o $(ALG)/heuristics/multibfs.o $(SCHED)/schedule.o $(SCHED)/comm_mem.o $(PAT)/patterns.o $(ALG)/heuristics/multipaths.o
+OBJ = $(TRANS)/pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(ALG)/heuristics/manytomany.o $(PAT)/cesm.o $(ALG)/heuristics/multibfs.o $(SCHED)/schedule.o $(SCHED)/comm_mem.o $(PAT)/patterns.o $(ALG)/heuristics/multipaths.o $(TOPO)/pathreconstruct.o
 
 all: $(OBJ) yen mpi copy
 

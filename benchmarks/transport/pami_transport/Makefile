@@ -19,36 +19,27 @@ DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
 TOPO = $(DEV)/topology
 STRUCT = $(DEV)/structures
-ALG = $(DEV)/algorithms
-YEN = $(ALG)/yen
-HEU = $(ALG)/heuristics
 TRANS = $(DEV)/transport/pami_transport
-PAT = $(DEV)/comm_patterns
 SCHED= $(DEV)/schedule
 
-INCLUDE = -I. -I$(UTIL) -I$(TOPO) -I$(STRUCT) -I$(HEU) -I$(YEN) -I$(PAT) -I$(TRANS) -I$(SCHED)
+INCLUDE = -I. -I$(UTIL) -I$(TOPO) -I$(STRUCT) -I$(TRANS) -I$(SCHED)
 
 CFLAGS = $(COPT) $(INCLUDE) 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-YEN_OBJ = $(YEN)/yen.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/YenTopKShortestPathsAlg.o
+OBJ = $(TRANS)/pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(SCHED)/schedule.o $(SCHED)/comm_mem.o
 
-OBJ = $(TRANS)/pami_transport.o $(UTIL)/util.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(ALG)/heuristics/alltomany.o $(ALG)/heuristics/manytomany.o $(PAT)/cesm.o $(ALG)/heuristics/multibfs.o $(SCHED)/schedule.o $(SCHED)/comm_mem.o $(PAT)/patterns.o $(ALG)/heuristics/multipaths.o
+all: $(OBJ) mpi copy
 
-all: $(OBJ) yen mpi copy
-
-yen:
-	cd $(YEN)/ && $(MAKE) -f Makefile
-
-mpi: perf_rput.x perf_transport_cesm.x perf_transport_alltomany.x perf_transport_patterns.x
+mpi: perf_rput.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.x: %.o $(OBJ) $(YEN_OBJ)
-	$(LD) $< $(OBJ) $(YEN_OBJ) -o $@ $(LDFLAGS)
+%.x: %.o $(OBJ)
+	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
 	rm $(OBJ) *.x *.o
@@ -62,6 +53,3 @@ BENCHMARK_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 
 copy:
 	cp perf_rput.x $(BENCHMARK_DIR)/pami_transport/rput
-	cp perf_transport_cesm.x $(BENCHMARK_DIR)/cesm
-	cp perf_transport_patterns.x $(BENCHMARK_DIR)/patterns
-	cp perf_transport_alltomany.x $(BENCHMARK_DIR)/alltomany

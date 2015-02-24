@@ -27,7 +27,9 @@ struct topology {
     int num_ranks_per_node;
 };
 
-void optiq_topology_init(struct topology *topo);
+extern "C" struct topology *topo;
+
+void optiq_topology_init();
 
 void optiq_topology_init_with_params(int num_dims, int *size, struct topology *topo);
 
