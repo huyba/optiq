@@ -1,5 +1,5 @@
 ifndef COMPILER
-  COMPILER = gxx#XL
+  COMPILER = XL
 endif
 
 ifeq ($(COMPILER),GNU)
@@ -31,14 +31,14 @@ PAT = $(DEV)/comm_patterns
 SCHED = $(DEV)/schedule
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(PAT) -I$(SCHED) -I$(TRANS)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
 
-all: util struct topo heu yen pat sched trans
+all: util struct topo heu yen pat sched trans optiq.o 
 
 util:
 	cd $(UTIL) && $(MAKE) -f Makefile
