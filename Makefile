@@ -20,35 +20,41 @@ ifeq ($(COMPILER),gxx)
     LG	    = g++
 endif
 
-OPTIQ = ../..
-DEV = $(OPTIQ)/dev
-UTIL = $(DEV)/util
-STRUCTURE = $(DEV)/structures
-TOPOLOGY = $(DEV)/topology
-YEN = $(DEV)/algorithms/yen
-HEU = $(DEV)/algorithms/heuristics
+OPTIQ = .
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCTURE) -I$(TOPOLOGY) -I$(YEN) -I$(HEU)
+DEV = $(OPTIQ)/dev
+BENCHMARK = $(OPTIQ)/benchmarks
+TEST = $(OPTIQ)/tests
+
+UTIL = $(DEV)/util
+STRUCT = $(DEV)/structures
+TOPOLOGY = $(DEV)/topology
+HEU = $(DEV)/algorithms/heuristics
+YEN = $(DEV)/algorithms/yen
+PAT = $(DEV)/comm_patterns
+SCHED = $(DEV)/schedule
+TRANS = $(DEV)/transport/pami_transport
+
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ =
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
 
-all: byen heu algorithm.o
+all: deve test benchmark
 
-heu:
-	cd $(HEU) && $(MAKE) -f Makefile
-byen:
-	cd $(YEN) && $(MAKE) -f Makefile
+deve:
+	cd $(DEV) && $(MAKE) -f Makefile
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+test:
+	cd $(BENCHMARK) && $(MAKE) -f Makefile
 
-%.x: %.o $(OBJ)
-	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
+benchmark:
+	cd $(TEST) && $(MAKE) -f Makefile
 
-clean:
+clean: $(OBJ)
+	rm $(OBJ)
 	rm *.o
 
 realclean: clean

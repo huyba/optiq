@@ -33,7 +33,9 @@ void optiq_topology_init();
 
 void optiq_topology_init_with_params(int num_dims, int *size, struct topology *topo);
 
-void optiq_topology_print(struct topology &topo);
+struct topology* optiq_topology_get();
+
+void optiq_topology_print(struct topology *topo);
 
 void optiq_topology_get_size_bgq(int *size);
 

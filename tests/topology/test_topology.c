@@ -19,11 +19,11 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    struct topology topo;
-    optiq_topology_init(&topo);
+    optiq_topology_init();
+    struct topology *tp = optiq_topology_get();
 
     if (world_rank == 0) {
-	optiq_topology_print(topo);
+	optiq_topology_print(tp);
     }
 
     return 0;

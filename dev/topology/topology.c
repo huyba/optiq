@@ -51,42 +51,47 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct topology *t
     topo->all_coords = optiq_topology_get_all_coords (topo->num_dims, topo->size);
 }
 
-void optiq_topology_print(struct topology &topo)
+struct topology* optiq_topology_get()
 {
-    printf("num_dims = %d\n", topo.num_dims);
+    return topo;
+}
+
+void optiq_topology_print(struct topology *topo)
+{
+    printf("num_dims = %d\n", topo->num_dims);
 
     printf("size: ");
-    for (int i = 0; i < topo.num_dims; i++) {
-	printf("%d ", topo.size[i]);
+    for (int i = 0; i < topo->num_dims; i++) {
+	printf("%d ", topo->size[i]);
     }
     printf("\n");
 
-    printf("num_nodes = %d\n", topo.num_nodes); 
+    printf("num_nodes = %d\n", topo->num_nodes); 
 
-    printf("num_edges = %d\n", topo.num_edges);
+    printf("num_edges = %d\n", topo->num_edges);
 
     printf("torus: ");
-    for (int i = 0; i < topo.num_dims; i++) {
-        printf("%d ", topo.torus[i]);
+    for (int i = 0; i < topo->num_dims; i++) {
+        printf("%d ", topo->torus[i]);
     }
     printf("\n");
 
     printf("order: ");
-    for (int i = 0; i < topo.num_dims; i++) {
-        printf("%d ", topo.order[i]);
+    for (int i = 0; i < topo->num_dims; i++) {
+        printf("%d ", topo->order[i]);
     }
     printf("\n");
 
     printf("node id: coord[A B C D E]\n");
-    for (int i = 0; i < topo.num_nodes; i++) {
-	printf("%d %d %d %d %d %d\n", i, topo.all_coords[i][0], topo.all_coords[i][1],topo.all_coords[i][2],topo.all_coords[i][3],topo.all_coords[i][4]);
+    for (int i = 0; i < topo->num_nodes; i++) {
+	printf("%d %d %d %d %d %d\n", i, topo->all_coords[i][0], topo->all_coords[i][1],topo->all_coords[i][2],topo->all_coords[i][3],topo->all_coords[i][4]);
     }
 
     printf("node id: neighbors list:\n");
-    for (int i = 0; i < topo.num_nodes; i++) {
+    for (int i = 0; i < topo->num_nodes; i++) {
         printf("%d :", i);
-	for (int j = 0; j < topo.neighbors[i].size(); j++) {
-	    printf("%d ", topo.neighbors[i][j]);
+	for (int j = 0; j < topo->neighbors[i].size(); j++) {
+	    printf("%d ", topo->neighbors[i][j]);
 	}
 	printf("\n");
     }
