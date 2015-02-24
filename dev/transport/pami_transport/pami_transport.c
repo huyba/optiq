@@ -163,7 +163,12 @@ void optiq_pami_transport_init()
     }
 
     /*Other initialization*/
-    optiq_transport_info_init(pami_transport);
+    pami_transport->transport_info.initialized = false;
+    pami_transport->transport_info.finalized = false;
+
+    if (!pami_transport->transport_info.initialized) {
+	optiq_transport_info_init(pami_transport);
+    }
 }
 
 void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
@@ -536,7 +541,7 @@ void optiq_recv_mem_response_fn(pami_context_t context, void *cookie, const void
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    pami_transport->transport_info.mr_responses.push_back(*(struct optiq_memregion *)data);
+    pami_transport->transport_info.mem_responses.push_back(*(struct optiq_mem_response *)data);
 }
 
 void optiq_recv_rput_done_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -770,6 +775,12 @@ void optiq_pami_transport_status(struct optiq_pami_transport *pami_transport)
 
 void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport)
 {
+    if (pami_transport->transport_info.finalized) {
+	return;
+    }
+
+    pami_transport->transport_info.finalized = true;
+
     /*Destroy memregion*/
     pami_result_t result = PAMI_Memregion_destroy (pami_transport->context, &pami_transport->transport_info.forward_mr->mr);
 
@@ -794,6 +805,10 @@ void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport)
 int optiq_pami_transport_finalize()
 {
     struct optiq_pami_transport* pami_transport = optiq_pami_transport_get();
+
+    if (!pami_transport->transport_info.finalized) {
+	optiq_transport_info_finalize(pami_transport);
+    }
 
     /* Free memory */
     free(pami_transport->endpoints);

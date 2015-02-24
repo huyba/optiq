@@ -57,6 +57,7 @@ struct optiq_rput_cookie {
 
 struct optiq_transport_info {
     bool initialized;
+    bool finalized;
     char *forward_buf;
     struct optiq_memregion *forward_mr;
 

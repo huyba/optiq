@@ -53,6 +53,6 @@ realclean: clean
 TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq
 
 copy:
-	cp test_init.x $(TEST_DIR)/pami_transport/init
-	cp test_rput.x $(TEST_DIR)/pami_transport/rput
-	cp test_sendrecv.x $(TEST_DIR)/pami_transport/sendrecv
+	cp test_init.x $(TEST_DIR)/tests/pami_transport/init
+	cp test_rput.x $(TEST_DIR)/tests/pami_transport/rput
+	cp test_sendrecv.x $(TEST_DIR)/tests/pami_transport/sendrecv

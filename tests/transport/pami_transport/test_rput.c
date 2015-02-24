@@ -25,6 +25,8 @@ int main(int argc, char **argv)
     int remote_rank = 1;
     void *remote_buf = malloc (rput_bytes);
 
+    printf("Rank %d Start to test\n", pami_transport->rank);
+
     for (int nbytes = 1024; nbytes < rput_bytes; nbytes *= 2)
     {
 	optiq_pami_transport_rput(local_buf, nbytes, local_rank, remote_buf, remote_rank);
