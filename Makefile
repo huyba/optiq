@@ -42,7 +42,9 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
 
-all: deve test benchmark
+all: mdir deve test benchmark
+
+mdir:
 
 deve:
 	cd $(DEV) && $(MAKE) -f Makefile
