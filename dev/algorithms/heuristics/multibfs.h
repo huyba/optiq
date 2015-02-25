@@ -23,12 +23,20 @@ struct multibfs_perf {
     long int add_edge_path_time;
 };
 
-void optiq_multibfs_init(struct multibfs &bfs);
+extern "C" struct multibfs *bfs;
+
+void optiq_multibfs_init();
+
+struct multibfs *optiq_multibfs_get();
 
 void add_load_on_path(struct path *np, int *load, int adding_load, int num_nodes);
 
 void update_max_load(struct path *np, int *load, struct multibfs *bfs);
 
 void add_edge_path(std::vector<struct path*> *edge_path, struct path *p, int num_nodes);
+
+void optiq_multibfs_finalize();
+
+void optiq_multibfs_print();
 
 #endif

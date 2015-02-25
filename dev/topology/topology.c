@@ -5,7 +5,7 @@
 #include "util.h"
 #include "topology.h"
 
-struct topology *topo;
+struct topology *topo = NULL;
 
 /*
  * Will init the topology with:
@@ -13,18 +13,25 @@ struct topology *topo;
  *  2. size
  *  3. num_nodes
  *  4. num_edges
- *  5. neighbors's node ids
- *  6. torus
- *  7. routing order
- *  8. coords of all nodes.
+ *  5. node coordinate
+ *  6. neighbors's node ids
+ *  7. torus
+ *  8. routing order
+ *  9. coords of all nodes.
  * */
 void optiq_topology_init ()
 {
+    if (topo != NULL && topo->initialized) {
+	return;
+    }
+
     topo = (struct topology *) calloc (1, sizeof (struct topology));
 
     int num_dims = 5;
     optiq_topology_get_size_bgq(topo->size);
     optiq_topology_init_with_params(num_dims, topo->size, topo);
+
+    topo->initialized = true;
 }
 
 void optiq_topology_init_with_params(int num_dims, int *size, struct topology *topo)
@@ -36,6 +43,8 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct topology *t
 	topo->size[i] = size[i];
     }
     topo->num_nodes = num_nodes;
+
+    optiq_topology_get_coord(topo->coord);
    
     topo->neighbors = optiq_topology_get_all_nodes_neighbors(num_dims, size);
 
@@ -396,4 +405,33 @@ void optiq_topology_print_all_arcs(int num_dims, int *size, double cap)
             }
         }
     }
+}
+
+int optiq_topology_get_coord(int *coord)
+{
+#ifdef __bgq__
+    Personality_t pers;
+    Kernel_GetPersonality(&pers, sizeof(pers));
+
+    coord[0] = pers.Network_Config.Acoord;
+    coord[1] = pers.Network_Config.Bcoord;
+    coord[2] = pers.Network_Config.Ccoord;
+    coord[3] = pers.Network_Config.Dcoord;
+    coord[4] = pers.Network_Config.Ecoord;
+#endif
+}
+
+void optiq_topology_finalize()
+{
+    for (int i = 0; i < topo->num_nodes; i++) {
+	free(topo->all_coords[i]);
+    }
+
+    free(topo->all_coords);
+    free (topo->neighbors);
+
+    topo->finalized = true;
+    topo->initialized = false;
+
+    free (topo);
 }

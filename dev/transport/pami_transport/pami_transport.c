@@ -836,4 +836,7 @@ int optiq_pami_transport_finalize()
     return 0;
 }
 
-
+void optiq_pami_transport_print()
+{
+    printf("Rank %d size %d\n", pami_transport->rank, pami_transport->size);
+}

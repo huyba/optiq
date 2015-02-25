@@ -24,6 +24,8 @@
 #include "cesm.h"
 #include "patterns.h"
 
-void optiq_int();
+void optiq_init();
+
+void optiq_finalize();
 
 #endif

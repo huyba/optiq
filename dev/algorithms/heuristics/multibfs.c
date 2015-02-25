@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 #include "topology.h"
@@ -5,20 +7,29 @@
 
 struct multibfs_perf mperf;
 
-void optiq_multibfs_init(struct multibfs &bfs)
-{
-    bfs.num_dims = 5;
-    optiq_topology_get_size_bgq(bfs.size);
-    bfs.num_nodes = 1;
-    bfs.diameter = 0;
+struct multibfs *bfs;
 
-    for (int i = 0; i < bfs.num_dims; i++)
+void optiq_multibfs_init()
+{
+    bfs = (struct multibfs *) calloc (1, sizeof(struct multibfs));
+
+    bfs->num_dims = 5;
+    optiq_topology_get_size_bgq(bfs->size);
+    bfs->num_nodes = 1;
+    bfs->diameter = 0;
+
+    for (int i = 0; i < bfs->num_dims; i++)
     {
-        bfs.num_nodes *= bfs.size[i];
-        bfs.diameter += bfs.size[i];
+        bfs->num_nodes *= bfs->size[i];
+        bfs->diameter += bfs->size[i];
     }
 
-    bfs.neighbors = optiq_topology_get_all_nodes_neighbors(bfs.num_dims, bfs.size);
+    bfs->neighbors = optiq_topology_get_all_nodes_neighbors(bfs->num_dims, bfs->size);
+}
+
+struct multibfs *optiq_multibfs_get()
+{
+    return bfs;
 }
 
 void add_load_on_path(struct path *np, int *load, int adding_load, int num_nodes)
@@ -75,3 +86,12 @@ void add_edge_path(std::vector<struct path*> *edge_path, struct path *p, int num
     mperf.add_edge_path_time += diff;
 }
 
+void optiq_multibfs_finalize()
+{
+    free(bfs);
+}
+
+void optiq_multibfs_print()
+{
+    printf("BFS diameter %d\n", bfs->diameter);
+}

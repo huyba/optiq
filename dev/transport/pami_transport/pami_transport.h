@@ -102,6 +102,8 @@ int optiq_pami_transport_finalize();
 
 void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport);
 
+void optiq_pami_transport_print();
+
 struct optiq_pami_transport* optiq_pami_transport_get();
 
 void optiq_pami_decrement (pami_context_t context, void *cookie, pami_result_t result);

@@ -1,5 +1,5 @@
 ifndef COMPILER
-  COMPILER = gxx#XL
+  COMPILER = XL
 endif
 
 ifeq ($(COMPILER),GNU)
@@ -22,6 +22,7 @@ endif
 
 OPTIQ = ..
 TESTS = $(OPTIQ)/tests
+OPTEST = $(TEST)/optiq
 UTIL = $(TESTS)/util
 STRUCT = $(TESTS)/structures
 TOPOLOGY = $(TESTS)/topology
@@ -38,8 +39,10 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
 
-all: struct topo heu yen trans
+all: op struct topo heu yen trans
 
+op:
+	cd $(OPTEST) && $(MAKE) -f Makefile
 struct:
 	cd $(STRUCT) && $(MAKE) -f Makefile
 topo:
