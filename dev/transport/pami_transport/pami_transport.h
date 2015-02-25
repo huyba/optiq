@@ -26,6 +26,8 @@
 #define RECV_MESSAGE 14
 #define JOB_DONE 15
 
+#define BROADCAST_NUM_DESTS 20
+
 #define OPTIQ_NUM_RPUT_COOKIES (1024 * 1024)
 #define OPTIQ_NUM_MESSAGE_HEADERS (1024* 1024)
 
@@ -76,6 +78,7 @@ struct optiq_transport_info {
     std::vector<int> rput_done;
 
     int global_header_id;
+    int *all_num_dests;
 };
 
 struct optiq_pami_transport {
@@ -129,6 +132,16 @@ void optiq_recv_mem_request_fn (
         pami_recv_t     *recv);        /**< OUT: receive message structure */
 
 void optiq_recv_mem_response_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_num_dests_fn (
         pami_context_t    context,      /**< IN: PAMI context */
         void            *cookie,       /**< IN: dispatch cookie */
         const void      *header,       /**< IN: header address */
