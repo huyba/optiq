@@ -6,11 +6,7 @@
 #include "topology.h"
 #include "pathreconstruct.h"
 
-#include "alltomany.h"
-#include "manytomany.h"
-#include "multipaths.h"
-#include "multibfs.h"
-#include "yen.h"
+#include "algorithm.h"
 
 #include "path.h"
 #include "job.h"
@@ -27,5 +23,7 @@
 void optiq_init();
 
 void optiq_finalize();
+
+void optiq_alltoallv(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls);
 
 #endif

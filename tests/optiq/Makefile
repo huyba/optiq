@@ -39,7 +39,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o
 
-all: bdev test_optiq.x cp
+all: bdev test_optiq_init.x test_optiq_alltoallv.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -61,4 +61,5 @@ realclean: clean
 TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
 
 cp:
-	cp test_optiq.x $(TEST_DIR)/optiq/
+	cp test_optiq_init.x $(TEST_DIR)/optiq/init/
+	cp test_optiq_alltoallv.x $(TEST_DIR)/optiq/alltoallv/

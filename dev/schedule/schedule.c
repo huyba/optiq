@@ -9,19 +9,40 @@
 
 #define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
 
-void optiq_schedule_init(struct optiq_schedule &schedule)
-{
-    schedule.next_dests = (int *) calloc (1, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
-    schedule.recv_bytes = (int *) calloc (1, sizeof(int) * schedule.world_size);
+struct optiq_schedule *schedule = NULL;
 
-    schedule.recv_memregions = (struct optiq_memregion *) malloc (sizeof (struct optiq_memregion) * schedule.world_size);
+void optiq_schedule_init()
+{
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+
+    if (pami_transport == NULL) {
+	printf("Init pami transport first\n");
+	return;
+    }
+
+    schedule = (struct optiq_schedule *) calloc (1, sizeof(struct optiq_schedule));
+
+    schedule->world_size = pami_transport->size;
+    schedule->world_rank = pami_transport->rank;
+
+    schedule->next_dests = (int *) calloc (1, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
+    schedule->recv_bytes = (int *) calloc (1, sizeof(int) * schedule->world_size);
+
+    schedule->pami_transport = pami_transport;
+    pami_transport->sched = schedule;
 }
 
-void optiq_schedule_finalize(struct optiq_schedule &schedule)
+struct optiq_schedule *optiq_schedule_get()
 {
-    free(schedule.next_dests);
-    free(schedule.recv_bytes);
-    free(schedule.recv_memregions);
+    return schedule;
+}
+
+void optiq_schedule_finalize()
+{
+    struct optiq_schedule *schedule = optiq_schedule_get();
+
+    free(schedule->next_dests);
+    free(schedule->recv_bytes);
 }
 
 void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *> &complete_paths)

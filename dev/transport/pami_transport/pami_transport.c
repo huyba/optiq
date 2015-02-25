@@ -6,7 +6,7 @@
 
 #include "pami_transport.h"
 
-struct optiq_pami_transport *pami_transport;
+struct optiq_pami_transport *pami_transport = NULL;
 
 void optiq_pami_transport_init()
 {

@@ -40,19 +40,10 @@ struct optiq_schedule {
     int num_sources;
     int total_num_jobs;
 
-    char *send_buf;
-    int *sendcounts;
-    int *sdispls;
-
-    char *recv_buf;
-    int *recvcounts;
     int *rdispls;
-
+    
     bool isDest;
     bool isSource;
-
-    struct optiq_memregion *recv_memregions;
-    struct optiq_memregion *send_memregions;
 
     struct optiq_pami_transport *pami_transport;
 
@@ -63,9 +54,13 @@ struct optiq_schedule {
     std::vector<struct optiq_job> local_jobs;
 };
 
-void optiq_schedule_init(struct optiq_schedule &schedule);
+extern "C" struct optiq_schedule *schedule;
 
-void optiq_schedule_finalize(struct optiq_schedule &schedule);
+void optiq_schedule_init();
+
+void optiq_schedule_finalize();
+
+struct optiq_schedule *optiq_schedule_get();
 
 void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
 

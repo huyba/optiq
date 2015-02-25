@@ -7,7 +7,7 @@
 
 struct multibfs_perf mperf;
 
-struct multibfs *bfs;
+struct multibfs *bfs = NULL;
 
 void optiq_multibfs_init()
 {
