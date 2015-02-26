@@ -121,6 +121,9 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 
 	for (int i = 0; i < jobs.size(); i++)
 	{
+	    if (chunk_size == 0) {
+		chunk_size = jobs[i].buf_length/2;
+	    }
 	    int nbytes = chunk_size;
 
 	    if (jobs[i].buf_offset < jobs[i].buf_length) 
@@ -491,6 +494,10 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     std::vector<struct path *> paths;
     optiq_algorithm_search_path (paths, source_dests, bfs);
 
+    /*if (world_rank == 0) {
+	optiq_path_print_paths(paths);
+    }*/
+
     build_next_dests(world_rank, schedule->next_dests, paths);
 
     int recv_len = 0, send_len = 0;
@@ -551,8 +558,10 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
         }
     } 
 
+    printf("Rank %d has %d jobs\n", world_rank, schedule->local_jobs.size());
+
     /* Split a message into chunk-size messages*/
-    int chunk_size = sendcounts[0]/2;
+    int chunk_size = 0;
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, chunk_size);
 
     /*Reset a few parameters*/
