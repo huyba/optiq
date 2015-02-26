@@ -20,7 +20,7 @@
 #include "cesm.h"
 #include "patterns.h"
 
-void optiq_init();
+void optiq_init(int argc, char **argv);
 
 void optiq_finalize();
 

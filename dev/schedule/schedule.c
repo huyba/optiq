@@ -3,6 +3,7 @@
 #include <limits.h>
 
 #include <vector>
+#include <mpi.h>
 #include <pami.h>
 
 #include "schedule.h"
@@ -352,9 +353,9 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	PAMI_Context_advance(pami_transport->context, 100);
     }
 
-    for (int i = 0; i < world_size; i++) {
+    /*for (int i = 0; i < world_size; i++) {
 	printf("Rank %d num_dests = %d\n", i, all_num_dests[i]);
-    }
+    }*/
 
     int **all_dests = (int **) malloc (sizeof(int *) * world_size);
     for (int i = 0; i < world_size; i++) {
@@ -364,9 +365,53 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	}
     }
 
-    for (int i = 0; i < world_size; i++) {
+    if (world_rank != 0) 
+    {
+	/* Send its dest to 0*/
 	if (num_dests > 0) {
-	    optiq_pami_transport_rput(dests, num_dests * sizeof(int), world_rank, all_dests[world_rank], i);
+	    optiq_pami_transport_send(dests, num_dests * sizeof(int), 0);
+	}
+
+	/* Receive distribution from rank 0*/
+	/*for (int i = 0; i < world_size; i++) {
+	    if (all_num_dests[i] > 0) {
+		optiq_pami_transport_recv(all_dests[i], all_num_dests[i] * sizeof(int), 0);
+	    }
+	}
+	printf("Rank %d done receiving\n", world_rank);*/
+    } 
+
+    if (world_rank == 0) 
+    {
+	/* Copy its own dests */
+	if (num_dests > 0) {
+	    memcpy(all_dests[0], dests, sizeof(int) * num_dests);
+	}
+
+	/* Receive other dests */
+	for (int i = 1; i < world_size; i++) {
+	    if (all_num_dests[i] > 0) {
+		optiq_pami_transport_recv(all_dests[i], all_num_dests[i] * sizeof(int), i);
+	    }
+	}
+
+	/* Redistribute the dests list */
+	/*for (int i = 0; i < world_size; i++) 
+	{
+	    if (all_num_dests[i] > 0) {
+		for (int j = 1; j < world_size; j++) {
+		    optiq_pami_transport_send(all_dests[i], all_num_dests[i] * sizeof(int), j);
+		}
+	    }
+	}
+
+	printf("Rank 0 done sending\n");*/
+    }
+
+    for (int i = 0; i < world_size; i++) 
+    {
+	if (all_num_dests[i] > 0) {
+	    MPI_Bcast(all_dests[i], all_num_dests[i], MPI_INT, 0, MPI_COMM_WORLD);
 	}
     }
 

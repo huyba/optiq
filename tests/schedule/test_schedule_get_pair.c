@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv)
 {
-    optiq_init();
+    optiq_init(argc, argv);
 
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     int world_size = pami_transport->size;
@@ -22,11 +22,13 @@ int main(int argc, char **argv)
     int send_rank = 0;
     int recv_rank = 1;
 
-    if (world_rank == send_rank) {
+    if (world_rank < world_size/2) {
+	recv_rank = world_rank + world_size/2;
 	sendcounts[recv_rank] = send_bytes;
     }
 
-    if (world_rank == recv_rank) {
+    if (world_rank >= world_size/2) {
+	send_rank = world_rank - world_size/2;
 	recvcounts[send_rank] = recv_bytes;
     }
 
@@ -35,7 +37,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < source_dests.size(); i++) {
 	for (int j = 0; j < source_dests[i].second.size(); j++) {
-	    printf("Source %d dest %d\n", source_dests[i].first, source_dests[i].second[j]);
+	    printf("At rank %d Source %d dest %d\n", world_rank, source_dests[i].first, source_dests[i].second[j]);
 	}
     }
 

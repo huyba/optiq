@@ -1,11 +1,14 @@
 #include "optiq.h"
+#include <mpi.h>
 
-void optiq_init()
+void optiq_init(int argc, char **argv)
 {
     optiq_topology_init();
     optiq_pami_transport_init();
     optiq_multibfs_init();
     optiq_schedule_init();
+
+    MPI_Init(&argc, &argv);
 }
 
 void optiq_finalize()
@@ -14,6 +17,8 @@ void optiq_finalize()
     optiq_pami_transport_finalize();
     optiq_multibfs_finalize();
     optiq_schedule_finalize();
+
+    MPI_Finalize();
 }
 
 /* Will do the follows:
