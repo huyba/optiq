@@ -33,6 +33,8 @@ void optiq_schedule_init()
     schedule->pami_transport = pami_transport;
     pami_transport->sched = schedule;
 
+    schedule->chunk_size = 0;
+
     schedule->all_num_dests = (int *) malloc (sizeof(int) * pami_transport->size);
     schedule->active_immsends = pami_transport->size;
 }
@@ -559,8 +561,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     } 
 
     /* Split a message into chunk-size messages*/
-    int chunk_size = 0;
-    optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, chunk_size);
+    optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, schedule->chunk_size);
 
     /*Reset a few parameters*/
     optiq_schedule_set (*schedule, num_jobs, pami_transport->size);
