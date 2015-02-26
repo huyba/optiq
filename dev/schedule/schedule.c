@@ -312,3 +312,61 @@ void optiq_schedule_assign_job_demand(std::vector<struct optiq_job> &local_jobs,
 	local_jobs[i].buf_length = nbytes;
     }
 }
+
+
+int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests)
+{
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+
+    int world_size = pami_transport->size;
+    int world_rank = pami_transport->rank;
+    int num_dests = 0;
+
+    for (int i = 0; i < world_size; i++) {
+	if (sendcounts[i] != 0) {
+	    num_dests++;
+	}
+    }
+
+    int *dests = (int *) malloc (sizeof(int) * num_dests);
+    int j = 0;
+
+    for (int i = 0; i < world_size; i++) {
+	if (sendcounts[i] != 0) {
+            dests[j] = i;
+	    j++;
+        }
+    }
+
+    int *all_num_dests = pami_transport->sched->all_num_dests;
+
+    for (int i = 0; i < world_size; i++) {
+	optiq_pami_send_immediate(pami_transport->context, BROADCAST_NUM_DESTS, 0, 0, &num_dests, sizeof(int), pami_transport->endpoints[i]);
+    }
+
+    int **all_dests = (int **) malloc (sizeof(int *) * world_size);
+    for (int i = 0; i < world_size; i++) {
+	if (all_num_dests[i] > 0) {
+	    all_dests[i] = (int *) malloc (sizeof (int) * all_num_dests[i]);
+	}
+    }
+
+    for (int i = 0; i < world_size; i++) {
+	optiq_pami_transport_rput(dests, num_dests * sizeof(int), world_rank, all_dests[world_rank], i);
+    }
+
+    for (int i = 0; i < world_size; i++) 
+    {
+	std::vector<int> d;
+	d.clear();
+
+	for (int j = 0; j < all_num_dests[i]; j++) {
+	    d.push_back(all_dests[i][j]);
+	}
+
+	if (d.size() > 0) {
+	    std::pair<int, std::vector<int> > p = make_pair(i, d);
+	    source_dests.push_back(p);
+	}
+    }
+}

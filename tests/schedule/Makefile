@@ -5,24 +5,18 @@ endif
 ifeq ($(COMPILER),GNU)
   CC      = mpicc
   COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
-  LD	  = mpixlc_r
 endif
 
 ifeq ($(COMPILER),XL)
   CC      = mpicxx
   COPT    = -g -O3 #-DDEBUG
-  LD	  = mpixlc_r
 endif
 
-ifeq ($(COMPILER),gxx)
-    CC	    = g++
-    COPT    = -g -Wall
-    LG	    = g++
-endif
+LD      = mpixlc_r
 
 OPTIQ = ../..
+TEST = $(OPTIQ)/tests
 DEV = $(OPTIQ)/dev
-TESTS = $(OPTIQ)/tests
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 TOPOLOGY = $(DEV)/topology
@@ -33,14 +27,16 @@ PAT = $(DEV)/comm_patterns
 SCHED = $(DEV)/schedule
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV) -I$(HEU) -I$(YEN)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o
 
-all: bdev test_optiq_init.x test_optiq_alltoallv.x cp
+all:  mpi copy
+
+mpi: bdev test_schedule_get_pair.x
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -51,16 +47,15 @@ bdev:
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clean: $(OBJ)
-	rm $(OBJ)
-	rm *.o
+clean:
+	rm $(OBJ) *.x *.o
 
 realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
+	$(RM) $(RMFLAGS) $(libobj)
 
 TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
 
-cp:
-	cp test_optiq_init.x $(TEST_DIR)/optiq/init/
-	cp test_optiq_alltoallv.x $(TEST_DIR)/optiq/alltoallv/
+copy:
+	cp test_schedule_get_pair.x $(TEST_DIR)/schedule/

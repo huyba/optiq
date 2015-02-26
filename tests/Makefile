@@ -21,7 +21,7 @@ ifeq ($(COMPILER),gxx)
 endif
 
 OPTIQ = ..
-TESTS = $(OPTIQ)/tests
+TEST = $(OPTIQ)/tests
 OPTEST = $(TEST)/optiq
 UTIL = $(TESTS)/util
 STRUCT = $(TESTS)/structures
@@ -37,9 +37,9 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
+OBJ = 
 
-all: op struct topo heu yen trans
+all: op struct topo heu yen trans sched
 
 op:
 	cd $(OPTEST) && $(MAKE) -f Makefile
@@ -53,6 +53,8 @@ yen:
 	cd $(YEN) && $(MAKE) -f Makefile
 trans:
 	cd $(TRANS) && $(MAKE) -f Makefile
+sched:
+	cd $(SCHED) && $(MAKE) -f Makefile
 
 clean: $(OBJ)
 	rm $(OBJ)
