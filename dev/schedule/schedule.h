@@ -83,4 +83,11 @@ void optiq_schedule_set(struct optiq_schedule &schedule, int num_jobs, int world
 
 int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests);
 
+void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls);
+
+void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls,  struct optiq_schedule *schedule);
+
+void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
+
+void optiq_schedule_destroy();
 #endif

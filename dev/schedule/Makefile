@@ -17,9 +17,12 @@ LD      = mpixlc_r
 OPTIQ = ../..
 DEV = $(OPTIQ)/dev
 STRUCT = $(DEV)/structures
+ALG = $(DEV)/algorithms
+HEU = $(ALG)/heuristics
+YEN  = $(ALG)/yen
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(STRUCT) -I$(TRANS)
+CFLAGS  = $(COPT) -I. -I$(STRUCT) -I$(TRANS) -I$(ALG) -I$(HEU) -I$(YEN)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
