@@ -78,7 +78,6 @@ struct optiq_transport_info {
     std::vector<int> rput_done;
 
     int global_header_id;
-    int *all_num_dests;
 };
 
 struct optiq_pami_transport {

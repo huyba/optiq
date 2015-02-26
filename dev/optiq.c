@@ -40,7 +40,7 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
         }
     }
 
-    int *all_num_dests = pami_transport->transport_info.all_num_dests;
+    int *all_num_dests = pami_transport->sched->all_num_dests;
 
     for (int i = 0; i < world_size; i++) {
 	optiq_pami_send_immediate(pami_transport->context, BROADCAST_NUM_DESTS, 0, 0, &num_dests, sizeof(int), pami_transport->endpoints[i]);
@@ -48,7 +48,9 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 
     int **all_dests = (int **) malloc (sizeof(int *) * world_size);
     for (int i = 0; i < world_size; i++) {
-	all_dests[i] = (int *) malloc (sizeof (int) * all_num_dests[i]);
+	if (all_num_dests[i] > 0) {
+	    all_dests[i] = (int *) malloc (sizeof (int) * all_num_dests[i]);
+	}
     }
 
     for (int i = 0; i < world_size; i++) {

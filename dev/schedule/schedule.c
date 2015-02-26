@@ -30,6 +30,8 @@ void optiq_schedule_init()
 
     schedule->pami_transport = pami_transport;
     pami_transport->sched = schedule;
+
+    schedule->all_num_dests = (int *) malloc (sizeof(int) * pami_transport->size);
 }
 
 struct optiq_schedule *optiq_schedule_get()

@@ -58,6 +58,12 @@ sched:
 trans:
 	cd $(TRANS) && $(MAKE) -f Makefile
 
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.x: %.o $(OBJ)
+	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
+
 clean: $(OBJ)
 	rm $(OBJ)
 	rm *.o

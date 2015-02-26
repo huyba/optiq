@@ -228,8 +228,6 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     pami_transport->transport_info.forward_mr = forward_mr;
     pami_transport->transport_info.forward_mr->offset = 0;
     pami_transport->transport_info.global_header_id = 0;
-
-    pami_transport->transport_info.all_num_dests = (int *) malloc (sizeof(int) * pami_transport->size);
 }
 
 struct optiq_pami_transport* optiq_pami_transport_get()
@@ -563,7 +561,7 @@ void optiq_recv_num_dests_fn(pami_context_t context, void *cookie, const void *h
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
-    pami_transport->transport_info.mem_responses.push_back(*(struct optiq_mem_response *)data);
+    pami_transport->sched->all_num_dests[origin] = *((int *) data);
 }
 
 void optiq_recv_rput_done_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)

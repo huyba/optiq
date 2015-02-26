@@ -52,6 +52,8 @@ struct optiq_schedule {
     int chunk_size;
 
     std::vector<struct optiq_job> local_jobs;
+
+    int *all_num_dests;
 };
 
 extern "C" struct optiq_schedule *schedule;
