@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     }
 
     if (world_rank == 0) {
-	printf("Start to test optiq_alltoallv\n");
+	printf("Start to benchmark optiq_alltoallv\n");
     }
 
     optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
@@ -51,6 +51,10 @@ int main(int argc, char **argv)
 
 	opi.iters = 1;
 	optiq_opi_collect(world_rank);
+    }
+
+    if (world_rank == 0) {
+        printf("Finished benchmarking optiq_alltoallv\n");
     }
 
     optiq_finalize();
