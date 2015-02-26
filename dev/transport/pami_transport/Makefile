@@ -16,10 +16,11 @@ LD      = mpixlc_r
 
 OPTIQ = ../../..
 DEV = ../../../dev
+UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 SCHED = $(DEV)/schedule
 
-CFLAGS  = $(COPT) -I. -I$(SCHED) -I$(STRUCT)
+CFLAGS  = $(COPT) -I. -I$(SCHED) -I$(STRUCT) -I$(UTIL)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD

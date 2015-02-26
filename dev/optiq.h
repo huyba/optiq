@@ -2,6 +2,7 @@
 #define OPTIQ_H
 
 #include "util.h"
+#include "opi.h"
 
 #include "topology.h"
 #include "pathreconstruct.h"

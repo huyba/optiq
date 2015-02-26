@@ -24,7 +24,7 @@ void optiq_finalize()
 void optiq_alltoallv(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls)
 {
     optiq_schedule_build (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
-
+   
     optiq_pami_transport_execute (pami_transport);
 
     optiq_schedule_destroy ();

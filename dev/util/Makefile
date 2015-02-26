@@ -21,7 +21,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = 
 
-all: $(OBJ) util.o
+all: $(OBJ) util.o opi.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

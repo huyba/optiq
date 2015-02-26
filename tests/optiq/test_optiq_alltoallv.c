@@ -36,6 +36,10 @@ int main(int argc, char **argv)
 	recvcounts[send_rank] = recv_bytes;
     }
 
+    if (world_rank == 0) {
+	printf("Start to test optiq_alltoallv\n");
+    }
+
     optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     /* Validate the result */
@@ -49,6 +53,13 @@ int main(int argc, char **argv)
 	    printf("Rank %d received corrupted data\n", world_rank);
 	}
     }
+
+    if (world_rank == 0) {
+        printf("Finished testing optiq_alltoallv\n");
+    }
+
+    opi.iters = 1;
+    optiq_opi_collect(world_rank);
 
     optiq_finalize();
 

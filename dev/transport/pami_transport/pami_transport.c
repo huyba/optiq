@@ -4,6 +4,10 @@
 #include <string.h>
 #include <limits.h>
 
+#include <sys/time.h> 
+
+#include "opi.h"
+
 #include "pami_transport.h"
 
 struct optiq_pami_transport *pami_transport = NULL;
@@ -655,6 +659,9 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
 
 void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 {
+    timeval t0, t1;
+    gettimeofday(&t0, NULL);
+
     while (pami_transport->sched->remaining_jobs > 0)
     {
 	PAMI_Context_advance(pami_transport->context, 100);
@@ -764,6 +771,11 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	    pami_transport->transport_info.rput_cookies.push_back(complete_rput);
 	}
     }
+
+    gettimeofday(&t1, NULL);
+
+    opi.transfer_time = (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);
+    opi.recv_len = pami_transport->sched->recv_len;
 }
 
 void optiq_pami_transport_info_status(struct optiq_transport_info &transport_info, int rank)

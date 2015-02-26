@@ -558,8 +558,6 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
         }
     } 
 
-    printf("Rank %d has %d jobs\n", world_rank, schedule->local_jobs.size());
-
     /* Split a message into chunk-size messages*/
     int chunk_size = 0;
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, chunk_size);
