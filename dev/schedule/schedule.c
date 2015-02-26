@@ -329,7 +329,10 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	}
     }
 
-    int *dests = (int *) malloc (sizeof(int) * num_dests);
+    int *dests = NULL;
+    if (num_dests > 0) {
+	dests = (int *) malloc (sizeof(int) * num_dests);
+    }
     int j = 0;
 
     for (int i = 0; i < world_size; i++) {
@@ -349,6 +352,10 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	PAMI_Context_advance(pami_transport->context, 100);
     }
 
+    for (int i = 0; i < world_size; i++) {
+	printf("Rank %d num_dests = %d\n", i, all_num_dests[i]);
+    }
+
     int **all_dests = (int **) malloc (sizeof(int *) * world_size);
     for (int i = 0; i < world_size; i++) {
 	if (all_num_dests[i] > 0) {
@@ -358,7 +365,9 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
     }
 
     for (int i = 0; i < world_size; i++) {
-	optiq_pami_transport_rput(dests, num_dests * sizeof(int), world_rank, all_dests[world_rank], i);
+	if (num_dests > 0) {
+	    optiq_pami_transport_rput(dests, num_dests * sizeof(int), world_rank, all_dests[world_rank], i);
+	}
     }
 
     for (int i = 0; i < world_size; i++) 
