@@ -54,6 +54,7 @@ struct optiq_schedule {
     std::vector<struct optiq_job> local_jobs;
 
     int *all_num_dests;
+    int active_immsends;
 };
 
 extern "C" struct optiq_schedule *schedule;

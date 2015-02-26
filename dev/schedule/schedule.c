@@ -32,6 +32,7 @@ void optiq_schedule_init()
     pami_transport->sched = schedule;
 
     schedule->all_num_dests = (int *) malloc (sizeof(int) * pami_transport->size);
+    schedule->active_immsends = pami_transport->size;
 }
 
 struct optiq_schedule *optiq_schedule_get()
@@ -320,7 +321,7 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 
     int world_size = pami_transport->size;
     int world_rank = pami_transport->rank;
-    int num_dests = 0;
+    int num_dests = 0, num_sources = 0;
 
     for (int i = 0; i < world_size; i++) {
 	if (sendcounts[i] != 0) {
@@ -344,10 +345,15 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	optiq_pami_send_immediate(pami_transport->context, BROADCAST_NUM_DESTS, 0, 0, &num_dests, sizeof(int), pami_transport->endpoints[i]);
     }
 
+    while (pami_transport->sched->active_immsends > 0) {
+	PAMI_Context_advance(pami_transport->context, 100);
+    }
+
     int **all_dests = (int **) malloc (sizeof(int *) * world_size);
     for (int i = 0; i < world_size; i++) {
 	if (all_num_dests[i] > 0) {
 	    all_dests[i] = (int *) malloc (sizeof (int) * all_num_dests[i]);
+	    num_sources++;
 	}
     }
 
@@ -369,4 +375,6 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	    source_dests.push_back(p);
 	}
     }
+
+    return num_sources;
 }

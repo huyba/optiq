@@ -21,8 +21,8 @@ ifeq ($(COMPILER),gxx)
 endif
 
 OPTIQ = ..
-TEST = $(OPTIQ)/tests
-OPTEST = $(TEST)/optiq
+TESTS = $(OPTIQ)/tests
+OPTEST = $(TESTS)/optiq
 UTIL = $(TESTS)/util
 STRUCT = $(TESTS)/structures
 TOPOLOGY = $(TESTS)/topology

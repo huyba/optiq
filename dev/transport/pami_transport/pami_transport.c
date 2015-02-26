@@ -562,6 +562,7 @@ void optiq_recv_num_dests_fn(pami_context_t context, void *cookie, const void *h
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
     pami_transport->sched->all_num_dests[origin] = *((int *) data);
+    pami_transport->sched->active_immsends--;
 }
 
 void optiq_recv_rput_done_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
