@@ -36,7 +36,7 @@ OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(SCHED)/*.o $(TRANS)/*.o $(ALG)
 
 all:  mpi copy
 
-mpi: bdev test_schedule_get_pair.x
+mpi: bdev test_schedule_get_pair.x test_schedule_build.x
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -59,3 +59,4 @@ TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
 
 copy:
 	cp test_schedule_get_pair.x $(TEST_DIR)/schedule/
+	cp test_schedule_build.x $(TEST_DIR)/schedule/build/

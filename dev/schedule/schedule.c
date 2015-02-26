@@ -479,6 +479,10 @@ void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls
  * */
 void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls)
 {
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    struct optiq_schedule *schedule = optiq_schedule_get();
+    int world_rank = pami_transport->rank;
+
     /* Gather all pairs of source-dest and demand */
     std::vector<std::pair<int, std::vector<int> > > source_dests;
     int num_jobs = optiq_schedule_get_pair (sendcounts, source_dests);
@@ -487,7 +491,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     std::vector<struct path *> paths;
     optiq_algorithm_search_path (paths, source_dests, bfs);
 
-    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    build_next_dests(world_rank, schedule->next_dests, paths);
 
     int recv_len = 0, send_len = 0;
 
@@ -505,7 +509,6 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     }
 
     /* Build a schedule to transfer data */
-    struct optiq_schedule *schedule = optiq_schedule_get();
     schedule->rdispls = rdispls;
     schedule->recv_len = recv_len;
 
@@ -516,7 +519,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     schedule->local_jobs.clear();
     for (int i = 0; i < paths.size(); i++)
     {
-        if (paths[i]->arcs.front().u == pami_transport->rank) 
+        if (paths[i]->arcs.front().u == world_rank) 
 	{
             /*Check if the job is already existing*/
             bool existed = false;
@@ -534,7 +537,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
             {
                 struct optiq_job new_job;
 
-                new_job.source_rank = pami_transport->rank;
+                new_job.source_rank = world_rank;
                 new_job.dest_rank = paths[i]->arcs.back().v;
                 new_job.paths.push_back(paths[i]);
                 new_job.buf_offset = 0;
