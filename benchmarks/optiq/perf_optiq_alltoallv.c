@@ -1,4 +1,5 @@
 #include "optiq.h"
+#include "mpi_benchmark.h"
 
 int main(int argc, char **argv)
 {
@@ -39,6 +40,8 @@ int main(int argc, char **argv)
     if (world_rank == 0) {
 	printf("Start to test optiq_alltoallv\n");
     }
+
+    optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     for (int i = 16 * 1024; i < 1024 * 1024; i*=2)
     {
