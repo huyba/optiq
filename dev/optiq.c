@@ -25,10 +25,8 @@ void optiq_alltoallv(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf
 {
     optiq_schedule_build (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
-    if (pami_transport->rank == 0) {
-	printf("Build schedule done\n");
-    }
-   
+    MPI_Barrier(MPI_COMM_WORLD);
+
     optiq_pami_transport_execute (pami_transport);
 
     optiq_schedule_destroy ();

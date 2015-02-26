@@ -355,18 +355,6 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 
     MPI_Allgather(&num_dests, 1, MPI_INT, all_num_dests, 1, MPI_INT, MPI_COMM_WORLD);
 
-    /*for (int i = 0; i < world_size; i++) {
-	optiq_pami_send_immediate(pami_transport->context, BROADCAST_NUM_DESTS, 0, 0, &num_dests, sizeof(int), pami_transport->endpoints[i]);
-    }
-
-    while (pami_transport->sched->active_immsends > 0) {
-	PAMI_Context_advance(pami_transport->context, 100);
-    }*/
-
-    /*for (int i = 0; i < world_size; i++) {
-	printf("Rank %d num_dests = %d\n", i, all_num_dests[i]);
-    }*/
-
     int offset = 0;
     int *displs = (int *)malloc (sizeof(int) * world_size);
 
@@ -400,81 +388,6 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	}
 	offset += all_num_dests[i];
     }
-
-    /*int **all_dests = (int **) malloc (sizeof(int *) * world_size);
-    for (int i = 0; i < world_size; i++) {
-	if (all_num_dests[i] > 0) {
-	    all_dests[i] = (int *) malloc (sizeof (int) * all_num_dests[i]);
-	}
-    }*/
-
-    /*if (world_rank != 0) 
-    {*/
-	/* Send its dest to 0*/
-	/*if (num_dests > 0) {
-	    optiq_pami_transport_send(dests, num_dests * sizeof(int), 0);
-	}*/
-
-	/* Receive distribution from rank 0*/
-	/*for (int i = 0; i < world_size; i++) {
-	    if (all_num_dests[i] > 0) {
-		optiq_pami_transport_recv(all_dests[i], all_num_dests[i] * sizeof(int), 0);
-	    }
-	}
-	printf("Rank %d done receiving\n", world_rank);*/
-    /*}*/ 
-
-    /*if (world_rank == 0) 
-    {*/
-	/* Copy its own dests */
-	/*if (num_dests > 0) {
-	    memcpy(all_dests[0], dests, sizeof(int) * num_dests);
-	}*/
-
-	/* Receive other dests */
-	/*for (int i = 1; i < world_size; i++) {
-	    if (all_num_dests[i] > 0) {
-		optiq_pami_transport_recv(all_dests[i], all_num_dests[i] * sizeof(int), i);
-	    }
-	}*/
-
-	/* Redistribute the dests list */
-	/*for (int i = 0; i < world_size; i++) 
-	{
-	    if (all_num_dests[i] > 0) {
-		for (int j = 1; j < world_size; j++) {
-		    optiq_pami_transport_send(all_dests[i], all_num_dests[i] * sizeof(int), j);
-		}
-	    }
-	}
-
-	printf("Rank 0 done sending\n");*/
-    /*}
-
-    for (int i = 0; i < world_size; i++) 
-    {
-	if (all_num_dests[i] > 0) {
-	    MPI_Bcast(all_dests[i], all_num_dests[i], MPI_INT, 0, MPI_COMM_WORLD);
-	}
-    }
-
-    bool *distinguished_dests = (bool *) calloc (1, sizeof(bool) * world_size);
-
-    for (int i = 0; i < world_size; i++) 
-    {
-	std::vector<int> d;
-	d.clear();
-
-	for (int j = 0; j < all_num_dests[i]; j++) {
-	    d.push_back(all_dests[i][j]);
-	    distinguished_dests[all_dests[i][j]] = true;
-	}
-
-	if (d.size() > 0) {
-	    std::pair<int, std::vector<int> > p = make_pair(i, d);
-	    source_dests.push_back(p);
-	}
-    }*/
 
     int num_distinguished_dests = 0;
 
@@ -538,32 +451,15 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     struct optiq_schedule *schedule = optiq_schedule_get();
     int world_rank = pami_transport->rank;
 
-    if (world_rank == 0) {
-        printf("Start to build a schedule\n");
-    }
-
     /* Gather all pairs of source-dest and demand */
     std::vector<std::pair<int, std::vector<int> > > source_dests;
     int num_jobs = optiq_schedule_get_pair (sendcounts, source_dests);
-
-    if (world_rank == 0) {
-	printf("Schedule get pair done\n");
-    }
 
     /* Search for paths */
     std::vector<struct path *> paths;
     optiq_algorithm_search_path (paths, source_dests, bfs);
 
-    if (world_rank == 0) {
-	printf("Get path done\n");
-	/*optiq_path_print_paths(paths);*/
-    }
-
     build_next_dests(world_rank, schedule->next_dests, paths);
-
-    if (world_rank == 0) {
-        printf("Build next dest done\n");
-    }
 
     int recv_len = 0, send_len = 0;
 
