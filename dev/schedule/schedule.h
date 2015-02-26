@@ -37,9 +37,6 @@ struct optiq_schedule {
     struct optiq_memregion recv_mr;
     struct optiq_memregion send_mr;
 
-    int num_sources;
-    int total_num_jobs;
-
     int *rdispls;
     
     bool isDest;

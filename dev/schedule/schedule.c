@@ -54,6 +54,8 @@ void optiq_schedule_finalize()
 
 void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *> &complete_paths)
 {
+    memset(next_dests, 0, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
+
     for (int i = 0; i < complete_paths.size(); i++)
     {
 	for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
@@ -328,7 +330,7 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 
     int world_size = pami_transport->size;
     int world_rank = pami_transport->rank;
-    int num_dests = 0, num_sources = 0;
+    int num_dests = 0;
 
     for (int i = 0; i < world_size; i++) {
 	if (sendcounts[i] != 0) {
@@ -367,7 +369,6 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
     for (int i = 0; i < world_size; i++) {
 	if (all_num_dests[i] > 0) {
 	    all_dests[i] = (int *) malloc (sizeof (int) * all_num_dests[i]);
-	    num_sources++;
 	}
     }
 
@@ -421,6 +422,8 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	}
     }
 
+    bool *distinguished_dests = (bool *) calloc (1, sizeof(bool) * world_size);
+
     for (int i = 0; i < world_size; i++) 
     {
 	std::vector<int> d;
@@ -428,6 +431,7 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 
 	for (int j = 0; j < all_num_dests[i]; j++) {
 	    d.push_back(all_dests[i][j]);
+	    distinguished_dests[all_dests[i][j]] = true;
 	}
 
 	if (d.size() > 0) {
@@ -436,7 +440,17 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	}
     }
 
-    return num_sources;
+    int num_distinguished_dests = 0;
+
+    for (int i = 0; i < world_size; i++) 
+    {
+	if (distinguished_dests[i]) {
+	    num_distinguished_dests++;
+	}
+    }
+    free(distinguished_dests);
+
+    return num_distinguished_dests;
 }
 
 
@@ -492,15 +506,24 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     std::vector<std::pair<int, std::vector<int> > > source_dests;
     int num_jobs = optiq_schedule_get_pair (sendcounts, source_dests);
 
+    if (world_rank == 0) {
+	printf("Schedule get pair done\n");
+    }
+
     /* Search for paths */
     std::vector<struct path *> paths;
     optiq_algorithm_search_path (paths, source_dests, bfs);
 
-    /*if (world_rank == 0) {
-	optiq_path_print_paths(paths);
-    }*/
+    if (world_rank == 0) {
+	printf("Get path done\n");
+	/*optiq_path_print_paths(paths);*/
+    }
 
     build_next_dests(world_rank, schedule->next_dests, paths);
+
+    if (world_rank == 0) {
+        printf("Build next dest done\n");
+    }
 
     int recv_len = 0, send_len = 0;
 
@@ -520,6 +543,8 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /* Build a schedule to transfer data */
     schedule->rdispls = rdispls;
     schedule->recv_len = recv_len;
+    schedule->expecting_length = recv_len;
+    schedule->remaining_jobs = num_jobs;
 
     /* Register memories */
     optiq_schedule_memory_register(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, schedule);
@@ -572,6 +597,9 @@ void optiq_schedule_destroy()
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
+
+    memset(schedule->all_num_dests, 0, pami_transport->size * sizeof(int));
+    schedule->active_immsends = pami_transport->size;
     
     optiq_schedule_mem_destroy(*schedule, pami_transport);
 }

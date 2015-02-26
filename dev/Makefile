@@ -39,9 +39,9 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(ALG)/*.o
 
-all: util struct topo heu yen pat sched trans alg optiq.o
+all: makeutil struct topo heu yen pat sched trans alg optiq.o
 
-util:
+makeutil:
 	cd $(UTIL) && $(MAKE) -f Makefile
 struct:
 	cd $(STRUCT) && $(MAKE) -f Makefile
