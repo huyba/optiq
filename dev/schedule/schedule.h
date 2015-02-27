@@ -52,6 +52,8 @@ struct optiq_schedule {
 
     int *all_num_dests;
     int active_immsends;
+
+    std::vector<struct path *> paths;
 };
 
 extern "C" struct optiq_schedule *schedule;

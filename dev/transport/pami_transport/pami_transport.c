@@ -285,6 +285,9 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
 
 int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint)
 {
+    timeval t0, t1, t2, t3;
+    gettimeofday(&t0, NULL);
+
     int ret = 0;
 
     pami_send_immediate_t parameter;
@@ -300,6 +303,9 @@ int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *heade
     if (result != PAMI_SUCCESS) {
 	return 1;
     }
+
+    gettimeofday(&t1, NULL);
+    opi.sendimm_time += (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);
 
     return ret;
 }
@@ -659,7 +665,7 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
 
 void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 {
-    timeval t0, t1;
+    timeval t0, t1, t2, t3;
     gettimeofday(&t0, NULL);
 
     while (pami_transport->sched->remaining_jobs > 0)
@@ -673,10 +679,13 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 
 	/*If a destination has received all of its data*/
 	if (pami_transport->sched->isDest && pami_transport->sched->expecting_length == 0) {
+	    gettimeofday(&t2, NULL);
 	    for (int i = 0; i < pami_transport->size; i++) {
 		optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
 	    }
 	    pami_transport->sched->expecting_length = -1;
+	    gettimeofday(&t3, NULL);
+	    opi.notification_done_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 	}
 
 	/*If there is a request to send a message*/

@@ -326,6 +326,8 @@ void optiq_schedule_assign_job_demand(std::vector<struct optiq_job> &local_jobs,
 
 int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests)
 {
+    source_dests.clear();
+
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
 
     int world_size = pami_transport->size;
@@ -457,7 +459,9 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     /* Search for paths */
     std::vector<struct path *> paths;
+    paths.clear();
     optiq_algorithm_search_path (paths, source_dests, bfs);
+    schedule->paths = paths;
 
     build_next_dests(world_rank, schedule->next_dests, paths);
 
@@ -533,6 +537,9 @@ void optiq_schedule_destroy()
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
+
+    schedule->isSource = false;
+    schedule->isDest = false;
 
     memset(schedule->all_num_dests, 0, pami_transport->size * sizeof(int));
     schedule->active_immsends = pami_transport->size;
