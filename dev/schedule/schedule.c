@@ -66,7 +66,7 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 	    {
 		num_alive_flows++;
 
-		int num_vertices = complete_paths[i]->arcs.size() +1;
+		int num_vertices = complete_paths[i]->arcs.size() + 1;
 		int r = ceil(log2(num_vertices));
 
 		std::vector<int> d;
@@ -74,8 +74,12 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 
 		for (int q = 1; q <= r; q++) 
 		{
-		    if ((j+1) % (int)pow(2, q) == num_vertices % (int)pow(2,q)) {
-			d.push_back(complete_paths[i]->arcs[j + 1 - pow(2,q-1)].u);
+		    if ((j+1) % (int)pow(2, q) == (num_vertices-1) % (int)pow(2,q)) {
+			/*printf("Rank = %d j = %d, num_vertices = %d, r = %d, q = %d, position = %d, u = %d\n", world_rank, j, num_vertices, r, q, j + 1 - pow(2,q-1), complete_paths[i]->arcs[j + 1 - pow(2,q-1)].u);*/
+
+			if (j + 1 - pow(2, q-1) >= 0) {
+			    d.push_back(complete_paths[i]->arcs[j + 1 - pow(2,q-1)].u);
+			}
 		    } else {
 			break;
 		    }
