@@ -12,6 +12,8 @@
 
 void optiq_alg_heuristic_search_alltomany(std::vector<struct path *> &complete_paths, int num_dests, int *dest_ranks, struct multibfs *bfs) 
 {
+    complete_paths.clear();
+
     int num_nodes = bfs->num_nodes;
 
     std::vector<struct path> expanding_paths;

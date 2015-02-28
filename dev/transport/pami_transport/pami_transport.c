@@ -200,6 +200,7 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     int num_message_headers = OPTIQ_NUM_MESSAGE_HEADERS;
 
     /*Allocate memory for rput cookies*/
+    pami_transport->transport_info.rput_cookies.clear();
     for (int i = 0; i < num_rput_cookies; i++)
     {
         struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)calloc(1, sizeof(struct optiq_rput_cookie));
@@ -208,6 +209,7 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     }
 
     /*Allocate memory for message headers*/
+    pami_transport->transport_info.message_headers.clear();
     for (int i = 0; i < num_message_headers; i++)
     {
         struct optiq_message_header *message_header = (struct optiq_message_header *)calloc(1, sizeof(struct optiq_message_header));
@@ -231,7 +233,17 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     pami_transport->transport_info.forward_buf = forward_buf;
     pami_transport->transport_info.forward_mr = forward_mr;
     pami_transport->transport_info.forward_mr->offset = 0;
+ 
     pami_transport->transport_info.global_header_id = 0;
+    
+    pami_transport->transport_info.forward_headers.clear();
+    pami_transport->transport_info.complete_rputs.clear();
+    pami_transport->transport_info.send_headers.clear();
+    pami_transport->transport_info.processing_headers.clear();
+    pami_transport->transport_info.mr_responses.clear();
+    pami_transport->transport_info.mem_responses.clear();
+    pami_transport->transport_info.mem_requests.clear();
+    pami_transport->transport_info.rput_done.clear();  
 }
 
 struct optiq_pami_transport* optiq_pami_transport_get()
@@ -285,8 +297,8 @@ int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion
 
 int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint)
 {
-    timeval t0, t1, t2, t3;
-    gettimeofday(&t0, NULL);
+    /*timeval t0, t1, t2, t3;
+    gettimeofday(&t0, NULL);*/
 
     int ret = 0;
 
@@ -304,8 +316,8 @@ int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *heade
 	return 1;
     }
 
-    gettimeofday(&t1, NULL);
-    opi.sendimm_time += (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);
+    /*gettimeofday(&t1, NULL);
+    opi.sendimm_time += (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);*/
 
     return ret;
 }

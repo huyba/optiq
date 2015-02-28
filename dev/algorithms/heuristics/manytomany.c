@@ -12,6 +12,8 @@
 
 void optiq_alg_heuristic_search_manytomany_same_dests(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct multibfs *bfs) 
 {
+    complete_paths.clear();
+
     bool isReverted = false;
     /*Revert the sources/dests for less computating*/
     if (num_sources > num_dests) {

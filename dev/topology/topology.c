@@ -266,6 +266,7 @@ std::vector<int> * optiq_topology_get_all_nodes_neighbors(int num_dims, int *siz
                         nid = optiq_topology_compute_node_id(num_dims, size, coord);
                         num_neighbors = optiq_compute_neighbors(num_dims, size, coord, neighbors);
 
+			all_nodes_neighbors[nid].clear();
                         for(int i = 0; i < num_neighbors; i++) {
                             all_nodes_neighbors[nid].push_back(neighbors[i]);
                         }

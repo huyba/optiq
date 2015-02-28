@@ -37,8 +37,12 @@ int main(int argc, char **argv)
     char *recvbuf = (char *) calloc (1, datalen);
 
     std::vector<int> dests;
-    //dests.push_back(191);
     dests.push_back(1);
+    dests.push_back(15);
+    dests.push_back(31);
+    dests.push_back(255);
+    dests.push_back(191);
+    dests.push_back(767);
     //gen_dests(dests);
 
     if (world_rank == 0) {
@@ -73,7 +77,7 @@ int main(int argc, char **argv)
 
 	    //optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
-	    for (int chunk = nbytes; chunk <= nbytes; chunk *= 2)
+	    for (int chunk = 1024; chunk <= nbytes; chunk *= 2)
 	    {
 		schedule->chunk_size = chunk;
 
@@ -81,7 +85,7 @@ int main(int argc, char **argv)
 
 		if (world_rank == 0) {
 		    optiq_path_print_paths(schedule->paths);
-		    printf("dest = %d chunk_size = %d ", recvrank, schedule->chunk_size);
+		    printf("hops = %d dest = %d chunk_size = %d message_size = %d", schedule->paths[0]->arcs.size(), recvrank, schedule->chunk_size, nbytes);
 		}
 
 		opi.iters = 1;
