@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
+#include <math.h>
 #include <vector>
 #include <mpi.h>
 #include <pami.h>
@@ -50,6 +51,44 @@ void optiq_schedule_finalize()
 
     free(schedule->next_dests);
     free(schedule->recv_bytes);
+}
+
+void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, int &num_alive_flows, int world_rank)
+{
+    num_alive_flows = 0;
+    notify_list.clear();
+
+    for (int i = 0; i < complete_paths.size(); i++) 
+    {
+	for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
+	{
+	    if (complete_paths[i]->arcs[j].v == world_rank)
+	    {
+		num_alive_flows++;
+
+		int num_vertices = complete_paths[i]->arcs.size() +1;
+		int r = ceil(log2(num_vertices));
+
+		std::vector<int> d;
+                d.clear();
+
+		for (int q = 1; q <= r; q++) 
+		{
+		    if ((j+1) % (int)pow(2, q) == num_vertices % (int)pow(2,q)) {
+			d.push_back(complete_paths[i]->arcs[j + 1 - pow(2,q-1)].u);
+		    } else {
+			break;
+		    }
+		}
+
+		if (d.size() > 0) 
+		{
+		    std::pair<int, std::vector<int> > p = make_pair(complete_paths[i]->path_id, d);
+                    notify_list.push_back(p);
+		}
+	    }
+	}
+    }
 }
 
 void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *> &complete_paths)
