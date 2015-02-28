@@ -1,6 +1,7 @@
 \section{Approaches}
+\subsection{Framework}
 
-\subsection{Heuristic approaches}
+\subsection{Path searching layer}
 
 \subsubsection{Heuristic 1}
 In this approach, we search for paths to 
@@ -87,3 +88,7 @@ Main:
 \end{algorithm}
 
 In the \textbf{Algorithm \ref{alg:h2}}, we use Yen's algorithm to search for k shortest paths between \textit{s$_i$, d$_i$}.
+
+\subsection{Schedule layer}
+
+\subsection{Transport layer}
