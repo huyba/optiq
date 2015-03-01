@@ -54,9 +54,9 @@ int main(int argc, char **argv)
 	}
     }
 
-    if (world_rank == 0) {
-        printf("Finished testing optiq_alltoallv\n");
-    }
+    //if (world_rank == 0) {
+        printf("Rank %d Finished testing optiq_alltoallv\n", world_rank);
+    //}
 
     opi.iters = 1;
     optiq_opi_collect(world_rank);

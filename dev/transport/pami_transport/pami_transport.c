@@ -713,6 +713,8 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
     timeval t0, t1, t2, t3;
     gettimeofday(&t0, NULL);
 
+    /*printf("Rank %d , list size = %d, num_active_paths = %d\n", pami_transport->rank, pami_transport->sched->notify_list.size(), pami_transport->sched->num_active_paths);*/
+
     while (pami_transport->sched->num_active_paths > 0)
     {
 	PAMI_Context_advance(pami_transport->context, 100);
@@ -722,12 +724,17 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	    break;
 	}
 
+	/*printf("Rank %d , list size = %d, num_active_paths = %d, expecting_length =%d\n", pami_transport->rank, pami_transport->sched->notify_list.size(), pami_transport->sched->num_active_paths, pami_transport->sched->expecting_length);*/
+
 	/*If a destination has received all of its data*/
-	if (pami_transport->sched->isDest && pami_transport->sched->expecting_length == 0) {
+	if (pami_transport->sched->isDest && pami_transport->sched->expecting_length == 0) 
+	{
 	    gettimeofday(&t2, NULL);
 	    /*for (int i = 0; i < pami_transport->size; i++) {
 		optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
 	    }*/
+
+	    /*printf("Rank %d , list size = %d, num_active_paths = %d\n", pami_transport->rank, pami_transport->sched->notify_list.size(), pami_transport->sched->num_active_paths);*/
 
 	    int i = 0;
 	    while(pami_transport->sched->notify_list.size() > 0) 
@@ -741,14 +748,17 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		    pami_transport->sched->notify_list[i].second.pop_back();
 
 		    optiq_pami_send_immediate(pami_transport->context, PATH_DONE, &path_id, sizeof(int), NULL, 0, pami_transport->endpoints[dest]);
+		    /*printf("Rank %d send notify to rank %d\n", pami_transport->rank, dest);*/
 		    break;
 		}
 
-		i++;
+		/*printf("Rank %d , list size = %d, size = %d\n", pami_transport->rank, pami_transport->sched->notify_list.size(), pami_transport->sched->notify_list[i].second.size());*/
 
 		if (pami_transport->sched->notify_list[i].second.size() == 0) {
 		    pami_transport->sched->notify_list.erase(pami_transport->sched->notify_list.begin() + i);
 		}
+
+		i++;
 	    }
 
 	    pami_transport->sched->num_active_paths = 0;

@@ -57,15 +57,19 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 {
     num_active_paths = 0;
     notify_list.clear();
+    bool isIn;
 
     for (int i = 0; i < complete_paths.size(); i++) 
     {
+	isIn = false;
 	for (int j = 0; j < complete_paths[i]->arcs.size(); j++)
 	{
+	    if (complete_paths[i]->arcs[j].v == world_rank || complete_paths[i]->arcs[j].u == world_rank) {
+		isIn = true;
+	    }
+
 	    if (complete_paths[i]->arcs[j].v == world_rank)
 	    {
-		num_active_paths ++;
-
 		int num_vertices = complete_paths[i]->arcs.size() + 1;
 		int r = ceil(log2(num_vertices));
 
@@ -91,6 +95,11 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
                     notify_list.push_back(p);
 		}
 	    }
+	}
+
+	if (isIn) {
+	    num_active_paths++;
+	    isIn = false;
 	}
     }
 }
@@ -509,6 +518,10 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     build_next_dests(world_rank, schedule->next_dests, paths);
     build_notify_lists(paths, schedule->notify_list, schedule->num_active_paths, world_rank);
 
+    /*optiq_path_print_paths(paths);
+    printf("active = %d\n", schedule->num_active_paths);
+    */
+
     int recv_len = 0, send_len = 0;
 
     for (int i = 0; i < pami_transport->size; i++)
@@ -581,6 +594,9 @@ void optiq_schedule_destroy()
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
+
+    schedule->num_active_paths = 0;
+    schedule->notify_list.clear();
 
     schedule->isSource = false;
     schedule->isDest = false;
