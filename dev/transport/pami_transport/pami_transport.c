@@ -129,6 +129,19 @@ void optiq_pami_transport_init()
 	return;
     }
 
+    /*Path done notification*/
+    fn.p2p = optiq_recv_path_done_notification_fn;
+    result = PAMI_Dispatch_set (pami_transport->context,
+            PATH_DONE,
+            fn,
+            (void *) pami_transport,
+            options);
+
+    assert(result == PAMI_SUCCESS);
+    if (result != PAMI_SUCCESS) {
+        return;
+    }
+
     /*Job done notification*/
     fn.p2p = optiq_recv_job_done_notification_fn;
     result = PAMI_Dispatch_set (pami_transport->context,
@@ -659,6 +672,26 @@ void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void 
      *         */
 }
 
+void optiq_recv_path_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
+{
+    struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+    int path_id = *( (int *) header );
+    pami_transport->sched->num_active_paths--;
+
+    for (int i = 0; i < pami_transport->sched->notify_list.size(); i++) 
+    {
+	if (pami_transport->sched->notify_list[i].first == path_id)
+	{
+	    for (int j = 0; j < pami_transport->sched->notify_list[i].second.size(); j++)
+	    {
+		int dest = pami_transport->sched->notify_list[i].second[j];
+		optiq_pami_send_immediate(pami_transport->context, PATH_DONE, &path_id, sizeof(int), NULL, 0, pami_transport->endpoints[dest]);
+	    }
+	    pami_transport->sched->notify_list.erase(pami_transport->sched->notify_list.begin() + i);
+	}
+    }
+}
+
 void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
@@ -680,21 +713,45 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
     timeval t0, t1, t2, t3;
     gettimeofday(&t0, NULL);
 
-    while (pami_transport->sched->remaining_jobs > 0)
+    while (pami_transport->sched->num_active_paths > 0)
     {
 	PAMI_Context_advance(pami_transport->context, 100);
 
 	/*If all jobs are done*/
-	if (pami_transport->sched->remaining_jobs == 0) {
+	if (pami_transport->sched->num_active_paths == 0) {
 	    break;
 	}
 
 	/*If a destination has received all of its data*/
 	if (pami_transport->sched->isDest && pami_transport->sched->expecting_length == 0) {
 	    gettimeofday(&t2, NULL);
-	    for (int i = 0; i < pami_transport->size; i++) {
+	    /*for (int i = 0; i < pami_transport->size; i++) {
 		optiq_pami_send_immediate(pami_transport->context, JOB_DONE, NULL, 0, NULL, 0, pami_transport->endpoints[i]);
+	    }*/
+
+	    int i = 0;
+	    while(pami_transport->sched->notify_list.size() > 0) 
+	    {
+		i = i % pami_transport->sched->notify_list.size();
+
+		while (pami_transport->sched->notify_list[i].second.size() > 0)
+		{
+		    int path_id = pami_transport->sched->notify_list[i].first;
+		    int dest = pami_transport->sched->notify_list[i].second.back();
+		    pami_transport->sched->notify_list[i].second.pop_back();
+
+		    optiq_pami_send_immediate(pami_transport->context, PATH_DONE, &path_id, sizeof(int), NULL, 0, pami_transport->endpoints[dest]);
+		    break;
+		}
+
+		i++;
+
+		if (pami_transport->sched->notify_list[i].second.size() == 0) {
+		    pami_transport->sched->notify_list.erase(pami_transport->sched->notify_list.begin() + i);
+		}
 	    }
+
+	    pami_transport->sched->num_active_paths = 0;
 	    pami_transport->sched->expecting_length = -1;
 	    gettimeofday(&t3, NULL);
 	    opi.notification_done_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
@@ -818,6 +875,7 @@ void optiq_pami_transport_info_status(struct optiq_transport_info &transport_inf
 void optiq_pami_transport_sched_status(struct optiq_schedule *sched, int rank)
 {
     printf("Rank = %d, Remain job = %d\n", rank, sched->remaining_jobs);
+    printf("Rank = %d, active_paths = %d\n", rank, sched->num_active_paths);
     printf("Rank = %d, expecting_length = %d\n", rank, sched->expecting_length);
 }
 

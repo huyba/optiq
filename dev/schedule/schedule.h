@@ -54,6 +54,9 @@ struct optiq_schedule {
     int active_immsends;
 
     std::vector<struct path *> paths;
+
+    std::vector<std::pair<int, std::vector<int> > > notify_list;
+    int num_active_paths;
 };
 
 extern "C" struct optiq_schedule *schedule;

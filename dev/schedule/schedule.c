@@ -53,9 +53,9 @@ void optiq_schedule_finalize()
     free(schedule->recv_bytes);
 }
 
-void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, int &num_alive_flows, int world_rank)
+void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, int &num_active_paths, int world_rank)
 {
-    num_alive_flows = 0;
+    num_active_paths = 0;
     notify_list.clear();
 
     for (int i = 0; i < complete_paths.size(); i++) 
@@ -64,7 +64,7 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 	{
 	    if (complete_paths[i]->arcs[j].v == world_rank)
 	    {
-		num_alive_flows++;
+		num_active_paths ++;
 
 		int num_vertices = complete_paths[i]->arcs.size() + 1;
 		int r = ceil(log2(num_vertices));
@@ -507,6 +507,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     schedule->paths = paths;
 
     build_next_dests(world_rank, schedule->next_dests, paths);
+    build_notify_lists(paths, schedule->notify_list, schedule->num_active_paths, world_rank);
 
     int recv_len = 0, send_len = 0;
 
