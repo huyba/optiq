@@ -422,6 +422,20 @@ int optiq_topology_get_coord(int *coord)
 #endif
 }
 
+int optiq_topology_get_hop_distance(int node1, int node2)
+{
+    struct topology *topo = optiq_topology_get();
+
+    if (topo == NULL) {
+	optiq_topology_init();
+    }
+
+    int *coord1 = topo->all_coords[node1];
+    int *coord2 = topo->all_coords[node2];
+
+    return optiq_compute_num_hops(topo->num_dims, coord1, coord2);
+}
+
 void optiq_topology_finalize()
 {
     for (int i = 0; i < topo->num_nodes; i++) {

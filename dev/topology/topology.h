@@ -43,6 +43,8 @@ void optiq_topology_get_size_bgq(int *size);
 
 int optiq_topology_get_node_id(int world_rank, int num_ranks_per_node);
 
+int optiq_topology_get_hop_distance(int node1, int node2);
+
 int optiq_topology_get_coord(int *coord);
 
 int optiq_topology_compute_node_id(int num_dims, int *size, int *coord);

@@ -38,12 +38,12 @@ int main(int argc, char **argv)
 
     std::vector<int> dests;
     dests.push_back(1);
-    //dests.push_back(15);
-    //dests.push_back(31);
-    //dests.push_back(255);
-    //dests.push_back(191);
-    //dests.push_back(767);
-    //gen_dests(dests);
+    dests.push_back(15);
+    dests.push_back(31);
+    dests.push_back(255);
+    dests.push_back(191);
+    dests.push_back(767);
+    gen_dests(dests);
 
     if (world_rank == 0) {
 	printf("Start to benchmark optiq_alltoallv\n");
@@ -77,9 +77,9 @@ int main(int argc, char **argv)
 
 	    //optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
-	    for (int chunk = nbytes; chunk <= nbytes; chunk *= 2)
-	    {
-		schedule->chunk_size = chunk;
+	    //for (int chunk = nbytes; chunk <= nbytes; chunk *= 2)
+	    //{
+		schedule->chunk_size = optiq_schedule_get_chunk_size(nbytes, sendrank, recvrank);
 
 		optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 		opi.iters = 1;
 		optiq_opi_collect(world_rank);
 		optiq_opi_clear();
-	    }
+	    //}
 	}
     }
 

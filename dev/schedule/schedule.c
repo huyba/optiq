@@ -7,6 +7,7 @@
 #include <mpi.h>
 #include <pami.h>
 
+#include "topology.h"
 #include "algorithm.h"
 #include "schedule.h"
 
@@ -614,8 +615,10 @@ void optiq_schedule_destroy()
     optiq_schedule_mem_destroy(*schedule, pami_transport);
 }
 
-int get_chunk_size(int message_size, int num_hops) 
+int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank) 
 {
+    int num_hops = optiq_topology_get_hop_distance(sendrank, recvrank);
+
     int chunk_size = message_size;
 
     if (num_hops <= 2) {

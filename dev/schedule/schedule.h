@@ -95,5 +95,5 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 
 void optiq_schedule_destroy();
 
-int get_chunk_size(int message_size, int num_hops);
+int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank);
 #endif
