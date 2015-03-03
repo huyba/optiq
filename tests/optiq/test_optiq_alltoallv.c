@@ -40,7 +40,10 @@ int main(int argc, char **argv)
 	printf("Start to test optiq_alltoallv\n");
     }
 
-    optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+    int iters = 20;
+    for (int i = 0; i < iters; i++) {
+	optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+    }
 
     /* Validate the result */
     if (world_rank >= world_size/2) {
@@ -58,7 +61,7 @@ int main(int argc, char **argv)
         printf("Rank %d Finished testing optiq_alltoallv\n", world_rank);
     //}
 
-    opi.iters = 1;
+    opi.iters = iters;
     optiq_opi_collect(world_rank);
 
     optiq_finalize();

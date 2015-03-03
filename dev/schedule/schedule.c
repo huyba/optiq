@@ -457,23 +457,30 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 }
 
 
-void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr)
+void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t *mr)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     int world_size = pami_transport->size;
 
-    int max_displ = 0, index = 0;
-    for (int i = 0; i < world_size; i++) {
-	if (max_displ < displs[i]) {
-	    max_displ = displs[i];
-	    index = i;
+    int reg_size = 0, min_pivot = 0, max_pivot = 0;
+    for (int i = 0; i < world_size; i++) 
+    {
+	if (max_pivot < counts[i] + displs[i]) {
+	    max_pivot = counts[i] + displs[i];
+	}
+	if (min_pivot > counts[i] + displs[i]) {
+	    min_pivot = counts[i] + displs[i];
 	}
     }
+    
+    reg_size = max_pivot - min_pivot;
+    /*if (schedule->isSource || schedule->isDest) {
+	printf("Rank %d reg_size = %d, min_pivot = %d, max_pivot = %d\n", pami_transport->rank, reg_size, min_pivot, max_pivot);
+    }*/
 
-    int reg_size = max_displ + counts[index];
     size_t bytes = 0;
 
-    pami_result_t result = PAMI_Memregion_create(pami_transport->context, buf, reg_size, &bytes, &mr);
+    pami_result_t result = PAMI_Memregion_create(pami_transport->context, &(((char *)buf)[min_pivot]), reg_size, &bytes, mr);
 
     if (result != PAMI_SUCCESS) {
 	printf("No success\n");
@@ -485,10 +492,10 @@ void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr)
 
 void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls,  struct optiq_schedule *schedule)
 {
-    optiq_mem_reg(sendbuf, sendcounts, sdispls, schedule->send_mr.mr);
+    optiq_mem_reg(sendbuf, sendcounts, sdispls, &(schedule->send_mr.mr));
     schedule->send_mr.offset = 0;
 
-    optiq_mem_reg(recvbuf, recvcounts, rdispls, schedule->recv_mr.mr);
+    optiq_mem_reg(recvbuf, recvcounts, rdispls, &(schedule->recv_mr.mr));
     schedule->recv_mr.offset = 0;
 }
 
@@ -573,7 +580,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
                 new_job.paths.push_back(paths[i]);
                 new_job.buf_offset = 0;
                 new_job.last_path_index = 0;
-		new_job.send_mr = schedule->send_mr;
+		memcpy(&new_job.send_mr, &schedule->send_mr, sizeof (struct optiq_memregion));
 		new_job.send_mr.offset = sdispls[new_job.dest_rank];
 		new_job.buf_length = sendcounts[new_job.dest_rank];
 

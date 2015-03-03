@@ -84,6 +84,7 @@ int main(int argc, char **argv)
 		optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
 		if (world_rank == 0) {
+		    printf("\n");
 		    optiq_path_print_paths(schedule->paths);
 		    printf("hops = %d dest = %d chunk_size = %d message_size = %d", schedule->paths[0]->arcs.size(), recvrank, schedule->chunk_size, nbytes);
 		}

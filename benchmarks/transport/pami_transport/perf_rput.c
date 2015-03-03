@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     int remote_rank = 1;
     void *remote_buf = malloc (rput_bytes);
 
-    int iters = 30;
+    int iters = 1;
 
     for (int nbytes = 1024; nbytes <= rput_bytes; nbytes *= 2)
     {
