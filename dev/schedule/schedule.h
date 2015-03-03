@@ -94,4 +94,6 @@ void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
 void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, int &num_alive_flows, int world_rank);
 
 void optiq_schedule_destroy();
+
+int get_chunk_size(int message_size, int num_hops);
 #endif

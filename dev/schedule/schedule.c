@@ -613,3 +613,44 @@ void optiq_schedule_destroy()
     
     optiq_schedule_mem_destroy(*schedule, pami_transport);
 }
+
+int get_chunk_size(int message_size, int num_hops) 
+{
+    int chunk_size = message_size;
+
+    if (num_hops <= 2) {
+	if (message_size < 64 * 1024) {
+            chunk_size = message_size;
+        }
+
+        if (message_size >= 64 * 1024) {
+            chunk_size = message_size/2;
+        }
+    }
+
+    if (3 <= num_hops && num_hops <= 4) {
+	if (message_size < 32 * 1024) {
+            chunk_size = message_size;
+        }
+
+	if (32 * 1024 <= message_size && message_size <= 64 * 1024) {
+	    chunk_size = 32 * 1024;
+	}
+
+	if (message_size >= 64 * 1024) {
+            chunk_size = 16 * 1024;
+        }
+    }
+
+    if (num_hops >= 5) {
+	if (message_size < 64 * 1024) {
+            chunk_size = message_size;
+        }
+
+	if (message_size >= 64 * 1024) {
+	    chunk_size = 16 * 1024;
+	}
+    }
+
+    return chunk_size;
+}
