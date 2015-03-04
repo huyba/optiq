@@ -32,6 +32,10 @@ void optiq_topology_init ()
     optiq_topology_init_with_params(num_dims, topo->size, topo);
 
     topo->initialized = true;
+
+    if (pami_transport->rank == 0) {
+	optiq_topology_print_basic (topo);
+    }
 }
 
 void optiq_topology_init_with_params(int num_dims, int *size, struct topology *topo)
