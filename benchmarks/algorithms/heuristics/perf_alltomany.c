@@ -105,16 +105,16 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    struct multibfs bfs;
-    optiq_multibfs_init(bfs);
+    optiq_multibfs_init();
+    struct multibfs *bfs = optiq_multibfs_get();
 
     if (world_rank == 0) {
 	printf("Topology: \n");
-	for (int i = 0; i < bfs.num_dims; i++) {
-	    printf("%d ", bfs.size[i]);
+	for (int i = 0; i < bfs->num_dims; i++) {
+	    printf("%d ", bfs->size[i]);
 	}
 	printf("\n");
-	printf("num_dims = %d, num_nodes = %d\n", bfs.num_dims, bfs.num_nodes);
+	printf("num_dims = %d, num_nodes = %d\n", bfs->num_dims, bfs->num_nodes);
     }
 
     int ratio = 64;
@@ -171,12 +171,12 @@ int main(int argc, char **argv)
 
     uint64_t t0 = GetTimeBase();
 
-    max_path_length = bfs.diameter/2;
+    max_path_length = bfs->diameter/2;
 
     std::vector<struct path *> complete_paths;
     complete_paths.clear();
 
-    optiq_alg_heuristic_search_alltomany(complete_paths, num_dests, dest_ranks, &bfs);
+    optiq_alg_heuristic_search_alltomany(complete_paths, num_dests, dest_ranks, bfs);
 
     /*if (world_rank == 0) {
       optiq_path_print_paths(complete_paths);
@@ -184,31 +184,25 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    struct optiq_schedule schedule;
-    schedule.world_rank = world_rank;
-    schedule.world_size = world_size;
-
-    schedule.send_buf = send_buf;
-    schedule.sendcounts = sendcounts;
-    schedule.sdispls = sdispls;
-
-    schedule.recv_buf = recv_buf;
-    schedule.recvcounts = recvcounts;
-    schedule.rdispls = rdispls;
-
-    schedule.remaining_jobs = num_dests;
-    schedule.expecting_length = recv_bytes;
-    schedule.sent_bytes = 0;
-    schedule.chunk_size = 256 * 1024;
-
-    optiq_schedule_init(schedule);
-
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     optiq_pami_transport_init();
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     optiq_transport_info_init(pami_transport);
 
-    pami_transport->sched = &schedule;
+    optiq_schedule_init();
+    
+    struct optiq_schedule *schedule = optiq_schedule_get();
+    schedule->world_rank = world_rank;
+    schedule->world_size = world_size;
+
+    schedule->rdispls = rdispls;
+
+    schedule->remaining_jobs = num_dests;
+    schedule->expecting_length = recv_bytes;
+    schedule->sent_bytes = 0;
+    schedule->chunk_size = 256 * 1024;
+
+    pami_transport->sched = schedule;
     pami_transport->sched->pami_transport = pami_transport;
 
     uint64_t t1 = GetTimeBase();
@@ -217,9 +211,9 @@ int main(int argc, char **argv)
 
     for (int nbytes = 256*1024; nbytes <= count; nbytes *= 2)
     {
-	for (int i = 0; i < schedule.local_jobs.size(); i++)
+	for (int i = 0; i < schedule->local_jobs.size(); i++)
 	{
-	    schedule.local_jobs[i].buf_length = nbytes;
+	    schedule->local_jobs[i].buf_length = nbytes;
 	}
 
 	if (world_rank == 0) {
@@ -232,13 +226,13 @@ int main(int argc, char **argv)
 		printf("chunk_size = %d\n", chunk_size);
 	    }
 
-	    schedule.chunk_size = chunk_size;
-	    optiq_schedule_split_jobs (pami_transport, schedule.local_jobs, schedule.chunk_size);
+	    schedule->chunk_size = chunk_size;
+	    optiq_schedule_split_jobs (pami_transport, schedule->local_jobs, schedule->chunk_size);
 
-	    schedule.remaining_jobs = num_dests;
-	    schedule.expecting_length = nbytes * world_size;
-	    schedule.sent_bytes = 0;
-	    memset (schedule.recv_bytes, 0, sizeof (int) * world_size);
+	    schedule->remaining_jobs = num_dests;
+	    schedule->expecting_length = nbytes * world_size;
+	    schedule->sent_bytes = 0;
+	    memset (schedule->recv_bytes, 0, sizeof (int) * world_size);
 
 	    MPI_Barrier (MPI_COMM_WORLD);
 
@@ -275,7 +269,7 @@ int main(int argc, char **argv)
 
     if (world_rank == 0)
     {
-	optiq_path_print_stat(complete_paths, bfs.num_nodes);
+	optiq_path_print_stat(complete_paths, bfs->num_nodes);
 
 	printf("\nTest with MPI_Alltoallv\n");
     }

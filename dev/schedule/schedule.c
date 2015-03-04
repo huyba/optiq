@@ -281,6 +281,16 @@ void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<stru
     schedule.isSource = isSource;
 }
 
+void optiq_schedule_print_notify_list(std::vector<std::pair<int, std::vector<int> > > &notify_list, int rank)
+{
+    for (int i = 0; i < notify_list.size(); i++)
+    {
+	for (int j = 0; j < notify_list[i].second.size(); j++) {
+	    printf("Rank %d path_id = %d, dest = %d\n", rank, notify_list[i].first, notify_list[i].second[j]);
+	}
+    }
+}
+
 void optiq_schedule_print_jobs(struct optiq_schedule &schedule)
 {
     std::vector<struct optiq_job> jobs = schedule.local_jobs;
@@ -533,6 +543,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     build_next_dests(world_rank, schedule->next_dests, paths);
     build_notify_lists(paths, schedule->notify_list, schedule->num_active_paths, world_rank);
+    /*optiq_schedule_print_notify_list(schedule->notify_list, world_rank);*/
 
     /*optiq_path_print_paths(paths);
     printf("active = %d\n", schedule->num_active_paths);

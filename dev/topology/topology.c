@@ -65,6 +65,33 @@ struct topology* optiq_topology_get()
     return topo;
 }
 
+void optiq_topology_print_basic(struct topology *topo)
+{
+    printf("num_dims = %d\n", topo->num_dims);
+
+    printf("size: ");
+    for (int i = 0; i < topo->num_dims; i++) {
+        printf("%d ", topo->size[i]);
+    }
+    printf("\n");
+
+    printf("num_nodes = %d\n", topo->num_nodes);
+
+    printf("num_edges = %d\n", topo->num_edges);
+
+    printf("torus: ");
+    for (int i = 0; i < topo->num_dims; i++) {
+        printf("%d ", topo->torus[i]);
+    }
+    printf("\n");
+
+    printf("order: ");
+    for (int i = 0; i < topo->num_dims; i++) {
+        printf("%d ", topo->order[i]);
+    }
+    printf("\n");
+}
+
 void optiq_topology_print(struct topology *topo)
 {
     printf("num_dims = %d\n", topo->num_dims);

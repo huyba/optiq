@@ -693,6 +693,8 @@ void optiq_recv_path_done_notification_fn(pami_context_t context, void *cookie, 
 	    pami_transport->sched->notify_list.erase(pami_transport->sched->notify_list.begin() + i);
 	}
     }
+
+    /*printf("Rank %d recv path done notification from %d\n", pami_transport->rank, origin);*/
 }
 
 void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -763,7 +765,7 @@ void optiq_pami_transport_get_message ()
 
 	/* Get the header out of the queue */
 	header = mh->front();
-	mh->erase(mh->begin());
+	mh->erase (mh->begin());
 
 	/* Assign header value */
 	header->header_id = pami_transport->transport_info.global_header_id;
@@ -827,7 +829,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		i++;
 	    }
 
-	    pami_transport->sched->num_active_paths = 0;
+	    pami_transport->sched->num_active_paths--;
 	    pami_transport->sched->expecting_length = -1;
 	    gettimeofday(&t3, NULL);
 	    opi.notification_done_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
@@ -835,7 +837,13 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 
 	/*If there is a request to send a message*/
 	gettimeofday(&t2, NULL);
+
+	/*printf("rank %d local size = %d, fowrad size = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size());*/
+
 	optiq_pami_transport_get_message();
+
+	/*printf("Rank %d local size = %d, fowrad size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length);*/
+
 	gettimeofday(&t3, NULL);
 	opi.get_header_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 
