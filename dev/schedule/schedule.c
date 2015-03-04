@@ -39,11 +39,19 @@ void optiq_schedule_init()
 
     schedule->all_num_dests = (int *) malloc (sizeof(int) * pami_transport->size);
     schedule->active_immsends = pami_transport->size;
+
+    schedule->dmode = DQUEUE_ROUND_ROBIN;
 }
 
 struct optiq_schedule *optiq_schedule_get()
 {
     return schedule;
+}
+
+void optiq_schedule_set_dqueue_mode(enum dequeue_mode dmode)
+{
+    struct optiq_schedule *schedule = optiq_schedule_get();
+    schedule->dmode = dmode;
 }
 
 void optiq_schedule_finalize()

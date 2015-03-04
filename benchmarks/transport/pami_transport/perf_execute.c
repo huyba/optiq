@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     dests.push_back(255);
     dests.push_back(191);
     dests.push_back(767);
-    gen_dests(dests);
+    //gen_dests(dests);
 
     if (world_rank == 0) {
 	printf("Start to benchmark optiq_alltoallv\n");
