@@ -7,10 +7,18 @@
 #include "multipaths.h"
 #include "yen.h"
 
-enum {
+enum search_algorithm {
+    OPTIQ_ALG_NO_CONSTRAINT,
+    OPTIQ_ALG_HOPS_CONSTRAINT,
     OPTIQ_ALG_KPATHS,
-    OPTIQ_ALG_H1
+    OPTIQ_ALG_MODEL_PATH_BASED
 };
+
+struct optiq_algorithm {
+    enum search_algorithm search_alg;
+};
+
+extern "C" struct optiq_algorithm *algorithm;
 
 void optiq_algorithm_init();
 
