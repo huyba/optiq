@@ -37,7 +37,18 @@ int main(int argc, char **argv)
 	recvcounts[send_rank] = recv_bytes;
     }
 
-    optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+    optiq_benchmark_mpi_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    std::vector<std::pair<int, std::vector<int> > > source_dests;
+    optiq_schedule_get_pair (sendcounts, source_dests);
+
+    std::vector<struct path *> mpi_paths;
+    optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
+
+    if (world_rank == 0) {
+	optiq_path_print_stat(mpi_paths);
+	optiq_path_print_paths(mpi_paths);
+    }
 
     if (world_rank == 0) {
 	printf("\nTest DQUEUE_LOCAL_MESSAGE_FIRST\n");
