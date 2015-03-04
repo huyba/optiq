@@ -9,6 +9,12 @@ void optiq_init(int argc, char **argv)
     optiq_schedule_init();
 
     MPI_Init(&argc, &argv);
+}
+
+void optiq_print_basic ()
+{
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    struct topology *topo = optiq_topology_get();
 
     if (pami_transport->rank == 0) {
         optiq_topology_print_basic (topo);
