@@ -11,6 +11,11 @@ void hp_create(struct heap_path *hp, int max_num_elements)
     hp->heap = (struct path **) malloc (sizeof(struct path*) * max_num_elements);
 }
 
+void hp_destroy(struct heap_path *hp)
+{
+    free(hp->heap);
+}
+
 void hp_insert(struct heap_path *hp, struct path *new_path)
 {
     hp->heap[hp->num_elements] = new_path;

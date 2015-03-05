@@ -44,12 +44,15 @@ int main(int argc, char **argv)
     }
 
     schedule->dmode = DQUEUE_FORWARD_MESSAGE_FIRST;
-    schedule->chunk_size = optiq_schedule_get_chunk_size (send_bytes, world_rank, send_rank);
+    for (int chunk = 16*1024; chunk <= send_bytes; chunk *= 2)
+    {
+	schedule->chunk_size = chunk;// optiq_schedule_get_chunk_size (send_bytes, world_rank, send_rank);
 
-    optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+	optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
-    opi.iters = 1;
-    optiq_opi_collect(world_rank);
+	opi.iters = 1;
+	optiq_opi_collect(world_rank);
+    }
 
     if (world_rank >= world_size/2) {
 	char *testbuf = (char *) calloc (1, recv_bytes);

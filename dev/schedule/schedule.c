@@ -60,6 +60,9 @@ void optiq_schedule_finalize()
 
     free(schedule->next_dests);
     free(schedule->recv_bytes);
+    free(schedule->all_num_dests);
+
+    free(schedule);
 }
 
 void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, int &num_active_paths, int world_rank)
@@ -470,7 +473,15 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
 	    num_distinguished_dests++;
 	}
     }
-    free(distinguished_dests);
+
+    free (distinguished_dests);
+    free (all_dests);
+
+    if (dests != NULL) {
+	free(dests);
+    }
+
+    free(displs);
 
     return num_distinguished_dests;
 }
@@ -560,33 +571,32 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     path_ids.clear();
     optiq_algorithm_search_path (path_ids, source_dest_ids, bfs);
 
-    /*if (world_rank == 0) {
+    if (world_rank == 0) {
         printf("Done searching paths of node ids\n");
-	optiq_path_print_paths(path_ids);
-    }*/
+	//optiq_path_print_paths(path_ids);
+    }
 
     /* Convert from path of node ids to path of rank ids */
-    std::vector<struct path *> path_ranks;
+    std::vector<struct path *> &path_ranks = schedule->paths;
     path_ranks.clear();
     optiq_schedule_map_from_pathids_to_pathranks (path_ids, source_dest_ranks, path_ranks);
-    schedule->paths = path_ranks;
 
-    /*if (world_rank == 0) {
+    if (world_rank == 0) {
         printf("Done mapping paths of node ids to ranks\n");
-	optiq_path_print_paths(path_ranks);
-    }*/
+	//optiq_path_print_paths(path_ranks);
+    }
 
     build_next_dests(world_rank, schedule->next_dests, path_ranks);
 
-    /*if (world_rank == 0) {
+    if (world_rank == 0) {
         printf("Done building next dests\n");
-    }*/
+    }
 
     build_notify_lists(path_ranks, schedule->notify_list, schedule->num_active_paths, world_rank);
     /*optiq_schedule_print_notify_list(schedule->notify_list, world_rank);*/
-    /*if (world_rank == 0) {
+    if (world_rank == 0) {
         printf("Done building notify list\n");
-    }*/
+    }
 
     /*optiq_path_print_paths(paths);
     printf("active = %d\n", schedule->num_active_paths);
@@ -659,6 +669,9 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     /*Reset a few parameters*/
     optiq_schedule_set (*schedule, num_jobs, pami_transport->size);
+
+    /*Free path_ids*/
+    optiq_algorithm_destroy();
 }
 
 /* Destroy the registered memory regions */
@@ -677,6 +690,10 @@ void optiq_schedule_destroy()
     schedule->active_immsends = pami_transport->size;
     
     optiq_schedule_mem_destroy(*schedule, pami_transport);
+
+    for (int i = 0; i < schedule->paths.size(); i++) {
+	free(schedule->paths[i]);
+    } 
 }
 
 int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank) 

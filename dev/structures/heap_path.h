@@ -11,6 +11,8 @@ struct heap_path {
 
 void hp_create(struct heap_path *hp, int max_num_elements);
 
+void hp_destroy(struct heap_path *hp);
+
 void hp_insert(struct heap_path *hp, struct path *new_path);
 
 void hp_shift_up(struct heap_path *hp, int index);

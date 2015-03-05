@@ -154,6 +154,10 @@ void optiq_alg_heuristic_search_manytomany_same_dests(std::vector<struct path *>
     free(bfs->edge_path);
     free(load);
     free(visited);
+    free(source_dest);
+
+    hp_destroy(bfs->heap);
+    free(bfs->heap);
 
     /*Reverted path again*/
     if (isReverted) {
@@ -407,6 +411,10 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
     free(bfs->edge_path);
     free(load);
     free(visited);
+    free(source_dest);
+
+    hp_destroy(bfs->heap);
+    free(bfs->heap);
 
     /*Reverted path again*/
     if (isReverted) {

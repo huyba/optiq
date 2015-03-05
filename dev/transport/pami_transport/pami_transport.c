@@ -653,9 +653,8 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
 
     if(pami_transport->rank == message_header->dest) {
 	pami_transport->sched->expecting_length -= message_header->length;
-	/*printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->sched->expecting_length);
-	 *         printf("Rank %d received data from %d size = %d\n", pami_transport->rank, message_header->source, message_header->length);
-	 *                 */
+	printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->sched->expecting_length);
+	/*printf("Rank %d received data from %d size = %d\n", pami_transport->rank, message_header->source, message_header->length);*/
 	pami_transport->sched->recv_bytes[message_header->source] += message_header->length;
     } else {
 	pami_transport->transport_info.forward_headers.push_back(message_header);
@@ -836,11 +835,11 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	/*If there is a request to send a message*/
 	gettimeofday(&t2, NULL);
 
-	/*printf("rank %d local size = %d, fowrad size = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size());*/
+	/*printf("rank %d local size = %d, forward size = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size());*/
 
 	optiq_pami_transport_get_message();
 
-	/*printf("Rank %d local size = %d, fowrad size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length);*/
+	/*printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length);*/
 
 	gettimeofday(&t3, NULL);
 	opi.get_header_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);

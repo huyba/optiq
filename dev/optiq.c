@@ -29,7 +29,7 @@ void optiq_finalize()
 {
     optiq_topology_finalize();
     optiq_pami_transport_finalize();
-    optiq_multibfs_finalize();
+    optiq_algorithm_finalize();
     optiq_schedule_finalize();
 
     MPI_Finalize();
