@@ -25,6 +25,7 @@
 #define RPUT_DONE 13
 #define RECV_MESSAGE 14
 #define JOB_DONE 15
+#define PATH_DONE 16
 
 #define BROADCAST_NUM_DESTS 20
 
@@ -78,6 +79,9 @@ struct optiq_transport_info {
     std::vector<int> rput_done;
 
     int global_header_id;
+
+    int num_queues;
+    int current_queue;
 };
 
 struct optiq_pami_transport {
@@ -111,6 +115,8 @@ struct optiq_pami_transport* optiq_pami_transport_get();
 void optiq_pami_decrement (pami_context_t context, void *cookie, pami_result_t result);
 
 int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie, void (*rput_done_fn)(void*, void*, pami_result_t), void (*rput_rdone_fn)(void*, void*, pami_result_t));
+
+void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_t result);
 
 int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint);
 
@@ -181,6 +187,16 @@ void optiq_recv_mr_forward_request_fn (
         pami_recv_t     *recv);        /**< OUT: receive message structure */
 
 void optiq_recv_mr_destination_request_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_path_done_notification_fn (
         pami_context_t    context,      /**< IN: PAMI context */
         void            *cookie,       /**< IN: dispatch cookie */
         const void      *header,       /**< IN: header address */

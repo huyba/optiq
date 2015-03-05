@@ -89,13 +89,13 @@ void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_
     struct optiq_comm_mem comm_mem;
     int num_sources = optiq_comm_mem_allocate (source_dests, count, comm_mem, pami_transport->rank, pami_transport->size);
 
-    struct optiq_schedule schedule;
+    optiq_schedule_init();
+
+    struct optiq_schedule schedule = *optiq_schedule_get();
     schedule.world_size = pami_transport->size;
     schedule.world_rank = pami_transport->rank;
     schedule.pami_transport = pami_transport;
     pami_transport->sched = &schedule;
-
-    optiq_schedule_init (schedule);
 
     /* Add paths and mem_comm to schedule */
     optiq_schedule_add_paths (schedule, complete_paths);
@@ -124,7 +124,7 @@ void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_
     /*Deregister meme*/
     optiq_schedule_mem_destroy(schedule, pami_transport);
 
-    optiq_schedule_finalize (schedule);
+    optiq_schedule_finalize ();
 
     /*Free the mem_comm*/
     optiq_comm_mem_delete (comm_mem);
@@ -184,8 +184,9 @@ int main(int argc, char **argv)
     MPI_Comm_rank (MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size (MPI_COMM_WORLD, &world_size);
 
-    struct multibfs bfs;
-    optiq_multibfs_init(bfs);
+    optiq_multibfs_init();
+
+    struct multibfs bfs = *optiq_multibfs_get();
 
     if (world_rank == 0) {
 	printf("Topology: \n");
@@ -205,8 +206,6 @@ int main(int argc, char **argv)
     /*Create pami_transport and related variables: rput_cookies, message_headers*/
     optiq_pami_transport_init ();
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-
-    optiq_transport_info_init (pami_transport);
 
     test_cesm (count, bfs, pami_transport);
 

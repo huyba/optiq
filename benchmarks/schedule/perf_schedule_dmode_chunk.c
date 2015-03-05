@@ -1,4 +1,5 @@
 #include "optiq.h"
+#include "mpi_benchmark.h"
 
 int main(int argc, char **argv)
 {
@@ -36,32 +37,37 @@ int main(int argc, char **argv)
 	recvcounts[send_rank] = recv_bytes;
     }
 
+    optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
     if (world_rank == 0) {
-	printf("Start to test optiq_alltoallv\n");
+        printf("\nTest Various chunk size\n");
     }
 
-    int iters = 20;
-    for (int i = 0; i < iters; i++) {
-	optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
-    }
-
-    /* Validate the result */
-    if (world_rank >= world_size/2) {
-	char *testbuf = (char *) malloc(recv_bytes);
-	for (int i = 0; i < recv_bytes; i++) {
-	    testbuf[i] = i % 128;
+    for (int chunk = 1024; chunk <= send_bytes; chunk *= 2)
+    {
+	if (world_rank == 0) {
+	    printf("\nchunk size = %d\n", chunk);
 	}
 
-	if (memcmp(recvbuf, testbuf, recv_bytes) != 0) {
-	    printf("Rank %d received corrupted data\n", world_rank);
-	}
+	schedule->chunk_size = chunk;
+	schedule->dmode = DQUEUE_ROUND_ROBIN;
+
+	optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+	opi.iters = 1;
+	optiq_opi_collect(world_rank);
     }
 
-    //if (world_rank == 0) {
-        printf("Rank %d Finished testing optiq_alltoallv\n", world_rank);
-    //}
+    if (world_rank == 0) {
+        printf("\nDynamic choosing chunk size\n");
+    }
 
-    opi.iters = iters;
+    schedule->dmode = DQUEUE_ROUND_ROBIN;
+    schedule->chunk_size = optiq_schedule_get_chunk_size (send_bytes, world_rank, send_rank);
+
+    optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    opi.iters = 1;
     optiq_opi_collect(world_rank);
 
     optiq_finalize();

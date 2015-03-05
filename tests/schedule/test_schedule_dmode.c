@@ -37,32 +37,44 @@ int main(int argc, char **argv)
     }
 
     if (world_rank == 0) {
-	printf("Start to test optiq_alltoallv\n");
+	printf("\nTest DQUEUE_LOCAL_MESSAGE_FIRST\n");
     }
 
-    int iters = 20;
-    for (int i = 0; i < iters; i++) {
-	optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
-    }
+    schedule->dmode = DQUEUE_LOCAL_MESSAGE_FIRST;
+    schedule->chunk_size = optiq_schedule_get_chunk_size (send_bytes, world_rank, send_rank);
 
-    /* Validate the result */
-    if (world_rank >= world_size/2) {
-	char *testbuf = (char *) malloc(recv_bytes);
-	for (int i = 0; i < recv_bytes; i++) {
-	    testbuf[i] = i % 128;
-	}
+    optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
-	if (memcmp(recvbuf, testbuf, recv_bytes) != 0) {
-	    printf("Rank %d received corrupted data\n", world_rank);
-	}
-    }
-
-    //if (world_rank == 0) {
-        printf("Rank %d Finished testing optiq_alltoallv\n", world_rank);
-    //}
-
-    opi.iters = iters;
+    opi.iters = 1;
     optiq_opi_collect(world_rank);
+
+    if (world_rank == 0) {
+        printf("\nTest DQUEUE_FORWARD_MESSAGE_FIRST\n");
+    }
+
+    schedule->dmode = DQUEUE_FORWARD_MESSAGE_FIRST;
+    schedule->chunk_size = optiq_schedule_get_chunk_size (send_bytes, world_rank, send_rank);
+
+    optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    opi.iters = 1;
+    optiq_opi_collect(world_rank);
+
+    if (world_rank == 0) {
+        printf("\nTest DQUEUE_ROUND_ROBIN\n");
+    }
+
+    schedule->dmode = DQUEUE_ROUND_ROBIN;
+    schedule->chunk_size = optiq_schedule_get_chunk_size (send_bytes, world_rank, send_rank);
+
+    optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    opi.iters = 1;
+    optiq_opi_collect(world_rank);
+
+    if (world_rank == 0) {
+        printf("Finished testing schedule dqueue modes\n");
+    }
 
     optiq_finalize();
 

@@ -39,9 +39,13 @@ struct topology* optiq_topology_get();
 
 void optiq_topology_print(struct topology *topo);
 
+void optiq_topology_print_basic(struct topology *topo);
+
 void optiq_topology_get_size_bgq(int *size);
 
 int optiq_topology_get_node_id(int world_rank, int num_ranks_per_node);
+
+int optiq_topology_get_hop_distance(int node1, int node2);
 
 int optiq_topology_get_coord(int *coord);
 

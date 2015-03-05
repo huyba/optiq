@@ -5,18 +5,24 @@ endif
 ifeq ($(COMPILER),GNU)
   CC      = mpicc
   COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
+  LD	  = mpixlc_r
 endif
 
 ifeq ($(COMPILER),XL)
   CC      = mpicxx
   COPT    = -g -O3 #-DDEBUG
+  LD	  = mpixlc_r
 endif
 
-LD      = mpixlc_r
+ifeq ($(COMPILER),gxx)
+    CC	    = g++
+    COPT    = -g -Wall
+    LG	    = g++
+endif
 
 OPTIQ = ../..
-TEST = $(OPTIQ)/tests
 DEV = $(OPTIQ)/dev
+BM = $(OPTIQ)/benchmarks
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 TOPOLOGY = $(DEV)/topology
@@ -27,19 +33,19 @@ PAT = $(DEV)/comm_patterns
 SCHED = $(DEV)/schedule
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV) -I$(HEU) -I$(YEN)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV) -I$(BM)/mpi
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(SCHED)/*.o $(TRANS)/*.o $(ALG)/*.o  $(HEU)/*.o $(YEN)/*.o $(DEV)/optiq.o
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o
 
-all:  mpi copy
-
-mpi: bdev test_schedule_get_pair.x test_schedule_build.x test_schedule_notify_list.x test_schedule_dmode.x
+all: bdev mpibm perf_schedule_dmode.x perf_schedule_dmode_chunk.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
+mpibm:
+	cd $(BM)/mpi && $(MAKE) -f Makefile
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -47,18 +53,16 @@ bdev:
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clean:
-	rm $(OBJ) *.x *.o
+clean: $(OBJ)
+	rm $(OBJ)
+	rm *.o
 
 realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
-	$(RM) $(RMFLAGS) $(libobj)
 
-TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
+BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 
-copy:
-	cp test_schedule_get_pair.x $(TEST_DIR)/schedule/
-	cp test_schedule_build.x $(TEST_DIR)/schedule/build/
-	cp test_schedule_notify_list.x $(TEST_DIR)/schedule/notifylist/
-	cp test_schedule_dmode.x $(TEST_DIR)/schedule/mode/
+cp:
+	cp perf_schedule_dmode.x $(BENCHMARKS_DIR)/schedule/mode/
+	cp perf_schedule_dmode_chunk.x $(BENCHMARKS_DIR)/schedule/mode_chunk/

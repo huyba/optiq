@@ -65,6 +65,33 @@ struct topology* optiq_topology_get()
     return topo;
 }
 
+void optiq_topology_print_basic(struct topology *topo)
+{
+    printf("num_dims = %d\n", topo->num_dims);
+
+    printf("size: ");
+    for (int i = 0; i < topo->num_dims; i++) {
+        printf("%d ", topo->size[i]);
+    }
+    printf("\n");
+
+    printf("num_nodes = %d\n", topo->num_nodes);
+
+    printf("num_edges = %d\n", topo->num_edges);
+
+    printf("torus: ");
+    for (int i = 0; i < topo->num_dims; i++) {
+        printf("%d ", topo->torus[i]);
+    }
+    printf("\n");
+
+    printf("order: ");
+    for (int i = 0; i < topo->num_dims; i++) {
+        printf("%d ", topo->order[i]);
+    }
+    printf("\n");
+}
+
 void optiq_topology_print(struct topology *topo)
 {
     printf("num_dims = %d\n", topo->num_dims);
@@ -420,6 +447,20 @@ int optiq_topology_get_coord(int *coord)
     coord[3] = pers.Network_Config.Dcoord;
     coord[4] = pers.Network_Config.Ecoord;
 #endif
+}
+
+int optiq_topology_get_hop_distance(int node1, int node2)
+{
+    struct topology *topo = optiq_topology_get();
+
+    if (topo == NULL) {
+	optiq_topology_init();
+    }
+
+    int *coord1 = topo->all_coords[node1];
+    int *coord2 = topo->all_coords[node2];
+
+    return optiq_compute_num_hops(topo->num_dims, coord1, coord2);
 }
 
 void optiq_topology_finalize()

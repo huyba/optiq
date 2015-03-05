@@ -77,21 +77,24 @@ int main(int argc, char **argv)
 
 	    //optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
-	    for (int chunk = 1024; chunk <= nbytes; chunk *= 2)
-	    {
-		schedule->chunk_size = chunk;
+	    //for (int chunk = nbytes; chunk <= nbytes; chunk *= 2)
+	    //{
+		schedule->chunk_size = optiq_schedule_get_chunk_size(nbytes, sendrank, recvrank);
 
 		optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
 		if (world_rank == 0) {
+		    printf("\n");
 		    optiq_path_print_paths(schedule->paths);
 		    printf("hops = %d dest = %d chunk_size = %d message_size = %d", schedule->paths[0]->arcs.size(), recvrank, schedule->chunk_size, nbytes);
 		}
 
+		/*printf("Rank %d come to here\n", world_rank);*/
+
 		opi.iters = 1;
 		optiq_opi_collect(world_rank);
 		optiq_opi_clear();
-	    }
+	    //}
 	}
     }
 

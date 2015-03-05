@@ -22,6 +22,12 @@ struct optiq_job {
     int last_path_index;
 };
 
+enum dequeue_mode {
+    DQUEUE_LOCAL_MESSAGE_FIRST,
+    DQUEUE_FORWARD_MESSAGE_FIRST,
+    DQUEUE_ROUND_ROBIN
+};
+
 struct optiq_schedule {
     int schedule_id;
 
@@ -54,6 +60,11 @@ struct optiq_schedule {
     int active_immsends;
 
     std::vector<struct path *> paths;
+
+    std::vector<std::pair<int, std::vector<int> > > notify_list;
+    int num_active_paths;
+
+    enum dequeue_mode dmode;
 };
 
 extern "C" struct optiq_schedule *schedule;
@@ -63,6 +74,8 @@ void optiq_schedule_init();
 void optiq_schedule_finalize();
 
 struct optiq_schedule *optiq_schedule_get();
+
+void optiq_schedule_set_dqueue_mode(enum dequeue_mode dmode);
 
 void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
 
@@ -88,5 +101,9 @@ void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls
 
 void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
 
+void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, int &num_alive_flows, int world_rank);
+
 void optiq_schedule_destroy();
+
+int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank);
 #endif
