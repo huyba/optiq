@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <queue>
+#include <vector>
 
 #include "util.h"
 
@@ -64,4 +65,13 @@ int optiq_check_existing (int num_elements, int *list, int element)
     }
 
     return 0;
+}
+
+void optiq_util_print_source_dests(std::vector<std::pair<int, std::vector<int> > > source_dest_ids)
+{
+    for (int i = 0; i < source_dest_ids.size(); i++) {
+        for (int j = 0; j < source_dest_ids[i].second.size(); j++) {
+            printf("Source = %d, dest = %d\n", source_dest_ids[i].first, source_dest_ids[i].second[j]);
+        }
+    }
 }

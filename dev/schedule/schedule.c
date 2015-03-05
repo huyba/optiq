@@ -552,6 +552,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     if (world_rank == 0) {
         printf("Done mapping pairs: ranks -> node ids\n");
+	optiq_util_print_source_dests(source_dest_ids);
     }
 
     /* Search for paths */
@@ -612,7 +613,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     schedule->expecting_length = recv_len;
     schedule->remaining_jobs = num_jobs;
 
-    printf("\nRank %d expecting_len = %d, num_jobs = %d, num_active_paths = %d\n", schedule->expecting_length, schedule->remaining_jobs, schedule->num_active_paths);
+    printf("Rank %d expecting_len = %d, num_jobs = %d, num_active_paths = %d\n", schedule->expecting_length, schedule->remaining_jobs, schedule->num_active_paths);
 
     /* Register memories */
     optiq_schedule_memory_register(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, schedule);
@@ -783,3 +784,4 @@ void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &p
 	}
     }
 }
+

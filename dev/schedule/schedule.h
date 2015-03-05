@@ -1,6 +1,7 @@
 #ifndef OPTIQ_SCHEDULE_H
 #define OPTIQ_SCHEDULE_H
 
+#include "util.h"
 #include "optiq_struct.h"
 #include "path.h"
 #include "job.h"
