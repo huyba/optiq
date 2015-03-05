@@ -460,13 +460,16 @@ int optiq_topology_get_coord(int *coord)
 #endif
 }
 
-int optiq_topology_get_hop_distance(int node1, int node2)
+int optiq_topology_get_hop_distance(int rank1, int rank2)
 {
     struct topology *topo = optiq_topology_get();
 
     if (topo == NULL) {
 	optiq_topology_init();
     }
+
+    int node1 = rank1 / topo->num_ranks_per_node;
+    int node2 = rank2 / topo->num_ranks_per_node;
 
     int *coord1 = topo->all_coords[node1];
     int *coord2 = topo->all_coords[node2];
