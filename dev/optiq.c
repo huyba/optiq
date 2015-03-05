@@ -8,6 +8,8 @@ void optiq_init(int argc, char **argv)
     optiq_schedule_init();
     optiq_algorithm_init();
 
+    topo->num_ranks_per_node = pami_transport->size/topo->num_nodes;
+
     MPI_Init(&argc, &argv);
 
     optiq_print_basic();

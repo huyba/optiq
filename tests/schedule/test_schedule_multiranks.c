@@ -48,6 +48,16 @@ int main(int argc, char **argv)
     opi.iters = 1;
     optiq_opi_collect(world_rank);
 
+    if (world_rank/topo->num_ranks_per_node == 1) {
+	char *testbuf = (char *) calloc (1, recv_bytes);
+	for (int i = 0; i < recv_bytes; i++) {
+            testbuf[i] = i%128;
+        }
+	if (memcmp(recvbuf, testbuf, recv_bytes) != 0) {
+	    printf("Rank %d receieved invalid data\n");
+	}
+    }
+
     if (world_rank == 0) {
         printf("Finished testing schedule dqueue modes\n");
     }

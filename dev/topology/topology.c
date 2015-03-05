@@ -39,10 +39,12 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct topology *t
 {
     topo->num_dims = num_dims;
     int num_nodes = 1;
+
     for (int i = 0; i < num_dims; i++) {
         num_nodes *= size[i];
 	topo->size[i] = size[i];
     }
+
     topo->num_nodes = num_nodes;
 
     optiq_topology_get_coord(topo->coord);
@@ -59,8 +61,6 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct topology *t
     optiq_topology_compute_routing_order_bgq(topo->num_dims, topo->size, topo->order);
 
     topo->all_coords = optiq_topology_get_all_coords (topo->num_dims, topo->size);
-
-    topo->num_ranks_per_node = topo->world_size/topo->num_nodes;
 }
 
 struct topology* optiq_topology_get()
@@ -97,29 +97,7 @@ void optiq_topology_print_basic(struct topology *topo)
 
 void optiq_topology_print(struct topology *topo)
 {
-    printf("num_dims = %d\n", topo->num_dims);
-
-    printf("size: ");
-    for (int i = 0; i < topo->num_dims; i++) {
-	printf("%d ", topo->size[i]);
-    }
-    printf("\n");
-
-    printf("num_nodes = %d\n", topo->num_nodes); 
-
-    printf("num_edges = %d\n", topo->num_edges);
-
-    printf("torus: ");
-    for (int i = 0; i < topo->num_dims; i++) {
-        printf("%d ", topo->torus[i]);
-    }
-    printf("\n");
-
-    printf("order: ");
-    for (int i = 0; i < topo->num_dims; i++) {
-        printf("%d ", topo->order[i]);
-    }
-    printf("\n");
+    optiq_topology_print_basic(topo);
 
     printf("node id: coord[A B C D E]\n");
     for (int i = 0; i < topo->num_nodes; i++) {
