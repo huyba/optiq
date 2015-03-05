@@ -106,4 +106,9 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 void optiq_schedule_destroy();
 
 int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank);
+
+void optiq_schedule_map_from_rankpairs_to_idpairs(std::vector<std::pair<int, std::vector<int> > > &source_dest_ranks, std::vector<std::pair<int, std::vector<int> > > &source_dest_ids);
+
+void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &path_ids, std::vector<std::pair<int, std::vector<int> > > &source_dest_ranks, std::vector<struct path *> &path_ranks);
+
 #endif

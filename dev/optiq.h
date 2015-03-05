@@ -23,6 +23,8 @@
 
 void optiq_init(int argc, char **argv);
 
+void optiq_print_basic ();
+
 void optiq_finalize();
 
 void optiq_alltoallv(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls);

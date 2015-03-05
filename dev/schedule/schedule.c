@@ -529,21 +529,61 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
+    struct topology *topo = optiq_topology_get();
     int world_rank = pami_transport->rank;
 
     /* Gather all pairs of source-dest and demand */
-    std::vector<std::pair<int, std::vector<int> > > source_dests;
-    int num_jobs = optiq_schedule_get_pair (sendcounts, source_dests);
+    std::vector<std::pair<int, std::vector<int> > > source_dest_ranks;
+    int num_jobs = optiq_schedule_get_pair (sendcounts, source_dest_ranks);
+
+    if (world_rank == 0) {
+	printf("Done getting pairs of ranks\n");
+    }
+
+    std::vector<std::pair<int, std::vector<int> > > source_dest_ids;
+    source_dest_ids.clear();
+
+    /* Convert from pair of ranks to pairs of node ids*/
+    if (topo->num_ranks_per_node > 1) {
+	optiq_schedule_map_from_rankpairs_to_idpairs(source_dest_ranks, source_dest_ids);
+    } else {
+	source_dest_ids = source_dest_ranks;
+    }
+
+    if (world_rank == 0) {
+        printf("Done mapping pairs: ranks -> node ids\n");
+    }
 
     /* Search for paths */
-    std::vector<struct path *> paths;
-    paths.clear();
-    optiq_algorithm_search_path (paths, source_dests, bfs);
-    schedule->paths = paths;
+    std::vector<struct path *> path_ids;
+    path_ids.clear();
+    optiq_algorithm_search_path (path_ids, source_dest_ids, bfs);
 
-    build_next_dests(world_rank, schedule->next_dests, paths);
-    build_notify_lists(paths, schedule->notify_list, schedule->num_active_paths, world_rank);
+    if (world_rank == 0) {
+        printf("Done searching paths of node ids\n");
+    }
+
+    /* Convert from path of node ids to path of rank ids */
+    std::vector<struct path *> path_ranks;
+    path_ranks.clear();
+    optiq_schedule_map_from_pathids_to_pathranks (path_ids, source_dest_ranks, path_ranks);
+    schedule->paths = path_ranks;
+
+    if (world_rank == 0) {
+        printf("Done mapping paths of node ids to ranks\n");
+    }
+
+    build_next_dests(world_rank, schedule->next_dests, path_ranks);
+
+    if (world_rank == 0) {
+        printf("Done building next dests\n");
+    }
+
+    build_notify_lists(path_ranks, schedule->notify_list, schedule->num_active_paths, world_rank);
     /*optiq_schedule_print_notify_list(schedule->notify_list, world_rank);*/
+    if (world_rank == 0) {
+        printf("Done building notify list\n");
+    }
 
     /*optiq_path_print_paths(paths);
     printf("active = %d\n", schedule->num_active_paths);
@@ -575,17 +615,17 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     /* Add local jobs */
     schedule->local_jobs.clear();
-    for (int i = 0; i < paths.size(); i++)
+    for (int i = 0; i < path_ranks.size(); i++)
     {
-        if (paths[i]->arcs.front().u == world_rank) 
+        if (path_ranks[i]->arcs.front().u == world_rank) 
 	{
             /*Check if the job is already existing*/
             bool existed = false;
             for (int j = 0; j < schedule->local_jobs.size(); j++)
             {
-                if (schedule->local_jobs[j].dest_rank == paths[i]->arcs.back().v)
+                if (schedule->local_jobs[j].dest_rank == path_ranks[i]->arcs.back().v)
                 {
-                    schedule->local_jobs[j].paths.push_back (paths[i]);
+                    schedule->local_jobs[j].paths.push_back (path_ranks[i]);
                     existed = true;
                     break;
                 }
@@ -596,8 +636,8 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
                 struct optiq_job new_job;
 
                 new_job.source_rank = world_rank;
-                new_job.dest_rank = paths[i]->arcs.back().v;
-                new_job.paths.push_back(paths[i]);
+                new_job.dest_rank = path_ranks[i]->arcs.back().v;
+                new_job.paths.push_back(path_ranks[i]);
                 new_job.buf_offset = 0;
                 new_job.last_path_index = 0;
 		memcpy(&new_job.send_mr, &schedule->send_mr, sizeof (struct optiq_memregion));
@@ -675,4 +715,67 @@ int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank)
     }
 
     return chunk_size;
+}
+
+void optiq_schedule_map_from_rankpairs_to_idpairs(std::vector<std::pair<int, std::vector<int> > > &source_dest_ranks, std::vector<std::pair<int, std::vector<int> > > &source_dest_ids)
+{
+    source_dest_ids.clear();
+
+    for (int i = 0; i < source_dest_ranks.size(); i++) 
+    {
+	int source_id = optiq_topology_get_node_id (source_dest_ranks[i].first);
+	std::vector<int> d;
+	d.clear();
+
+	for (int j = 0; j < source_dest_ranks[i].second.size(); j++)
+	{
+	    int dest_id = optiq_topology_get_node_id (source_dest_ranks[i].second[j]);
+	    d.push_back(dest_id);
+	}
+	
+	std::pair<int, std::vector<int> > p = make_pair (source_id, d);
+	source_dest_ids.push_back(p);
+    }
+}
+
+void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &path_ids, std::vector<std::pair<int, std::vector<int> > > &source_dest_ranks, std::vector<struct path *> &path_ranks)
+{
+    for (int i = 0; i < source_dest_ranks.size(); i++)
+    {
+	int source_rank = source_dest_ranks[i].first;
+	int source_id = optiq_topology_get_node_id(source_rank);
+
+	for (int j = 0; j < source_dest_ranks[i].second.size(); j++) 
+	{
+	    int dest_rank = source_dest_ranks[i].second[j];
+	    int dest_id = optiq_topology_get_node_id (dest_rank);
+
+	    /* Search for path with the same source id and dest id */
+	    for (int k = 0; k < path_ids.size(); k++)
+	    {
+		if (source_id == path_ids[k]->arcs.front().u && dest_id == path_ids[k]->arcs.back().v)
+		{
+		    /*Map the path_ids to path_ranks */
+		    struct path *path_rank = (struct path *) calloc(1, sizeof(struct path));
+		    *path_rank = *path_ids[k];
+
+		    /*Map randomly node id to rank*/
+		    for (int h = 0; h < path_rank->arcs.size(); h++)
+		    {
+			path_rank->arcs[h].u = optiq_topology_get_random_rank(path_rank->arcs[h].u);
+			path_rank->arcs[h].v = optiq_topology_get_random_rank(path_rank->arcs[h].v);
+		    }
+
+		    /*Map exact source rank and dest rank*/
+		    path_rank->arcs.front().u = source_rank;
+		    path_rank->arcs.back().v = dest_rank;
+
+		    path_rank->source_id = source_id;
+		    path_rank->source_rank = source_rank;
+		    path_rank->dest_id = dest_id;
+		    path_rank->dest_rank = dest_rank;
+		}
+	    }
+	}
+    }
 }

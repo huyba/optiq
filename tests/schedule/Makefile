@@ -36,7 +36,7 @@ OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(SCHED)/*.o $(TRANS)/*.o $(ALG)
 
 all:  mpi copy
 
-mpi: bdev test_schedule_get_pair.x test_schedule_build.x test_schedule_notify_list.x test_schedule_dmode.x
+mpi: bdev test_schedule_get_pair.x test_schedule_build.x test_schedule_notify_list.x test_schedule_dmode.x test_schedule_multiranks.x
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -62,3 +62,4 @@ copy:
 	cp test_schedule_build.x $(TEST_DIR)/schedule/build/
 	cp test_schedule_notify_list.x $(TEST_DIR)/schedule/notifylist/
 	cp test_schedule_dmode.x $(TEST_DIR)/schedule/mode/
+	cp test_schedule_multiranks.x $(TEST_DIR)/schedule/multiranks/

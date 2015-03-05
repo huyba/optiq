@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 #include "util.h"
 #include "topology.h"
@@ -58,6 +59,8 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct topology *t
     optiq_topology_compute_routing_order_bgq(topo->num_dims, topo->size, topo->order);
 
     topo->all_coords = optiq_topology_get_all_coords (topo->num_dims, topo->size);
+
+    topo->num_ranks_per_node = topo->world_size/topo->num_nodes;
 }
 
 struct topology* optiq_topology_get()
@@ -157,9 +160,17 @@ void optiq_topology_get_size_bgq(int *size)
 #endif
 }
 
-int optiq_topology_get_node_id(int world_rank, int num_ranks_per_node)
+int optiq_topology_get_node_id(int world_rank)
 {
-    return world_rank/num_ranks_per_node;
+    return world_rank/topo->num_ranks_per_node;
+}
+
+int optiq_topology_get_random_rank (int node_id)
+{
+    srand(time(NULL));
+    int r = rand() % topo->num_ranks_per_node;
+
+    return (node_id * topo->num_ranks_per_node + r);
 }
 
 int optiq_topology_compute_node_id(int num_dims, int *size, int *coord)

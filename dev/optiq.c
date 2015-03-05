@@ -5,10 +5,12 @@ void optiq_init(int argc, char **argv)
 {
     optiq_topology_init();
     optiq_pami_transport_init();
-    optiq_multibfs_init();
     optiq_schedule_init();
+    optiq_algorithm_init();
 
     MPI_Init(&argc, &argv);
+
+    optiq_print_basic();
 }
 
 void optiq_print_basic ()
