@@ -40,7 +40,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o
 
-all: bdev mpibm perf_schedule_dmode.x perf_schedule_dmode_chunk.x cp
+all: bdev mpibm perf_schedule_dmode.x perf_schedule_dmode_chunk.x perf_schedule_multiranks.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -66,3 +66,4 @@ BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 cp:
 	cp perf_schedule_dmode.x $(BENCHMARKS_DIR)/schedule/mode/
 	cp perf_schedule_dmode_chunk.x $(BENCHMARKS_DIR)/schedule/mode_chunk/
+	cp perf_schedule_multiranks.x $(BENCHMARKS_DIR)/schedule/multiranks/

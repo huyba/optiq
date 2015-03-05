@@ -1,4 +1,5 @@
 #include "optiq.h"
+#include "mpi_benchmark.h"
 
 int main(int argc, char **argv)
 {
@@ -35,6 +36,8 @@ int main(int argc, char **argv)
 	send_rank = world_rank - world_size/2;
 	recvcounts[send_rank] = recv_bytes;
     }
+
+    optiq_benchmark_mpi_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     if (world_rank == 0) {
         printf("\nTest multi rank with %d ranks per node\n", topo->num_ranks_per_node);

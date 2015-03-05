@@ -660,9 +660,8 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
     } else {
 	pami_transport->transport_info.forward_headers.push_back(message_header);
     }
-    /*
-     *     printf("Rank %d get a put done notification from %d with data size %d\n", pami_transport->rank, origin, message_header->length);
-     *         */
+    
+    /*printf("Rank %d get a put done notification from %d with data size %d\n", pami_transport->rank, origin, message_header->length);*/
 }
 
 void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -670,9 +669,8 @@ void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void 
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
 
     pami_transport->transport_info.mr_responses.push_back(*(struct optiq_memregion *)data);
-    /*
-     *     printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, ((struct optiq_memregion *)data)->offset);
-     *         */
+    
+    /*printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, ((struct optiq_memregion *)data)->offset);*/
 }
 
 void optiq_recv_path_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
