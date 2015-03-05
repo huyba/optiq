@@ -2,11 +2,10 @@
 \subsection{Framework}
 
 \subsection{Path searching layer}
+All paths searching algorihtms here are centric algorithms i.e. run at every node in exact oder thus, every node has the same results. The algorithms need some information in advance such as size, topology, torus of the partition, coordinates of all nodes in the partition. The informaition is collected once at the begining. The algorithms, also need to have the pair of source-destination and sometimes the data size to find paths between them.
 
 \subsubsection{Heuristic 1}
-In this approach, we search for paths to 
-
-Centric algorithm, run at every node. Need information in advance.
+In this approach, we search for paths between each pair of source and destination. We explore from all the destination in all possible directions. Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths. In this algorithm, we do not limit exploring paths by any constraints.
 
 \begin{algorithm}
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
@@ -64,6 +63,15 @@ In the \textbf{Algorithm \ref{alg:h1}}, we start by adding \\
 Time complexity: The graph has V vertices and E edges. We have M sources and N destination making K pairs of (source, destinatinon), then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is XXXX.
 
 \subsubsection{Heuristic 2}
+This algorithm is an extension from Heuristic 1, while we limit the exploring paths by both the number of hops and minimizing the maximum load. We do so by maintaining a min heap of paths. The comparison function of the heap is based on both the number of hops and maximum load on each path.
+
+\begin{algorithm}
+
+\caption{Heuristic Alg II: Constraints by number of hops and max load}
+\label{alg:h2}
+\end{algorithm}
+
+\subsubsection{Heuristic 3}
 
 \begin{algorithm}
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
@@ -83,12 +91,21 @@ Main:
 \end{algorithmic}
 
 \caption{Heuristic Alg II: k shortest paths}
-\label{alg:h2}
+\label{alg:h3}
 
 \end{algorithm}
 
-In the \textbf{Algorithm \ref{alg:h2}}, we use Yen's algorithm to search for k shortest paths between \textit{s$_i$, d$_i$}.
+In the \textbf{Algorithm \ref{alg:h3}}, we use Yen's algorithm to search for k shortest paths between \textit{s$_i$, d$_i$}.
 
 \subsection{Schedule layer}
+Order of messages into sending queue: 3 types of messages: local messages (needed to send), fowarding messages (needed to send), its receiving messages. first come first serve, local messages first. forwa
+
+When there are multiple ranks per node, which one will be choosen to receive data at the next dest (forwarding). Single rank to do or many rank to do, currently every rank executes data transfer.
 
 \subsection{Transport layer}
+
+\subsection{Supported components}
+
+Topology reading, coord, neighbors, torus, size, routing order, graph generated.
+
+Also set of benchmarks, tests.
