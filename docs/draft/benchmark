@@ -3,13 +3,13 @@ Our framework includes 3 main parts: algorithms for path searching, schedule to 
 
 \subsection{Transport performance}
 
-\subsubsection{Chunk size for pipeline}
+\subsubsection{Single hop data transfer}
+
+\subsubsection{Multiple hops data transfer}
 
 \subsubsection{Various message sizes}
 
 \subsubsection{Many ranks}
-
-\subsubsection{Scaling}
 
 \subsection{Schedule performance}
 
