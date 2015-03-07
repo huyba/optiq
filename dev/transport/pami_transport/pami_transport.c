@@ -653,7 +653,7 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
 
     if(pami_transport->rank == message_header->dest) {
 	pami_transport->sched->expecting_length -= message_header->length;
-	printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->sched->expecting_length);
+	/*printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->sched->expecting_length);*/
 	/*printf("Rank %d received data from %d size = %d\n", pami_transport->rank, message_header->source, message_header->length);*/
 	pami_transport->sched->recv_bytes[message_header->source] += message_header->length;
     } else {
@@ -771,6 +771,9 @@ void optiq_pami_transport_get_message ()
 
 	/*Notify the size, ask for mem region*/
 	int dest = pami_transport->sched->next_dests[header->path_id];
+	if (dest == -1) {
+	    printf("Rank %d received invalid message with path_id = %d, [s %d d %d], size = %d\n", pami_transport->rank, header->path_id, header->source, header->dest, header->length);
+	}
 
 	/*If the next destination is final destination*/
 	if (dest == header->dest)
@@ -884,6 +887,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		    far_mr.offset += header->original_offset;
 		}
 
+		/*printf("Rank %d rput %d bytes of orin[s %d, d %d] along path_id = %d of data to %d\n", pami_transport->rank, header->length, header->source, header->dest, header->path_id, dest);*/
 		optiq_pami_rput(pami_transport->client, pami_transport->context, &header->mem.mr, header->mem.offset, header->length, pami_transport->endpoints[dest], &far_mr.mr, far_mr.offset, rput_cookie, NULL, optiq_pami_rput_rdone_fn);
 
 		/*Now the header will contain the far memregion instead of local memregion*/

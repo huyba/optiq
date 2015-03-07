@@ -50,6 +50,8 @@ int main(int argc, char **argv)
 
 	optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
+	/*printf("Rank %d chunk size %d finished\n", world_rank, chunk);*/
+
 	opi.iters = 1;
 	optiq_opi_collect(world_rank);
     }

@@ -119,6 +119,9 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *> &complete_paths)
 {
     memset(next_dests, 0, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
+    for (int i = 0; i < OPTIQ_MAX_NUM_PATHS; i++) {
+	next_dests[i] = -1;
+    }
 
     for (int i = 0; i < complete_paths.size(); i++)
     {
@@ -583,6 +586,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     if (world_rank == 0) {
         printf("Done mapping paths of node ids to ranks\n");
+	printf("Num of paths = %d\n", path_ranks.size());
 	//optiq_path_print_paths(path_ranks);
     }
 
@@ -784,8 +788,8 @@ void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &p
 		    /*Map randomly node id to rank*/
 		    for (int h = 0; h < path_rank->arcs.size(); h++)
 		    {
-			path_rank->arcs[h].u = optiq_topology_get_random_rank(path_rank->arcs[h].u);
-			path_rank->arcs[h].v = optiq_topology_get_random_rank(path_rank->arcs[h].v);
+			path_rank->arcs[h].u = path_rank->arcs[h].u * topo->num_ranks_per_node + source_rank % topo->num_ranks_per_node;
+			path_rank->arcs[h].v = path_rank->arcs[h].v * topo->num_ranks_per_node + dest_rank % topo->num_ranks_per_node;
 		    }
 
 		    /*Map exact source rank and dest rank*/

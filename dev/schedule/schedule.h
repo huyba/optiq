@@ -8,25 +8,25 @@
 #include "pami_transport.h"
 #include "comm_mem.h"
 
-struct optiq_pami_transport;
+struct optiq_pami_transport; /* Forward declartion of optiq_pami_transport*/
 
 struct optiq_job {
-    int job_id;
-    int source_node_id;
-    int source_rank;
-    int dest_node_id;
-    int dest_rank;
-    struct optiq_memregion send_mr;
-    int buf_offset;
-    int buf_length;
-    std::vector<struct path *> paths;
-    int last_path_index;
+    int job_id;				/* id of the job */
+    int source_node_id;			/* source node id of the job */
+    int source_rank;			/* source rank id of the job. One node can have many ranks */
+    int dest_node_id;			/* destination node id of the job */
+    int dest_rank;			/* destination rank id of the job */
+    struct optiq_memregion send_mr;	/* memory region of the job. Include pami_memregion and offset */
+    int buf_offset;			/* offset of the memory region */
+    int buf_length;			/* length the buffer for the job */
+    std::vector<struct path *> paths;	/* paths that the job will use to transfer data */
+    int last_path_index;		/* the index of the path that was used last time. Assume that multiple paths are available. */
 };
 
 enum dequeue_mode {
-    DQUEUE_LOCAL_MESSAGE_FIRST,
-    DQUEUE_FORWARD_MESSAGE_FIRST,
-    DQUEUE_ROUND_ROBIN
+    DQUEUE_LOCAL_MESSAGE_FIRST,		/* to transfer its own (local) messages first. */
+    DQUEUE_FORWARD_MESSAGE_FIRST,	/* to tranfser the forwarding messages first. */
+    DQUEUE_ROUND_ROBIN			/* to transfer in the round robin fashion: one local message and then one forwarding message */
 };
 
 struct optiq_schedule {
