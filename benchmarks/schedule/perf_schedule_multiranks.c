@@ -15,26 +15,25 @@ int main(int argc, char **argv)
     int *rdispls = (int *) calloc(1, sizeof(int) * world_size);
     int *recvcounts = (int *) calloc(1, sizeof(int) * world_size);
 
-    int send_bytes = 1024 * 1024;
-    char *sendbuf = (char *) malloc (send_bytes);
-    int recv_bytes = 1024 * 1024;
-    char *recvbuf = (char *) calloc (1, recv_bytes);
+    int nbytes = 8 * 1024 * 1024;
+    char *sendbuf = (char *) malloc (nbytes);
+    char *recvbuf = (char *) calloc (1, nbytes);
 
     int send_rank = 0;
     int recv_rank = 1;
 
     if (world_rank < world_size/2) {
 	recv_rank = world_rank + world_size/2;
-	sendcounts[recv_rank] = send_bytes;
+	sendcounts[recv_rank] = nbytes;
 
-	for (int i = 0; i < send_bytes; i++) {
+	for (int i = 0; i < nbytes; i++) {
 	    sendbuf[i] = i%128;
 	}
     }
 
     if (world_rank >= world_size/2) {
 	send_rank = world_rank - world_size/2;
-	recvcounts[send_rank] = recv_bytes;
+	recvcounts[send_rank] = nbytes;
     }
 
     optiq_benchmark_mpi_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
@@ -44,7 +43,7 @@ int main(int argc, char **argv)
     }
 
     schedule->dmode = DQUEUE_FORWARD_MESSAGE_FIRST;
-    for (int chunk = 16*1024; chunk <= send_bytes; chunk *= 2)
+    for (int chunk = 1024; chunk <= nbytes; chunk *= 2)
     {
 	schedule->chunk_size = chunk;// optiq_schedule_get_chunk_size (send_bytes, world_rank, send_rank);
 
@@ -57,11 +56,11 @@ int main(int argc, char **argv)
     }
 
     if (world_rank >= world_size/2) {
-	char *testbuf = (char *) calloc (1, recv_bytes);
-	for (int i = 0; i < recv_bytes; i++) {
+	char *testbuf = (char *) calloc (1, nbytes);
+	for (int i = 0; i < nbytes; i++) {
             testbuf[i] = i%128;
         }
-	if (memcmp(recvbuf, testbuf, recv_bytes) != 0) {
+	if (memcmp(recvbuf, testbuf, nbytes) != 0) {
 	    printf("Rank %d receieved invalid data\n", world_rank);
 	}
     }

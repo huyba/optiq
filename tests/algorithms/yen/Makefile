@@ -14,20 +14,22 @@ endif
 
 LD      = mpixlc_r
 
-OPTIQ = ../../../
+OPTIQ = ../../..
 DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
+TOPO = $(DEV)/topology
+HEU = $(DEV)/algorithms/heuristics
 YEN = $(DEV)/algorithms/yen
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(YEN)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(YEN) -I$(HEU) -I$(DEV)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(STRUCT)/path.o $(STRUCT)/job.o $(UTIL)/util.o $(YEN)/YenTopKShortestPathsAlg.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/yen.o
+OBJ = $(STRUCT)/*.o $(UTIL)/util.o $(YEN)/YenTopKShortestPathsAlg.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/yen.o $(HEU)/*.o $(TOPO)/*.o
 
-all: test_yen.x
+all: test_yen.x cp
 
 optiq:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -47,3 +49,4 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 cp:
+	cp test_yen.x /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests/algorithms/yen/

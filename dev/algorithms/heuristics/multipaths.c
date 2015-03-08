@@ -6,17 +6,17 @@
 #include "multipaths.h"
 #include "yen.h"
 
-void optiq_graph_print_graph(struct multibfs &bfs, int cost, char *filePath)
+void optiq_graph_print_graph(struct multibfs *bfs, int cost, char *filePath)
 {
     std::ofstream myfile;
     myfile.open (filePath);
-    myfile << bfs.num_nodes << "\n\n";
+    myfile << bfs->num_nodes << "\n\n";
 
-    for (int i = 0; i < bfs.num_nodes; i++)
+    for (int i = 0; i < bfs->num_nodes; i++)
     {
-	for (int j = 0; j < bfs.neighbors[i].size(); j++)
+	for (int j = 0; j < bfs->neighbors[i].size(); j++)
 	{
-	    myfile << i << " " << bfs.neighbors[i][j] << " " << cost << "\n";
+	    myfile << i << " " << bfs->neighbors[i][j] << " " << cost << "\n";
 	}
     }
 

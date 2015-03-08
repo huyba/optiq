@@ -17,16 +17,21 @@ enum search_algorithm {
 struct optiq_algorithm {
     enum search_algorithm search_alg;
     struct multibfs *bfs;
+    int num_paths_per_pair;
 };
 
 extern "C" struct optiq_algorithm *algorithm;
 
 void optiq_algorithm_init();
 
+struct optiq_algorithm* optiq_algorithm_get();
+
+void optiq_algorithm_set_search_algorithm(enum search_algorithm search_alg);
+
 void optiq_algorithm_destroy();
 
 void optiq_algorithm_finalize();
 
-void optiq_algorithm_search_path(std::vector<struct path *> &paths, std::vector<std::pair<int, std::vector<int> > > source_dests, struct multibfs *bfs);
+void optiq_algorithm_search_path(std::vector<struct path *> &paths, std::vector<std::pair<int, std::vector<int> > > source_dests, struct multibfs *bfs, int world_rank);
 
 #endif

@@ -543,6 +543,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
+    struct optiq_algorithm *algorithm = optiq_algorithm_get();
     struct topology *topo = optiq_topology_get();
     int world_rank = pami_transport->rank;
 
@@ -550,9 +551,9 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     std::vector<std::pair<int, std::vector<int> > > source_dest_ranks;
     int num_jobs = optiq_schedule_get_pair (sendcounts, source_dest_ranks);
 
-    /*if (world_rank == 0) {
-	printf ("Done getting pairs of ranks\n");
-    }*/
+    if (world_rank == 0) {
+	printf ("Done getting %d pairs of ranks\n", source_dest_ranks.size());
+    }
 
     std::vector<std::pair<int, std::vector<int> > > source_dest_ids;
     source_dest_ids.clear();
@@ -564,18 +565,20 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 	source_dest_ids = source_dest_ranks;
     }
 
-    /*if (world_rank == 0) {
-        printf("Done mapping pairs: ranks -> node ids\n");
-	optiq_util_print_source_dests(source_dest_ids);
-    }*/
+    if (world_rank == 0) {
+        printf("Done mapping pairs: %d pairs of ranks -> %d pairs of node ids\n", source_dest_ranks.size(), source_dest_ids.size());
+	//optiq_util_print_source_dests(source_dest_ids);
+    }
 
     /* Search for paths */
     std::vector<struct path *> path_ids;
     path_ids.clear();
-    optiq_algorithm_search_path (path_ids, source_dest_ids, bfs);
+    algorithm->search_alg = OPTIQ_ALG_KPATHS;
+    algorithm->num_paths_per_pair = 2;
+    optiq_algorithm_search_path (path_ids, source_dest_ids, bfs, world_rank);
 
     if (world_rank == 0) {
-        printf("Done searching paths of node ids\n");
+        printf("Done searching %d paths of node ids\n", path_ids.size());
 	//optiq_path_print_paths(path_ids);
     }
 
