@@ -1,5 +1,31 @@
 \section{Approaches}
+\label{sec:approach}
+
+In this paper, we introduce a framework named OPTIQ. The framework provides ways to improve data movement performance on the Blue Gene/Q supercomputer. Our framework does so by balancing loads on physical links on the Blue Gene/Q supercomputer.
+
 \subsection{Framework}
+
+Our framework has 3 main components: Path searching algorithms, Schedule and Transport and an extra component depicted in Figure \ref{fig:framework}.
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.7]{figures/framework.pdf}
+\vspace{-0.2in}
+\caption{Three components of OPTIQ framework}
+\vspace{-0.1in}
+\label{fig:framework}
+\end{figure}
+
+The functionarity of each component is as following:
+\begin{itemize}
+\item Path searching: search for path to transfer data from a set of sources to a set of destination. Multiple or single paths can be found using a set of algorithm. User can decide what algorithm to be used or let the framework use a default algorithm.
+\item Schedule: Split a buffer data that needed to tranfer into smaller messages and put those messages into a queue of transport layer to be transferred. It also handles incoming messages for itself and for forwardig them to its neighbors on a way to a message final destination.
+\item Transport: actually transfer an amount of data from one point to another point in the system.
+\item Extra component: To get system specific information such as partition size, topology, coordinates, torus, and to compute neighbors of available nodes given to an application.
+\end{itemize}
+
+In the next subsections, we explain in detail our contributions in each component.
 
 \subsection{Path searching layer}
 All paths searching algorihtms here are centric algorithms i.e. run at every node in exact oder thus, every node has the same results. The algorithms need some information in advance such as size, topology, torus of the partition, coordinates of all nodes in the partition. The informaition is collected once at the begining. The algorithms, also need to have the pair of source-destination and sometimes the data size to find paths between them.
@@ -53,7 +79,7 @@ Main:
     \EndFunction
 \end{algorithmic}
 
-\caption{Heuristic Alg I: Exploring all paths}
+\caption{Heuristic Alg 1: Exploring all paths}
 \label{alg:h1}
 
 \end{algorithm}
@@ -67,7 +93,7 @@ This algorithm is an extension from Heuristic 1, while we limit the exploring pa
 
 \begin{algorithm}
 
-\caption{Heuristic Alg II: Constraints by number of hops and max load}
+\caption{Heuristic Alg 2: Constraints by number of hops and max load}
 \label{alg:h2}
 \end{algorithm}
 
@@ -90,14 +116,65 @@ Main:
     \EndFunction
 \end{algorithmic}
 
-\caption{Heuristic Alg II: k shortest paths}
+\caption{Heuristic Alg 3: k shortest paths}
 \label{alg:h3}
 
 \end{algorithm}
 
 In the \textbf{Algorithm \ref{alg:h3}}, we use Yen's algorithm to search for k shortest paths between \textit{s$_i$, d$_i$}.
 
+\subsubsection{Job-based AMPL model}
+In this section we present a formal model written in A Modeling Language for Mathematical Programming (AMPL). The model captures demands of data movement between a set of sources and a set of destinations. The model also capture the graph of physical links of a partition given for the application. The model is presented in Model 1.
+
+We presented the model in AMPL to solve the problem.
+
+\begin{verbatim}
+set Nodes;
+set Arcs within Nodes cross Nodes;
+set Jobs;
+
+param Delay {Arcs} default 0;
+param Capacity {Arcs} >= 0 default Infinity;
+param Source {Jobs};
+param Destination {Jobs} default 0;
+param Demand {Jobs} default 0;
+
+var Flow {Jobs, Arcs} >= 0;
+var Z >= 0;
+
+var total_flow{(i,j) in Arcs} = 
+sum {job in Jobs} Flow[job,i,j];
+
+maximize obj: Z;
+
+subject to
+
+zero_flow {job in Jobs, i in Nodes}:
+sum{(i,j) in Arcs} Flow[job,i,j] - 
+sum{(j,i) in Arcs} Flow[job,j,i] = 
+if (i == Source[job])  then Demand[job]*Z 
+else if (i == Destination[job]) then -Demand[job]*Z 
+        else 0;
+
+capacity {(i,j) in Arcs}:
+total_flow[i,j] <= Capacity[i,j];
+\end{verbatim}
+
+Model explanation:
+\begin{itemize}
+\item sets: we have 3 sets: \textit{Nodes}, \textit{Arcs} and \textit{Jobs}. \textit{JobID}: is the set of transfers from sources to destinations. Each job is represented by a tuple (id, source, destination, demand (total data size to transfer)).
+\item params: {\it Delay}: delay on each arc; {\it Capacity}: capacity of each arc; {\it Source}: set of sources; {\it Destination}: set of destinations; {\it Demand}: amount of data to be transferred in each job.
+\item vars: \textit{Flow}: total flow of each job on each arc; \textit{Z}: is reversed of total time; \textit{total\_flow} total flow of all jobs going through an arc.
+\item objective function: we want to minimize the time or maximize its reversed value i.e. maximize \textit{Z}.
+\item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
+\end{itemize}
+
+\subsubsection{Path-based model}
+
 \subsection{Schedule layer}
+
+As we route data in our own ways, we search for the paths, and we also need to schedule messages transfer. It includes sending local messages, forwarding messages form other sources, receiving data as the intermediate node or the destination node.
+
 Order of messages into sending queue: 3 types of messages: local messages (needed to send), fowarding messages (needed to send), its receiving messages. first come first serve, local messages first. forwa
 
 When there are multiple ranks per node, which one will be choosen to receive data at the next dest (forwarding). Single rank to do or many rank to do, currently every rank executes data transfer.
