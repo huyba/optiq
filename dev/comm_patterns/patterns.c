@@ -1,8 +1,100 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <fstream>
 
 #include "patterns.h"
+
+void optiq_patterns_read_from_file(char *filename, std::vector<std::pair<std::pair<int, int>, int > > &requests)
+{
+    std::ifstream infile(filename);
+
+    int source, dest, demand;
+
+    while (infile >> source >> dest >> demand)
+    {
+	std::pair<int, int> sd = std::make_pair(source, dest);
+	std::pair<std::pair<int, int>, int> ssd = std::make_pair(sd, demand);
+	requests.push_back(ssd);
+    }
+
+    infile.close();
+}
+
+void optiq_patterns_convert_from_ssd_to_mpialltoallv(std::vector<std::pair<std::pair<int, int>, int > > &requests, int *sendcounts, int *recvcounts, int rank)
+{
+    int source, dest, demand;
+
+    for (int i = 0; i < requests.size(); i++)
+    {
+	source = requests[i].first.first;
+	dest = requests[i].first.second;
+	demand = requests[i].second;
+    }
+
+    if (source == rank) {
+	sendcounts[dest] = demand;
+    }
+
+    if (dest == rank) {
+	recvcounts[source] = demand;
+    }
+}
+
+void patterns_disjoint_contigous_multiranks_multinodes(int *sendcounts, int *recvcounts, int rank, int num_ranks, int num_ranks_per_node, int nbytes)
+{
+    memset(sendcounts, 0, sizeof(int) * num_ranks);
+    memset(recvcounts, 0, sizeof(int) * num_ranks);
+
+    int destrank = 0, sourcerank = 0;
+
+    int pos = rank % num_ranks_per_node;
+    int quarter = num_ranks_per_node / 4;
+
+    if (rank < num_ranks/2) 
+    {
+	if (pos < quarter)
+	{
+	    destrank = (rank + num_ranks / 2 - quarter) % (num_ranks / 2) + num_ranks / 2;
+	}
+	else if (quarter <= pos && pos < quarter * 3)
+	{
+	    destrank = rank + num_ranks / 2;
+	}
+	else if (quarter * 3 <= pos)
+	{
+	    destrank = (rank + num_ranks / 2 + quarter) % (num_ranks / 2) + num_ranks / 2;
+	}
+
+	sendcounts[destrank] = nbytes;
+
+	/*printf("Rank %d dest is %d\n", rank, destrank);*/
+    }
+
+    if (rank >= num_ranks/2)
+    {
+	if (pos < quarter)
+        {
+            sourcerank = (rank - num_ranks / 2 - quarter) % (num_ranks / 2);
+	    if (sourcerank < 0) {
+		sourcerank += num_ranks / 2;
+	    }
+        }
+        else if (quarter <= pos && pos < 3 * quarter)
+        {
+            sourcerank = rank - num_ranks / 2;
+        }   
+        else if (3 * quarter <= pos)
+        {
+            sourcerank = (rank - num_ranks / 2 + quarter) % (num_ranks / 2);
+        }
+
+	recvcounts[sourcerank] = nbytes;
+
+	/*printf("Rank %d source is %d\n", rank, sourcerank);*/
+    }
+}
 
 /*The first k nodes communicate with the last k nodes. 1-1*/
 void disjoint_contiguous_firstk_lastk(int num_nodes, std::vector<int> &sources, std::vector<int> &dests, std::vector<std::pair<int, std::vector<int> > > &source_dests, int k)

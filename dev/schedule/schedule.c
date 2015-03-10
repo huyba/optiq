@@ -573,8 +573,6 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /* Search for paths */
     std::vector<struct path *> path_ids;
     path_ids.clear();
-    algorithm->search_alg = OPTIQ_ALG_KPATHS;
-    algorithm->num_paths_per_pair = 2;
     optiq_algorithm_search_path (path_ids, source_dest_ids, bfs, world_rank);
 
     if (world_rank == 0) {
@@ -590,8 +588,9 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     if (world_rank == 0) {
         printf("Done mapping paths of node ids to ranks\n");
 	printf("Num of paths = %d\n", path_ranks.size());
-	//optiq_path_print_paths(path_ranks);
     }
+	optiq_path_print_paths(path_ranks);
+    //}
 
     build_next_dests(world_rank, schedule->next_dests, path_ranks);
 

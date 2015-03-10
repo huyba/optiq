@@ -37,8 +37,19 @@ void optiq_print_basic ();
 void optiq_finalize();
 
 /*
- *  Transport data in MPI_Alltoallv style.
+ *  Transport data in MPI_Alltoallv format.
  * */
 void optiq_alltoallv(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls);
+
+/*
+ * Transport data from n to m with pattern from file and some buffer initialized already
+ * File format: many line, each line contain a tuple of (source, dest, demand).
+ * */
+void optiq_mton_from_file_and_buffers(void *sendbuf, int *sdispls, void *recvbuf, int *recvdispls, char *mtonfile);
+
+/*
+ * Transport data with patterns from file.
+ * */
+void optiq_mton_from_file(char *mtonfile);
 
 #endif

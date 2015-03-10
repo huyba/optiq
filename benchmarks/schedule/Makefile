@@ -40,7 +40,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o
 
-all: bdev mpibm perf_schedule_dmode.x perf_schedule_dmode_chunk.x perf_schedule_multiranks.x cp
+all: bdev mpibm perf_schedule_dmode.x perf_schedule_dmode_chunk.x perf_schedule_multiranks.x perf_schedule_multiranks_multinodes.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -67,3 +67,4 @@ cp:
 	cp perf_schedule_dmode.x $(BENCHMARKS_DIR)/schedule/mode/
 	cp perf_schedule_dmode_chunk.x $(BENCHMARKS_DIR)/schedule/mode_chunk/
 	cp perf_schedule_multiranks.x $(BENCHMARKS_DIR)/schedule/multiranks/
+	cp perf_schedule_multiranks_multinodes.x $(BENCHMARKS_DIR)/schedule/multiranksmultinodes/

@@ -7,6 +7,7 @@ int main(int argc, char **argv)
     optiq_init(argc, argv);
 
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    struct topology *topo = optiq_topology_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
     struct optiq_algorithm *algorithm = optiq_algorithm_get();
 
@@ -23,22 +24,9 @@ int main(int argc, char **argv)
     char *sendbuf = (char *) malloc (nbytes);
     char *recvbuf = (char *) calloc (1, nbytes);
 
-    int send_rank = 0;
-    int recv_rank = 1;
+    patterns_disjoint_contigous_multiranks_multinodes (sendcounts, recvcounts, world_rank, world_size, topo->num_ranks_per_node, nbytes);
 
-    if (world_rank < world_size/2) {
-	recv_rank = world_rank + world_size/2;
-	sendcounts[recv_rank] = nbytes;
-
-	for (int i = 0; i < nbytes; i++) {
-	    sendbuf[i] = i%128;
-	}
-    }
-
-    if (world_rank >= world_size/2) {
-	send_rank = world_rank - world_size/2;
-	recvcounts[send_rank] = nbytes;
-    }
+    MPI_Barrier(MPI_COMM_WORLD);
 
     optiq_benchmark_mpi_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
