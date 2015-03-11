@@ -27,6 +27,11 @@ void benchmark_for_a_pattern (char *filepath, int rank, int size)
     if (rank == 0) {
         optiq_path_print_stat(schedule->paths, size);
     }
+
+    for (int i = 0; i < schedule->paths.size(); i++) {
+        free(schedule->paths[i]);
+    }
+    schedule->paths.clear();
 }
 
 int main(int argc, char **argv)
@@ -47,14 +52,18 @@ int main(int argc, char **argv)
 	demand = atoi(argv[2]);
     }
 
-    /* Benchmark for half-half pattern */
-    if (rank == 0) {
-	optiq_pattern_half_half(filepath, size, demand);
+    /* Benchmark for first k last k pattern */
+    for (int i = 2; i <= 8; i  *= 2) 
+    {
+	if (rank == 0) 
+	{
+	    printf("First %d nodes send data to last %d nodes\n", size/i);
+	    optiq_pattern_firstk_lastk(filepath, size, demand, size/i);
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	benchmark_for_a_pattern(filepath, rank, size);
     }
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    benchmark_for_a_pattern(filepath, rank, size);
     
     if (rank == 0) {
         printf("Finished benchmarking\n");

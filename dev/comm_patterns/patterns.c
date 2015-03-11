@@ -290,3 +290,15 @@ void optiq_pattern_half_half(char *filepath, int num_ranks, int demand)
  
     file.close();
 }
+
+void optiq_pattern_firstk_lastk(char *filepath, int num_ranks, int demand, int k)
+{
+    std::ofstream file;
+    file.open(filepath);
+
+    for (int i = 0; i < k; i++) {
+        file << i << " " << (num_ranks -k + i) << " " << demand << std::endl;
+    }
+
+    file.close();
+}

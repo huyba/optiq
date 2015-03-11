@@ -92,7 +92,7 @@ void optiq_topology_print_basic(struct topology *topo)
     for (int i = 0; i < topo->num_dims; i++) {
         printf("%d ", topo->order[i]);
     }
-    printf("\n");
+    printf("\n\n");
 }
 
 void optiq_topology_print(struct topology *topo)
