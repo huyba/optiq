@@ -135,6 +135,14 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes)
 	}
     }
 
+    int *load_stat = (int *) calloc (1, sizeof(int) * max_load);
+
+    for (int i = 0; i < num_nodes; i++) {
+        for (int j = 0; j < num_nodes; j++) {
+	    load_stat[load[i][j]]++;
+	}
+    }
+
     avg_load = (float)total_loads/loaded_links;
 
     printf("#paths = %d, total_hops = %d, total_loads = %d, #loaded_links = %d\n", paths.size(), total_hops, total_loads, loaded_links);
@@ -146,12 +154,17 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes)
     printf("max_load = %d\n", max_load);
     printf("min_load = %d\n", min_load);
     printf("avg_load = %4.2f\n", avg_load);
+
+    for (int i = 0; i < max_load; i++) {
+	printf("num of links with load = %d is %d\n", i, load_stat[i]);
+    }
     printf("\n");
 
     for (int i = 0; i < num_nodes; i++) {
         free(load[i]);
     }
     free(load);
+    free(load_stat);
 }
 
 void optiq_path_print_paths(std::vector<struct path *> &paths)
