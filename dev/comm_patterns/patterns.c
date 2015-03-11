@@ -279,18 +279,6 @@ void overlap_contiguous(int num_nodes, std::vector<int> &sources, std::vector<in
     }
 }
 
-void optiq_pattern_half_half(char *filepath, int num_ranks, int demand)
-{
-    std::ofstream file;
-    file.open(filepath);
-
-    for (int i = 0; i < num_ranks / 2; i++) {
-	file << i << " " << (i + num_ranks / 2) << " " << demand << std::endl;
-    }
- 
-    file.close();
-}
-
 void optiq_pattern_firstk_lastk(char *filepath, int num_ranks, int demand, int k)
 {
     std::ofstream file;

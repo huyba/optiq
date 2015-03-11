@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     }
 
     if (pami_transport->rank == 0) {
-	optiq_pattern_half_half(filepath, pami_transport->size, demand);
+	optiq_pattern_firstk_lastk(filepath, pami_transport->size, demand, pami_transport->size/2);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);

@@ -33,7 +33,7 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(TRANSPORT)/pami_transport.o $(UTIL)/*.o $(TOPO)/topology.o $(STRUCT)/heap_path.o $(STRUCT)/path.o $(SCHED)/schedule.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o
+OBJ = $(TRANSPORT)/pami_transport.o $(UTIL)/*.o $(TOPO)/*.o $(STRUCT)/*.o $(SCHED)/schedule.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o
 
 all: $(OBJ) mpi copy
 

@@ -22,8 +22,6 @@ void overlap_contiguous(int num_nodes, std::vector<int> &sources, std::vector<in
 
 void disjoint_contiguous_firstk_lastk(int num_nodes, std::vector<int> &sources, std::vector<int> &dests, std::vector<std::pair<int, std::vector<int> > > &source_dests, int k);
 
-void optiq_pattern_half_half(char *filepath, int num_ranks, int demand);
-
 void optiq_pattern_firstk_lastk(char *filepath, int num_ranks, int demand, int k);
 
 #endif

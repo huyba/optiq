@@ -117,24 +117,23 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
     struct optiq_comm_mem comm_mem;
     int num_sources = optiq_comm_mem_allocate (source_dests, count, comm_mem, pami_transport->rank, pami_transport->size);
 
-    struct optiq_schedule schedule;
-    schedule.world_size = pami_transport->size;
-    schedule.world_rank = pami_transport->rank;
-    schedule.pami_transport = pami_transport;
-    pami_transport->sched = &schedule;
-
-    optiq_schedule_init (schedule);
+    optiq_schedule_init ();
+    struct optiq_schedule *schedule = optiq_schedule_get();
+    schedule->world_size = pami_transport->size;
+    schedule->world_rank = pami_transport->rank;
+    schedule->pami_transport = pami_transport;
+    pami_transport->sched = schedule;
 
     /* Add paths and mem_comm to schedule */
-    optiq_schedule_add_paths (schedule, complete_paths);
-    optiq_schedule_mem_reg (schedule, comm_mem, pami_transport);
+    optiq_schedule_add_paths (*schedule, complete_paths);
+    optiq_schedule_mem_reg (*schedule, comm_mem, pami_transport);
 
     for (int demand = count; demand <= count; demand *= 2)
     {
-	schedule.recv_len = demand * num_sources;
+	schedule->recv_len = demand * num_sources;
 
 	/* Assign job size, chunk size and execute schedule */
-	optiq_schedule_assign_job_demand (schedule.local_jobs, demand);
+	optiq_schedule_assign_job_demand (schedule->local_jobs, demand);
 
 	for (int chunk_size = 16 * 1024; chunk_size <= demand; chunk_size *= 2) 
 	{
@@ -142,20 +141,20 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
 		printf("demand = %d chunk_size = %d ", demand, chunk_size);
 	    }
 
-	    optiq_schedule_split_jobs_multipaths (pami_transport, schedule.local_jobs, chunk_size);
+	    optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, chunk_size);
 
-	    optiq_schedule_set (schedule, num_jobs, pami_transport->size);
-	    optiq_schedule_execute (schedule, pami_transport);
+	    optiq_schedule_set (*schedule, num_jobs, pami_transport->size);
+	    optiq_schedule_execute (*schedule, pami_transport);
 	}
 
 	/* MPI_Alltoallv test*/
-	test_mpi(comm_mem, schedule, pami_transport);
+	test_mpi(comm_mem, *schedule, pami_transport);
     }
 
     /*Deregister meme*/
-    optiq_schedule_mem_destroy(schedule, pami_transport);
+    optiq_schedule_mem_destroy(*schedule, pami_transport);
 
-    optiq_schedule_finalize (schedule);
+    optiq_schedule_finalize ();
 
     /*Free the mem_comm*/
     optiq_comm_mem_delete (comm_mem);
@@ -238,16 +237,16 @@ int main(int argc, char **argv)
     MPI_Comm_rank (MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size (MPI_COMM_WORLD, &world_size);
 
-    struct multibfs bfs;
-    optiq_multibfs_init(bfs);
+    optiq_multibfs_init();
+    struct multibfs *bfs = optiq_multibfs_get();
 
     if (world_rank == 0) {
 	printf("Topology: \n");
-	for (int i = 0; i < bfs.num_dims; i++) {
-	    printf("%d ", bfs.size[i]);
+	for (int i = 0; i < bfs->num_dims; i++) {
+	    printf("%d ", bfs->size[i]);
 	}
 	printf("\n");
-	printf("num_dims = %d, num_nodes = %d\n", bfs.num_dims, bfs.num_nodes);
+	printf("num_dims = %d, num_nodes = %d\n", bfs->num_dims, bfs->num_nodes);
     }
 
     int count = 2 * 1024 * 1024;
@@ -270,7 +269,7 @@ int main(int argc, char **argv)
 
     MPI_Barrier (MPI_COMM_WORLD);
 
-    test_patterns (count, bfs, pami_transport);
+    test_patterns (count, *bfs, pami_transport);
 
     MPI_Finalize();
 

@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     {
 	if (rank == 0) 
 	{
-	    printf("First %d nodes send data to last %d nodes\n", size/i);
+	    printf("First %d nodes send data to last %d nodes\n", size/i, size/i);
 	    optiq_pattern_firstk_lastk(filepath, size, demand, size/i);
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
