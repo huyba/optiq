@@ -31,14 +31,14 @@ void optiq_patterns_convert_from_ssd_to_mpialltoallv(std::vector<std::pair<std::
 	source = requests[i].first.first;
 	dest = requests[i].first.second;
 	demand = requests[i].second;
-    }
 
-    if (source == rank) {
-	sendcounts[dest] = demand;
-    }
+	if (source == rank) {
+	    sendcounts[dest] = demand;
+	}
 
-    if (dest == rank) {
-	recvcounts[source] = demand;
+	if (dest == rank) {
+	    recvcounts[source] = demand;
+	}
     }
 }
 

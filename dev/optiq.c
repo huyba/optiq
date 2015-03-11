@@ -71,6 +71,7 @@ void optiq_mton_from_file(char *mtonfile)
 	{
 	    sdispls[i] = sbytes;
 	    sbytes += sendcounts[i];
+	    printf("Rank %d, send sbytes = %d, dest = %d\n", rank, sendcounts[i], i);
 	}
     }
 
@@ -87,6 +88,7 @@ void optiq_mton_from_file(char *mtonfile)
 	{
 	    rdispls[i] = rbytes;
 	    rbytes += recvcounts[i];
+	    printf("Rank %d, recv rbytes = %d, source = %d\n", rank, recvcounts[i], i);
 	}
     }
 
@@ -95,6 +97,8 @@ void optiq_mton_from_file(char *mtonfile)
     if (rbytes > 0) {
 	recvbuf = malloc (rbytes);
     }
+
+    printf("Rank %d, sbytes = %d, rbytes = %d\n", rank, sbytes, rbytes);
 
     optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 }
