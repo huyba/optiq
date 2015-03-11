@@ -1,13 +1,30 @@
 #include "optiq.h"
-#include "mpi.h"
+#include "mpi_benchmark.h"
+
+#include <mpi.h>
+
+void benchmark_for_a_pattern (char *filepath, int rank, int size)
+{
+    void *sendbuf = NULL, *recvbuf = NULL;
+    int *sendcounts, *sdispls, *recvcounts, *rdispls;
+
+    optiq_patterns_alltoallv_from_file (filepath, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, rank, size);
+
+    optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    opi.iters = 1;
+    optiq_opi_collect(rank);
+}
 
 int main(int argc, char **argv)
 {
     optiq_init(argc, argv);
 
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-    int world_rank = pami_transport->rank;
-    int world_size = pami_transport->size;
+    int rank = pami_transport->rank;
+    int size = pami_transport->size;
 
     char *filepath = "pattern";
     int demand = 1024 * 1024;
@@ -19,20 +36,18 @@ int main(int argc, char **argv)
 	demand = atoi(argv[2]);
     }
 
-    if (world_rank == 0) {
-	optiq_pattern_half_half(filepath, world_size, demand);
+    /* Benchmark for half-half pattern */
+    if (rank == 0) {
+	optiq_pattern_half_half(filepath, size, demand);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    optiq_mton_from_file(filepath);
-
-    if (world_rank == 0) {
+    benchmark_for_a_pattern(filepath, rank, size);
+    
+    if (rank == 0) {
         printf("Finished benchmarking\n");
     }
-
-    opi.iters = 1;
-    optiq_opi_collect(world_rank);
 
     optiq_finalize();
 

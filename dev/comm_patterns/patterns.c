@@ -6,7 +6,7 @@
 
 #include "patterns.h"
 
-void optiq_patterns_read_from_file(char *filename, std::vector<std::pair<std::pair<int, int>, int > > &requests)
+void optiq_patterns_read_requests_from_file(char *filename, std::vector<std::pair<std::pair<int, int>, int > > &requests)
 {
     std::ifstream infile(filename);
 
@@ -15,14 +15,14 @@ void optiq_patterns_read_from_file(char *filename, std::vector<std::pair<std::pa
     while (infile >> source >> dest >> demand)
     {
 	std::pair<int, int> sd = std::make_pair(source, dest);
-	std::pair<std::pair<int, int>, int> ssd = std::make_pair(sd, demand);
-	requests.push_back(ssd);
+	std::pair<std::pair<int, int>, int> sdd = std::make_pair(sd, demand);
+	requests.push_back(sdd);
     }
 
     infile.close();
 }
 
-void optiq_patterns_convert_from_ssd_to_mpialltoallv(std::vector<std::pair<std::pair<int, int>, int > > &requests, int *sendcounts, int *recvcounts, int rank)
+void optiq_patterns_convert_requests_to_sendrecvcounts(std::vector<std::pair<std::pair<int, int>, int > > &requests, int *sendcounts, int *recvcounts, int rank)
 {
     int source, dest, demand;
 
@@ -41,6 +41,49 @@ void optiq_patterns_convert_from_ssd_to_mpialltoallv(std::vector<std::pair<std::
 	}
     }
 }
+
+void optiq_patterns_alltoallv_from_file(char *filepath, void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int* rdispls, int rank, int size)
+{
+    std::vector<std::pair<std::pair<int, int>, int > > requests;
+    optiq_patterns_read_requests_from_file(filepath, requests);
+
+    sendcounts = (int *) calloc (1, sizeof (int) * size);
+    recvcounts = (int *) calloc (1, sizeof (int) * size);
+
+    optiq_patterns_convert_requests_to_sendrecvcounts(requests, sendcounts, recvcounts, rank);
+
+    sdispls = (int *) calloc (1, sizeof(int) * size);
+    rdispls = (int *) calloc (1, sizeof(int) * size);
+
+    int sbytes = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if (sendcounts[i] != 0)
+        {
+            sdispls[i] = sbytes;
+            sbytes += sendcounts[i];
+        }
+    }
+
+    if (sbytes > 0) {
+        sendbuf = malloc (sbytes);
+    }
+
+    int rbytes = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if (recvcounts[i] != 0)
+        {
+            rdispls[i] = rbytes;
+            rbytes += recvcounts[i];
+        }
+    }
+
+    if (rbytes > 0) {
+        recvbuf = malloc (rbytes);
+    }
+}
+
 
 void patterns_disjoint_contigous_multiranks_multinodes(int *sendcounts, int *recvcounts, int rank, int num_ranks, int num_ranks_per_node, int nbytes)
 {
