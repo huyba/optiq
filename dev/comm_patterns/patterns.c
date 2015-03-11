@@ -22,7 +22,7 @@ void optiq_patterns_read_requests_from_file(char *filename, std::vector<std::pai
     infile.close();
 }
 
-void optiq_patterns_convert_requests_to_sendrecvcounts(std::vector<std::pair<std::pair<int, int>, int > > &requests, int *sendcounts, int *recvcounts, int rank)
+void optiq_patterns_convert_requests_to_sendrecvcounts(std::vector<std::pair<std::pair<int, int>, int > > &requests, int* sendcounts, int* recvcounts, int rank)
 {
     int source, dest, demand;
 
@@ -42,7 +42,7 @@ void optiq_patterns_convert_requests_to_sendrecvcounts(std::vector<std::pair<std
     }
 }
 
-void optiq_patterns_alltoallv_from_file(char *filepath, void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int* rdispls, int rank, int size)
+void optiq_patterns_alltoallv_from_file(char *filepath, void * &sendbuf, int * &sendcounts, int * &sdispls, void * &recvbuf, int * &recvcounts, int* &rdispls, int rank, int size)
 {
     std::vector<std::pair<std::pair<int, int>, int > > requests;
     optiq_patterns_read_requests_from_file(filepath, requests);

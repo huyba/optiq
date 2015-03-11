@@ -112,4 +112,6 @@ void optiq_schedule_map_from_rankpairs_to_idpairs(std::vector<std::pair<int, std
 
 void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &path_ids, std::vector<std::pair<int, std::vector<int> > > &source_dest_ranks, std::vector<struct path *> &path_ranks);
 
+void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct path *> &mpi_paths);
+
 #endif

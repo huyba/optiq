@@ -8,6 +8,7 @@
 #include <pami.h>
 
 #include "topology.h"
+#include "pathreconstruct.h"
 #include "algorithm.h"
 #include "schedule.h"
 
@@ -699,9 +700,9 @@ void optiq_schedule_destroy()
     
     optiq_schedule_mem_destroy(*schedule, pami_transport);
 
-    for (int i = 0; i < schedule->paths.size(); i++) {
+    /*for (int i = 0; i < schedule->paths.size(); i++) {
 	free(schedule->paths[i]);
-    } 
+    } */
 }
 
 int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank) 
@@ -817,3 +818,12 @@ void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &p
     }
 }
 
+void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct path *> &mpi_paths)
+{
+    std::vector<std::pair<int, std::vector<int> > > source_dests;
+    optiq_schedule_get_pair (sendcounts, source_dests);
+
+    struct topology *topo = optiq_topology_get();
+
+    optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
+}

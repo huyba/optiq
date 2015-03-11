@@ -12,10 +12,21 @@ void benchmark_for_a_pattern (char *filepath, int rank, int size)
 
     optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
+    std::vector<struct path *> mpi_paths;
+    optiq_benchmark_reconstruct_mpi_paths(sendcounts, mpi_paths);
+
+    if (rank == 0) {
+	optiq_path_print_stat(mpi_paths, size);
+    }
+
     optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     opi.iters = 1;
     optiq_opi_collect(rank);
+
+    if (rank == 0) {
+        optiq_path_print_stat(schedule->paths, size);
+    }
 }
 
 int main(int argc, char **argv)
