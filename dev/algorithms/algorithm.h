@@ -18,6 +18,7 @@ struct optiq_algorithm {
     enum search_algorithm search_alg;
     struct multibfs *bfs;
     int num_paths_per_pair;
+    int max_hops;
 };
 
 extern "C" struct optiq_algorithm *algorithm;

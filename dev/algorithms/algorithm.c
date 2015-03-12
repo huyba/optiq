@@ -9,6 +9,7 @@ void optiq_algorithm_init()
     algorithm = (struct optiq_algorithm *) calloc (1, sizeof(struct optiq_algorithm));
 
     algorithm->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT;
+    algorithm->max_hops = 0;
 
     algorithm->num_paths_per_pair = 1;
 
@@ -52,6 +53,7 @@ void optiq_algorithm_search_path(std::vector<struct path *> &paths, std::vector<
     }
 
     if (algorithm->search_alg == OPTIQ_ALG_HOPS_CONSTRAINT) {
+	max_path_length = algorithm->max_hops;
 	optiq_alg_heuristic_search_manytomany(paths, source_dests, bfs);
     }
 

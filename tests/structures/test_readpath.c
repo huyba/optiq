@@ -19,6 +19,6 @@ int main (int argc, char *argv[])
     int num_nodes = 512;
 
     optiq_path_print_paths(complete_paths);
-    optiq_path_print_stat(complete_paths, num_nodes);
+    optiq_path_print_stat(complete_paths, num_nodes, 0);
 }
 

@@ -110,7 +110,7 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
     optiq_alg_heuristic_search_kpaths(complete_paths, source_dests, k, graphFilePath);
 
     if (pami_transport->rank == 0) {
-	optiq_path_print_stat(complete_paths, bfs.num_nodes);
+	optiq_path_print_stat(complete_paths, bfs.num_nodes, topo->num_edges);
     }
 
     /*With the comm pattern, allocate memories, set offsets, displacements*/

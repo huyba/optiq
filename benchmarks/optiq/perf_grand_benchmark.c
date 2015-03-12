@@ -8,6 +8,8 @@ void benchmark_for_a_pattern (char *filepath, int rank, int size)
     void *sendbuf = NULL, *recvbuf = NULL;
     int *sendcounts, *sdispls, *recvcounts, *rdispls;
 
+    struct topology *topo = optiq_topology_get();
+
     optiq_patterns_alltoallv_from_file (filepath, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, rank, size);
 
     optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
@@ -16,7 +18,7 @@ void benchmark_for_a_pattern (char *filepath, int rank, int size)
     optiq_benchmark_reconstruct_mpi_paths(sendcounts, mpi_paths);
 
     if (rank == 0) {
-	optiq_path_print_stat(mpi_paths, size);
+	optiq_path_print_stat(mpi_paths, size, topo->num_edges);
     }
 
     optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
@@ -25,7 +27,7 @@ void benchmark_for_a_pattern (char *filepath, int rank, int size)
     optiq_opi_collect(rank);
 
     if (rank == 0) {
-        optiq_path_print_stat(schedule->paths, size);
+        optiq_path_print_stat(schedule->paths, size, topo->num_edges);
     }
 
     for (int i = 0; i < schedule->paths.size(); i++) {

@@ -269,7 +269,7 @@ int main(int argc, char **argv)
 
     if (world_rank == 0)
     {
-	optiq_path_print_stat(complete_paths, bfs->num_nodes);
+	optiq_path_print_stat(complete_paths, bfs->num_nodes, topo->num_edges);
 
 	printf("\nTest with MPI_Alltoallv\n");
     }

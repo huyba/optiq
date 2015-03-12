@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
 
     if (world_rank == 0) {
-	optiq_path_print_stat(mpi_paths, num_nodes);
+	optiq_path_print_stat(mpi_paths, num_nodes, topo->num_edges);
     }
 
     int k = num_nodes/4;
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
 
     if (world_rank == 0) {
-        optiq_path_print_stat(mpi_paths, num_nodes);
+        optiq_path_print_stat(mpi_paths, num_nodes, topo->num_edges);
     }
 
     return 0;

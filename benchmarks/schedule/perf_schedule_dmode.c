@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
 
     if (world_rank == 0) {
-	optiq_path_print_stat(mpi_paths, world_size);
+	optiq_path_print_stat(mpi_paths, world_size, topo->num_edges);
 	optiq_path_print_paths(mpi_paths);
     }
 
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     optiq_opi_collect(world_rank);
 
     if (world_rank == 0) {
-	optiq_path_print_stat(schedule->paths, world_size);
+	optiq_path_print_stat(schedule->paths, world_size, topo->num_edges);
 
         printf("Finished testing schedule dqueue modes\n");
     }

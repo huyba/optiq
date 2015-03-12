@@ -34,7 +34,7 @@ void optiq_path_print_path(struct path *p);
 
 void optiq_path_print_paths(std::vector<struct path*> &paths);
 
-void optiq_path_print_stat(std::vector<struct path*> &paths, int num_nodes);
+void optiq_path_print_stat(std::vector<struct path*> &paths, int num_nodes, int num_edges);
 
 void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &complete_paths);
 

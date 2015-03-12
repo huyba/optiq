@@ -70,7 +70,7 @@ struct topology* optiq_topology_get()
 
 void optiq_topology_print_basic(struct topology *topo)
 {
-    printf("num_dims = %d\n", topo->num_dims);
+    printf("num dimension = %d\n", topo->num_dims);
 
     printf("size: ");
     for (int i = 0; i < topo->num_dims; i++) {
@@ -78,9 +78,9 @@ void optiq_topology_print_basic(struct topology *topo)
     }
     printf("\n");
 
-    printf("num_nodes = %d\n", topo->num_nodes);
+    printf("num nodes = %d\n", topo->num_nodes);
 
-    printf("num_edges = %d\n", topo->num_edges);
+    printf("num physical links = %d\n", topo->num_edges);
 
     printf("torus: ");
     for (int i = 0; i < topo->num_dims; i++) {
@@ -438,23 +438,6 @@ int optiq_topology_get_coord(int *coord)
 #endif
 }
 
-int optiq_topology_get_hop_distance(int rank1, int rank2)
-{
-    struct topology *topo = optiq_topology_get();
-
-    if (topo == NULL) {
-	optiq_topology_init();
-    }
-
-    int node1 = rank1 / topo->num_ranks_per_node;
-    int node2 = rank2 / topo->num_ranks_per_node;
-
-    int *coord1 = topo->all_coords[node1];
-    int *coord2 = topo->all_coords[node2];
-
-    return optiq_compute_num_hops(topo->num_dims, coord1, coord2);
-}
-
 void optiq_topology_finalize()
 {
     for (int i = 0; i < topo->num_nodes; i++) {
@@ -468,4 +451,52 @@ void optiq_topology_finalize()
     topo->initialized = false;
 
     free (topo);
+}
+
+int optiq_topology_get_hop_distance_2nodes(int node1, int node2)
+{
+    struct topology *topo = optiq_topology_get();
+
+    int *coord1 = topo->all_coords[node1];
+    int *coord2 = topo->all_coords[node2];
+
+    return optiq_compute_num_hops(topo->num_dims, coord1, coord2);
+}
+
+int optiq_topology_get_hop_distance(int rank1, int rank2)
+{
+    struct topology *topo = optiq_topology_get();
+
+    if (topo == NULL) {
+        optiq_topology_init();
+    }
+
+    int node1 = rank1 / topo->num_ranks_per_node;
+    int node2 = rank2 / topo->num_ranks_per_node;
+
+    return optiq_topology_get_hop_distance_2nodes(node1, node2);
+}
+
+int optiq_topology_max_distance_2sets (std::vector<std::pair<int, std::vector<int> > > &source_dests)
+{
+    struct topology *topo = optiq_topology_get();
+
+    int max_distance = 0;
+
+    for (int i = 0; i < source_dests.size(); i++)
+    {
+	for (int j = 0; j < source_dests[i].second.size(); j++)
+	{
+	    int *coord1 = topo->all_coords[source_dests[i].first];
+	    int *coord2 = topo->all_coords[source_dests[i].second[j]];
+
+	    int distance = optiq_compute_num_hops(topo->num_dims, coord1, coord2);
+
+	    if (max_distance < distance) {
+		max_distance = distance;
+	    }
+	}
+    }
+
+    return max_distance;
 }

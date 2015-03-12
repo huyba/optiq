@@ -109,12 +109,12 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
 
     if (pami_transport->rank == 0) {
 	printf("OPTIQ path construction stat:\n");
-	optiq_path_print_stat(complete_paths, bfs.num_nodes);
+	optiq_path_print_stat(complete_paths, bfs.num_nodes, topo->num_edges);
 
 	printf("MPI path reconstruction stat:\n");
 	std::vector<struct path *> mpi_paths;
 	optiq_topology_path_reconstruct(source_dests, topo, mpi_paths);
-	optiq_path_print_stat(mpi_paths, bfs.num_nodes);
+	optiq_path_print_stat(mpi_paths, bfs.num_nodes, topo->num_edges);
     }
 
     /*With the comm pattern, allocate memories, set offsets, displacements*/

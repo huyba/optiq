@@ -47,7 +47,11 @@ int optiq_topology_get_node_id(int world_rank);
 
 int optiq_topology_get_random_rank (int node_id);
 
+int optiq_topology_get_hop_distance_2nodes(int node1, int node2);
+
 int optiq_topology_get_hop_distance(int rank1, int rank2);
+
+int optiq_topology_max_distance_2sets(std::vector<std::pair<int, std::vector<int> > > &source_dests);
 
 int optiq_topology_get_coord(int *coord);
 
