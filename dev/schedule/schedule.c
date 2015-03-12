@@ -67,10 +67,11 @@ void optiq_schedule_finalize()
     free(schedule);
 }
 
-void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, int &num_active_paths, int world_rank)
+void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, std::vector<std::pair<int, std::vector<int> > > &intermediate_notify_list, int &num_active_paths, int world_rank)
 {
     num_active_paths = 0;
     notify_list.clear();
+    intermediate_notify_list.clear();
     bool isIn;
 
     for (int i = 0; i < complete_paths.size(); i++) 
@@ -106,7 +107,12 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 		if (d.size() > 0) 
 		{
 		    std::pair<int, std::vector<int> > p = make_pair(complete_paths[i]->path_id, d);
-                    notify_list.push_back(p);
+
+		    if (world_rank == complete_paths[i]->arcs.back().v) {
+			notify_list.push_back(p);
+		    } else {
+			intermediate_notify_list.push_back(p);
+		    }
 		}
 	    }
 	}
@@ -590,6 +596,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /* Convert from path of node ids to path of rank ids */
     std::vector<struct path *> &path_ranks = schedule->paths;
     path_ranks.clear();
+
     optiq_schedule_map_from_pathids_to_pathranks (path_ids, source_dest_ranks, path_ranks);
 
     /*if (world_rank == 0) {
@@ -604,7 +611,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
         printf("Done building next dests\n");
     }*/
 
-    build_notify_lists(path_ranks, schedule->notify_list, schedule->num_active_paths, world_rank);
+    build_notify_lists(path_ranks, schedule->notify_list, schedule->intermediate_notify_list, schedule->num_active_paths, world_rank);
     /*optiq_schedule_print_notify_list(schedule->notify_list, world_rank);*/
     /*if (world_rank == 0) {
         printf("Done building notify list\n");
@@ -709,6 +716,7 @@ void optiq_schedule_destroy()
     for (int i = 0; i < schedule->paths.size(); i++) {
 	free(schedule->paths[i]);
     }
+    schedule->paths.clear();
 }
 
 int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank) 
@@ -799,8 +807,16 @@ void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &p
 		    /*Map randomly node id to rank*/
 		    for (int h = 0; h < path_rank->arcs.size(); h++)
 		    {
-			path_rank->arcs[h].u = path_rank->arcs[h].u * topo->num_ranks_per_node + source_rank % topo->num_ranks_per_node;
-			path_rank->arcs[h].v = path_rank->arcs[h].v * topo->num_ranks_per_node + dest_rank % topo->num_ranks_per_node;
+			if (topo->num_ranks_per_node > 1) 
+			{
+			    path_rank->arcs[h].u = path_rank->arcs[h].u * topo->num_ranks_per_node + source_rank % topo->num_ranks_per_node;
+			    path_rank->arcs[h].v = path_rank->arcs[h].v * topo->num_ranks_per_node + dest_rank % topo->num_ranks_per_node;
+			}
+			else 
+			{
+			    path_rank->arcs[h].u = path_rank->arcs[h].u;
+			    path_rank->arcs[h].v = path_rank->arcs[h].v;
+			}
 		    }
 
 		    /*Map exact source rank and dest rank*/

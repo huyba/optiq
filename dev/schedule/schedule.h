@@ -63,6 +63,8 @@ struct optiq_schedule {
     std::vector<struct path *> paths;
 
     std::vector<std::pair<int, std::vector<int> > > notify_list;
+    std::vector<std::pair<int, std::vector<int> > > intermediate_notify_list;
+
     int num_active_paths;
 
     enum dequeue_mode dmode;
