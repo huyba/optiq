@@ -38,9 +38,9 @@ LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o optiq_benchmark.o
 
-all: bdev mpibm perf_optiq_alltoallv.x perf_grand_benchmark.x cp
+all: bdev mpibm perf_optiq_alltoallv.x perf_grand_benchmark.x perf_optiq_file.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -66,3 +66,4 @@ BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 cp:
 	cp perf_optiq_alltoallv.x $(BENCHMARKS_DIR)/optiq/alltoallv/
 	cp perf_grand_benchmark.x $(BENCHMARKS_DIR)/optiq/grandbenchmark/
+	cp perf_optiq_file.x $(BENCHMARKS_DIR)/optiq/file/
