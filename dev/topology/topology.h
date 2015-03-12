@@ -9,6 +9,8 @@
 #include <firmware/include/personality.h>
 #endif
 
+#include "path.h"
+
 struct topology {
     int num_dims;
     int num_nodes;
@@ -70,6 +72,10 @@ void optiq_topology_compute_routing_order_bgq(int num_dims, int *size, int *orde
 void optiq_topology_move_along_one_dimension_bgq(int num_dims, int *size, int *source, int routing_dimension, int num_hops, int direction, int **path);
 
 void optiq_topology_reconstruct_path_bgq(int num_dims, int *size, int *torus, int *order, int *source, int *dest, int **path);
+
+void optiq_topology_route_along_dimension (int *scoord, int routing_dimension, int destcoord, struct path &p);
+
+void optiq_topolog_reconstruct_path (int source, int dest, struct path &p);
 
 void optiq_topology_print_all_arcs(int num_dims, int *size, double cap);
 

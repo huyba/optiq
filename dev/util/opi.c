@@ -49,4 +49,5 @@ void optiq_opi_clear()
     opi.notification_done_time = 0;
     opi.transfer_time = 0;
     opi.build_path_time = 0;
+    opi.paths.clear();
 }

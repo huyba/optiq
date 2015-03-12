@@ -840,12 +840,13 @@ void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &p
     }
 }
 
-void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct path *> &mpi_paths)
+void optiq_schedule_print_sourcedests(std::vector<std::pair<int, std::vector<int> > > &source_dests)
 {
-    std::vector<std::pair<int, std::vector<int> > > source_dests;
-    optiq_schedule_get_pair (sendcounts, source_dests);
-
-    struct topology *topo = optiq_topology_get();
-
-    optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
+    for (int i = 0; i < source_dests.size(); i++)
+    {
+	for (int j = 0; j < source_dests[i].second.size(); j++)
+	{
+	    printf("source %d dest %d\n", source_dests[i].first, source_dests[i].second[j]);
+	}
+    }
 }

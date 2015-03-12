@@ -191,6 +191,25 @@ void optiq_path_print_paths(std::vector<struct path *> &paths)
     }
 }
 
+void optiq_path_print_paths_coords(std::vector<struct path *> &paths, int** coords)
+{
+    printf("#paths = %ld\n", paths.size());
+
+    for (int i = 0; i < paths.size(); i++) {
+        struct path *p = paths[i];
+
+        printf("path %d num_hops = %ld, max_load = %d, flow = %d\n", i, p->arcs.size(), p->max_load, p->flow);
+
+        printf("path %d: ", i);
+
+        for (int j = 0; j < p->arcs.size(); j++) {
+            printf("%d [%d %d %d %d %d]->", p->arcs[j].u, coords[p->arcs[j].u][0], coords[p->arcs[j].u][1], coords[p->arcs[j].u][2], coords[p->arcs[j].u][3], coords[p->arcs[j].u][4]);
+        }
+
+        printf("%d [%d %d %d %d %d]\n", p->arcs.back().v, coords[p->arcs.back().v][0], coords[p->arcs.back().v][1], coords[p->arcs.back().v][2], coords[p->arcs.back().v][3], coords[p->arcs.back().v][4]);
+    }
+}
+
 
 void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &complete_paths)
 {
