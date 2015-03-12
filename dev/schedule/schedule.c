@@ -11,6 +11,7 @@
 #include "pathreconstruct.h"
 #include "algorithm.h"
 #include "schedule.h"
+#include "opi.h"
 
 #define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
 
@@ -702,9 +703,12 @@ void optiq_schedule_destroy()
     
     optiq_schedule_mem_destroy(*schedule, pami_transport);
 
-    /*for (int i = 0; i < schedule->paths.size(); i++) {
+    struct optiq_performance_index *opi = optiq_opi_get();
+    opi->paths = schedule->paths;
+
+    for (int i = 0; i < schedule->paths.size(); i++) {
 	free(schedule->paths[i]);
-    } */
+    }
 }
 
 int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank) 

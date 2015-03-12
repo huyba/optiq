@@ -1,6 +1,8 @@
 #ifndef OPTIQ_PERFORMANCE_INDEX
 #define OPTIQ_PERFORMANCE_INDEX
 
+#include "path.h"
+
 struct optiq_performance_index {
     double transfer_time;
     double build_path_time;
@@ -24,9 +26,12 @@ struct optiq_performance_index {
     int optiq_avg_hops;
     int optiq_total_hops;
 
+    std::vector<struct path *> paths;
 };
 
 extern "C" struct optiq_performance_index opi;
+
+struct optiq_performance_index * optiq_opi_get();
 
 void optiq_opi_collect(int world_rank);
 

@@ -3,6 +3,11 @@
 
 struct optiq_performance_index opi;
 
+struct optiq_performance_index * optiq_opi_get()
+{
+    return &opi;
+}
+
 void optiq_opi_collect(int world_rank)
 {
     struct optiq_performance_index max_opi;

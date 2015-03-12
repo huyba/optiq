@@ -1,4 +1,5 @@
 #include "optiq.h"
+#include "opi.h"
 #include "mpi_benchmark.h"
 
 void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
@@ -25,11 +26,6 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     optiq_opi_collect(rank);
 
     if (rank == 0) {
-        optiq_path_print_stat(schedule->paths, size, topo->num_edges);
+        optiq_path_print_stat(opi->paths, size, topo->num_edges);
     }
-
-    for (int i = 0; i < schedule->paths.size(); i++) {
-        free(schedule->paths[i]);
-    }
-    schedule->paths.clear();
 }
