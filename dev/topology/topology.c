@@ -401,7 +401,7 @@ void optiq_topology_route_along_dimension (int *scoord, int routing_dimension, i
 	    source[routing_dimension] = intermediate_node[routing_dimension];
 
 	    /* From top down to dest*/
-	    for (int i = size[routing_dimension] - 2; i <= destcoord; i--)
+	    for (int i = size[routing_dimension] - 2; i >= destcoord; i--)
 	    {
 		intermediate_node[routing_dimension] = i;
 		struct arc a;
@@ -444,7 +444,7 @@ void optiq_topology_route_along_dimension (int *scoord, int routing_dimension, i
 	else
 	{
 	    /* Route to top*/
-	    for (int i = scoord[routing_dimension] + 1; i <= size[routing_dimension] -1; i++) 
+	    for (int i = scoord[routing_dimension] + 1; i <= size[routing_dimension] - 1; i++) 
 	    {
 		intermediate_node[routing_dimension] = i;
 
@@ -507,6 +507,8 @@ void optiq_topolog_reconstruct_path (int source, int dest, struct path &p)
 	intermediate_node[i] = scoord[i];
     }
 
+    /*printf("from %d [%d %d %d %d %d] to %d [%d %d %d %d %d]\n", source, scoord[0], scoord[1], scoord[2], scoord[3], scoord[4], dest, dcoord[0], dcoord[1], dcoord[2], dcoord[3], dcoord[4]);*/
+
     for (int i = 0; i < num_dims; i++)
     {
 	routing_dimension = order[i];
@@ -521,9 +523,11 @@ void optiq_topolog_reconstruct_path (int source, int dest, struct path &p)
 
 	intermediate_node[routing_dimension] = dcoord[routing_dimension];
     }
+
+    /*optiq_path_print_path_coords (&p, topo->all_coords);*/
 }
 
-void optiq_topology_reconstruct_path_bgq(int num_dims, int *size, int *torus, int *order, int *source, int *dest, int **path, int *nhops)
+void optiq_topology_reconstruct_path_bgq(int num_dims, int *size, int *torus, int *order, int *source, int *dest, int **path)
 {
     int immediate_node[5];
 

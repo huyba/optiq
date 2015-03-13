@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 
     disjoint_contiguous(num_nodes, sources, dests, source_dests, ratio);
     mpi_paths.clear();
-    optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
+    optiq_topology_path_reconstruct_new (source_dests,  mpi_paths);
 
     if (world_rank == 0) {
 	optiq_path_print_stat(mpi_paths, num_nodes, topo->num_edges);
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     int k = num_nodes/4;
     disjoint_contiguous_firstk_lastk(num_nodes, sources, dests, source_dests, k);
     mpi_paths.clear();
-    optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
+    optiq_topology_path_reconstruct_new (source_dests, mpi_paths);
 
     if (world_rank == 0) {
         optiq_path_print_stat(mpi_paths, num_nodes, topo->num_edges);

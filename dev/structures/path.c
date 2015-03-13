@@ -62,6 +62,17 @@ int optiq_path_compare(struct path *p1, struct path *p2)
     }
 }
 
+void optiq_path_print_path_coords(struct path *p, int** coords)
+{
+    printf("Path: max_load = %d, #hops = %ld. ", p->max_load, p->arcs.size());
+
+    for (int j = 0; j < p->arcs.size(); j++) {
+        printf ("%d [%d %d %d %d %d]->", p->arcs[j].u, coords[p->arcs[j].u][0], coords[p->arcs[j].u][1], coords[p->arcs[j].u][2], coords[p->arcs[j].u][3], coords[p->arcs[j].u][4]);
+    }
+
+    printf("%d [%d %d %d %d %d]\n", p->arcs[p->arcs.size() - 1].v, coords[p->arcs[p->arcs.size() - 1].v][0], coords[p->arcs[p->arcs.size() - 1].v][1], coords[p->arcs[p->arcs.size() - 1].v][2], coords[p->arcs[p->arcs.size() - 1].v][3], coords[p->arcs[p->arcs.size() - 1].v][4]);
+}
+
 void optiq_path_print_path(struct path *p)
 {
     printf("Path: max_load = %d, #hops = %ld. ", p->max_load, p->arcs.size());
@@ -87,6 +98,7 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     
 
     int **load = (int **)malloc(sizeof(int *) * num_nodes);
+
     for (int i = 0; i < num_nodes; i++)
     {
 	load[i]  = (int *)malloc(sizeof(int) * num_nodes);
@@ -178,7 +190,8 @@ void optiq_path_print_paths(std::vector<struct path *> &paths)
 {
     printf("#paths = %ld\n", paths.size());
 
-    for (int i = 0; i < paths.size(); i++) {
+    for (int i = 0; i < paths.size(); i++) 
+    {
         struct path *p = paths[i];
 
 	printf("path %d num_hops = %ld, max_load = %d, flow = %d\n", i, p->arcs.size(), p->max_load, p->flow);

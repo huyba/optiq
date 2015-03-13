@@ -5,6 +5,25 @@
 
 #include "pathreconstruct.h"
 
+void optiq_topology_path_reconstruct_new (std::vector<std::pair<int, std::vector<int> > > &source_dests, std::vector<struct path *> &mpi_paths)
+{
+    for (int i = 0; i < source_dests.size(); i ++)
+    {
+        int source_rank = source_dests[i].first;
+
+        for (int j = 0; j < source_dests[i].second.size(); j++)
+        {
+            int dest_rank = source_dests[i].second[j];
+
+            struct path *p = (struct path*) calloc (1, sizeof (struct path));
+
+            optiq_topolog_reconstruct_path(source_rank, dest_rank, *p);
+
+	    mpi_paths.push_back(p);
+	}
+    }
+}
+
 void optiq_topology_path_reconstruct(std::vector<std::pair<int, std::vector<int> > > &source_dests, struct topology *topo, std::vector<struct path *> &mpi_paths)
 {
     int num_nodes = topo->num_nodes;
@@ -36,9 +55,7 @@ void optiq_topology_path_reconstruct(std::vector<std::pair<int, std::vector<int>
 
 	    struct path *p = (struct path*) calloc (1, sizeof (struct path));
 
-	    optiq_topolog_reconstruct_path(source_rank, dest_rank, *p);
-
-	    //optiq_topology_reconstruct_path_bgq (num_dims, size, torus, order, all_coords[source_rank], all_coords[dest_rank], path);
+	    optiq_topology_reconstruct_path_bgq (num_dims, size, torus, order, all_coords[source_rank], all_coords[dest_rank], path);
 
 	    num_hops = optiq_compute_num_hops(num_dims, all_coords[source_rank], all_coords[dest_rank]);
 
@@ -53,14 +70,13 @@ void optiq_topology_path_reconstruct(std::vector<std::pair<int, std::vector<int>
 
 	    printf("source_rank = %d , dest_rakn = %d, num_hops = %d\n", source_rank, dest_rank, num_hops);
 
-	    mpi_paths.push_back(p);
-
-	    /* Clean the path */
 	    for (int x = 0; x < max_hops; x++) {
 		for (int y = 0; y < num_dims; y++) {
 		    path[x][y] = 0;
 		}
 	    }
+
+	    mpi_paths.push_back(p);
 	}
     }
 

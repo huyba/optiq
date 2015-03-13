@@ -3,6 +3,8 @@
 #include "optiq_benchmark.h"
 #include "mpi_benchmark.h"
 
+#include <mpi.h>
+
 void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct path *> &mpi_paths)
 {
     mpi_paths.clear();
@@ -16,9 +18,7 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
 	optiq_schedule_print_sourcedests(source_dests);
     }*/
 
-    struct topology *topo = optiq_topology_get();
-
-    optiq_topology_path_reconstruct (source_dests, topo, mpi_paths);
+    optiq_topology_path_reconstruct_new (source_dests, mpi_paths);
 }
 
 void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
@@ -36,8 +36,11 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     mpi_paths.clear();
     optiq_benchmark_reconstruct_mpi_paths(sendcounts, mpi_paths);
 
+    MPI_Barrier(MPI_COMM_WORLD);
+
     if (rank == 0) {
 	//optiq_path_print_paths_coords(mpi_paths, topo->all_coords);
+	/*printf("#paths = %d, size = %d, #edges = %d\n", mpi_paths.size(), size, topo->num_edges);*/
         optiq_path_print_stat(mpi_paths, size, topo->num_edges);
     }
 
