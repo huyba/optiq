@@ -54,7 +54,12 @@ void optiq_algorithm_search_path(std::vector<struct path *> &paths, std::vector<
 
     if (algorithm->search_alg == OPTIQ_ALG_HOPS_CONSTRAINT) {
 	max_path_length = algorithm->max_hops;
-	optiq_alg_heuristic_search_manytomany(paths, source_dests, bfs);
+	optiq_alg_heuristic_search_manytomany_late_adding_load (paths, source_dests, bfs);
+    }
+
+    if (algorithm->search_alg == OPTIQ_ALG_HOPS_CONSTRAINT_EARLY) {
+        max_path_length = algorithm->max_hops;
+        optiq_alg_heuristic_search_manytomany_early_adding_load (paths, source_dests, bfs);
     }
 
     if (algorithm->search_alg == OPTIQ_ALG_KPATHS) 
