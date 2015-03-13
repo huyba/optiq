@@ -26,4 +26,8 @@ void optiq_pattern_firstk_lastk(char *filepath, int num_ranks, int demand, int k
 
 void optiq_pattern_lastk_firstk(char *filepath, int num_ranks, int demand, int k);
 
+void optiq_pattern_firstm_lastn(char *filepath, int numranks, int demand, int m, int n);
+
+void optiq_pattern_subgroup_agg (char *filepath, int numranks, int subgroupsize, int demand);
+
 #endif

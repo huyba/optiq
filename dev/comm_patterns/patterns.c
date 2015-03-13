@@ -302,3 +302,52 @@ void optiq_pattern_lastk_firstk(char *filepath, int num_ranks, int demand, int k
 
     file.close();
 }
+
+void optiq_pattern_firstm_lastn(char *filepath, int numranks, int demand, int m, int n)
+{
+    std::ofstream file;
+    file.open(filepath);
+
+    if (m > n) 
+    {
+	int r = m/n;
+	int d = numranks - n;
+
+	for (int i = 0; i < m; i += r) 
+	{
+	    for (int j = 0; j < r; j++) 
+	    {
+		file << i + j << " " << d << " " << demand << std::endl;
+	    }
+	    d++;
+	}
+    } 
+    else 
+    {
+	int r = n/m;
+        int d = numranks - n;
+
+        for (int i = 0; i < m; i++)     
+        {
+            for (int j = 0; j < r; j++) 
+            {
+                file << i  << " " << d + j << " " << demand << std::endl;
+            }
+            d += r;
+        }
+    }
+
+    file.close();
+}
+
+void optiq_pattern_subgroup_agg (char *filepath, int numranks, int subgroupsize, int demand)
+{
+    std::ofstream file;
+    file.open (filepath);
+
+    for (int i = 0; i < numranks; i++) {
+	file << i  << " " << (i/subgroupsize) * subgroupsize + subgroupsize/2  << " " << demand << std::endl;
+    }
+
+    file.close();
+}
