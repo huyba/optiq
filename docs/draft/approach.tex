@@ -89,7 +89,7 @@ In the \textbf{Algorithm \ref{alg:h1}}, we start by adding \\
 Time complexity: The graph has V vertices and E edges. We have M sources and N destination making K pairs of (source, destinatinon), then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is XXXX.
 
 \subsubsection{Heuristic 2}
-This algorithm is an extension from Heuristic 1, while we limit the exploring paths by both the number of hops and minimizing the maximum load. We do so by maintaining a min heap of paths. The comparison function of the heap is based on both the number of hops and maximum load on each path.
+This algorithm is an extension from Heuristic 1, while we limit the exploring paths by both the number of hops and minimizing the maximum load. We do so by maintaining a min heap of paths. We use the heap to contain all the exploring paths instead of using a queue to manage the exploring paths as in Heuristic 1. This leads to increasing algorithm's time complexity (as taking data from a queue is O(1), from a min heap is O(log(n)) with n entries in the heap) but we have finer results. The comparison function of the heap is based on both the number of hops and maximum load on each path. 
 
 \begin{algorithm}
 
