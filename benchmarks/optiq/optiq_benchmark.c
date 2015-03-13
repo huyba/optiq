@@ -34,6 +34,10 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
 
     std::vector<struct path *> mpi_paths;
     mpi_paths.clear();
+
+    if (rank == 0) {
+	printf("Test A - MPI\n\n");
+    }
     optiq_benchmark_reconstruct_mpi_paths(sendcounts, mpi_paths);
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -42,6 +46,10 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
 	//optiq_path_print_paths_coords(mpi_paths, topo->all_coords);
 	/*printf("#paths = %d, size = %d, #edges = %d\n", mpi_paths.size(), size, topo->num_edges);*/
         optiq_path_print_stat (mpi_paths, size, topo->num_edges);
+    }
+
+    if (rank == 0) {
+        printf("Test B - OPTIQ\n\n");
     }
 
     optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);

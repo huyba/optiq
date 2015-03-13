@@ -22,6 +22,8 @@ int main(int argc, char **argv)
 	demand = atoi(argv[2]);
     }
 
+    int testid = 1;
+
     /* First m send data to last n */
     for (int m = size/16; m <= size/2; m *= 2)
     {
@@ -29,8 +31,9 @@ int main(int argc, char **argv)
 	{
 	    if (rank == 0)
 	    {
-		printf("First %d nodes send data to last %d nodes\n", m, n);
+		printf("Test No. %d: First %d nodes send data to last %d nodes\n", testid, m, n);
 		optiq_pattern_firstm_lastn(filepath, size, demand, m, n);
+		testid++;
 	    }
 
 	    MPI_Barrier(MPI_COMM_WORLD);
@@ -43,8 +46,9 @@ int main(int argc, char **argv)
     {
         if (rank == 0)
         {
-            printf("Subgroup of %d nodes aggregate data to node in the middle of the subgroup\n", i);
+            printf("Test No. %d: Subgroup of %d nodes aggregate data to node in the middle of the subgroup\n", testid, i);
 	    optiq_pattern_subgroup_agg(filepath, size, i, demand);
+	    testid++;
         }
         MPI_Barrier(MPI_COMM_WORLD);
 
@@ -60,8 +64,9 @@ int main(int argc, char **argv)
 	    {
 		if (rank == 0)
 		{
-		    printf("First %d nodes send data to %d nodes, with %d nodes overlapped\n", m, n, n/ov);
+		    printf("Test No. %d: First %d nodes send data to %d nodes, with %d nodes overlapped\n", testid, m, n, n/ov);
 		    optiq_pattern_overlap (filepath, size, demand, m, n/ov, n);
+		    testid++;
 		}
 
 		MPI_Barrier(MPI_COMM_WORLD);
