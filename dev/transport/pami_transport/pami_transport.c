@@ -820,19 +820,23 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		    int dest = pami_transport->sched->notify_list[i].second.back();
 		    pami_transport->sched->notify_list[i].second.pop_back();
 
-		    optiq_pami_send_immediate(pami_transport->context, PATH_DONE, &path_id, sizeof(int), NULL, 0, pami_transport->endpoints[dest]);
+		    if (dest != rank) {
+			optiq_pami_send_immediate(pami_transport->context, PATH_DONE, &path_id, sizeof(int), NULL, 0, pami_transport->endpoints[dest]);
+		    }
 
 		    break;
 		}
 
-		if (pami_transport->sched->notify_list[i].second.size() == 0) {
+		if (pami_transport->sched->notify_list[i].second.size() == 0) 
+		{
 		    pami_transport->sched->notify_list.erase(pami_transport->sched->notify_list.begin() + i);
+
+		    pami_transport->sched->num_active_paths--;
 		}
 
 		i++;
 	    }
 
-	    pami_transport->sched->num_active_paths--;
 	    pami_transport->sched->expecting_length = -1;
 	    gettimeofday(&t3, NULL);
 	    opi.notification_done_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
@@ -845,7 +849,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 
 	optiq_pami_transport_get_message();
 
-	/*if (rank == 384) {
+	/*if (true) {
 	    printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length);
 	}*/
 
@@ -892,7 +896,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		    far_mr.offset += header->original_offset;
 		}
 
-		/*if (header->path_id == 8 || rank == 384) {
+		/*if (true) {
 		    printf("Rank %d rput %d bytes of orin[s %d, d %d] along path_id = %d of data to %d\n", pami_transport->rank, header->length, header->source, header->dest, header->path_id, dest);
 		}*/
 

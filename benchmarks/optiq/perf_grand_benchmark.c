@@ -38,6 +38,10 @@ int main(int argc, char **argv)
 
 	    MPI_Barrier(MPI_COMM_WORLD);
 	    optiq_benchmark_pattern_from_file (filepath, rank, size);
+
+	    /*if (m > n) {
+		printf("Rank %d come here\n", rank);
+	    }*/
 	}
     }
 
@@ -65,7 +69,7 @@ int main(int argc, char **argv)
 		if (rank == 0)
 		{
 		    printf("Test No. %d: First %d nodes send data to %d nodes, with %d nodes overlapped\n", testid, m, n, n/ov);
-		    optiq_pattern_overlap (filepath, size, demand, m, n/ov, n);
+		    optiq_pattern_overlap (filepath, size, demand, m, m/ov < n/ov ? m/ov : n/ov , n);
 		    testid++;
 		}
 
