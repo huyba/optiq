@@ -50,6 +50,26 @@ int main(int argc, char **argv)
 
         optiq_benchmark_pattern_from_file (filepath, rank, size);
     }
+
+    /* Benchmark for overlapped groups */
+    for (int m = size/16; m <= size/2; m *= 2)
+    {
+        for (int n = size/16; n <= size/2; n *= 2)
+        {
+	    for (int ov = 2; ov <= 4; ov *= 2) 
+	    {
+		if (rank == 0)
+		{
+		    printf("First %d nodes send data to %d nodes, with %d nodes overlapped\n", m, n, n/ov);
+		    optiq_pattern_overlap (filepath, size, demand, m, n/ov, n);
+		}
+
+		MPI_Barrier(MPI_COMM_WORLD);
+
+		optiq_benchmark_pattern_from_file (filepath, rank, size);
+	    }
+        }
+    }
     
     if (rank == 0) {
         printf("Finished benchmarking\n");

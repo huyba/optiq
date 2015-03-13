@@ -351,3 +351,45 @@ void optiq_pattern_subgroup_agg (char *filepath, int numranks, int subgroupsize,
 
     file.close();
 }
+
+void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int startm, int n, int startn)
+{
+    std::ofstream file;
+    file.open(filepath);
+
+    if (m > n)
+    {
+        int r = m/n;
+        int d = startn;
+
+        for (int i = startm; i < m + startm; i += r)
+        {
+            for (int j = 0; j < r; j++)
+            {
+                file << i + j << " " << d << " " << demand << std::endl;
+            }
+            d++;
+        }
+    }
+    else
+    {
+        int r = n/m;
+        int d = startn;
+
+        for (int i = startm; i < m +  startm; i++)
+        {
+            for (int j = 0; j < r; j++)
+            {
+                file << i  << " " << d + j << " " << demand << std::endl;
+            }
+            d += r;
+        }
+    }
+
+    file.close();   
+}
+
+void optiq_pattern_overlap (char *filepath, int numranks, int demand, int m, int numoverlap, int n)
+{
+    optiq_pattern_m_to_n(filepath, numranks, demand, m, 0, n, m - numoverlap);   
+}
