@@ -30,14 +30,14 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
 
     optiq_patterns_alltoallv_from_file (filepath, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, rank, size);
 
+    if (rank == 0) {
+        printf("\nTest A - MPI\n\n");
+    }
+
     optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     std::vector<struct path *> mpi_paths;
     mpi_paths.clear();
-
-    if (rank == 0) {
-	printf("Test A - MPI\n\n");
-    }
     optiq_benchmark_reconstruct_mpi_paths(sendcounts, mpi_paths);
 
     MPI_Barrier(MPI_COMM_WORLD);
