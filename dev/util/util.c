@@ -54,6 +54,24 @@ int optiq_compute_num_hops (int num_dims, int *source, int *dest)
     return num_hops;
 }
 
+int optiq_compute_num_hops_with_torus (int num_dims, int *source, int *dest, int *torus, int *size)
+{
+    int num_hops = 0;
+
+    for (int i = 0; i < num_dims; i++)
+    {
+        int distance = abs(source[i] - dest[i]);
+
+	if (torus[i] == 1 && distance > size[i] / 2) {
+	    distance = size[i] - distance;
+	}
+
+	num_hops += distance;
+    }
+
+    return num_hops;
+}
+
 int optiq_check_existing (int num_elements, int *list, int element)
 {
     for (int i = 0; i < num_elements; i++) 

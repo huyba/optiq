@@ -55,6 +55,8 @@ int optiq_topology_get_hop_distance(int rank1, int rank2);
 
 int optiq_topology_max_distance_2sets(std::vector<std::pair<int, std::vector<int> > > &source_dests);
 
+int optiq_topology_max_distance_2sets_with_torus (std::vector<std::pair<int, std::vector<int> > > &source_dests);
+
 int optiq_topology_get_coord(int *coord);
 
 int optiq_topology_compute_node_id(int num_dims, int *size, int *coord);

@@ -585,8 +585,12 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     std::vector<struct path *> path_ids;
     path_ids.clear();
     algorithm->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT;
-    algorithm->max_hops = optiq_topology_max_distance_2sets (source_dest_ids);
+    algorithm->max_hops = optiq_topology_max_distance_2sets_with_torus (source_dest_ids);
+
     optiq_algorithm_search_path (path_ids, source_dest_ids, bfs, world_rank);
+
+    struct optiq_performance_index *opi = optiq_opi_get();
+    opi->paths = path_ids;
 
     /*if (world_rank == 0) {
         printf("Done searching %d paths of node ids\n", path_ids.size());
@@ -598,6 +602,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     path_ranks.clear();
 
     optiq_schedule_map_from_pathids_to_pathranks (path_ids, source_dest_ranks, path_ranks);
+    
 
     /*if (world_rank == 0) {
         printf("Done mapping paths of node ids to ranks\n");
@@ -690,7 +695,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     optiq_schedule_set (*schedule, num_jobs, pami_transport->size);
 
     /*Free path_ids*/
-    optiq_algorithm_destroy();
+    /*optiq_algorithm_destroy();*/
 }
 
 /* Destroy the registered memory regions */
@@ -709,9 +714,6 @@ void optiq_schedule_destroy()
     schedule->active_immsends = pami_transport->size;
     
     optiq_schedule_mem_destroy(*schedule, pami_transport);
-
-    struct optiq_performance_index *opi = optiq_opi_get();
-    opi->paths = schedule->paths;
 
     for (int i = 0; i < schedule->paths.size(); i++) {
 	free(schedule->paths[i]);

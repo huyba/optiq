@@ -24,4 +24,6 @@ void disjoint_contiguous_firstk_lastk(int num_nodes, std::vector<int> &sources, 
 
 void optiq_pattern_firstk_lastk(char *filepath, int num_ranks, int demand, int k);
 
+void optiq_pattern_lastk_firstk(char *filepath, int num_ranks, int demand, int k);
+
 #endif

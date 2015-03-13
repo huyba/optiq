@@ -37,11 +37,11 @@ void optiq_algorithm_finalize()
 
 void optiq_algorithm_destroy()
 {
-    if (bfs->paths != NULL) 
+    /*if (bfs->paths != NULL) 
     {
 	free(bfs->paths);
 	bfs->paths = NULL;
-    }
+    }*/
 }
 
 void optiq_algorithm_search_path(std::vector<struct path *> &paths, std::vector<std::pair<int, std::vector<int> > > source_dests, struct multibfs *bfs, int world_rank)

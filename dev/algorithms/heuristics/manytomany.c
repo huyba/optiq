@@ -314,7 +314,8 @@ void optiq_alg_heuristic_search_manytomany(std::vector<struct path *> &complete_
     bool done = false;
     int neighbor_id;
 
-    while (!done) {
+    while (!done) 
+    {
 	done = true;
 	for (int i = 0; i < sd.size(); i++) 
 	{

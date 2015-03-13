@@ -41,17 +41,17 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     if (rank == 0) {
 	//optiq_path_print_paths_coords(mpi_paths, topo->all_coords);
 	/*printf("#paths = %d, size = %d, #edges = %d\n", mpi_paths.size(), size, topo->num_edges);*/
-        optiq_path_print_stat(mpi_paths, size, topo->num_edges);
+        optiq_path_print_stat (mpi_paths, size, topo->num_edges);
     }
 
-    optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+    optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     opi.iters = 1;
-    optiq_opi_collect(rank);
+    optiq_opi_collect (rank);
 
     if (rank == 0) {
-	//optiq_path_print_paths_coords(opi.paths, topo->all_coords);
-        optiq_path_print_stat(opi.paths, size, topo->num_edges);
+	optiq_path_print_stat (opi.paths, size, topo->num_edges);
+	optiq_path_print_paths_coords (opi.paths, topo->all_coords);
     }
 
     optiq_opi_clear();

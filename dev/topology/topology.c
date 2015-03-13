@@ -715,3 +715,27 @@ int optiq_topology_max_distance_2sets (std::vector<std::pair<int, std::vector<in
 
     return max_distance;
 }
+
+int optiq_topology_max_distance_2sets_with_torus (std::vector<std::pair<int, std::vector<int> > > &source_dests)
+{
+   struct topology *topo = optiq_topology_get();
+
+    int max_distance = 0;
+
+    for (int i = 0; i < source_dests.size(); i++)
+    {
+        for (int j = 0; j < source_dests[i].second.size(); j++)
+        {
+            int *coord1 = topo->all_coords[source_dests[i].first];
+            int *coord2 = topo->all_coords[source_dests[i].second[j]];
+
+            int distance = optiq_compute_num_hops_with_torus (topo->num_dims, coord1, coord2, topo->torus, topo->size);
+
+            if (max_distance < distance) {
+                max_distance = distance;
+            }
+        }
+    }
+
+    return max_distance;
+}

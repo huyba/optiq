@@ -34,6 +34,19 @@ int main(int argc, char **argv)
 
 	optiq_benchmark_pattern_from_file (filepath, rank, size);
     }
+
+    /* Benchmark for last k to first k pattern */
+    for (int i = 2; i <= 8; i  *= 2)
+    {
+        if (rank == 0)
+        {
+            printf("Last %d nodes send data to first %d nodes\n", size/i, size/i);
+            optiq_pattern_lastk_firstk(filepath, size, demand, size/i);
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        optiq_benchmark_pattern_from_file (filepath, rank, size);
+    }
     
     if (rank == 0) {
         printf("Finished benchmarking\n");
