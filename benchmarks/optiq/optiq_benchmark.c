@@ -51,7 +51,7 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
 
     if (rank == 0) {
 	optiq_path_print_stat (opi.paths, size, topo->num_edges);
-	optiq_path_print_paths_coords (opi.paths, topo->all_coords);
+	/*optiq_path_print_paths_coords (opi.paths, topo->all_coords);*/
     }
 
     optiq_opi_clear();
