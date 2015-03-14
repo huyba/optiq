@@ -25,6 +25,11 @@ struct path {
 };
 
 extern int max_path_length;
+extern int max_path_load;
+
+int optiq_path_compare_favor_hop (struct path *p1, struct path *p2);
+
+int optiq_path_compare_favor_load (struct path *p1, struct path *p2);
 
 int optiq_path_compare(struct path *p1, struct path *p2);
 

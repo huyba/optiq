@@ -675,7 +675,7 @@ int optiq_topology_get_hop_distance_2nodes(int node1, int node2)
     int *coord1 = topo->all_coords[node1];
     int *coord2 = topo->all_coords[node2];
 
-    return optiq_compute_num_hops(topo->num_dims, coord1, coord2);
+    return optiq_compute_num_hops_with_torus (topo->num_dims, coord1, coord2, topo->torus, topo->size);
 }
 
 int optiq_topology_get_hop_distance(int rank1, int rank2)
@@ -689,7 +689,7 @@ int optiq_topology_get_hop_distance(int rank1, int rank2)
     int node1 = rank1 / topo->num_ranks_per_node;
     int node2 = rank2 / topo->num_ranks_per_node;
 
-    return optiq_topology_get_hop_distance_2nodes(node1, node2);
+    return optiq_topology_get_hop_distance_2nodes (node1, node2);
 }
 
 int optiq_topology_max_distance_2sets (std::vector<std::pair<int, std::vector<int> > > &source_dests)

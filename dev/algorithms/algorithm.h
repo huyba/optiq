@@ -20,6 +20,7 @@ struct optiq_algorithm {
     struct multibfs *bfs;
     int num_paths_per_pair;
     int max_hops;
+    int max_load;
 };
 
 extern "C" struct optiq_algorithm *algorithm;

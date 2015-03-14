@@ -7,6 +7,7 @@
 #include "path.h"
 
 int max_path_length = 0;
+int max_path_load = 0;
 
 int optiq_path_compare_by_max_load(struct path *p1, struct path *p2)
 {
@@ -25,12 +26,54 @@ int optiq_path_compare_by_max_load(struct path *p1, struct path *p2)
     }
 }
 
-int optiq_path_compare(struct path *p1, struct path *p2)
+int opitq_path_compare_favor_load (struct path *p1, struct path *p2)
 {
-    if (max_path_length == 0) {
-	return optiq_path_compare_by_max_load(p1, p2);
+    if (p1->max_load >= max_path_load && p2->max_load >= max_path_load) {
+	if (p1->max_load > p2->max_load) {
+	    max_path_load = p1->max_load;
+	    return 1;
+	} else if (p1->max_load < p2->max_load) {
+	    max_path_load = p2->max_load;
+	    return -1;
+	} else {
+	    max_path_load = p2->max_load;
+	    return 0;
+	}
+    } else if (p1->max_load >= max_path_load && p2->max_load < max_path_load) {
+	max_path_load = p1->max_load;
+	return 1;
+    } else if (p1->max_load < max_path_load && p2->max_load >= max_path_load) {
+	max_path_load = p2->max_load;
+        return -1;
+    } else {
+	int max = p1->max_load > p2->max_load ? p1->max_load : p2->max_load;
+
+	if (max_path_load < max) {
+	    max_path_load = max;
+	}
+
+	return 0;
     }
 
+    return 0;
+}
+
+/* 
+ * 4 iterations of comparison: load - hop - load - hop
+ * */
+int optiq_path_compare (struct path *p1, struct path *p2)
+{
+    int ret = opitq_path_compare_favor_load(p1, p2);
+
+    if (ret != 0) {
+	return ret;
+    } else {
+	return optiq_path_compare_favor_hop (p1, p2);
+    }
+}
+
+int optiq_path_compare_favor_hop (struct path *p1, struct path *p2)
+{
     int radius = max_path_length;
 
     if (p1->arcs.size() >= radius && p2->arcs.size() >= radius) {

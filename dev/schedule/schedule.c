@@ -153,7 +153,7 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 
 	for (int i = 0; i < jobs.size(); i++)
 	{
-	    int nbytes = chunk_size;
+	    int nbytes = optiq_schedule_get_chunk_size (jobs[i].buf_length, jobs[i].source_rank, jobs[i].dest_rank);//chunk_size;
 
 	    if (jobs[i].buf_offset < jobs[i].buf_length) 
 	    {
