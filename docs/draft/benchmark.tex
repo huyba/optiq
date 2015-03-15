@@ -20,6 +20,16 @@ Our framework includes 3 main parts: algorithms for path searching, schedule to 
 \subsection{Communication patterns}
 In this paper we demostrate data movement performance of our OPTIQ framework and existing MPI's routines on the following communication patters:
 
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.55]{figures/patterns.pdf}
+\vspace{-0.1in}
+\caption{Communication patterns}
+\vspace{-0.1in}
+\label{fig:patterns}
+\end{figure}
+
 \begin{itemize}
 \item All to many, many to all
 \item I/O Aggregation: a special case of All to many (or many to many)
