@@ -60,4 +60,22 @@ void optiq_opi_clear()
     opi.post_rput_time = 0;
     opi.check_complete_rput_time = 0;
     opi.paths.clear();
+    opi.timestamps.clear();
+}
+
+void optiq_opi_timestamp_print(int rank)
+{
+    timeval t0 = timestamps[0].second;
+    timeval t1;
+    double t = 0;
+    int eventid;
+
+    for (int i = 1; i < opi.timestamps.size(); i++)
+    {
+	t1 = timestamps[i].second;
+	eventid = timestamps[i].first;
+
+	t = (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);
+	printf("rank = %d %d %d\n", rank, eventid, t);
+    }
 }
