@@ -105,7 +105,7 @@ void test_coupling (std::vector<std::pair<int, std::vector<int> > > &source_dest
     complete_paths.clear();
 
     /*Search for paths for each pair*/
-    optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
+    optiq_alg_heuristic_search_manytomany_late_adding_load (complete_paths, source_dests, &bfs);
 
     if (pami_transport->rank == 0) {
 	printf("OPTIQ path construction stat:\n");

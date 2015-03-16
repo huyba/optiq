@@ -6,6 +6,7 @@
 struct optiq_performance_index {
     double transfer_time;
     double build_path_time;
+    double context_advance_time;
     double notification_done_time;
     double sendimm_time;
     double matching_procesing_header_mr_response_time;

@@ -104,7 +104,7 @@ void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls
 
 void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
 
-void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, int &num_alive_flows, int world_rank);
+void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, std::vector<std::pair<int, std::vector<int> > > &intermediate_notify_list, int &num_active_paths, int world_rank);
 
 void optiq_schedule_destroy();
 

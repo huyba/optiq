@@ -83,7 +83,7 @@ void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_
     optiq_cesm_gen_couple (source_ranks, dest_ranks, source_dests);
 
     /*Search for paths for each pair*/
-    optiq_alg_heuristic_search_manytomany (complete_paths, source_dests, &bfs);
+    optiq_alg_heuristic_search_manytomany_late_adding_load (complete_paths, source_dests, &bfs);
 
     /*With the comm pattern, allocate memories, set offsets, displacements*/
     struct optiq_comm_mem comm_mem;

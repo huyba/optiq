@@ -10,6 +10,7 @@ int main(int argc, char **argv)
 
     std::vector<struct path *> complete_paths;
     std::vector<std::pair<int, std::vector<int> > > notify_list;
+    std::vector<std::pair<int, std::vector<int> > > intermediate_notify_list;
     int num_alive_flows;
 
     int num_rank = atoi(argv[1]);
@@ -26,7 +27,7 @@ int main(int argc, char **argv)
 
     for (int rank = 0; rank < num_rank; rank++)
     {
-	build_notify_lists(complete_paths, notify_list, num_alive_flows, rank);
+	build_notify_lists(complete_paths, notify_list, intermediate_notify_list, num_alive_flows, rank);
 
 	printf("Rank %d, num_alive_flows = %d\n", rank, num_alive_flows);
 
@@ -39,6 +40,16 @@ int main(int argc, char **argv)
 	    }
 	    printf("\n");
 	}
+
+	for (int i = 0; i < intermediate_notify_list.size(); i++)
+        {
+            printf("Notify list: ");
+            for (int j = 0; j < intermediate_notify_list[i].second.size(); j++)
+            {
+                printf("%d ", intermediate_notify_list[i].second[j]);
+            }
+            printf("\n");
+        }
     }
 
     optiq_finalize();
