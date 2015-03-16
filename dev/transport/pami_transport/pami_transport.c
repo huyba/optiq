@@ -797,12 +797,12 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 
     while (pami_transport->sched->num_active_paths > 0)
     {
-	//gettimeofday(&t2, NULL);
+	gettimeofday(&t2, NULL);
 
 	PAMI_Context_advance(pami_transport->context, 100);
 
-	//gettimeofday(&t3, NULL);
-        //opi.context_advance_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
+	gettimeofday(&t3, NULL);
+        opi.context_advance_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 
 	/*If all jobs are done*/
 	if (pami_transport->sched->num_active_paths == 0) {

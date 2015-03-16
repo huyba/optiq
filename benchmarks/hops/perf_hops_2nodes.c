@@ -55,6 +55,7 @@ int main(int argc, char **argv)
 
 	opi.iters = 1;
 	optiq_opi_collect(world_rank);
+	optiq_opi_clear();
     }
 
     if (world_rank == 0) {
