@@ -24,6 +24,7 @@ int main(int argc, char **argv)
 	if (rank == 0) {
 	    printf("Chunk size = %d\n", chunk);
 	}
+	schedule->chunk_size = chunk;
 	optiq_benchmark_pattern_from_file (filepath, rank, size);
     }
 

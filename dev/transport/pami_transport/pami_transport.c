@@ -839,7 +839,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 
 	    pami_transport->sched->expecting_length = -1;
 	    gettimeofday(&t3, NULL);
-	    opi.notification_done_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
+	    opi.notification_done_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 	}
 
 	/*If there is a request to send a message*/
@@ -854,7 +854,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	}*/
 
 	gettimeofday(&t3, NULL);
-	opi.get_header_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
+	opi.get_header_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 
 	/*If there is a mem region ready to be transferred*/
 	if (pami_transport->transport_info.mr_responses.size() > 0)
@@ -877,7 +877,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		}
 	    }
 	    gettimeofday(&t3, NULL);
-	    opi.matching_procesing_header_mr_response_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
+	    opi.matching_procesing_header_mr_response_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 
 	    gettimeofday(&t2, NULL);
 	    if (exist)
@@ -906,7 +906,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		memcpy(&header->mem, &far_mr, sizeof(struct optiq_memregion));
 	    }
 	    gettimeofday(&t3, NULL);
-	    opi.post_rput_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
+	    opi.post_rput_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 	}
 
 	/*If a put is done, notify the remote destination*/
@@ -925,7 +925,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	    pami_transport->transport_info.rput_cookies.push_back(complete_rput);
 	}
 	gettimeofday(&t3, NULL);
-	opi.check_complete_rput_time = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
+	opi.check_complete_rput_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
     }
 
     gettimeofday(&t1, NULL);

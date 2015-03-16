@@ -70,3 +70,4 @@ cp:
 	cp perf_schedule_multiranks.x $(BENCHMARKS_DIR)/schedule/multiranks/
 	cp perf_schedule_multiranks_multinodes.x $(BENCHMARKS_DIR)/schedule/multiranksmultinodes/
 	cp perf_schedule_chunksize.x $(BENCHMARKS_DIR)/schedule/chunksize/
+	cp perf_schedule_chunksize.x $(BENCHMARKS_DIR)/schedule/perfbyhops/
