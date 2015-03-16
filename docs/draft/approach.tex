@@ -123,6 +123,8 @@ Main:
 
 In the \textbf{Algorithm \ref{alg:h3}}, we use Yen's algorithm to search for k shortest paths between \textit{s$_i$, d$_i$}.
 
+\begin{comment}
+
 \subsubsection{Job-based AMPL model}
 In this section we present a formal model written in A Modeling Language for Mathematical Programming (AMPL). The model captures demands of data movement between a set of sources and a set of destinations. The model also capture the graph of physical links of a partition given for the application. The model is presented in Model 1.
 
@@ -154,7 +156,7 @@ sum{(i,j) in Arcs} Flow[job,i,j] -
 sum{(j,i) in Arcs} Flow[job,j,i] = 
 if (i == Source[job])  then Demand[job]*Z 
 else if (i == Destination[job]) then -Demand[job]*Z 
-        else 0;
+else 0;
 
 capacity {(i,j) in Arcs}:
 total_flow[i,j] <= Capacity[i,j];
@@ -169,7 +171,57 @@ Model explanation:
 \item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
 \end{itemize}
 
+\end{comment}
+
 \subsubsection{Path-based model}
+
+\begingroup
+\fontsize{9pt}{10pt}\selectfont
+
+\begin{verbatim}
+set Nodes;
+set Arcs within Nodes cross Nodes;
+# Origin/Destination pairs
+set OD within Nodes cross Nodes;
+set Paths{OD};
+set Path_Arcs{od in OD, p in Paths[od]}
+    within Arcs;
+
+
+param Capacity {Arcs} >= 0 default Infinity;
+param Demand {OD} default 0;
+
+var Flow {Paths} >= 0;
+var Z >= 0;
+
+var total_flow{(i,j) in Arcs} = 
+    sum {p in Paths} Flow[job,i,j];
+
+maximize obj: Z;
+
+subject to
+
+zero_flow {p in Paths, i in Nodes}:
+sum{(i,j) in Arcs} Flow[job,i,j] - 
+    sum{(j,i) in Arcs} Flow[job,j,i] =
+    if (i == Source[job]) then Demand[job]*Z else 
+    if (i == Destination[job]) then -Demand[job]*Z 
+    else 0;
+
+capacity {(i,j) in Arcs}:
+total_flow[i,j] <= Capacity[i,j];
+\end{verbatim}
+
+\endgroup
+
+Model explanation:
+\begin{itemize}
+\item sets: we have 5 sets: \textit{Nodes}, \textit{Arcs}, \textit{OD}, \textit{Paths} and \textit{Path\_Arcs}. \textit{JobID}: is the set of transfers from sources to destinations. Each job is represented by a tuple (id, source, destination, demand (total data size to transfer)).
+\item params: {\it Capacity}: capacity of each arc; {\it Demand}: amount of data to be transferred in each job between a pair of orgin and destination.
+\item vars: \textit{Flow}: total flow of each job on each arc; \textit{Z}: is reversed of total time; \textit{total\_flow} total flow of all jobs going through an arc.
+\item objective function: we want to minimize the time or maximize its reversed value i.e. maximize \textit{Z}.
+\item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
+\end{itemize}
 
 \subsection{Schedule layer}
 
