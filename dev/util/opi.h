@@ -34,7 +34,9 @@ extern "C" struct optiq_performance_index opi;
 
 struct optiq_performance_index * optiq_opi_get();
 
-void optiq_opi_collect(int world_rank);
+void optiq_opi_collect();
+
+void optiq_opi_print();
 
 void optiq_opi_clear();
 
