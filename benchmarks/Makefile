@@ -30,6 +30,7 @@ YEN = $(BENCHMARKS)/algorithms/yen
 PAT = $(BENCHMARKS)/comm_patterns
 SCHED = $(BENCHMARKS)/schedule
 TRANS = $(BENCHMARKS)/transport/pami_transport
+HOPS = $(BENCHMARKS)/hops
 
 CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(PAT) -I$(SCHED) -I$(TRANS)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
@@ -38,7 +39,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
 
-all: heu trans opt mpi sched
+all: heu trans opt mpi sched hops
 
 opt:
 	cd $(BENCHMARKS)/optiq && $(MAKE) -f Makefile
@@ -60,6 +61,8 @@ sched:
 	cd $(SCHED) && $(MAKE) -f Makefile
 trans:
 	cd $(TRANS) && $(MAKE) -f Makefile
+hops:
+	cd $(HOPS) && $(MAKE) -f Makefile
 
 clean: $(OBJ)
 	rm $(OBJ)
