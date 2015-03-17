@@ -604,11 +604,11 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     optiq_schedule_map_from_pathids_to_pathranks (path_ids, source_dest_ranks, path_ranks);
     
 
-    if (world_rank == 0) {
+    /*if (world_rank == 0) {
         printf("Done mapping paths of node ids to ranks\n");
 	printf("Num of paths = %d\n", path_ranks.size());
 	optiq_path_print_paths_coords (path_ranks, topo->all_coords);
-    }
+    }*/
 
     build_next_dests(world_rank, schedule->next_dests, path_ranks);
 
