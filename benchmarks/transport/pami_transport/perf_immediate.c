@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     int rank = pami_transport->rank;
 
-    int local_rank = 0;
+    int local_rank = 1;
     int imm_bytes = 128;
     void *local_buf = malloc (imm_bytes);
 
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 	((char*)local_buf)[i] = i % 128;
     }
 
-    int remote_rank = 1;
+    int remote_rank = 3;
 
     int iters = 30;
     int cookie = iters;

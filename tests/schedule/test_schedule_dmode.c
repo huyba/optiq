@@ -46,7 +46,10 @@ int main(int argc, char **argv)
     optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     opi.iters = 1;
-    optiq_opi_collect(world_rank);
+    optiq_opi_collect();
+    if (world_rank == 0) {
+        optiq_opi_print();
+    }
 
     if (world_rank == 0) {
         printf("\nTest DQUEUE_FORWARD_MESSAGE_FIRST\n");
@@ -58,7 +61,10 @@ int main(int argc, char **argv)
     optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     opi.iters = 1;
-    optiq_opi_collect(world_rank);
+    optiq_opi_collect();
+    if (world_rank == 0) {
+        optiq_opi_print();
+    }
 
     if (world_rank == 0) {
         printf("\nTest DQUEUE_ROUND_ROBIN\n");
@@ -70,7 +76,10 @@ int main(int argc, char **argv)
     optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     opi.iters = 1;
-    optiq_opi_collect(world_rank);
+    optiq_opi_collect();
+    if (world_rank == 0) {
+        optiq_opi_print();
+    }
 
     if (world_rank == 0) {
         printf("Finished testing schedule dqueue modes\n");

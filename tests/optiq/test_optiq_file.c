@@ -30,7 +30,10 @@ int main(int argc, char **argv)
     //}
 
     opi.iters = 1;
-    optiq_opi_collect(pami_transport->rank);
+    optiq_opi_collect();
+    if (pami_transport->rank == 0) {
+	optiq_opi_print();
+    }
 
     optiq_finalize();
 

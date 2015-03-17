@@ -46,7 +46,10 @@ int main(int argc, char **argv)
     optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     opi.iters = 1;
-    optiq_opi_collect(world_rank);
+    optiq_opi_collect();
+    if (world_rank == 0) {
+        optiq_opi_print();
+    }
 
     if (world_rank >= world_size/2) {
 	char *testbuf = (char *) calloc (1, recv_bytes);

@@ -121,6 +121,8 @@ void optiq_pami_transport_print();
 
 struct optiq_pami_transport* optiq_pami_transport_get();
 
+void optiq_pami_transport_mem_request (struct optiq_message_header * header);
+
 void optiq_pami_decrement (pami_context_t context, void *cookie, pami_result_t result);
 
 int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie, void (*rput_done_fn)(void*, void*, pami_result_t), void (*rput_rdone_fn)(void*, void*, pami_result_t));
