@@ -8,11 +8,13 @@
 #include <spi/include/kernel/process.h>
 #include <firmware/include/personality.h>
 
-#include "optiq.h"
+#include "pami_transport.h"
 
 int main(int argc, char **argv)
 {
-    optiq_init(argc, argv);
+    MPI_Init(&argc, &argv);
+
+    optiq_pami_transport_init();
 
     int local_rank = 0;
     int rput_bytes = 128 * 1024 * 1024;
@@ -22,10 +24,10 @@ int main(int argc, char **argv)
 	((char*)local_buf)[i] = i % 128;
     }
 
-    int remote_rank = pami_transport->size - 1;
+    int remote_rank = 1;
     void *remote_buf = malloc (rput_bytes);
 
-    int iters = 30;
+    int iters = 1;
 
     for (int nbytes = 1024; nbytes <= rput_bytes; nbytes *= 2)
     {
@@ -61,7 +63,7 @@ int main(int argc, char **argv)
     free(local_buf);
     free(remote_buf);
 
-    optiq_finalize();
+    optiq_pami_transport_finalize();
 
     return 0;
 }
