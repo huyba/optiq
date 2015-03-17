@@ -39,13 +39,6 @@
 struct optiq_pami_transport;
 struct optiq_schedule;
 
-struct optiq_fwd_mem_request {
-    int path_id;
-    int length;
-    int header_id;
-    int dest;
-};
-
 struct optiq_mem_request {
     int message_id;
     int source_id;
@@ -89,8 +82,6 @@ struct optiq_transport_info {
 
     int num_queues;
     int current_queue;
-
-    std::vector<std::pair<std::pair<int, int>, int> > header_id_map;
 };
 
 struct optiq_pami_transport {
@@ -120,8 +111,6 @@ void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport);
 void optiq_pami_transport_print();
 
 struct optiq_pami_transport* optiq_pami_transport_get();
-
-void optiq_pami_transport_mem_request (struct optiq_message_header * header);
 
 void optiq_pami_decrement (pami_context_t context, void *cookie, pami_result_t result);
 
