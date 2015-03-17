@@ -1,7 +1,7 @@
 #include "opi.h"
 #include <mpi.h>
 
-struct optiq_performance_index opi, opi_max;
+struct optiq_performance_index opi, max_opi;
 
 struct optiq_performance_index * optiq_opi_get()
 {
@@ -63,17 +63,19 @@ void optiq_opi_clear()
 
 void optiq_opi_timestamp_print(int rank)
 {
-    timeval t0 = timestamps[0].second;
+    timeval t0 = opi.timestamps[0].tv;
     timeval t1;
     double t = 0;
     int eventid;
+    int eventtype;
 
     for (int i = 1; i < opi.timestamps.size(); i++)
     {
-	t1 = timestamps[i].second;
-	eventid = timestamps[i].first;
+	t1 = opi.timestamps[i].tv;
+	eventid = opi.timestamps[i].eventid;
+	eventtype = opi.timestamps[i].eventtype;
 
 	t = (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);
-	printf("rank = %d %d %d\n", rank, eventid, t);
+	printf("rank = %d %d %d %8.4f\n", rank, eventtype, eventid, t);
     }
 }

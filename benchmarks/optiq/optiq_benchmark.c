@@ -55,7 +55,11 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     optiq_alltoallv (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     opi.iters = 1;
-    optiq_opi_collect (rank);
+    optiq_opi_collect ();
+
+    if (rank == 0) {
+	optiq_opi_print();
+    }
 
     if (rank == 0) {
 	optiq_path_print_stat (opi.paths, size, topo->num_edges);

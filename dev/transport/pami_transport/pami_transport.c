@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
-
 #include <sys/time.h> 
 
 #include "opi.h"
@@ -625,6 +624,14 @@ void optiq_recv_mr_forward_request_fn (pami_context_t context, void *cookie, con
     if (pami_transport->transport_info.forward_mr->offset >= OPTIQ_FORWARD_BUFFER_SIZE) {
 	pami_transport->transport_info.forward_mr->offset = 0;
     }
+
+    timeval tx;
+    gettimeofday(&tx, NULL);
+    struct timestamp stamp;
+    stamp.tv = tx;
+    stamp.eventid = *((int*)header);
+    stamp.eventtype = OPTIQ_EVENT_RECV_MEM_REQ;
+    opi.timestamps.push_back(stamp);
 }
 
 void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -639,6 +646,14 @@ void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie,
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, &pami_transport->sched->recv_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
     /*printf("Rank %d sent a destination mem response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->sched->recv_mr.offset);*/
+
+    timeval tx;
+    gettimeofday(&tx, NULL);
+    struct timestamp stamp;
+    stamp.tv = tx;
+    stamp.eventid = *((int*)header);
+    stamp.eventtype = OPTIQ_EVENT_RECV_MEM_REQ;
+    opi.timestamps.push_back(stamp);
 }
 
 void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -659,6 +674,14 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
     } else {
 	pami_transport->transport_info.forward_headers.push_back(message_header);
     }
+
+    timeval tx;
+    gettimeofday(&tx, NULL);
+    struct timestamp stamp;
+    stamp.tv = tx;
+    stamp.eventid = message_header->header_id;
+    stamp.eventtype = OPTIQ_EVENT_RECV_RPUT_DONE;
+    opi.timestamps.push_back(stamp);
     
     /*printf("Rank %d get a put done notification from %d with data size %d\n", pami_transport->rank, origin, message_header->length);*/
 }
@@ -666,8 +689,16 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
 void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+    struct optiq_memregion *mr = (struct optiq_memregion *) data;
+    pami_transport->transport_info.mr_responses.push_back(*mr);
 
-    pami_transport->transport_info.mr_responses.push_back(*(struct optiq_memregion *)data);
+    timeval tx;
+    gettimeofday(&tx, NULL);
+    struct timestamp stamp;
+    stamp.tv = tx;
+    stamp.eventid = mr->header_id;
+    stamp.eventtype = OPTIQ_EVENT_RECV_MEM_RES;
+    opi.timestamps.push_back(stamp);
     
     /*printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, ((struct optiq_memregion *)data)->offset);*/
 }
@@ -708,6 +739,14 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
 
     pami_transport->transport_info.complete_rputs.push_back(rput_cookie);
     pami_transport->sched->sent_bytes += rput_cookie->message_header->length;
+
+    timeval tx;
+    gettimeofday(&tx, NULL);
+    struct timestamp stamp;
+    stamp.tv = tx;
+    stamp.eventid = rput_cookie->message_header->header_id;
+    stamp.eventtype = OPTIQ_EVENT_RPUT_RDONE;
+    opi.timestamps.push_back(stamp);
 }
 
 void optiq_pami_transport_get_message ()
@@ -776,6 +815,14 @@ void optiq_pami_transport_get_message ()
 	}
 
 	/*If the next destination is final destination*/
+	timeval tx;
+        gettimeofday(&tx, NULL);
+	struct timestamp stamp;
+	stamp.tv = tx;
+	stamp.eventid = header->header_id;
+	stamp.eventtype = OPTIQ_EVENT_MEM_REQ;
+	opi.timestamps.push_back(stamp);
+
 	if (dest == header->dest)
 	{
 	    optiq_pami_send_immediate(pami_transport->context, MR_DESTINATION_REQUEST, &header->header_id, sizeof(int), &header->source, sizeof(int), pami_transport->endpoints[dest]);
@@ -789,11 +836,18 @@ void optiq_pami_transport_get_message ()
 
 void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 {
-    timeval t0, t1, t2, t3;
+    timeval t0, t1, t2, t3, tx;
     gettimeofday(&t0, NULL);
 
     int rank = pami_transport->rank;
     int size = pami_transport->size;
+
+    gettimeofday(&tx, NULL);
+    struct timestamp stamp;
+    stamp.tv = tx;
+    stamp.eventid = 0;
+    stamp.eventtype = OPTIQ_EVENT_START;
+    opi.timestamps.push_back(stamp);
 
     while (pami_transport->sched->num_active_paths > 0)
     {
@@ -905,6 +959,13 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		    printf("Rank %d rput %d bytes of orin[s %d, d %d] along path_id = %d of data to %d\n", pami_transport->rank, header->length, header->source, header->dest, header->path_id, dest);
 		}*/
 
+	        gettimeofday(&tx, NULL);
+		struct timestamp stamp;
+	        stamp.tv = tx;
+	        stamp.eventid = header->header_id;
+		stamp.eventtype = OPTIQ_EVENT_RPUT;
+		opi.timestamps.push_back(stamp);
+
 		optiq_pami_rput(pami_transport->client, pami_transport->context, &header->mem.mr, header->mem.offset, header->length, pami_transport->endpoints[dest], &far_mr.mr, far_mr.offset, rput_cookie, NULL, optiq_pami_rput_rdone_fn);
 
 		/*Now the header will contain the far memregion instead of local memregion*/
@@ -924,6 +985,13 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	    struct optiq_message_header *complete_header = complete_rput->message_header;
 
 	    /*Notify that rput is done*/
+	    gettimeofday(&tx, NULL);
+            struct timestamp stamp;
+            stamp.tv = tx;
+            stamp.eventid = complete_header->header_id;
+            stamp.eventtype = OPTIQ_EVENT_RPUT_DONE_NOTIFY;
+            opi.timestamps.push_back(stamp);
+
 	    optiq_pami_send_immediate(pami_transport->context, RPUT_DONE, NULL, 0, complete_header, sizeof(struct optiq_message_header), pami_transport->endpoints[complete_rput->dest]);
 
 	    pami_transport->transport_info.message_headers.push_back(complete_header);

@@ -5,6 +5,24 @@
 
 #include "path.h"
 
+#define OPTIQ_EVENT_START 0
+
+#define OPTIQ_EVENT_MEM_REQ 10
+#define OPTIQ_EVENT_MEM_RES 11
+#define OPTIQ_EVENT_RECV_MEM_REQ 12
+#define OPTIQ_EVENT_RECV_MEM_RES 13
+
+#define OPTIQ_EVENT_RPUT 20
+#define OPTIQ_EVENT_RPUT_RDONE 21
+#define OPTIQ_EVENT_RPUT_DONE_NOTIFY 22
+#define OPTIQ_EVENT_RECV_RPUT_DONE 23
+
+struct timestamp {
+    int eventtype;
+    int eventid;
+    timeval tv;
+};
+
 struct optiq_performance_index {
     double transfer_time;
     double build_path_time;
@@ -30,7 +48,7 @@ struct optiq_performance_index {
     int optiq_total_hops;
 
     std::vector<struct path *> paths;
-    std::vector<std::pair<int, timeval> > timestamps;
+    std::vector<struct timestamp> timestamps;
 };
 
 extern "C" struct optiq_performance_index opi;
