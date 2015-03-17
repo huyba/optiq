@@ -63,6 +63,10 @@ void optiq_opi_clear()
 
 void optiq_opi_timestamp_print(int rank)
 {
+    if (opi.timestamps.size() == 0) {
+	return;
+    }
+
     timeval t0 = opi.timestamps[0].tv;
     timeval t1;
     double t = 0;
