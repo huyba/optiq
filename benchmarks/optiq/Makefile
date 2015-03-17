@@ -67,3 +67,5 @@ cp:
 	cp perf_optiq_alltoallv.x $(BENCHMARKS_DIR)/optiq/alltoallv/
 	cp perf_grand_benchmark.x $(BENCHMARKS_DIR)/optiq/grandbenchmark/
 	cp perf_optiq_file.x $(BENCHMARKS_DIR)/optiq/file/
+	cp perf_grand_benchmark.x $(BENCHMARKS_DIR)/optiq/grandbenchmark/512/
+	cp perf_grand_benchmark.x $(BENCHMARKS_DIR)/optiq/grandbenchmark/1k
