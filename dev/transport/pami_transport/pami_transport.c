@@ -613,13 +613,14 @@ void optiq_recv_rput_done_fn (pami_context_t context, void *cookie, const void *
 void optiq_recv_mr_forward_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+    struct optiq_message_header *mh = (struct optiq_message_header *) data;
 
-    pami_transport->transport_info.forward_mr->header_id = *((int*)header);
+    pami_transport->transport_info.forward_mr->header_id = mh->header_id;
 
     optiq_pami_send_immediate (pami_transport->context, MR_RESPONSE, NULL, 0, pami_transport->transport_info.forward_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 
     /*printf("Rank %d sent a forward mem response to %d, offset = %d\n", pami_transport->rank, origin, pami_transport->transport_info.forward_mr->offset);*/
-    pami_transport->transport_info.forward_mr->offset += (*(int *)data);
+    pami_transport->transport_info.forward_mr->offset += mh->length;
 
     if (pami_transport->transport_info.forward_mr->offset >= OPTIQ_FORWARD_BUFFER_SIZE) {
 	pami_transport->transport_info.forward_mr->offset = 0;
@@ -629,7 +630,7 @@ void optiq_recv_mr_forward_request_fn (pami_context_t context, void *cookie, con
     gettimeofday(&tx, NULL);
     struct timestamp stamp;
     stamp.tv = tx;
-    stamp.eventid = *((int*)header);
+    stamp.eventid = mh->header_id;
     stamp.eventtype = OPTIQ_EVENT_RECV_MEM_REQ;
     opi.timestamps.push_back(stamp);
 }
@@ -829,7 +830,7 @@ void optiq_pami_transport_get_message ()
 	}
 	else
 	{
-	    optiq_pami_send_immediate(pami_transport->context, MR_FORWARD_REQUEST, &header->header_id, sizeof(int), &header->length, sizeof(int), pami_transport->endpoints[dest]);
+	    optiq_pami_send_immediate(pami_transport->context, MR_FORWARD_REQUEST, NULL, 0, header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
 	}
     }
 }
