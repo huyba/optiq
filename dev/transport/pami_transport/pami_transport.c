@@ -258,6 +258,8 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     pami_transport->transport_info.mem_responses.clear();
     pami_transport->transport_info.mem_requests.clear();
     pami_transport->transport_info.rput_done.clear();  
+
+    pami_transport->transport_info.header_ids_map.clear();
 }
 
 struct optiq_pami_transport* optiq_pami_transport_get()
@@ -633,6 +635,18 @@ void optiq_recv_mr_forward_request_fn (pami_context_t context, void *cookie, con
     stamp.eventid = mh->header_id;
     stamp.eventtype = OPTIQ_EVENT_RECV_MEM_REQ;
     opi.timestamps.push_back(stamp);
+
+    /* Send another request for next dest */
+    int new_header_id = pami_transport->transport_info.global_header_id;
+    pami_transport->transport_info.global_header_id++;
+
+    std::pair<int, int> ids = std::make_pair (mh->header_id, mh->path_id);
+    std::pair<std::pair<int, int>, int> oldnewids = std::make_pair (ids, new_header_id);
+    pami_transport->transport_info.header_ids_map.push_back(oldnewids);
+
+    mh->header_id = new_header_id;
+
+    optiq_pami_transport_mem_request(mh);
 }
 
 void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -672,8 +686,20 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
 	/*printf("Rank %d get a put done notification from %d with data size %d, expecting_length = %d\n", pami_transport->rank, origin, message_header->length, pami_transport->sched->expecting_length);*/
 	/*printf("Rank %d received data from %d size = %d\n", pami_transport->rank, message_header->source, message_header->length);*/
 	pami_transport->sched->recv_bytes[message_header->source] += message_header->length;
-    } else {
-	pami_transport->transport_info.forward_headers.push_back(message_header);
+    }
+    else 
+    {
+	/* Assign new header id and put into processing queue*/
+	for (int i = 0; i < pami_transport->transport_info.header_ids_map.size(); i++)
+	{
+	    if (pami_transport->transport_info.header_ids_map[i].first.first == message_header->header_id &&
+		    pami_transport->transport_info.header_ids_map[i].first.second == message_header->path_id)
+	    {
+		message_header->header_id = pami_transport->transport_info.header_ids_map[i].second;
+	    }
+	}
+	pami_transport->transport_info.processing_headers.push_back(message_header);
+	//pami_transport->transport_info.forward_headers.push_back(message_header);
     }
 
     timeval tx;
@@ -701,7 +727,7 @@ void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void 
     stamp.eventtype = OPTIQ_EVENT_RECV_MEM_RES;
     opi.timestamps.push_back(stamp);
     
-    /*printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, ((struct optiq_memregion *)data)->offset);*/
+    /*printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, mr->offset);*/
 }
 
 void optiq_recv_path_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -748,6 +774,45 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
     stamp.eventid = rput_cookie->message_header->header_id;
     stamp.eventtype = OPTIQ_EVENT_RPUT_RDONE;
     opi.timestamps.push_back(stamp);
+}
+
+void optiq_pami_transport_mem_request(struct optiq_message_header *header)
+{
+    timeval t2, t3;
+
+    gettimeofday(&t2, NULL);
+
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+
+    /*Notify the size, ask for mem region*/
+    int dest = pami_transport->sched->next_dests[header->path_id];
+    if (dest == -1) {
+        printf("Rank %d received invalid message with path_id = %d, [s %d d %d], size = %d\n", pami_transport->rank, header->path_id, header->source, header->dest, header->length);
+    }
+
+    /*If the next destination is final destination*/
+    timeval tx;
+    gettimeofday(&tx, NULL);
+    struct timestamp stamp;
+    stamp.tv = tx;
+    stamp.eventid = header->header_id;
+    stamp.eventtype = OPTIQ_EVENT_MEM_REQ;
+    opi.timestamps.push_back(stamp);
+
+    /*printf("Rank %d req mem from %d  with path_id = %d, [s %d d %d], size = %d\n", pami_transport->rank, dest, header->path_id, header->source, header->dest, header->length);*/
+
+    if (dest == header->dest)
+    {
+	/*printf("header_id = %d dest = %d\n", header->header_id, dest);*/
+        optiq_pami_send_immediate(pami_transport->context, MR_DESTINATION_REQUEST, &header->header_id, sizeof(int), &header->source, sizeof(int), pami_transport->endpoints[dest]);
+    }
+    else
+    {
+        optiq_pami_send_immediate(pami_transport->context, MR_FORWARD_REQUEST, NULL, 0, header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
+    }
+
+    gettimeofday(&t3, NULL);
+    opi.total_mem_req_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 }
 
 void optiq_pami_transport_get_message ()
@@ -809,30 +874,33 @@ void optiq_pami_transport_get_message ()
 	pami_transport->transport_info.global_header_id++;
 	pami_transport->transport_info.processing_headers.push_back(header);
 
-	/*Notify the size, ask for mem region*/
-	int dest = pami_transport->sched->next_dests[header->path_id];
-	if (dest == -1) {
-	    printf("Rank %d received invalid message with path_id = %d, [s %d d %d], size = %d\n", pami_transport->rank, header->path_id, header->source, header->dest, header->length);
-	}
-
-	/*If the next destination is final destination*/
-	timeval tx;
-        gettimeofday(&tx, NULL);
-	struct timestamp stamp;
-	stamp.tv = tx;
-	stamp.eventid = header->header_id;
-	stamp.eventtype = OPTIQ_EVENT_MEM_REQ;
-	opi.timestamps.push_back(stamp);
-
-	if (dest == header->dest)
-	{
-	    optiq_pami_send_immediate(pami_transport->context, MR_DESTINATION_REQUEST, &header->header_id, sizeof(int), &header->source, sizeof(int), pami_transport->endpoints[dest]);
-	}
-	else
-	{
-	    optiq_pami_send_immediate(pami_transport->context, MR_FORWARD_REQUEST, NULL, 0, header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
-	}
+	/* Request memory from next dest */
+	optiq_pami_transport_mem_request(header);
     }
+}
+
+void optiq_pami_transport_send_local_mem_requests ()
+{
+    timeval t2, t3;
+    gettimeofday(&t2, NULL);
+
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+
+    for (int i = 0; i < pami_transport->transport_info.send_headers.size(); i++)
+    {
+        struct optiq_message_header *header = pami_transport->transport_info.send_headers[i];
+
+	header->header_id = pami_transport->transport_info.global_header_id;
+        pami_transport->transport_info.global_header_id++;
+        pami_transport->transport_info.processing_headers.push_back(header);
+
+	optiq_pami_transport_mem_request(header);
+    }
+
+    pami_transport->transport_info.send_headers.clear();
+
+    gettimeofday(&t3, NULL);
+    opi.local_mem_req_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 }
 
 void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
@@ -849,6 +917,8 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
     stamp.eventid = 0;
     stamp.eventtype = OPTIQ_EVENT_START;
     opi.timestamps.push_back(stamp);
+
+    //optiq_pami_transport_send_local_mem_requests();
 
     while (pami_transport->sched->num_active_paths > 0)
     {
@@ -902,45 +972,51 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	    opi.notification_done_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 	}
 
-	/*If there is a request to send a message*/
-	gettimeofday(&t2, NULL);
-
-	/*printf("rank %d local size = %d, forward size = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size());*/
-
-	optiq_pami_transport_get_message();
-
 	/*if (true) {
-	    printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length);
+	    printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d, processing_headers = %d, mr_responses = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length, pami_transport->transport_info.processing_headers.size(), pami_transport->transport_info.mr_responses.size());
 	}*/
 
-	gettimeofday(&t3, NULL);
-	opi.get_header_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
-
 	/*If there is a mem region ready to be transferred*/
-	if (pami_transport->transport_info.mr_responses.size() > 0)
+	bool matched = true;
+
+	while (matched) 
 	{
+	    matched = false;
+
 	    gettimeofday(&t2, NULL);
-	    struct optiq_memregion far_mr = pami_transport->transport_info.mr_responses.front();
 
 	    /*Search for the message with the same header_id*/
-	    bool exist = false;
-	    struct optiq_message_header *header = NULL;
-	    for (int i = 0; i < pami_transport->transport_info.processing_headers.size(); i++)
+            struct optiq_message_header *header = NULL;
+	    struct optiq_memregion far_mr;
+
+	    for (int r = 0; r < pami_transport->transport_info.mr_responses.size(); r++)
 	    {
-		if (pami_transport->transport_info.processing_headers[i]->header_id == far_mr.header_id)
+		far_mr = pami_transport->transport_info.mr_responses[r];
+
+		for (int i = 0; i < pami_transport->transport_info.processing_headers.size(); i++)
 		{
-		    header = pami_transport->transport_info.processing_headers[i];
-		    pami_transport->transport_info.processing_headers.erase(pami_transport->transport_info.processing_headers.begin() + i);
-		    pami_transport->transport_info.mr_responses.erase(pami_transport->transport_info.mr_responses.begin());
-		    exist = true;
+		    /*printf("Rank %d processing header id =  %d, far mr header id = %d\n", rank, pami_transport->transport_info.processing_headers[i]->header_id, far_mr.header_id);*/
+		    if (pami_transport->transport_info.processing_headers[i]->header_id == far_mr.header_id)
+		    {
+			header = pami_transport->transport_info.processing_headers[i];
+			pami_transport->transport_info.processing_headers.erase(pami_transport->transport_info.processing_headers.begin() + i);
+			matched = true;
+			break;
+		    }
+		}
+
+		if (matched) 
+		{
+		    pami_transport->transport_info.mr_responses.erase(pami_transport->transport_info.mr_responses.begin() + r);
 		    break;
 		}
 	    }
+
 	    gettimeofday(&t3, NULL);
 	    opi.matching_procesing_header_mr_response_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 
 	    gettimeofday(&t2, NULL);
-	    if (exist)
+	    if (matched)
 	    {
 		/*Actual rput data*/
 		struct optiq_rput_cookie *rput_cookie = pami_transport->transport_info.rput_cookies.back();
@@ -1000,6 +1076,16 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	}
 	gettimeofday(&t3, NULL);
 	opi.check_complete_rput_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
+
+	/*If there is a request to send a message*/
+        gettimeofday(&t2, NULL);
+
+	if (pami_transport->transport_info.processing_headers.size() < 2) {
+	    optiq_pami_transport_get_message();
+	}
+
+	gettimeofday(&t3, NULL);
+        opi.get_header_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
     }
 
     gettimeofday(&t1, NULL);

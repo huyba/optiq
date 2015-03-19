@@ -33,6 +33,8 @@ struct optiq_performance_index {
     double get_header_time;
     double post_rput_time;
     double check_complete_rput_time;
+    double local_mem_req_time;
+    double total_mem_req_time;
 
     int long recv_len;
     int iters;
