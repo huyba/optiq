@@ -637,16 +637,22 @@ void optiq_recv_mr_forward_request_fn (pami_context_t context, void *cookie, con
     opi.timestamps.push_back(stamp);
 
     /* Send another request for next dest */
-    int new_header_id = pami_transport->transport_info.global_header_id;
+    /*int new_header_id = pami_transport->transport_info.global_header_id;
     pami_transport->transport_info.global_header_id++;
 
     std::pair<int, int> ids = std::make_pair (mh->header_id, mh->path_id);
     std::pair<std::pair<int, int>, int> oldnewids = std::make_pair (ids, new_header_id);
     pami_transport->transport_info.header_ids_map.push_back(oldnewids);
 
-    mh->header_id = new_header_id;
+    mh->header_id = new_header_id;*/
 
-    optiq_pami_transport_mem_request(mh);
+    struct optiq_message_header *message_header = pami_transport->transport_info.message_headers.back();
+    pami_transport->transport_info.message_headers.pop_back();
+    memcpy (message_header, mh, sizeof(struct optiq_message_header));
+
+    pami_transport->transport_info.forward_headers.push_back(message_header);
+
+    //optiq_pami_transport_mem_request(mh);
 }
 
 void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -819,6 +825,7 @@ void optiq_pami_transport_get_message ()
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
+    bool fwd = false;
 
     if (pami_transport->transport_info.send_headers.size() + pami_transport->transport_info.forward_headers.size() > 0)
     {
@@ -831,12 +838,14 @@ void optiq_pami_transport_get_message ()
 		mh = &(pami_transport->transport_info.send_headers);
 	    } else {
 		mh = &(pami_transport->transport_info.forward_headers);
+		fwd = true;
 	    }
 	} 
 	else if (schedule->dmode == DQUEUE_FORWARD_MESSAGE_FIRST) 
 	{
 	    if (pami_transport->transport_info.forward_headers.size() > 0) {
                 mh = &(pami_transport->transport_info.forward_headers);
+		fwd = true;
             } else {
                 mh = &(pami_transport->transport_info.send_headers);
             }
@@ -851,6 +860,7 @@ void optiq_pami_transport_get_message ()
 		    pami_transport->transport_info.current_queue = 1;
 		} else {
 		    mh = &(pami_transport->transport_info.forward_headers);
+		    fwd = true;
 		}
 	    }
 	    else if (pami_transport->transport_info.current_queue == 1) 
@@ -859,6 +869,7 @@ void optiq_pami_transport_get_message ()
 		{
 		    mh = &(pami_transport->transport_info.forward_headers);
 		    pami_transport->transport_info.current_queue = 0;
+		    fwd = true;
 		} else {
 		    mh = &(pami_transport->transport_info.send_headers);
 		}
@@ -870,12 +881,29 @@ void optiq_pami_transport_get_message ()
 	mh->erase (mh->begin());
 
 	/* Assign header value */
-	header->header_id = pami_transport->transport_info.global_header_id;
+	int new_header_id = pami_transport->transport_info.global_header_id;
 	pami_transport->transport_info.global_header_id++;
-	pami_transport->transport_info.processing_headers.push_back(header);
+
+	if (fwd)
+	{
+	    std::pair<int, int> ids = std::make_pair (header->header_id, header->path_id);
+	    std::pair<std::pair<int, int>, int> oldnewids = std::make_pair (ids, new_header_id);
+	    pami_transport->transport_info.header_ids_map.push_back(oldnewids);
+
+	    header->header_id = new_header_id;
+	}
+	else
+	{
+	    header->header_id = new_header_id;
+	    pami_transport->transport_info.processing_headers.push_back(header);
+	}
 
 	/* Request memory from next dest */
 	optiq_pami_transport_mem_request(header);
+
+	if (fwd) {
+	    pami_transport->transport_info.message_headers.push_back(header);
+	}
     }
 }
 
