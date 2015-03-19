@@ -260,6 +260,8 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     pami_transport->transport_info.rput_done.clear();  
 
     pami_transport->transport_info.header_ids_map.clear();
+
+    pami_transport->transport_info.num_requests = 0;
 }
 
 struct optiq_pami_transport* optiq_pami_transport_get()
@@ -732,6 +734,8 @@ void optiq_recv_mr_response_fn(pami_context_t context, void *cookie, const void 
     stamp.eventid = mr->header_id;
     stamp.eventtype = OPTIQ_EVENT_RECV_MEM_RES;
     opi.timestamps.push_back(stamp);
+
+    pami_transport->transport_info.num_requests--;
     
     /*printf("Rank %d recv a response from %d, offset = %d\n", pami_transport->rank, origin, mr->offset);*/
 }
@@ -816,6 +820,8 @@ void optiq_pami_transport_mem_request(struct optiq_message_header *header)
     {
         optiq_pami_send_immediate(pami_transport->context, MR_FORWARD_REQUEST, NULL, 0, header, sizeof(struct optiq_message_header), pami_transport->endpoints[dest]);
     }
+
+    pami_transport->transport_info.num_requests++;
 
     gettimeofday(&t3, NULL);
     opi.total_mem_req_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
@@ -1108,7 +1114,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	/*If there is a request to send a message*/
         gettimeofday(&t2, NULL);
 
-	if (pami_transport->transport_info.processing_headers.size() < 2) {
+	if (pami_transport->transport_info.processing_headers.size() < 2 && pami_transport->transport_info.mr_responses.size() < 2 && pami_transport->transport_info.num_requests < 2) {
 	    optiq_pami_transport_get_message();
 	}
 

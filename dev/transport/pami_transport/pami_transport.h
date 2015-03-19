@@ -84,6 +84,7 @@ struct optiq_transport_info {
     int current_queue;
 
     std::vector<std::pair<std::pair<int, int>, int> > header_ids_map;
+    int num_requests;
 };
 
 struct optiq_pami_transport {
