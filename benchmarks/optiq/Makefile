@@ -53,8 +53,8 @@ mpibm:
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clean: $(OBJ)
-	rm $(OBJ)
+clean:
+	rm *.x
 	rm *.o
 
 realclean: clean

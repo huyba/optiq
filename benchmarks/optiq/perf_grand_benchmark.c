@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 	{
 	    if (rank == 0)
 	    {
-		printf("Test No. %d: First %d nodes send data to last %d nodes\n", testid, m, n);
+		printf("Test No. %d: First %d ranks send data to last %d ranks\n", testid, m, n);
 		optiq_pattern_firstm_lastn(filepath, size, demand, m, n, false);
 		testid++;
 	    }
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 
 	    if (rank == 0)
             {
-                printf("Test No. %d: First %d nodes send data to last %d randomize nodes\n", testid, m, n);
+                printf("Test No. %d: First %d ranks send data to last %d randomize ranks\n", testid, m, n);
                 optiq_pattern_firstm_lastn(filepath, size, demand, m, n, true);
                 testid++;
             }
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     {
         if (rank == 0)
         {
-            printf("Test No. %d: Subgroup of %d nodes aggregate data to node in the middle of the subgroup\n", testid, i);
+            printf("Test No. %d: Subgroup of %d ranks aggregate data to rank in the middle of the subgroup\n", testid, i);
 	    optiq_pattern_subgroup_agg(filepath, size, i, demand);
 	    testid++;
         }
@@ -74,14 +74,25 @@ int main(int argc, char **argv)
 	    {
 		if (rank == 0)
 		{
-		    printf("Test No. %d: First %d nodes send data to %d nodes, with %d nodes overlapped\n", testid, m, n, n/ov);
-		    optiq_pattern_overlap (filepath, size, demand, m, m/ov < n/ov ? m/ov : n/ov , n);
+		    printf("Test No. %d: First %d ranks send data to %d ranks, with %d ranks overlapped\n", testid, m, n, n/ov);
+		    optiq_pattern_overlap (filepath, size, demand, m, m/ov < n/ov ? m/ov : n/ov , n, false);
 		    testid++;
 		}
 
 		MPI_Barrier(MPI_COMM_WORLD);
 
 		optiq_benchmark_pattern_from_file (filepath, rank, size);
+
+		if (rank == 0)
+                {
+                    printf("Test No. %d: First %d ranks send data to %d ranks, with %d ranks overlapped, randomized\n", testid, m, n, n/ov);
+                    optiq_pattern_overlap (filepath, size, demand, m, m/ov < n/ov ? m/ov : n/ov , n, true);
+                    testid++;
+                }
+
+                MPI_Barrier(MPI_COMM_WORLD);
+
+                optiq_benchmark_pattern_from_file (filepath, rank, size);
 	    }
         }
     }

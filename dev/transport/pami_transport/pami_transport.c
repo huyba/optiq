@@ -1080,9 +1080,9 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 		    far_mr.offset += header->original_offset;
 		}
 
-		/*if (true) {
+		if (true) {
 		    printf("Rank %d rput %d bytes of orin[s %d, d %d] along path_id = %d of data to %d\n", pami_transport->rank, header->length, header->source, header->dest, header->path_id, dest);
-		}*/
+		}
 
 	        gettimeofday(&tx, NULL);
 		struct timestamp stamp;

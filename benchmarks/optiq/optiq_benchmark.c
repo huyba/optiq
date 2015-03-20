@@ -18,6 +18,18 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
 	optiq_schedule_print_sourcedests(source_dests);
     }*/
 
+    if (topo->num_ranks_per_node > 1) 
+    {
+	for (int i = 0; i < source_dests.size(); i++)
+	{
+	    source_dests[i].first = source_dests[i].first / topo->num_ranks_per_node;
+	    for (int j = 0; j < source_dests[i].second.size(); j++)
+	    {
+		source_dests[i].second[j] = source_dests[i].second[j] / topo->num_ranks_per_node;
+	    }
+	}
+    }
+
     optiq_topology_path_reconstruct_new (source_dests, mpi_paths);
 }
 
@@ -58,6 +70,9 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     optiq_opi_collect ();
 
     if (rank == 0) {
+	if (mpi_time > opi.transfer_time) {
+	    printf("Bingo");
+	}
 	optiq_opi_print();
     }
 
