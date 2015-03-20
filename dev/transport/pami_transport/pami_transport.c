@@ -262,6 +262,8 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     pami_transport->transport_info.header_ids_map.clear();
 
     pami_transport->transport_info.num_requests = 0;
+
+    pami_transport->transport_info.fwd_mem_req = fwd_mem_req_after_rput_done;
 }
 
 struct optiq_pami_transport* optiq_pami_transport_get()
@@ -638,23 +640,29 @@ void optiq_recv_mr_forward_request_fn (pami_context_t context, void *cookie, con
     stamp.eventtype = OPTIQ_EVENT_RECV_MEM_REQ;
     opi.timestamps.push_back(stamp);
 
-    /* Send another request for next dest */
-    /*int new_header_id = pami_transport->transport_info.global_header_id;
-    pami_transport->transport_info.global_header_id++;
+    /* If the current rank wants to ask the next dest for mem region immediate */
+    if (pami_transport->transport_info.fwd_mem_req == fwd_mem_req_imm)
+    {
+	/* Send another request for next dest */
+	int new_header_id = pami_transport->transport_info.global_header_id;
+	pami_transport->transport_info.global_header_id++;
 
-    std::pair<int, int> ids = std::make_pair (mh->header_id, mh->path_id);
-    std::pair<std::pair<int, int>, int> oldnewids = std::make_pair (ids, new_header_id);
-    pami_transport->transport_info.header_ids_map.push_back(oldnewids);
+	std::pair<int, int> ids = std::make_pair (mh->header_id, mh->path_id);
+	std::pair<std::pair<int, int>, int> oldnewids = std::make_pair (ids, new_header_id);
+	pami_transport->transport_info.header_ids_map.push_back(oldnewids);
 
-    mh->header_id = new_header_id;*/
+	mh->header_id = new_header_id;
 
-    struct optiq_message_header *message_header = pami_transport->transport_info.message_headers.back();
-    pami_transport->transport_info.message_headers.pop_back();
-    memcpy (message_header, mh, sizeof(struct optiq_message_header));
+	optiq_pami_transport_mem_request(mh);
+    }
+    else if (pami_transport->transport_info.fwd_mem_req == fwd_mem_req_queue)
+    {
+	struct optiq_message_header *message_header = pami_transport->transport_info.message_headers.back();
+	pami_transport->transport_info.message_headers.pop_back();
+	memcpy (message_header, mh, sizeof(struct optiq_message_header));
 
-    pami_transport->transport_info.forward_headers.push_back(message_header);
-
-    //optiq_pami_transport_mem_request(mh);
+	pami_transport->transport_info.forward_headers.push_back(message_header);
+    }
 }
 
 void optiq_recv_mr_destination_request_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -697,17 +705,23 @@ void optiq_recv_rput_done_notification_fn(pami_context_t context, void *cookie, 
     }
     else 
     {
-	/* Assign new header id and put into processing queue*/
-	for (int i = 0; i < pami_transport->transport_info.header_ids_map.size(); i++)
+	if (pami_transport->transport_info.fwd_mem_req == fwd_mem_req_after_rput_done)
 	{
-	    if (pami_transport->transport_info.header_ids_map[i].first.first == message_header->header_id &&
-		    pami_transport->transport_info.header_ids_map[i].first.second == message_header->path_id)
-	    {
-		message_header->header_id = pami_transport->transport_info.header_ids_map[i].second;
-	    }
+	    pami_transport->transport_info.forward_headers.push_back(message_header);
 	}
-	pami_transport->transport_info.processing_headers.push_back(message_header);
-	//pami_transport->transport_info.forward_headers.push_back(message_header);
+	else 
+	{
+	    /* Assign new header id and put into processing queue*/
+	    for (int i = 0; i < pami_transport->transport_info.header_ids_map.size(); i++)
+	    {
+		if (pami_transport->transport_info.header_ids_map[i].first.first == message_header->header_id &&
+		        pami_transport->transport_info.header_ids_map[i].first.second == message_header->path_id)
+		{
+		    message_header->header_id = pami_transport->transport_info.header_ids_map[i].second;
+		}
+	    }
+	    pami_transport->transport_info.processing_headers.push_back(message_header);
+	}
     }
 
     timeval tx;
@@ -890,7 +904,7 @@ void optiq_pami_transport_get_message ()
 	int new_header_id = pami_transport->transport_info.global_header_id;
 	pami_transport->transport_info.global_header_id++;
 
-	if (fwd)
+	if (fwd && pami_transport->transport_info.fwd_mem_req == fwd_mem_req_queue)
 	{
 	    std::pair<int, int> ids = std::make_pair (header->header_id, header->path_id);
 	    std::pair<std::pair<int, int>, int> oldnewids = std::make_pair (ids, new_header_id);
@@ -907,7 +921,7 @@ void optiq_pami_transport_get_message ()
 	/* Request memory from next dest */
 	optiq_pami_transport_mem_request(header);
 
-	if (fwd) {
+	if (fwd  && pami_transport->transport_info.fwd_mem_req == fwd_mem_req_queue) {
 	    pami_transport->transport_info.message_headers.push_back(header);
 	}
     }
@@ -1114,7 +1128,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	/*If there is a request to send a message*/
         gettimeofday(&t2, NULL);
 
-	if (pami_transport->transport_info.processing_headers.size() < 2 && pami_transport->transport_info.mr_responses.size() < 2 && pami_transport->transport_info.num_requests < 2) {
+	if (pami_transport->transport_info.num_requests < 3) {
 	    optiq_pami_transport_get_message();
 	}
 

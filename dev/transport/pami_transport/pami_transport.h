@@ -58,6 +58,13 @@ struct optiq_rput_cookie {
     int dest;
 };
 
+/* Enum for forwarding memory request when it receives a memory request*/
+enum optiq_fwd_mem_req {
+    fwd_mem_req_imm,		    /* Forward the memory request immediate, in the pami recv function */
+    fwd_mem_req_after_rput_done,    /* Forward the memory request after it receives the actual data */
+    fwd_mem_req_queue		    /* Queue the memory request and forward later */
+};
+
 struct optiq_transport_info {
     bool initialized;
     bool finalized;
@@ -85,6 +92,7 @@ struct optiq_transport_info {
 
     std::vector<std::pair<std::pair<int, int>, int> > header_ids_map;
     int num_requests;
+    enum optiq_fwd_mem_req fwd_mem_req;
 };
 
 struct optiq_pami_transport {
