@@ -592,10 +592,10 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     struct optiq_performance_index *opi = optiq_opi_get();
     opi->paths = path_ids;
 
-    if (world_rank == 0) {
+    /*if (world_rank == 0) {
         printf("Done searching %d paths of node ids\n", path_ids.size());
 	optiq_path_print_paths(path_ids);
-    }
+    }*/
 
     /* Convert from path of node ids to path of rank ids */
     std::vector<struct path *> &path_ranks = schedule->paths;
@@ -604,11 +604,11 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     optiq_schedule_map_from_pathids_to_pathranks (path_ids, source_dest_ranks, path_ranks);
     
 
-    if (world_rank == 0) {
+    /*if (world_rank == 0) {
         printf("Done mapping paths of node ids to ranks\n");
 	printf("Num of paths = %d\n", path_ranks.size());
 	optiq_path_print_paths (path_ranks);
-    }
+    }*/
 
     build_next_dests(world_rank, schedule->next_dests, path_ranks);
 
