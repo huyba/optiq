@@ -17,15 +17,20 @@ LD      = mpixlc_r
 OPTIQ = ../..
 DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
+PAT = $(DEV)/comm_patterns
 
-CFLAGS  = $(COPT) -I. -I$(UTIL)
+INCLUDE = -I. -I$(UTIL) -I$(PAT)
+
+CFLAGS = $(COPT) $(INCLUDE) 
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ =
+OBJ = $(UTIL)/util.o $(PAT)/patterns.o
 
-all: cesm.o patterns.o
+all: $(OBJ) mpi copy
+
+mpi: test_patterns.x
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -34,8 +39,14 @@ all: cesm.o patterns.o
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
-	rm *.o
+	rm $(OBJ) *.x *.o
 
 realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
+	$(RM) $(RMFLAGS) $(libobj)
+
+TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
+
+copy:
+	cp test_patterns.x $(TEST_DIR)/patterns/

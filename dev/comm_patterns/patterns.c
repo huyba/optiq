@@ -4,6 +4,7 @@
 #include <string.h>
 #include <fstream>
 
+#include "util.h"
 #include "patterns.h"
 
 void optiq_patterns_read_requests_from_file(char *filename, std::vector<std::pair<std::pair<int, int>, int > > &requests)
@@ -303,10 +304,13 @@ void optiq_pattern_lastk_firstk(char *filepath, int num_ranks, int demand, int k
     file.close();
 }
 
-void optiq_pattern_firstm_lastn(char *filepath, int numranks, int demand, int m, int n)
+void optiq_pattern_firstm_lastn(char *filepath, int numranks, int demand, int m, int n, bool random)
 {
     std::ofstream file;
     file.open(filepath);
+
+    std::vector<std::pair<int, int> > source_dests;
+    source_dests.clear();
 
     if (m > n) 
     {
@@ -317,7 +321,8 @@ void optiq_pattern_firstm_lastn(char *filepath, int numranks, int demand, int m,
 	{
 	    for (int j = 0; j < r; j++) 
 	    {
-		file << i + j << " " << d << " " << demand << std::endl;
+		std::pair<int, int> sd = std::make_pair (i + j, d);
+		source_dests.push_back(sd);
 	    }
 	    d++;
 	}
@@ -331,10 +336,20 @@ void optiq_pattern_firstm_lastn(char *filepath, int numranks, int demand, int m,
         {
             for (int j = 0; j < r; j++) 
             {
-                file << i  << " " << d + j << " " << demand << std::endl;
+		std::pair<int, int> sd = std::make_pair (i, d + j);
+		source_dests.push_back(sd);
             }
             d += r;
         }
+    }
+
+    if (random) {
+	optiq_util_randomize_source_dests (source_dests);
+    }
+
+    for (int i = 0; i < source_dests.size(); i++)
+    {
+	file << source_dests[i].first  << " " << source_dests[i].second << " " << demand << std::endl;
     }
 
     file.close();
@@ -352,8 +367,11 @@ void optiq_pattern_subgroup_agg (char *filepath, int numranks, int subgroupsize,
     file.close();
 }
 
-void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int startm, int n, int startn)
+void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int startm, int n, int startn, bool random)
 {
+    std::vector<std::pair<int, int> > source_dests;
+    source_dests.clear();
+
     std::ofstream file;
     file.open(filepath);
 
@@ -366,7 +384,8 @@ void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int s
         {
             for (int j = 0; j < r; j++)
             {
-                file << i + j << " " << d << " " << demand << std::endl;
+		std::pair<int, int> sd = std::make_pair (i + j, d);
+                source_dests.push_back(sd);
             }
             d++;
         }
@@ -380,16 +399,26 @@ void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int s
         {
             for (int j = 0; j < r; j++)
             {
-                file << i  << " " << d + j << " " << demand << std::endl;
+		std::pair<int, int> sd = std::make_pair (i, d + j);
+                source_dests.push_back(sd);
             }
             d += r;
         }
     }
 
+    if (random) {
+        optiq_util_randomize_source_dests (source_dests);
+    }
+
+    for (int i = 0; i < source_dests.size(); i++)
+    {
+        file << source_dests[i].first  << " " << source_dests[i].second << " " << demand << std::endl;
+    }
+
     file.close();   
 }
 
-void optiq_pattern_overlap (char *filepath, int numranks, int demand, int m, int numoverlap, int n)
+void optiq_pattern_overlap (char *filepath, int numranks, int demand, int m, int numoverlap, int n, bool random)
 {
-    optiq_pattern_m_to_n(filepath, numranks, demand, m, 0, n, m - numoverlap);   
+    optiq_pattern_m_to_n(filepath, numranks, demand, m, 0, n, m - numoverlap, random);
 }

@@ -28,7 +28,7 @@ STRUCT = $(TESTS)/structures
 TOPOLOGY = $(TESTS)/topology
 HEU = $(TESTS)/algorithms/heuristics
 YEN = $(TESTS)/algorithms/yen
-PAT = $(TESTS)/comm_patterns
+PAT = $(TESTS)/patterns
 SCHED = $(TESTS)/schedule
 TRANS = $(TESTS)/transport/pami_transport
 
@@ -39,7 +39,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = 
 
-all: op struct topo heu yen trans sched
+all: op struct topo heu yen trans sched pattern
 
 op:
 	cd $(OPTEST) && $(MAKE) -f Makefile
@@ -55,6 +55,8 @@ trans:
 	cd $(TRANS) && $(MAKE) -f Makefile
 sched:
 	cd $(SCHED) && $(MAKE) -f Makefile
+pattern:
+	cd $(PAT) && $(MAKE) -f Makefile
 
 clean: $(OBJ)
 	rm $(OBJ)

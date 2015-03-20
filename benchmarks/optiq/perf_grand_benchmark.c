@@ -32,16 +32,22 @@ int main(int argc, char **argv)
 	    if (rank == 0)
 	    {
 		printf("Test No. %d: First %d nodes send data to last %d nodes\n", testid, m, n);
-		optiq_pattern_firstm_lastn(filepath, size, demand, m, n);
+		optiq_pattern_firstm_lastn(filepath, size, demand, m, n, false);
 		testid++;
 	    }
 
 	    MPI_Barrier(MPI_COMM_WORLD);
 	    optiq_benchmark_pattern_from_file (filepath, rank, size);
 
-	    /*if (m > n) {
-		printf("Rank %d come here\n", rank);
-	    }*/
+	    if (rank == 0)
+            {
+                printf("Test No. %d: First %d nodes send data to last %d randomize nodes\n", testid, m, n);
+                optiq_pattern_firstm_lastn(filepath, size, demand, m, n, true);
+                testid++;
+            }
+
+            MPI_Barrier(MPI_COMM_WORLD);
+            optiq_benchmark_pattern_from_file (filepath, rank, size);
 	}
     }
 

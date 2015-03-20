@@ -93,3 +93,17 @@ void optiq_util_print_source_dests(std::vector<std::pair<int, std::vector<int> >
         }
     }
 }
+
+void optiq_util_randomize_source_dests (std::vector<std::pair<int, int> > &source_dests)
+{
+    srand (time(NULL));
+    int temp = 0, k = 0;
+
+    for (int i = 0; i < source_dests.size(); i++) 
+    {
+        k = rand() % source_dests.size();
+        temp = source_dests[i].second;
+        source_dests[i].second = source_dests[k].second;
+        source_dests[k].second = temp;
+    }
+}
