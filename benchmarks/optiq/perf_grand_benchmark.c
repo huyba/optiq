@@ -56,8 +56,8 @@ int main(int argc, char **argv)
     {
         if (rank == 0)
         {
-            printf("Test No. %d: Subgroup of %d ranks aggregate data to rank in the middle of the subgroup\n", testid, i);
-	    optiq_pattern_subgroup_agg(filepath, size, i, demand);
+            printf("Test No. %d: Subgroup of %d ranks aggregate data to rank in the middle of the subgroup\n", testid, i * topo->num_ranks_per_node);
+	    optiq_pattern_subgroup_agg(filepath, size, i * topo->num_ranks_per_node, demand);
 	    testid++;
         }
         MPI_Barrier(MPI_COMM_WORLD);
