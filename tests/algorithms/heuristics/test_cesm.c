@@ -39,7 +39,7 @@ void search_paths(std::vector<std::pair<int, std::vector<int> > > &source_dests,
 
     gettimeofday(&t1, NULL);
 
-    optiq_alg_heuristic_search_manytomany(complete_paths, source_dests, &bfs);
+    optiq_alg_heuristic_search_manytomany_late_adding_load (complete_paths, source_dests, &bfs);
 
     gettimeofday(&t2, NULL);
 
@@ -48,7 +48,7 @@ void search_paths(std::vector<std::pair<int, std::vector<int> > > &source_dests,
     printf("Build done in %ld microseconds\n", diff);
 
     //optiq_path_print_paths(complete_paths);
-    optiq_path_print_stat(complete_paths, bfs.num_nodes);
+    optiq_path_print_stat(complete_paths, bfs.num_nodes, 0);
 }
 
 int main(int argc, char **argv)

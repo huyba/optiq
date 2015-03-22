@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     printf("Build done in %ld microseconds\n", diff);
 
     printf("Radius = %d\n", diameter/2);
-    optiq_path_print_stat(complete_paths, num_nodes);
+    optiq_path_print_stat(complete_paths, num_nodes, 0);
 
     return 0;
 }

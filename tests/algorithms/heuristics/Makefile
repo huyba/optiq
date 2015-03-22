@@ -44,9 +44,9 @@ LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
 YEN_OBJ = $(YEN)/yen.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/YenTopKShortestPathsAlg.o
 
-OBJ = $(UTIL)/util.o $(TOPOLOGY)/topology.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/alltomany.o $(HEURISTICS)/manytomany.o $(HEURISTICS)/multibfs.o $(PAT)/cesm.o $(HEURISTICS)/multipaths.o
+OBJ = $(UTIL)/util.o $(TOPOLOGY)/*.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/*.o $(PAT)/cesm.o
 
-all: $(OBJ) yen test_cesm.x test_alltomany.x test_manytomany.x copy
+all: $(OBJ) yen test_cesm.x test_alltomany.x test_manytomany.x test_mpiplus.x copy
 
 yen:
 	cd $(YEN)/ && $(MAKE) -f Makefile
@@ -62,7 +62,7 @@ TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
 copy:
 	cp test_alltomany.x $(TEST_DIR)/algorithms/heuristics
 	cp test_manytomany.x $(TEST_DIR)/algorithms/heuristics
-
+	cp test_mpiplus.x $(TEST_DIR)/algorithms/heuristics/mpiplus/
 clean:
 	rm $(OBJ)
 	rm *.o *.x
