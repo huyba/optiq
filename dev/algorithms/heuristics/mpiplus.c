@@ -217,7 +217,7 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
        */
 }
 
-void optiq_alg_heuristic_search_mpiplus (std::vector<std::pair<int, std::vector<int> > > source_dests, std::vector<struct *path> &paths)
+void optiq_alg_heuristic_search_mpiplus (std::vector<std::pair<int, std::vector<int> > > source_dests, std::vector<struct path *> paths)
 {
     struct multibfs *bfs = optiq_multibfs_get();
 
@@ -244,7 +244,7 @@ void optiq_alg_heuristic_search_mpiplus (std::vector<std::pair<int, std::vector<
     }
 
     /* Search for path that is not used by mpi path*/
-    std::vector<struct *path> mpipluspaths;
+    std::vector<struct path *> mpipluspaths;
     mpipluspaths.clear();
     optiq_alg_heuristic_search_manytomany_current_load(mpipluspaths, source_dests, bfs, load, 1);
 
