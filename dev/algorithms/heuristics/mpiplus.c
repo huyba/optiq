@@ -49,10 +49,8 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
 	}
     }
 
-    std::vector<struct path> expanding_paths;
-
-    int *load = (int *)calloc(1, sizeof(int) * num_nodes * num_nodes);
-    bool *visited = (bool *)calloc(1, sizeof(bool) * num_sources * num_nodes);
+    int *load = (int *) calloc (1, sizeof(int) * num_nodes * num_nodes);
+    bool *visited = (bool *) calloc (1, sizeof(bool) * num_sources * num_nodes);
 
     bfs->paths = (struct path *) calloc (1, sizeof (struct path) * num_sources * num_nodes);
     int max_avail_path_id = 0;
@@ -103,6 +101,8 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
 		    {
 			add_load_on_path(p, load, 1, num_nodes);
 			complete_paths.push_back(p);
+			printf("Add more path\n");
+			optiq_path_print_path (p);
 		    } 
 		    else 
 		    {
@@ -122,8 +122,6 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
     /*For the current number of paths, start expanding and add more path*/
     while(bfs->heap->num_elements != 0) 
     {
-	printf("heap size %d\n", bfs->heap->num_elements);
-
 	struct path *p = hp_find_min(bfs->heap);
 	//optiq_path_print_path(p);
 	hp_remove_min(bfs->heap);
@@ -219,7 +217,7 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
        */
 }
 
-void optiq_alg_heuristic_search_mpiplus (std::vector<struct path *> paths, std::vector<std::pair<int, std::vector<int> > > source_dests)
+void optiq_alg_heuristic_search_mpiplus (std::vector<struct path *> &paths, std::vector<std::pair<int, std::vector<int> > > source_dests)
 {
     struct multibfs *bfs = optiq_multibfs_get();
 
@@ -245,7 +243,8 @@ void optiq_alg_heuristic_search_mpiplus (std::vector<struct path *> paths, std::
 	}
     }
 
-    printf("Done finding mpi path\n");
+    //printf("Done finding mpi path\n");
+    //optiq_path_print_paths_coords (paths, topo->all_coords);
 
     /* Search for path that is not used by mpi path*/
     std::vector<struct path *> mpipluspaths;

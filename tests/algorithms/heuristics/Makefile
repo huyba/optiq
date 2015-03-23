@@ -64,5 +64,5 @@ copy:
 	cp test_manytomany.x $(TEST_DIR)/algorithms/heuristics
 	cp test_mpiplus.x $(TEST_DIR)/algorithms/heuristics/mpiplus/
 clean:
-	rm $(OBJ)
-	rm *.o *.x
+	rm *.x
+	rm *.o

@@ -4,6 +4,7 @@
 
 #include <mpi.h>
 
+#include "util.h"
 #include "topology.h"
 #include "path.h"
 #include "mpiplus.h"
@@ -40,6 +41,8 @@ int main(int argc, char **argv)
 	    source_dests.push_back(sd);
 	}
 
+	//optiq_util_print_source_dests (source_dests);
+
 	std::vector<struct path *> complete_paths;
 	complete_paths.clear();
 
@@ -55,7 +58,7 @@ int main(int argc, char **argv)
 
 	printf("Build done in %ld microseconds\n", diff);
 
-	//optiq_path_print_paths(complete_paths);
+	optiq_path_print_paths_coords (complete_paths, topo->all_coords);
 	optiq_path_print_stat(complete_paths, num_nodes, topo->num_edges);
     }
 
