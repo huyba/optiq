@@ -15,4 +15,6 @@ int optiq_check_existing(int num_elements, int *list, int element);
 
 void optiq_util_print_source_dests(std::vector<std::pair<int, std::vector<int> > > source_dest_ids);
 
+void optiq_util_randomize_source_dests (std::vector<std::pair<int, int> > &source_dests);
+
 #endif

@@ -9,6 +9,7 @@
 #include "util.h"
 #include "topology.h"
 #include "manytomany.h"
+#include "search_util.h"
 
 void optiq_alg_heuristic_search_manytomany_same_dests(std::vector<struct path *> &complete_paths, int num_sources, int *source_ranks, int num_dests, int *dest_ranks, struct multibfs *bfs) 
 {
@@ -207,67 +208,6 @@ void optiq_alg_heuristic_search_manytomany_same_dests(std::vector<struct path *>
     */
 }
 
-bool check_and_reverse(std::vector<std::pair<int, std::vector<int> > > &all_sd, std::vector<std::pair<int, std::vector<int> > > &sd, int num_nodes)
-{
-    bool isReverted = false;
-
-    int *source_dest = (int *) calloc (1, sizeof(int) * num_nodes * num_nodes);
-
-    for (int i = 0; i < all_sd.size(); i++) {
-        for (int j = 0; j < all_sd[i].second.size(); j++) {
-            source_dest[all_sd[i].first * num_nodes + all_sd[i].second[j]] = 1;
-        }
-    }
-
-    int num_dests = 0;
-    bool is_dest;
-    for (int j = 0; j < num_nodes; j++)
-    {
-        is_dest = false;
-
-        for (int i = 0; i < num_nodes; i++)
-        {
-            if (source_dest[i * num_nodes + j] != 0) {
-                is_dest = true;
-                break;
-            }
-        }
-
-        if (is_dest) {
-            num_dests++;
-        }
-    }
-
-    int num_sources = all_sd.size();
-
-    if (num_dests < num_sources)
-    {
-	isReverted = true;
-
-        for (int j = 0; j < num_nodes; j++)
-        {
-            std::vector<int> sources;
-            sources.clear();
-
-            for (int i = 0; i < num_nodes; i++)
-            {
-                if (source_dest[i * num_nodes + j] != 0) {
-                    sources.push_back(i);
-                }
-            }
-
-            if (sources.size() > 0) {
-                std::pair<int, std::vector<int> > p = std::make_pair (j, sources);
-                sd.push_back(p);
-            }
-        }
-    }
-
-    free(source_dest);
-
-    return isReverted;
-}
-
 void optiq_alg_heuristic_search_manytomany_early_adding_load(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > all_sd, struct multibfs *bfs) 
 {
     struct timeval t0, t1, t2, t3;
@@ -392,17 +332,14 @@ void optiq_alg_heuristic_search_manytomany_early_adding_load(std::vector<struct 
 		add_load_on_path(np, load, 1, num_nodes);
 		add_edge_path(bfs->edge_path, np, num_nodes);
 
-		hp_insert(bfs->heap, np);
-
 		if (source_dest[p->source_id * num_nodes + na.v] == 1) {
 		    complete_paths.push_back(np);
+		} else {
+		    hp_insert(bfs->heap, np);
+		    visited[p->root_id * num_nodes + neighbor_id] = true;
 		}
 
 		update_max_load(np, load, bfs);
-
-		visited[p->root_id * num_nodes + neighbor_id] = true;
-
-		//optiq_path_print_path(np);
 	    }
 	}
     }

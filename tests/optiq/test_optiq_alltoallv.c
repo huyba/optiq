@@ -62,7 +62,10 @@ int main(int argc, char **argv)
     //}
 
     opi.iters = iters;
-    optiq_opi_collect(world_rank);
+    optiq_opi_collect();
+    if (world_rank == 0) {
+        optiq_opi_print();
+    }
 
     optiq_finalize();
 

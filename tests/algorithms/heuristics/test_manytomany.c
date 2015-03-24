@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
     gettimeofday(&t1, NULL);
 
-    optiq_alg_heuristic_search_manytomany(complete_paths, source_dests, &bfs);
+    optiq_alg_heuristic_search_manytomany_early_adding_load (complete_paths, source_dests, &bfs);
 
     gettimeofday(&t2, NULL);
 
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     printf("Build done in %ld microseconds\n", diff);
 
     //optiq_path_print_paths(complete_paths);
-    optiq_path_print_stat(complete_paths, bfs.num_nodes);
+    optiq_path_print_stat(complete_paths, bfs.num_nodes, 0);
 
     return 0;
 }

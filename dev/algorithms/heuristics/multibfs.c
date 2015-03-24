@@ -29,6 +29,10 @@ void optiq_multibfs_init()
 
 struct multibfs *optiq_multibfs_get()
 {
+    if (bfs == NULL) {
+	optiq_multibfs_init();
+    }
+
     return bfs;
 }
 

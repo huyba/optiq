@@ -592,10 +592,10 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     struct optiq_performance_index *opi = optiq_opi_get();
     opi->paths = path_ids;
 
-    /*if (world_rank == 0) {
+    if (world_rank == 0) {
         printf("Done searching %d paths of node ids\n", path_ids.size());
 	optiq_path_print_paths(path_ids);
-    }*/
+    }
 
     /* Convert from path of node ids to path of rank ids */
     std::vector<struct path *> &path_ranks = schedule->paths;
@@ -607,7 +607,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /*if (world_rank == 0) {
         printf("Done mapping paths of node ids to ranks\n");
 	printf("Num of paths = %d\n", path_ranks.size());
-	optiq_path_print_paths_coords (path_ranks, topo->all_coords);
+	optiq_path_print_paths (path_ranks);
     }*/
 
     build_next_dests(world_rank, schedule->next_dests, path_ranks);
@@ -812,7 +812,7 @@ void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &p
 			if (topo->num_ranks_per_node > 1) 
 			{
 			    path_rank->arcs[h].u = path_rank->arcs[h].u * topo->num_ranks_per_node + source_rank % topo->num_ranks_per_node;
-			    path_rank->arcs[h].v = path_rank->arcs[h].v * topo->num_ranks_per_node + dest_rank % topo->num_ranks_per_node;
+			    path_rank->arcs[h].v = path_rank->arcs[h].v * topo->num_ranks_per_node + source_rank % topo->num_ranks_per_node;
 			}
 			else 
 			{

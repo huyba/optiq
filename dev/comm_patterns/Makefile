@@ -14,8 +14,11 @@ endif
 
 LD      = mpixlc_r
 
+OPTIQ = ../..
+DEV = $(OPTIQ)/dev
+UTIL = $(DEV)/util
 
-CFLAGS  = $(COPT) -I.
+CFLAGS  = $(COPT) -I. -I$(UTIL)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD

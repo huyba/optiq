@@ -16,6 +16,10 @@ void optiq_opi_collect()
 
     MPI_Reduce (&opi.sendimm_time, &max_opi.sendimm_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
+    MPI_Reduce (&opi.local_mem_req_time, &max_opi.local_mem_req_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    MPI_Reduce (&opi.total_mem_req_time, &max_opi.total_mem_req_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
     MPI_Reduce (&opi.recv_len, &max_opi.recv_len, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 
     MPI_Reduce (&opi.matching_procesing_header_mr_response_time, &max_opi.matching_procesing_header_mr_response_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
@@ -42,6 +46,8 @@ void optiq_opi_print()
     printf("check_complete_rput_time time is %8.4f\n", max_opi.check_complete_rput_time);
     printf("notification done time is %8.4f\n", max_opi.notification_done_time);
     printf("send_immediate time is %8.4f\n", max_opi.sendimm_time);
+    printf("local mem req time is %8.4f\n", max_opi.local_mem_req_time);
+    printf("total mem req time is %8.4f\n", max_opi.total_mem_req_time);
     printf("\n");
 }
 
@@ -59,10 +65,16 @@ void optiq_opi_clear()
     opi.check_complete_rput_time = 0;
     opi.paths.clear();
     opi.timestamps.clear();
+    opi.total_mem_req_time = 0;
+    opi.local_mem_req_time = 0;
 }
 
 void optiq_opi_timestamp_print(int rank)
 {
+    if (opi.timestamps.size() == 0) {
+	return;
+    }
+
     timeval t0 = opi.timestamps[0].tv;
     timeval t1;
     double t = 0;

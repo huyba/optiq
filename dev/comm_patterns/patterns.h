@@ -29,7 +29,7 @@ void optiq_pattern_lastk_firstk(char *filepath, int num_ranks, int demand, int k
 /*
  * First m node talks to last n nodes. Non-overlapped.
  * */
-void optiq_pattern_firstm_lastn(char *filepath, int numranks, int demand, int m, int n);
+void optiq_pattern_firstm_lastn(char *filepath, int numranks, int demand, int m, int n, bool random);
 
 /*
  * A partition of numranks nodes will be divided into subgroups, each has size subgroupsize. 
@@ -40,6 +40,8 @@ void optiq_pattern_subgroup_agg (char *filepath, int numranks, int subgroupsize,
 /* 
  * 2 groups of m and n are overlapped by numoverlap
  * */
-void optiq_pattern_overlap (char *filepath, int numranks, int demand, int m, int numoverlap, int n);
+void optiq_pattern_overlap (char *filepath, int numranks, int demand, int m, int numoverlap, int n, bool random);
+
+void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int startm, int n, int startn, bool random);
 
 #endif

@@ -33,6 +33,8 @@ struct optiq_performance_index {
     double get_header_time;
     double post_rput_time;
     double check_complete_rput_time;
+    double local_mem_req_time;
+    double total_mem_req_time;
 
     int long recv_len;
     int iters;
@@ -51,7 +53,7 @@ struct optiq_performance_index {
     std::vector<struct timestamp> timestamps;
 };
 
-extern "C" struct optiq_performance_index opi;
+extern "C" struct optiq_performance_index opi, max_opi;
 
 struct optiq_performance_index * optiq_opi_get();
 

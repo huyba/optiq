@@ -50,7 +50,10 @@ int main(int argc, char **argv)
 	/*printf("Rank %d chunk size %d finished\n", world_rank, chunk);*/
 
 	opi.iters = 1;
-	optiq_opi_collect(world_rank);
+	optiq_opi_collect();
+	if (world_rank == 0) {
+	    optiq_opi_print();
+	}
     }
 
     if (world_rank >= world_size/2) {

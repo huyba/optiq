@@ -1,6 +1,8 @@
 #include <mpi.h>
 #include <sys/time.h>
 
+double mpi_time = 0;
+
 void gather_and_print_time (timeval t0, timeval t1, int iters, long int recv_len, int world_rank)
 {
     double elapsed_time = (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);
@@ -16,6 +18,7 @@ void gather_and_print_time (timeval t0, timeval t1, int iters, long int recv_len
     if (world_rank == 0)
     {
 	max_time = max_time / iters;
+	mpi_time = max_time;
 	double bw = (double) total_length / max_time / 1024 / 1024 * 1e6;
 	printf("total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", total_length/1024/1024, max_time, bw);
     }

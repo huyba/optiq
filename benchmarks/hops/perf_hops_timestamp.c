@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     int *rdispls = (int *) calloc(1, sizeof(int) * world_size);
     int *recvcounts = (int *) calloc(1, sizeof(int) * world_size);
 
-    int maxbytes = 8 * 1024 * 1024;
+    int maxbytes = 4 * 1024 * 1024;
     if (argc > 3) {
 	maxbytes = atoi(argv[3]);
     }
@@ -34,31 +34,33 @@ int main(int argc, char **argv)
 	printf("Start to benchmark time to send by hops\n");
     }
 
-    for (int nbytes = 1024; nbytes < maxbytes; nbytes *= 2)
+    for (int nbytes = maxbytes; nbytes <= maxbytes; nbytes *= 2)
     {
 	memset (sendcounts, 0, sizeof(int) * world_size);
 	memset (recvcounts, 0, sizeof(int) * world_size);
 
 	if (world_rank == send_rank) {
-	    sendcounts[recv_rank] = maxbytes;
+	    sendcounts[recv_rank] = nbytes;
 	}
 
 	if (world_rank == recv_rank) {
-	    recvcounts[send_rank] = maxbytes;
+	    recvcounts[send_rank] = nbytes;
 	}
 
 	optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
-	schedule->chunk_size = nbytes;
+	schedule->chunk_size = 128 * 1024;
 
 	optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
 	opi.iters = 1;
 	optiq_opi_collect();
+
 	if (world_rank == 0) {
 	    optiq_opi_print();
 	}
 
+	optiq_opi_timestamp_print(world_rank);
 
 	optiq_opi_clear();
     }
