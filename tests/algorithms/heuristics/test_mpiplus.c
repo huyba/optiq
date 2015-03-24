@@ -8,6 +8,7 @@
 #include "topology.h"
 #include "path.h"
 #include "mpiplus.h"
+#include "patterns.h"
 
 void optiq_test_alg_heuristic_mpiplus (std::vector<std::pair<int, std::vector<int> > > source_dests)
 {
@@ -33,56 +34,6 @@ void optiq_test_alg_heuristic_mpiplus (std::vector<std::pair<int, std::vector<in
     else
     {
 	printf("Just like mpi path\n\n");
-    }
-}
-
-void optiq_pattern_m_to_n_to_vectors (int m, int startm, int n, int startn, std::vector<std::pair<int, std::vector<int> > > &source_dests)
-{
-    source_dests.clear();
-
-    printf("%d ranks from %d to %d talks to %d rank from %d to %d\n", m, startm, startm + m - 1, n, startn, startn + n - 1);
-
-    if (m > n)
-    {
-        int r = m/n;
-        int d = startn;
-
-        for (int i = startm; i < m + startm; i += r)
-        {
-	    std::vector<int> dests;
-	    dests.clear();
-
-            for (int j = 0; j < r; j++)
-            {
-		dests.push_back (j);
-            }
-
-	    std::pair<int, std::vector<int> > sd = std::make_pair (i, dests);
-	    source_dests.push_back (sd);
-
-            d++;
-        }
-    }
-    else
-    {
-        int r = n/m;
-        int d = startn;
-
-        for (int i = startm; i < m +  startm; i++)
-        {
-	    std::vector<int> dests;
-	    dests.clear();
-
-            for (int j = 0; j < r; j++)
-            {
-		 dests.push_back (d + j);
-            }
-
-	    std::pair<int, std::vector<int> > sd = std::make_pair (i, dests);
-	    source_dests.push_back (sd);
-
-            d += r;
-        }
     }
 }
 
