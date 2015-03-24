@@ -101,8 +101,6 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
 		    {
 			add_load_on_path(p, load, 1, num_nodes);
 			complete_paths.push_back(p);
-			printf("Add more path\n");
-			optiq_path_print_path (p);
 		    } 
 		    else 
 		    {
