@@ -26,18 +26,20 @@ void optiq_test_alg_heuristic_mpiplus (std::vector<std::pair<int, std::vector<in
 
     if (complete_paths.size() > source_dests.size()) 
     {
-	printf("More than mpi path\n");
+	printf("optiq %d paths more than mpi %d paths\n", complete_paths.size(), source_dests.size());
 	//optiq_path_print_paths_coords (complete_paths, topo->all_coords);
         optiq_path_print_stat(complete_paths, bfs->num_nodes, topo->num_edges);
     }
     else
     {
-	printf("Just like mpi path\n");
+	printf("Just like mpi path\n\n");
     }
 }
 
 void optiq_pattern_m_to_n_to_vectors (int m, int startm, int n, int startn, std::vector<std::pair<int, std::vector<int> > > &source_dests)
 {
+    source_dests.clear();
+
     printf("%d ranks from %d to %d talks to %d rank from %d to %d\n", m, startm, startm + m - 1, n, startn, startn + n - 1);
 
     if (m > n)
@@ -102,11 +104,14 @@ int main(int argc, char **argv)
 	int n = bfs->num_nodes;
 	std::vector<std::pair<int, std::vector<int> > > source_dests;
 
-	optiq_pattern_m_to_n_to_vectors (n/4, 0, n/4, 3*n/4, source_dests);
-	optiq_test_alg_heuristic_mpiplus (source_dests);
-
-	optiq_pattern_m_to_n_to_vectors (n/8, 0, n/8, 6*n/8, source_dests);
-        optiq_test_alg_heuristic_mpiplus (source_dests);
+	for (int i = 2; i <= 8; i *= 2)
+	{
+	    for (int j = 1; j < i; j++) 
+	    {
+		optiq_pattern_m_to_n_to_vectors (n/i, 0, n/i, j*n/i, source_dests);
+		optiq_test_alg_heuristic_mpiplus (source_dests);
+	    }
+	}
     }
 
     return 0;
