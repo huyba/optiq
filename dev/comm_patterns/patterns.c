@@ -422,3 +422,53 @@ void optiq_pattern_overlap (char *filepath, int numranks, int demand, int m, int
 {
     optiq_pattern_m_to_n(filepath, numranks, demand, m, 0, n, m - numoverlap, random);
 }
+
+
+void optiq_pattern_m_to_n_to_vectors (int m, int startm, int n, int startn, std::vector<std::pair<int, std::vector<int> > > &source_dests)
+{
+    source_dests.clear();
+
+    printf("%d ranks from %d to %d talks to %d rank from %d to %d\n", m, startm, startm + m - 1, n, startn, startn + n - 1);
+
+    if (m > n)
+    {
+        int r = m/n;
+        int d = startn;
+
+        for (int i = startm; i < m + startm; i += r)
+        {
+            for (int j = 0; j < r; j++)
+            {
+		std::vector<int> dests;
+		dests.clear();
+		dests.push_back (d);
+
+		std::pair<int, std::vector<int> > sd = std::make_pair (i + j, dests);
+		source_dests.push_back (sd);
+	    }
+
+            d++;
+        }
+    }
+    else
+    {
+        int r = n/m;
+        int d = startn;
+
+        for (int i = startm; i < m +  startm; i++)
+        {
+	    std::vector<int> dests;
+	    dests.clear();
+
+            for (int j = 0; j < r; j++)
+            {
+		 dests.push_back (d + j);
+            }
+
+	    std::pair<int, std::vector<int> > sd = std::make_pair (i, dests);
+	    source_dests.push_back (sd);
+
+            d += r;
+        }
+    }
+}

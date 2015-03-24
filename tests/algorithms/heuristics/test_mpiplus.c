@@ -91,7 +91,7 @@ int main(int argc, char **argv)
             {
                 for (int k = 2; k <= 4; k *= 2)
                 {
-                    for (int r = 2; r <= 8; r *= 2)
+                    for (int r = 2; r <= 4; r *= 2)
                     {
                         optiq_pattern_m_to_n_to_vectors (n/i, j*n/i, n/i/r, j*n/i + n/i/r/k, source_dests);
                         optiq_test_alg_heuristic_mpiplus (source_dests);
