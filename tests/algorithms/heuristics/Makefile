@@ -57,7 +57,7 @@ yen:
 %.x: %.o
 	$(LD) $(OBJ) $(YEN_OBJ) $< $(LIBS) -o $@
 
-TEST_DIR = /gpfs/mira-fs0/projects/Performance/abui/optiq/tests
+TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
 
 copy:
 	cp test_alltomany.x $(TEST_DIR)/algorithms/heuristics
