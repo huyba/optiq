@@ -44,7 +44,7 @@ LIBS    = -L$(MPICH2_PATH)/lib -lm #-l mpi
 
 YEN_OBJ = $(YEN)/yen.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/YenTopKShortestPathsAlg.o
 
-OBJ = $(UTIL)/util.o $(TOPOLOGY)/*.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/*.o $(PAT)/cesm.o
+OBJ = $(UTIL)/util.o $(TOPOLOGY)/*.o $(STRUCTURE)/path.o $(STRUCTURE)/job.o $(STRUCTURE)/heap_path.o  $(HEURISTICS)/*.o $(PAT)/*.o
 
 all: $(OBJ) yen test_cesm.x test_alltomany.x test_manytomany.x test_mpiplus.x copy
 

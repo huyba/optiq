@@ -44,4 +44,6 @@ void optiq_pattern_overlap (char *filepath, int numranks, int demand, int m, int
 
 void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int startm, int n, int startn, bool random);
 
+void optiq_pattern_m_to_n_to_vectors (int m, int startm, int n, int startn, std::vector<std::pair<int, std::vector<int> > > &source_dests);
+
 #endif
