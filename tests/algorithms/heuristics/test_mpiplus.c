@@ -104,6 +104,7 @@ int main(int argc, char **argv)
 	int n = bfs->num_nodes;
 	std::vector<std::pair<int, std::vector<int> > > source_dests;
 
+	printf("Dijoint testings\n");
 	for (int i = 2; i <= 8; i *= 2)
 	{
 	    for (int j = 1; j < i; j++) 
@@ -112,6 +113,19 @@ int main(int argc, char **argv)
 		optiq_test_alg_heuristic_mpiplus (source_dests);
 	    }
 	}
+
+	printf("Overlap testings\n");
+	for(int i = 2; i <= 8; i *= 2)
+        {
+            for (int j = 0; j < i - 1; j++)
+            {
+		for (int k = 2; k <= 4; k *= 2)
+		{
+		    optiq_pattern_m_to_n_to_vectors (n/i, j*n/i, n/i, j*n/i + n/i - n/i/k, source_dests);
+		    optiq_test_alg_heuristic_mpiplus (source_dests);
+		}
+            }
+        }
     }
 
     return 0;
