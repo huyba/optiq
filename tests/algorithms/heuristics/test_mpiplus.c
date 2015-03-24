@@ -109,8 +109,11 @@ int main(int argc, char **argv)
 	{
 	    for (int j = 1; j < i; j++) 
 	    {
-		optiq_pattern_m_to_n_to_vectors (n/i, 0, n/i, j*n/i, source_dests);
-		optiq_test_alg_heuristic_mpiplus (source_dests);
+		for (int r = 1; r <= 4; r *= 2)
+		{
+		    optiq_pattern_m_to_n_to_vectors (n/i, 0, n/i/r, j*n/i, source_dests);
+		    optiq_test_alg_heuristic_mpiplus (source_dests);
+		}
 	    }
 	}
 
@@ -121,9 +124,28 @@ int main(int argc, char **argv)
             {
 		for (int k = 2; k <= 4; k *= 2)
 		{
-		    optiq_pattern_m_to_n_to_vectors (n/i, j*n/i, n/i, j*n/i + n/i - n/i/k, source_dests);
-		    optiq_test_alg_heuristic_mpiplus (source_dests);
+		    for (int r = 1; r <= 4; r *= 2)
+		    {
+			optiq_pattern_m_to_n_to_vectors (n/i, j*n/i, n/i/r, j*n/i + n/i - n/i/r/k, source_dests);
+			optiq_test_alg_heuristic_mpiplus (source_dests);
+		    }
 		}
+            }
+        }
+
+	printf("Subset testings\n");
+	for(int i = 2; i <= 8; i *= 2)
+        {
+            for (int j = 0; j < i; j++)
+            {
+                for (int k = 2; k <= 4; k *= 2)
+                {
+                    for (int r = 2; r <= 8; r *= 2)
+                    {
+                        optiq_pattern_m_to_n_to_vectors (n/i, j*n/i, n/i/r, j*n/i + n/i/r/k, source_dests);
+                        optiq_test_alg_heuristic_mpiplus (source_dests);
+                    }
+                }
             }
         }
     }

@@ -233,11 +233,16 @@ void optiq_alg_heuristic_search_mpiplus (std::vector<struct path *> &paths, std:
     }
 
     /* Get the current load of mpi paths */
+    int max_load = 0;
     for (int i = 0; i < paths.size(); i++)
     {
 	for (int j = 0; j < paths[i]->arcs.size(); j++)
 	{
 	    load[paths[i]->arcs[j].u][paths[i]->arcs[j].v]++;
+
+	    if (max_load < load[paths[i]->arcs[j].u][paths[i]->arcs[j].v]) {
+		max_load = load[paths[i]->arcs[j].u][paths[i]->arcs[j].v];
+	    }
 	}
     }
 
@@ -247,7 +252,7 @@ void optiq_alg_heuristic_search_mpiplus (std::vector<struct path *> &paths, std:
     /* Search for path that is not used by mpi path*/
     std::vector<struct path *> mpipluspaths;
     mpipluspaths.clear();
-    optiq_alg_heuristic_search_manytomany_current_load(mpipluspaths, source_dests, bfs, load, 1);
+    optiq_alg_heuristic_search_manytomany_current_load(mpipluspaths, source_dests, bfs, load, max_load);
 
     paths.insert (paths.end(), mpipluspaths.begin(), mpipluspaths.end());
 }
