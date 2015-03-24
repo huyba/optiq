@@ -6,13 +6,15 @@
 #include "multibfs.h"
 #include "multipaths.h"
 #include "yen.h"
+#include "mpiplus.h"
 
 enum search_algorithm {
     OPTIQ_ALG_NO_CONSTRAINT,
     OPTIQ_ALG_HOPS_CONSTRAINT,
     OPTIQ_ALG_HOPS_CONSTRAINT_EARLY,
     OPTIQ_ALG_KPATHS,
-    OPTIQ_ALG_MODEL_PATH_BASED
+    OPTIQ_ALG_MODEL_PATH_BASED,
+    OPTIQ_ALG_MPIPLUS
 };
 
 struct optiq_algorithm {

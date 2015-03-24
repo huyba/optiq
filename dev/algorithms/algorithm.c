@@ -74,4 +74,9 @@ void optiq_algorithm_search_path(std::vector<struct path *> &paths, std::vector<
 
 	get_yen_k_shortest_paths (paths, source_dests, algorithm->num_paths_per_pair, graphFilePath);
     }
+
+    if (algorithm->search_alg == OPTIQ_ALG_MPIPLUS)
+    {
+	optiq_alg_heuristic_search_mpiplus (paths, source_dests);
+    }
 }

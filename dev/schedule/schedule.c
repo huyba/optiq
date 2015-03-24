@@ -584,8 +584,9 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /* Search for paths */
     std::vector<struct path *> path_ids;
     path_ids.clear();
-    algorithm->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT;
-    algorithm->max_hops = optiq_topology_max_distance_2sets_with_torus (source_dest_ids);
+    if (algorithm->max_hops == 0) {
+	algorithm->max_hops = optiq_topology_max_distance_2sets_with_torus (source_dest_ids);
+    }
 
     optiq_algorithm_search_path (path_ids, source_dest_ids, bfs, world_rank);
 
