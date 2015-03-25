@@ -98,6 +98,9 @@ struct optiq_transport_info {
     enum optiq_fwd_mem_req fwd_mem_req;
 
     struct optiq_memregion *path_mr;
+
+    int num_mr_requests;
+    int num_mr_responses;
 };
 
 struct optiq_pami_transport {

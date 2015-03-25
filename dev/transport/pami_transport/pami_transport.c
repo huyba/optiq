@@ -307,6 +307,9 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     pami_transport->transport_info.num_requests = 0;
 
     pami_transport->transport_info.fwd_mem_req = fwd_mem_req_after_rput_done;
+
+    pami_transport->transport_info.num_mr_requests = 0;
+    pami_transport->transport_info.num_mr_responses = 0;
 }
 
 struct optiq_pami_transport* optiq_pami_transport_get()
@@ -634,6 +637,8 @@ void optiq_recv_mr_request_adv_fn(pami_context_t context, void *cookie, const vo
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
     struct optiq_schedule *sched = pami_transport->sched;
 
+    pami_transport->transport_info.num_mr_requests++;
+
     /* Send back a mem response */
     int *path_id = (int *) header;
     int *bufsize = (int *) data;
@@ -671,6 +676,8 @@ void optiq_recv_mr_request_adv_fn(pami_context_t context, void *cookie, const vo
 void optiq_recv_mr_response_adv_fn (pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
+
+    pami_transport->transport_info.num_mr_responses++;
 
     int *path_id = (int *) header;
 
@@ -1097,9 +1104,16 @@ void optiq_pami_transport_exchange_memregions ()
 	    int bufsize = sched->local_jobs[i].buf_length;
 
 	    optiq_pami_send_immediate(pami_transport->context, OPTIQ_MR_REQUEST_ADV, &path_id, sizeof(int), &bufsize, sizeof(int), pami_transport->endpoints[dest]);
-
-	    outgoingpaths--;
 	}
+    }
+
+    /* Wait until all mem exchanges done */
+    while (pami_transport->transport_info.num_mr_requests != incomingpaths || pami_transport->transport_info.num_mr_responses != outgoingpaths) {
+	PAMI_Context_advance (pami_transport->context, 100);
+    }
+
+    if (pami_transport->rank == 0) {
+	printf("Done exchange memregion in advance\n");
     }
 }
 
