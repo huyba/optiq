@@ -13,8 +13,6 @@
 #include "schedule.h"
 #include "opi.h"
 
-#define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
-
 struct optiq_schedule *schedule = NULL;
 
 void optiq_schedule_init()
@@ -595,7 +593,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     if (world_rank == 0) {
         printf("Done searching %d paths of node ids\n", path_ids.size());
-	optiq_path_print_paths(path_ids);
+	optiq_path_print_paths_coords (path_ids, topo->all_coords);
     }
 
     /* Convert from path of node ids to path of rank ids */
@@ -688,6 +686,11 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
             }
         }
     } 
+
+    /*for (int i = 0; i < schedule->local_jobs.size(); i++)
+    {
+	printf("Rank %d numpaths = %d\n", world_rank, schedule->local_jobs[i].paths.size());
+    }*/
 
     /* Split a message into chunk-size messages*/
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, schedule->chunk_size);

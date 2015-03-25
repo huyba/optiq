@@ -26,6 +26,9 @@
 #define RECV_MESSAGE 14
 #define JOB_DONE 15
 #define PATH_DONE 16
+#define OPTIQ_MR_REQUEST_ADV 17
+#define OPTIQ_MR_RESPONSE_ADV 18
+#define OPTIQ_RPUT_DONE_ADV 19
 
 #define BROADCAST_NUM_DESTS 20
 
@@ -93,6 +96,8 @@ struct optiq_transport_info {
     std::vector<std::pair<std::pair<int, int>, int> > header_ids_map;
     int num_requests;
     enum optiq_fwd_mem_req fwd_mem_req;
+
+    struct optiq_memregion *path_mr;
 };
 
 struct optiq_pami_transport {
@@ -200,6 +205,36 @@ void optiq_recv_mr_forward_request_fn (
         pami_recv_t     *recv);        /**< OUT: receive message structure */
 
 void optiq_recv_mr_destination_request_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_rput_done_adv_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_mr_response_adv_fn (
+        pami_context_t    context,      /**< IN: PAMI context */
+        void            *cookie,       /**< IN: dispatch cookie */
+        const void      *header,       /**< IN: header address */
+        size_t            header_size,  /**< IN: header size */
+        const void      *data,         /**< IN: address of PAMI pipe buffer */
+        size_t            data_size,    /**< IN: size of PAMI pipe buffer */
+        pami_endpoint_t   origin,
+        pami_recv_t     *recv);        /**< OUT: receive message structure */
+
+void optiq_recv_mr_request_adv_fn (
         pami_context_t    context,      /**< IN: PAMI context */
         void            *cookie,       /**< IN: dispatch cookie */
         const void      *header,       /**< IN: header address */

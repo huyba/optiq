@@ -8,6 +8,8 @@
 #include "pami_transport.h"
 #include "comm_mem.h"
 
+#define OPTIQ_MAX_NUM_PATHS (1024 * 1024)
+
 struct optiq_pami_transport; /* Forward declartion of optiq_pami_transport*/
 
 struct optiq_job {

@@ -739,3 +739,13 @@ int optiq_topology_max_distance_2sets_with_torus (std::vector<std::pair<int, std
 
     return max_distance;
 }
+
+void optiq_topology_reduce_intermediate_nodes (std::vector<struct path *> paths)
+{
+    struct topology *topo = optiq_topology_get();
+
+    for (int i = 0; i < paths.size(); i++)
+    {
+	
+    }
+}
