@@ -1062,7 +1062,7 @@ void optiq_pami_transport_send_local_mem_requests ()
     opi.local_mem_req_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 }
 
-void optiq_pami_exchange_memregions ()
+void optiq_pami_transport_exchange_memregions ()
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *sched = pami_transport->sched;

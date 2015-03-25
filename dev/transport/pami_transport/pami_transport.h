@@ -118,6 +118,10 @@ void optiq_pami_transport_init();
 
 void optiq_transport_info_init(struct optiq_pami_transport *pami_transport);
 
+void optiq_pami_transport_exchange_memregions ();
+
+void optiq_pami_transport_execute_new();
+
 void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport);
 
 int optiq_pami_transport_finalize();

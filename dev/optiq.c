@@ -42,7 +42,10 @@ void optiq_alltoallv(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    optiq_pami_transport_execute (pami_transport);
+    optiq_pami_transport_exchange_memregions ();
+    optiq_pami_transport_execute_new ();
+
+    //optiq_pami_transport_execute (pami_transport);
 
     optiq_schedule_destroy ();
 }
