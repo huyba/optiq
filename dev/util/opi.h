@@ -53,7 +53,16 @@ struct optiq_performance_index {
     std::vector<struct timestamp> timestamps;
 };
 
+struct optiq_debug_print {
+    bool print_path_id;
+    bool print_path_rank;
+    bool print_rput_msg;
+    bool print_debug_msg;
+};
+
 extern "C" struct optiq_performance_index opi, max_opi;
+
+extern "C" struct optiq_debug_print odp;
 
 struct optiq_performance_index * optiq_opi_get();
 

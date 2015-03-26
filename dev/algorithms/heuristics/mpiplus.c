@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "util.h"
+#include "opi.h"
 #include "topology.h"
 #include "pathreconstruct.h"
 #include "search_util.h"
@@ -52,7 +53,7 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
     int *load = (int *) calloc (1, sizeof(int) * num_nodes * num_nodes);
     bool *visited = (bool *) calloc (1, sizeof(bool) * num_sources * num_nodes);
 
-    bfs->paths = (struct path *) calloc (1, sizeof (struct path) * num_sources * num_nodes);
+    bfs->paths = (struct path *) calloc (1, sizeof (struct path) * num_nodes * num_nodes);
     int max_avail_path_id = 0;
 
     bfs->edge_path = (std::vector<struct path *> *) calloc (1, sizeof(std::vector<struct path *>) * num_nodes * num_nodes);

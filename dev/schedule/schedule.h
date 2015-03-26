@@ -70,6 +70,9 @@ struct optiq_schedule {
     int num_active_paths;
 
     enum dequeue_mode dmode;
+
+    bool auto_chunksize;
+    int maxnumpaths;
 };
 
 extern "C" struct optiq_schedule *schedule;
@@ -110,7 +113,7 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 
 void optiq_schedule_destroy();
 
-int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank);
+int optiq_schedule_get_chunk_size(int message_size, int num_hops);
 
 void optiq_schedule_map_from_rankpairs_to_idpairs(std::vector<std::pair<int, std::vector<int> > > &source_dest_ranks, std::vector<std::pair<int, std::vector<int> > > &source_dest_ids);
 

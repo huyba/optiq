@@ -41,6 +41,7 @@ void optiq_schedule_init()
     schedule->active_immsends = pami_transport->size;
 
     schedule->dmode = DQUEUE_ROUND_ROBIN;
+    schedule->auto_chunksize = false;
 }
 
 struct optiq_schedule *optiq_schedule_get()
@@ -151,7 +152,13 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
 
 	for (int i = 0; i < jobs.size(); i++)
 	{
-	    int nbytes = optiq_schedule_get_chunk_size (jobs[i].buf_length, jobs[i].source_rank, jobs[i].dest_rank);//chunk_size;
+	    int num_hops = optiq_topology_get_hop_distance (jobs[i].source_rank, jobs[i].dest_rank);
+
+	    if (schedule->auto_chunksize || schedule->chunk_size == 0) {
+		schedule->chunk_size = optiq_schedule_get_chunk_size (jobs[i].buf_length, num_hops);
+	    }
+
+	    int nbytes = schedule->chunk_size;
 
 	    if (jobs[i].buf_offset < jobs[i].buf_length) 
 	    {
@@ -198,10 +205,11 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 
 	for (int i = 0; i < jobs.size(); i++)
 	{
-	    if (chunk_size == 0) {
-		chunk_size = jobs[i].buf_length/2;
+	    int nbytes = schedule->chunk_size;
+
+	    if (schedule->auto_chunksize || schedule->chunk_size == 0) {
+		nbytes = optiq_schedule_get_chunk_size (jobs[i].buf_length, jobs[i].paths[jobs[i].last_path_index]->arcs.size());
 	    }
-	    int nbytes = chunk_size;
 
 	    if (jobs[i].buf_offset < jobs[i].buf_length) 
 	    {
@@ -591,7 +599,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     struct optiq_performance_index *opi = optiq_opi_get();
     opi->paths = path_ids;
 
-    if (world_rank == 0) {
+    if (world_rank == 0 && odp.print_path_id) {
         printf("Done searching %d paths of node ids\n", path_ids.size());
 	optiq_path_print_paths_coords (path_ids, topo->all_coords);
     }
@@ -603,11 +611,11 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     optiq_schedule_map_from_pathids_to_pathranks (path_ids, source_dest_ranks, path_ranks);
     
 
-    /*if (world_rank == 0) {
+    if (world_rank == 0 && odp.print_path_rank) {
         printf("Done mapping paths of node ids to ranks\n");
 	printf("Num of paths = %d\n", path_ranks.size());
 	optiq_path_print_paths (path_ranks);
-    }*/
+    }
 
     build_next_dests(world_rank, schedule->next_dests, path_ranks);
 
@@ -685,7 +693,17 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
                 schedule->local_jobs.push_back(new_job);
             }
         }
-    } 
+    }
+
+     schedule->maxnumpaths = 1;
+     if (schedule->local_jobs.size() > 0) {
+        for (int i = 0; i < schedule->local_jobs.size(); i++) {
+            if (schedule->maxnumpaths < schedule->local_jobs[i].paths.size()) {
+                schedule->maxnumpaths = schedule->local_jobs[i].paths.size();
+            }
+        }
+    }
+
 
     /*for (int i = 0; i < schedule->local_jobs.size(); i++)
     {
@@ -725,13 +743,11 @@ void optiq_schedule_destroy()
     schedule->paths.clear();
 }
 
-int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank) 
+int optiq_schedule_get_chunk_size(int message_size, int num_hops) 
 {
-    int num_hops = optiq_topology_get_hop_distance(sendrank, recvrank);
-
     int chunk_size = message_size;
 
-    if (num_hops <= 2) {
+    if (num_hops < 2) {
 	if (message_size < 64 * 1024) {
             chunk_size = message_size;
         }
@@ -741,16 +757,17 @@ int optiq_schedule_get_chunk_size(int message_size, int sendrank, int recvrank)
         }
     }
 
-    if (3 <= num_hops && num_hops <= 4) {
-	if (message_size < 32 * 1024) {
-            chunk_size = message_size;
+    if (2 <= num_hops && num_hops <= 4) {
+	if (message_size < 16 * 1024) {
+	    chunk_size = message_size;
+	}
+	else if (message_size < 32 * 1024) {
+            chunk_size = 16 * 1024;
         }
-
-	if (32 * 1024 <= message_size && message_size <= 64 * 1024) {
+	else if (32 * 1024 <= message_size && message_size <= 64 * 1024) {
 	    chunk_size = 32 * 1024;
 	}
-
-	if (message_size >= 64 * 1024) {
+	else if (message_size >= 64 * 1024) {
             chunk_size = 16 * 1024;
         }
     }

@@ -22,7 +22,7 @@ endif
 
 OPTIQ = ../..
 DEV = $(OPTIQ)/dev
-TESTS = $(OPTIQ)/tests
+BM = $(OPTIQ)/benchmarks
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 TOPOLOGY = $(DEV)/topology
@@ -33,17 +33,19 @@ PAT = $(DEV)/comm_patterns
 SCHED = $(DEV)/schedule
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV) -I$(BM)/mpi -I$(BM)/optiq/
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o
 
-all: bdev test_optiq_init.x test_optiq_alltoallv.x test_optiq_file.x cp
+all: bdev mpibm perf_multipaths.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
+mpibm:
+	cd $(BM)/mpi && $(MAKE) -f Makefile
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -51,17 +53,16 @@ bdev:
 %.x: %.o $(OBJ)
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
-clean: 
+clean:
 	rm *.x
 	rm *.o
 
 realclean: clean
+	rm $(OBJ)
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
-TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
+BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
-	cp test_optiq_init.x $(TEST_DIR)/optiq/init/
-	cp test_optiq_alltoallv.x $(TEST_DIR)/optiq/alltoallv/
-	cp test_optiq_file.x $(TEST_DIR)/optiq/file/
+	cp perf_multipaths.x $(BENCHMARKS_DIR)/multipaths/

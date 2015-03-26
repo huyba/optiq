@@ -2,6 +2,7 @@
 #include <mpi.h>
 
 struct optiq_performance_index opi, max_opi;
+struct optiq_debug_print odp;
 
 struct optiq_performance_index * optiq_opi_get()
 {
@@ -38,7 +39,15 @@ void optiq_opi_print()
     double max_time =  max_opi.transfer_time / opi.iters;
     double bw = (double) max_opi.recv_len / max_time / 1024 / 1024 * 1e6;
     printf("\n");
-    printf("OPTIQ_Alltoallv: total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", max_opi.recv_len/1024/1024, max_time, bw);
+    if (max_opi.recv_len < 1024) {
+	printf("OPTIQ_Alltoallv: total_data = %ld (B) t = %8.4f, bw = %8.4f\n", max_opi.recv_len, max_time, bw);
+    }
+    else if (max_opi.recv_len < 1024 * 1024) {
+	printf("OPTIQ_Alltoallv: total_data = %ld (KB) t = %8.4f, bw = %8.4f\n", max_opi.recv_len/1024, max_time, bw);
+    }
+    else {
+	printf("OPTIQ_Alltoallv: total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", max_opi.recv_len/1024/1024, max_time, bw);
+    }
     printf("context_advance_time time is %8.4f\n", max_opi.context_advance_time);
     printf("matching_procesing_header_mr_response_time time is %8.4f\n", max_opi.matching_procesing_header_mr_response_time);
     printf("get_header_time time is %8.4f\n", max_opi.get_header_time);
@@ -67,6 +76,11 @@ void optiq_opi_clear()
     opi.timestamps.clear();
     opi.total_mem_req_time = 0;
     opi.local_mem_req_time = 0;
+
+    odp.print_path_id = false;
+    odp.print_path_rank = false;
+    odp.print_rput_msg = false;
+    odp.print_debug_msg = false;
 }
 
 void optiq_opi_timestamp_print(int rank)
