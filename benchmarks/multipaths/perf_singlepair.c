@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
     odp.print_path_id = true;
 
-    for (int nbytes = 8 * 1024; nbytes <= maxbytes; nbytes *= 2)
+    for (int nbytes = maxbytes; nbytes <= maxbytes; nbytes *= 2)
     {
 	memset (sendcounts, 0, sizeof(int) * world_size);
 	memset (recvcounts, 0, sizeof(int) * world_size);
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
 	schedule->auto_chunksize = false;
-	schedule->chunk_size = nbytes;
+	schedule->chunk_size = 64 * 1024;
 	//odp.print_rput_msg = true;
 
 	optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	    optiq_opi_print();
 	}
 
-	//optiq_opi_timestamp_print(world_rank);
+	optiq_opi_timestamp_print(world_rank);
 
 	optiq_opi_clear();
 

@@ -1149,7 +1149,7 @@ void optiq_pami_transport_rput_message (struct optiq_message_header *header)
     gettimeofday(&tx, NULL);
     struct timestamp stamp;
     stamp.tv = tx;
-    stamp.eventid = header->header_id;
+    stamp.eventid = header->dest;
     stamp.eventtype = OPTIQ_EVENT_RPUT;
     opi.timestamps.push_back(stamp);
 
@@ -1269,6 +1269,7 @@ void optiq_pami_transport_execute_new ()
 	  }*/
 
 	/* If there is a message to send */
+	gettimeofday(&t2, NULL);
 	for (int i = 0; i < schedule->maxnumpaths; i++)
 	{
 	    struct optiq_message_header *header = NULL;
@@ -1282,8 +1283,6 @@ void optiq_pami_transport_execute_new ()
 		header = pami_transport->transport_info.send_headers.front();
 		pami_transport->transport_info.send_headers.erase (pami_transport->transport_info.send_headers.begin());
 	    }
-
-	    gettimeofday(&t2, NULL);
 
 	    if (header != NULL) {
 		optiq_pami_transport_rput_message (header);
