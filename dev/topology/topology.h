@@ -75,6 +75,8 @@ void optiq_topology_move_along_one_dimension_bgq(int num_dims, int *size, int *s
 
 void optiq_topology_reconstruct_path_bgq(int num_dims, int *size, int *torus, int *order, int *source, int *dest, int **path);
 
+void optiq_topology_reduce_intermediate_nodes (std::vector<struct path *> paths, std::vector<struct path *> &reduced_paths);
+
 void optiq_topology_route_along_dimension (int *scoord, int routing_dimension, int destcoord, struct path &p);
 
 void optiq_topolog_reconstruct_path (int source, int dest, struct path &p);

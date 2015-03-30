@@ -125,6 +125,10 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
 	//optiq_path_print_path(p);
 	hp_remove_min(bfs->heap);
 
+	/*if (p->max_load >= max_load) {
+	    continue;
+	}*/
+
 	struct arc a = p->arcs.back();
 	int furthest_point = a.v;
 
@@ -251,9 +255,17 @@ void optiq_alg_heuristic_search_mpiplus (std::vector<struct path *> &paths, std:
     //optiq_path_print_paths_coords (paths, topo->all_coords);
 
     /* Search for path that is not used by mpi path*/
-    std::vector<struct path *> mpipluspaths;
-    mpipluspaths.clear();
-    optiq_alg_heuristic_search_manytomany_current_load(mpipluspaths, source_dests, bfs, load, max_load);
+    while (true) 
+    {
+	std::vector<struct path *> mpipluspaths;
+	mpipluspaths.clear();
+	optiq_alg_heuristic_search_manytomany_current_load(mpipluspaths, source_dests, bfs, load, max_load);
 
-    paths.insert (paths.end(), mpipluspaths.begin(), mpipluspaths.end());
+	if (mpipluspaths.size() > 0) {
+	    paths.insert (paths.end(), mpipluspaths.begin(), mpipluspaths.end());
+	}
+	else {
+	    break;
+	}
+    }
 }

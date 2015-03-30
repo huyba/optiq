@@ -596,13 +596,22 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     optiq_algorithm_search_path (path_ids, source_dest_ids, bfs, world_rank);
 
-    struct optiq_performance_index *opi = optiq_opi_get();
-    opi->paths = path_ids;
-
     if (world_rank == 0 && odp.print_path_id) {
         printf("Done searching %d paths of node ids\n", path_ids.size());
 	optiq_path_print_paths_coords (path_ids, topo->all_coords);
     }
+
+    /*std::vector<struct path *> reduced_paths;
+    optiq_topology_reduce_intermediate_nodes (path_ids, reduced_paths);
+
+    if (world_rank == 0 && odp.print_reduced_paths) {
+        printf("Done reducing %d paths of node ids\n", reduced_paths.size());
+        optiq_path_print_paths_coords (reduced_paths, topo->all_coords);
+    }
+    */
+
+    struct optiq_performance_index *opi = optiq_opi_get();
+    opi->paths = path_ids;
 
     /* Convert from path of node ids to path of rank ids */
     std::vector<struct path *> &path_ranks = schedule->paths;

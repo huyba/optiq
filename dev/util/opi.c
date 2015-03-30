@@ -81,6 +81,8 @@ void optiq_opi_clear()
     odp.print_path_rank = false;
     odp.print_rput_msg = false;
     odp.print_debug_msg = false;
+    odp.print_timestamp = false;
+    odp.print_reduced_paths = false;
 }
 
 void optiq_opi_timestamp_print(int rank)

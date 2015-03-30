@@ -740,12 +740,61 @@ int optiq_topology_max_distance_2sets_with_torus (std::vector<std::pair<int, std
     return max_distance;
 }
 
-void optiq_topology_reduce_intermediate_nodes (std::vector<struct path *> paths)
+bool optiq_path_compare_2paths (struct path *p1, int s1, int e1, struct path *p2, int s2, int e2)
+{
+    if (e1 - s1 != e2 - s2) {
+	return false;
+    }
+
+    for (int i = 0; i < e1 - s1; i++)
+    {
+	if (p1->arcs[s1 + i].u != p2->arcs[s2 + i].u || p1->arcs[s1 + i].v != p2->arcs[s2 + i].v) {
+	    return false;
+	}
+    }
+
+    return true;
+}
+
+void optiq_topology_reduce_intermediate_nodes (std::vector<struct path *> paths, std::vector<struct path *> &reduced_paths)
 {
     struct topology *topo = optiq_topology_get();
 
     for (int i = 0; i < paths.size(); i++)
     {
-	
+	int j = 0;
+	struct path *np = (struct path *) calloc (1, sizeof(struct path));
+
+	while (j < paths[i]->arcs.size())
+	{
+	    int source = paths[i]->arcs[j].u;
+	    int dest = 0;
+	    bool issubpath = true;
+	    int k = j + 1;
+
+	    while (k < paths[i]->arcs.size() && issubpath) 
+	    {
+		dest = paths[i]->arcs[k].v;
+		struct path p;
+		p.arcs.clear();
+		optiq_topolog_reconstruct_path (source, dest, p);
+
+		issubpath = optiq_path_compare_2paths (paths[i], j, k, &p, 0, p.arcs.size() - 1);
+
+		if (issubpath) {
+		    k++;
+		}
+	    }
+
+	    struct arc a;
+	    a.u = source;
+	    a.v = paths[i]->arcs[k-1].v;
+
+	    np->arcs.push_back(a);
+
+	    j = k;
+	}
+
+	reduced_paths.push_back(np);
     }
 }

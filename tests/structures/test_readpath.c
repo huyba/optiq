@@ -16,7 +16,7 @@ int main (int argc, char *argv[])
     std::vector<struct path *> complete_paths;
     optiq_path_read_from_file(filePath, complete_paths);
 
-    int num_nodes = 512;
+    int num_nodes = atoi (argv[2]);
 
     optiq_path_print_paths(complete_paths);
     optiq_path_print_stat(complete_paths, num_nodes, 0);

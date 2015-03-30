@@ -44,13 +44,15 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    for (int chunk = 32 * 1024; chunk <= 32 * 1024; chunk *= 2) 
+    odp.print_path_id = true;
+    //odp.print_timestamp = true;
+    odp.print_reduced_paths = true;
+
+    for (int chunk = 8 * 1024; chunk <= 128 * 1024; chunk *= 2) 
     {
 	sched->auto_chunksize = false;
 	sched->chunk_size = chunk;
 	optiq_benchmark_pattern_from_file (filepath, rank, size);
-
-	optiq_opi_timestamp_print(rank);
 
         optiq_opi_clear();
     }

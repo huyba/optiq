@@ -58,6 +58,8 @@ struct optiq_debug_print {
     bool print_path_rank;
     bool print_rput_msg;
     bool print_debug_msg;
+    bool print_timestamp;
+    bool print_reduced_paths;
 };
 
 extern "C" struct optiq_performance_index opi, max_opi;

@@ -268,33 +268,6 @@ void optiq_path_print_paths_coords(std::vector<struct path *> &paths, int** coor
     }
 }
 
-
-void optiq_path_read_pathbased_from_file (char *filePath, std::vector<struct path *> &complete_paths)
-{
-    ifstream infile;
-    infile.open (filePath);
-
-    string line;
-
-    while (!infile.eof)
-    {
-	infile >> line;
-
-	while (line.find ("Job_Paths_Flow", 0) && !infile.eof) 
-	{
-	    infile >> line;
-	}
-
-	if (!infile.eof) 
-	{
-	    
-	    while (!line.empty()) {
-		infile >> line;
-	    }
-	}
-    }
-}
-
 void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &complete_paths)
 {
     FILE * fp;

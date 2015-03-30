@@ -71,7 +71,7 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
 
     if (rank == 0) {
 	if (mpi_time > max_opi.transfer_time) {
-	    printf("Bingo mpi_time = %8.0fd optiq time = %8.0f\n", mpi_time, opi.transfer_time);
+	    printf("Bingo mpi_time = %8.0fd optiq time = %8.0f\n", mpi_time, max_opi.transfer_time);
 	}
 	optiq_opi_print();
     }
@@ -79,6 +79,10 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     if (rank == 0) {
 	optiq_path_print_stat (opi.paths, size, topo->num_edges);
 	/*optiq_path_print_paths_coords (opi.paths, topo->all_coords);*/
+    }
+
+    if (odp.print_timestamp) {
+	optiq_opi_timestamp_print (rank);
     }
 
     optiq_opi_clear();

@@ -1140,7 +1140,6 @@ void optiq_pami_transport_rput_message (struct optiq_message_header *header)
 	pami_transport->transport_info.path_mr[header->path_id].offset += header->length;
     }
 
-
     if (odp.print_rput_msg) {
 	printf("Rank %d rput %d bytes at offset %d of orin[s %d, d %d] along path_id = %d of data to %d at offset = %d\n", pami_transport->rank, header->length, header->mem.offset, header->source, header->dest, header->path_id, dest, far_mr.offset);
     }
@@ -1149,7 +1148,7 @@ void optiq_pami_transport_rput_message (struct optiq_message_header *header)
     gettimeofday(&tx, NULL);
     struct timestamp stamp;
     stamp.tv = tx;
-    stamp.eventid = header->dest;
+    stamp.eventid = dest;
     stamp.eventtype = OPTIQ_EVENT_RPUT;
     opi.timestamps.push_back(stamp);
 
