@@ -62,7 +62,7 @@ void optiq_mton_from_file(char *mtonfile)
     void *sendbuf = NULL, *recvbuf = NULL;
     int *sendcounts, *recvcounts, *sdispls, *rdispls;
 
-    optiq_patterns_alltoallv_from_file(mtonfile, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, rank, size);
+    optiq_patterns_alltoallv_from_file(mtonfile, sched->jobs, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, rank, size);
 
     optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
@@ -82,7 +82,9 @@ void optiq_mton_from_file(char *mtonfile)
 void optiq_mton_from_file_and_buffers (void *sendbuf, int *sdispls, void *recvbuf, int *rdispls, char *mtonfile)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-    std::vector<std::pair<std::pair<int, int>, int > > requests;
+    struct schedule *sched = optiq_schedule_get();
+
+    std::vector<struct job> &jobs = sched->jobs;
 
     optiq_patterns_read_requests_from_file (mtonfile, requests);
 
@@ -92,7 +94,7 @@ void optiq_mton_from_file_and_buffers (void *sendbuf, int *sdispls, void *recvbu
     int *sendcounts = (int *) calloc (1, sizeof(int) * size);
     int *recvcounts = (int *) calloc (1, sizeof(int) * size);
 
-    optiq_patterns_convert_requests_to_sendrecvcounts (requests, sendcounts, recvcounts, rank);
+    optiq_patterns_convert_requests_to_sendrecvcounts (jobs, sendcounts, recvcounts, rank);
 
     optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 

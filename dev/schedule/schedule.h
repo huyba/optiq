@@ -73,6 +73,8 @@ struct optiq_schedule {
 
     bool auto_chunksize;
     int maxnumpaths;
+
+    std::vector<struct job> jobs;
 };
 
 extern "C" struct optiq_schedule *schedule;

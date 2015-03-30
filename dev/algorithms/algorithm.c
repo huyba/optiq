@@ -79,4 +79,20 @@ void optiq_algorithm_search_path(std::vector<struct path *> &paths, std::vector<
     {
 	optiq_alg_heuristic_search_mpiplus (paths, source_dests);
     }
+
+    if (algorithm->search_alg == OPTIQ_ALG_MODEL_PATH_BASED)
+    {
+	char *graphFilePath = "graph";
+
+        if (world_rank == 0) {
+            optiq_graph_print_graph(bfs, 1, graphFilePath);
+        }
+
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        get_yen_k_shortest_paths (paths, source_dests, algorithm->num_paths_per_pair, graphFilePath);
+
+	char *jobFile = "jobs.dat";
+	optiq_model_write_jobs_to_file (jobFile);
+    }
 }

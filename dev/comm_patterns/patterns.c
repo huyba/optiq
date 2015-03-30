@@ -7,31 +7,37 @@
 #include "util.h"
 #include "patterns.h"
 
-void optiq_patterns_read_requests_from_file(char *filename, std::vector<std::pair<std::pair<int, int>, int > > &requests)
+void optiq_patterns_read_requests_from_file(char *filename, std::vector<struct job> &jobs)
 {
     std::ifstream infile(filename);
 
     int source, dest, demand;
+    int id = 0;
 
     while (infile >> source >> dest >> demand)
     {
-	std::pair<int, int> sd = std::make_pair(source, dest);
-	std::pair<std::pair<int, int>, int> sdd = std::make_pair(sd, demand);
-	requests.push_back(sdd);
+	struct job newjob;
+
+	newjob.job_id = id;
+	newjob.source_id = source;
+	newjob.dest_id = dest;
+	newjob.demand = demand;
+
+	jobs.push_back(newjob);
     }
 
     infile.close();
 }
 
-void optiq_patterns_convert_requests_to_sendrecvcounts(std::vector<std::pair<std::pair<int, int>, int > > &requests, int* sendcounts, int* recvcounts, int rank)
+void optiq_patterns_convert_requests_to_sendrecvcounts(std::vector<struct job> &jobs, int* sendcounts, int* recvcounts, int rank)
 {
     int source, dest, demand;
 
-    for (int i = 0; i < requests.size(); i++)
+    for (int i = 0; i < jobs.size(); i++)
     {
-	source = requests[i].first.first;
-	dest = requests[i].first.second;
-	demand = requests[i].second;
+	source = jobs[i].source_id;
+	dest = jobs[i].dest_id;
+	demand = jobs[i].demand;
 
 	if (source == rank) {
 	    sendcounts[dest] = demand;
@@ -43,15 +49,14 @@ void optiq_patterns_convert_requests_to_sendrecvcounts(std::vector<std::pair<std
     }
 }
 
-void optiq_patterns_alltoallv_from_file(char *filepath, void * &sendbuf, int * &sendcounts, int * &sdispls, void * &recvbuf, int * &recvcounts, int* &rdispls, int rank, int size)
+void optiq_patterns_alltoallv_from_file(char *filepath, std::vector<struct job> &jobs, void * &sendbuf, int * &sendcounts, int * &sdispls, void * &recvbuf, int * &recvcounts, int* &rdispls, int rank, int size)
 {
-    std::vector<std::pair<std::pair<int, int>, int > > requests;
-    optiq_patterns_read_requests_from_file(filepath, requests);
+    optiq_patterns_read_requests_from_file(filepath, jobs);
 
     sendcounts = (int *) calloc (1, sizeof (int) * size);
     recvcounts = (int *) calloc (1, sizeof (int) * size);
 
-    optiq_patterns_convert_requests_to_sendrecvcounts(requests, sendcounts, recvcounts, rank);
+    optiq_patterns_convert_requests_to_sendrecvcounts(jobs, sendcounts, recvcounts, rank);
 
     sdispls = (int *) calloc (1, sizeof(int) * size);
     rdispls = (int *) calloc (1, sizeof(int) * size);
