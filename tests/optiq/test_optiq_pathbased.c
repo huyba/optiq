@@ -11,6 +11,8 @@ int main(int argc, char **argv)
     alg->search_alg = OPTIQ_ALG_MODEL_PATH_BASED;
     alg->num_paths_per_pair = 3;
 
+    odp.print_path_id = true;
+
     char *filepath = "pattern";
     int demand = 1024 * 1024;
 

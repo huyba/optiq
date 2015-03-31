@@ -93,7 +93,7 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 
 void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths);
 
-void optiq_schedule_print_jobs(struct optiq_schedule &schedule);
+void optiq_schedule_print_jobs (std::vector<struct optiq_job> jobs);
 
 void optiq_schedule_mem_destroy(struct optiq_schedule &schedule, struct optiq_pami_transport *pami_transport);
 
