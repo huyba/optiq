@@ -1,12 +1,12 @@
 all:
-	pdflatex main.tex
-	bibtex main
-	pdflatex main.tex
-	pdflatex main.tex
+	pdflatex optiq.tex
+	bibtex optiq
+	pdflatex optiq.tex
+	pdflatex optiq.tex
 
-	rm main.aux
-	rm main.log
-	rm main.bbl
-	rm main.blg
+	rm optiq.aux
+	rm optiq.log
+	rm optiq.bbl
+	rm optiq.blg
 
-	open main.pdf
+	open optiq.pdf
