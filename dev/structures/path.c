@@ -287,7 +287,7 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
     float flow;
     char temp[256];
 
-    while(fgets(line, 80, fp) != NULL)
+    while (fgets(line, 80, fp) != NULL)
     {
         //printf("%s", line);
 

@@ -335,40 +335,39 @@ int yen_k_shortest_paths(char *graphFile, int max_hops, int num_shortest_paths, 
     return 0;
 }
 
-void get_yen_k_shortest_paths (std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > source_dests, int num_paths, char *graphFilePath)
+void optiq_alg_yen_k_shortest_paths (std::vector<struct path *> &complete_paths, std::vector<struct job> &jobs, int num_paths, char *graphFilePath)
 {
     Graph my_graph(graphFilePath);
 
-    for (int i = 0; i < source_dests.size(); i++)
+    for (int i = 0; i < jobs.size(); i++)
     {
-        int source_rank = source_dests[i].first;
+        int source_id = jobs[i].source_id;
 
-        for (int j = 0; j < source_dests[i].second.size(); j++)
+        int dest_id = jobs[i].dest_id;
+
+        YenTopKShortestPathsAlg yenAlg (my_graph, my_graph.get_vertex(source_id), my_graph.get_vertex(dest_id));
+
+        int k = 0;
+
+        while (yenAlg.has_next() && k < num_paths)
         {
-            int dest_rank = source_dests[i].second[j];
+            BasePath *p = yenAlg.next();
 
-            YenTopKShortestPathsAlg yenAlg (my_graph, my_graph.get_vertex(source_rank), my_graph.get_vertex(dest_rank));
+            struct path *pa = (struct path *) calloc (1, sizeof(struct path));
 
-            int k = 0;
-            while (yenAlg.has_next() && k < num_paths)
+            for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
             {
-                BasePath *p = yenAlg.next();
+                struct arc a;
 
-                struct path *pa = (struct path *) calloc (1, sizeof(struct path));
+                a.u = p->m_vtVertexList[j]->getID();
+                a.v = p->m_vtVertexList[j + 1]->getID();
 
-                for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
-                {
-                    struct arc a;
-
-                    a.u = p->m_vtVertexList[j]->getID();
-                    a.v = p->m_vtVertexList[j + 1]->getID();
-
-                    pa->arcs.push_back(a);
-                }
-
-                complete_paths.push_back(pa);
-                k++;
+                pa->arcs.push_back(a);
             }
+
+	    jobs[i].paths.push_back(pa);
+	    complete_paths.push_back(pa);
+            k++;
         }
     }
 

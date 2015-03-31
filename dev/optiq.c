@@ -56,6 +56,8 @@ void optiq_alltoallv(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf
 void optiq_mton_from_file(char *mtonfile)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    struct optiq_schedule *sched = optiq_schedule_get();
+
     int rank = pami_transport->rank;
     int size = pami_transport->size;
 
@@ -82,11 +84,11 @@ void optiq_mton_from_file(char *mtonfile)
 void optiq_mton_from_file_and_buffers (void *sendbuf, int *sdispls, void *recvbuf, int *rdispls, char *mtonfile)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-    struct schedule *sched = optiq_schedule_get();
+    struct optiq_schedule *sched = optiq_schedule_get();
 
     std::vector<struct job> &jobs = sched->jobs;
 
-    optiq_patterns_read_requests_from_file (mtonfile, requests);
+    optiq_patterns_read_requests_from_file (mtonfile, jobs);
 
     int rank = pami_transport->rank;
     int size = pami_transport->size;

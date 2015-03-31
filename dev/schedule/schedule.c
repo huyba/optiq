@@ -42,6 +42,8 @@ void optiq_schedule_init()
 
     schedule->dmode = DQUEUE_ROUND_ROBIN;
     schedule->auto_chunksize = false;
+
+    schedule->jobs.clear();
 }
 
 struct optiq_schedule *optiq_schedule_get()
@@ -594,7 +596,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 	algorithm->max_hops = optiq_topology_max_distance_2sets_with_torus (source_dest_ids);
     }
 
-    optiq_algorithm_search_path (path_ids, source_dest_ids, bfs, world_rank);
+    optiq_algorithm_search_path (path_ids, schedule->jobs, bfs, world_rank);
 
     if (world_rank == 0 && odp.print_path_id) {
         printf("Done searching %d paths of node ids\n", path_ids.size());

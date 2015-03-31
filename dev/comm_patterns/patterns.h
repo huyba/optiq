@@ -6,7 +6,7 @@
 
 #include "job.h"
 
-void optiq_patterns_read_requests_from_file(char *filename, std::vector<std::pair<std::pair<int, int>, int > > &requests);
+void optiq_patterns_read_requests_from_file(char *filename, std::vector<struct job> &jobs);
 
 void optiq_patterns_convert_requests_to_sendrecvcounts (std::vector<struct job> &jobs, int* sendcounts, int* recvcounts, int rank);
 

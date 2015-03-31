@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream>
-#include <iostream>
 
 #include "model.h"
 
@@ -79,7 +77,7 @@ void optiq_model_print_jobs (std::vector<struct job> &jobs, int num_jobs, std::o
     }
 }
 
-void optiq_model_write_path_based_model_data (std::vector<struct job> jobs, char *modeldatfile, int numnodes, std::vector<int> *neighbors)
+void optiq_model_write_path_based_model_data (std::vector<struct job> &jobs, char *modeldatfile, int numnodes, std::vector<int> *neighbors)
 {   
     ofstream myfile;
 

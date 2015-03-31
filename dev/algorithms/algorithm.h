@@ -7,6 +7,7 @@
 #include "multipaths.h"
 #include "yen.h"
 #include "mpiplus.h"
+#include "topology.h"
 
 enum search_algorithm {
     OPTIQ_ALG_NO_CONSTRAINT,
@@ -38,6 +39,6 @@ void optiq_algorithm_destroy();
 
 void optiq_algorithm_finalize();
 
-void optiq_algorithm_search_path(std::vector<struct path *> &paths, std::vector<std::pair<int, std::vector<int> > > source_dests, struct multibfs *bfs, int world_rank);
+void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector<struct job> &jobs, struct multibfs *bfs, int world_rank);
 
 #endif

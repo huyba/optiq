@@ -24,6 +24,7 @@ void optiq_patterns_read_requests_from_file(char *filename, std::vector<struct j
 	newjob.demand = demand;
 
 	jobs.push_back(newjob);
+	id++;
     }
 
     infile.close();

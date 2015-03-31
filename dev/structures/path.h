@@ -45,6 +45,8 @@ void optiq_path_print_paths_coords(std::vector<struct path *> &paths, int** coor
 
 void optiq_path_print_stat(std::vector<struct path*> &paths, int num_nodes, int num_edges);
 
+bool optiq_path_read_flow_value_from_file (char *filePath, std::vector<struct job> &jobs);
+
 void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &complete_paths);
 
 void optiq_path_assign_ids(std::vector<struct path *> &complete_paths);

@@ -25,10 +25,11 @@ DEV = $(OPTIQ)/dev
 UTIL = $(DEV)/util
 STRUCTURE = $(DEV)/structures
 TOPOLOGY = $(DEV)/topology
+MODEL = $(DEV)/model
 YEN = $(DEV)/algorithms/yen
 HEU = $(DEV)/algorithms/heuristics
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCTURE) -I$(TOPOLOGY) -I$(YEN) -I$(HEU)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCTURE) -I$(TOPOLOGY) -I$(YEN) -I$(HEU) -I$(MODEL)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
