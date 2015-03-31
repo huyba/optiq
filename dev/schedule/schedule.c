@@ -598,7 +598,8 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     optiq_algorithm_search_path (path_ids, schedule->jobs, bfs, world_rank);
 
-    if (world_rank == 0 && odp.print_path_id) {
+    if (world_rank == 0 && odp.print_path_id) 
+    {
         printf("Done searching %d paths of node ids\n", path_ids.size());
 	optiq_path_print_paths_coords (path_ids, topo->all_coords);
     }
@@ -621,8 +622,8 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     optiq_schedule_map_from_pathids_to_pathranks (path_ids, source_dest_ranks, path_ranks);
     
-
-    if (world_rank == 0 && odp.print_path_rank) {
+    if (world_rank == 0 && odp.print_path_rank) 
+    {
         printf("Done mapping paths of node ids to ranks\n");
 	printf("Num of paths = %d\n", path_ranks.size());
 	optiq_path_print_paths (path_ranks);

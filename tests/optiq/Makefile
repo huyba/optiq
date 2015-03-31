@@ -26,6 +26,7 @@ TESTS = $(OPTIQ)/tests
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 TOPOLOGY = $(DEV)/topology
+MOD = $(DEV)/model
 ALG = $(DEV)/algorithms
 HEU = $(DEV)/algorithms/heuristics
 YEN = $(DEV)/algorithms/yen
@@ -33,14 +34,14 @@ PAT = $(DEV)/comm_patterns
 SCHED = $(DEV)/schedule
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV) -I$(MOD)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(MOD)/model.o
 
-all: bdev test_optiq_init.x test_optiq_alltoallv.x test_optiq_file.x cp
+all: bdev test_optiq_init.x test_optiq_alltoallv.x test_optiq_file.x test_optiq_pathbased.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -65,3 +66,4 @@ cp:
 	cp test_optiq_init.x $(TEST_DIR)/optiq/init/
 	cp test_optiq_alltoallv.x $(TEST_DIR)/optiq/alltoallv/
 	cp test_optiq_file.x $(TEST_DIR)/optiq/file/
+	cp test_optiq_pathbased.x $(TEST_DIR)/optiq/pathbased/

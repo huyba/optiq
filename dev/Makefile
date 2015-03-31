@@ -30,16 +30,17 @@ HEU = $(DEV)/algorithms/heuristics
 YEN = $(DEV)/algorithms/yen
 PAT = $(DEV)/comm_patterns
 SCHED = $(DEV)/schedule
+MOD = $(DEV)/model
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(ALG)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(ALG) -I$(MOD)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(ALG)/*.o
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(ALG)/*.o $(MOD)/*.o
 
-all: makeutil struct topo heu yen pat sched trans alg optiq.o
+all: makeutil struct topo heu yen pat sched trans alg makemod optiq.o
 
 makeutil:
 	cd $(UTIL) && $(MAKE) -f Makefile
@@ -59,6 +60,8 @@ sched:
 	cd $(SCHED) && $(MAKE) -f Makefile
 trans:
 	cd $(TRANS) && $(MAKE) -f Makefile
+makemod:
+	cd $(MOD) && $(MAKE) -f Makefile
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

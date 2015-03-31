@@ -36,6 +36,13 @@ void optiq_print_basic ();
  * */
 void optiq_finalize();
 
+
+/*
+ * Transport data for set of jobs.
+ * Params: jobs: set of jobs.
+ * */
+void optiq_search_schedule_execute (std::vector<struct job> &jobs);
+
 /*
  *  Transport data in MPI_Alltoallv format.
  * */
