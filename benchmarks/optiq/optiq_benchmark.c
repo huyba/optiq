@@ -36,11 +36,12 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
 void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
 {
     struct topology *topo = optiq_topology_get();
+    struct optiq_schedule *sched = optiq_schedule_get();
 
     void *sendbuf = NULL, *recvbuf = NULL;
     int *sendcounts, *sdispls, *recvcounts, *rdispls;
 
-    optiq_patterns_alltoallv_from_file (filepath, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, rank, size);
+    optiq_patterns_alltoallv_from_file (filepath, sched->jobs, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, rank, size);
 
     if (rank == 0) {
         printf("\nTest A - MPI\n\n");

@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     if (rank == 0) {
 	printf("Dijoint testings\n");
     }
-    char *filepath = "pattern";
+    char filepath[] = "pattern";
 
 
     /*if (rank == 0)

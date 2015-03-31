@@ -4,26 +4,10 @@
 
 #include <mpi.h>
 
-int main(int argc, char **argv)
+int testid = 1;
+
+void test(int rank, int size, int demand, char *filepath)
 {
-    optiq_init(argc, argv);
-
-    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-    int rank = pami_transport->rank;
-    int size = pami_transport->size;
-
-    char *filepath = "pattern";
-    int demand = 1024 * 1024;
-
-    if (argc > 1) {
-	filepath = argv[1];
-    }
-    if (argc > 2) {
-	demand = atoi(argv[2]);
-    }
-
-    int testid = 1;
-
     /* First m send data to last n */
     for (int m = size/16; m <= size/2; m *= 2)
     {
@@ -96,6 +80,30 @@ int main(int argc, char **argv)
 	    }
         }
     }
+}
+
+int main(int argc, char **argv)
+{
+    optiq_init(argc, argv);
+
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    int rank = pami_transport->rank;
+    int size = pami_transport->size;
+
+    char *filepath = "pattern";
+    int demand = 1024 * 1024;
+
+    if (argc > 1) {
+        filepath = argv[1];
+    }
+    if (argc > 2) {
+        demand = atoi(argv[2]);
+    }
+
+    struct optiq_algorithm *alg = optiq_algorithm_get();
+    alg->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT_EARLY;
+
+    test(rank, size, demand, filepath);
     
     if (rank == 0) {
         printf("Finished benchmarking\n");
