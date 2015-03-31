@@ -101,7 +101,9 @@ int main(int argc, char **argv)
     }
 
     struct optiq_algorithm *alg = optiq_algorithm_get();
-    alg->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT_EARLY;
+    alg->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT;
+
+    odp.print_path_id = true;
 
     test(rank, size, demand, filepath);
     

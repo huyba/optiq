@@ -31,8 +31,8 @@ void optiq_job_map_jobs_to_source_dests (std::vector<struct job> &jobs, std::vec
 
         for (int j = 0; j < source_dests.size(); j++)
         {
-            if (source_dests[i].first == source_id) {
-                source_dests[i].second.push_back(dest_id);
+            if (source_dests[j].first == source_id) {
+                source_dests[j].second.push_back(dest_id);
                 found = true;
                 break;
             }

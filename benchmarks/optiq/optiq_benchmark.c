@@ -12,7 +12,7 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
     std::vector<std::pair<int, std::vector<int> > > source_dests;
     source_dests.clear();
 
-    optiq_schedule_get_pair (sendcounts, source_dests);
+    optiq_schedule_get_pair (sendcounts, source_dests, NULL);
 
     /*if (pami_transport->rank == 0) {
 	optiq_schedule_print_sourcedests(source_dests);

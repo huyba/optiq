@@ -418,7 +418,7 @@ void optiq_schedule_assign_job_demand(std::vector<struct optiq_job> &local_jobs,
 }
 
 
-int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests)
+int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests, std::vector<struct job> *jobs)
 {
     source_dests.clear();
 
@@ -467,6 +467,7 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
     bool *distinguished_dests = (bool *) calloc (1, sizeof(bool) * world_size);
     offset = 0;
 
+    int id = 0;
     for (int i = 0; i < world_size; i++)
     {
         if (all_num_dests[i] > 0) 
@@ -477,6 +478,18 @@ int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vec
             {
                 d.push_back (all_dests[j]);
                 distinguished_dests[all_dests[j]] = true;
+
+		if (jobs != NULL)
+		{
+		    struct job newjob;
+		    newjob.source_id = i;	
+		    newjob.dest_id = all_dests[j];
+		    newjob.job_id = id;
+
+		    jobs->push_back(newjob);
+
+		    id++;
+		}
             }
 
             std::pair<int, std::vector<int> > p = make_pair(i, d);
@@ -559,6 +572,7 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
     struct optiq_algorithm *alg = optiq_algorithm_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+
     int world_rank = pami_transport->rank;
 
     if (alg->search_alg == OPTIQ_ALG_MODEL_PATH_BASED)
@@ -633,11 +647,16 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     struct optiq_schedule *schedule = optiq_schedule_get();
     struct optiq_algorithm *algorithm = optiq_algorithm_get();
     struct topology *topo = optiq_topology_get();
+
     int world_rank = pami_transport->rank;
 
     /* Gather all pairs of source-dest and demand */
     std::vector<std::pair<int, std::vector<int> > > source_dest_ranks;
-    int num_jobs = optiq_schedule_get_pair (sendcounts, source_dest_ranks);
+    int num_jobs = 0;
+
+    if (schedule->jobs.size() == 0) {
+	num_jobs = optiq_schedule_get_pair (sendcounts, source_dest_ranks, &(schedule->jobs));
+    }
 
     /*if (world_rank == 0) {
       printf ("Done getting %d pairs of ranks\n", source_dest_ranks.size());
@@ -745,7 +764,7 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /* Add local jobs */
     optiq_schedule_create_local_jobs (schedule->jobs, path_ranks, schedule->local_jobs, sendcounts, sdispls);
 
-    optiq_schedule_print_jobs (schedule->local_jobs);
+    //optiq_schedule_print_jobs (schedule->local_jobs);
 
     schedule->maxnumpaths = 1;
     if (schedule->local_jobs.size() > 0) {

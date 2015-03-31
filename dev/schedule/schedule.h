@@ -103,7 +103,7 @@ void optiq_schedule_assign_job_demand(std::vector<struct optiq_job> &local_jobs,
 
 void optiq_schedule_set(struct optiq_schedule &schedule, int num_jobs, int world_size);
 
-int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests);
+int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests, std::vector<struct job> *jobs);
 
 void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls);
 

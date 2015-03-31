@@ -54,6 +54,8 @@ void optiq_algorithm_destroy()
 void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector<struct job> &jobs, struct multibfs *bfs, int world_rank)
 {
     std::vector<std::pair<int, std::vector<int> > > source_dests;
+    source_dests.clear();
+
     optiq_job_map_jobs_to_source_dests (jobs, source_dests);
 
     struct optiq_algorithm *algorithm = optiq_algorithm_get();
