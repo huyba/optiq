@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <unistd.h>
 #include "util.h"
 #include "model.h"
 
@@ -98,6 +98,10 @@ bool optiq_model_read_flow_value_from_file (char *filePath, std::vector<struct j
 {
     FILE * fp;
     char line[256];
+
+    if( access( filePath, F_OK ) == -1 ) {
+        return false;
+    }
 
     fp = fopen(filePath, "r");
 

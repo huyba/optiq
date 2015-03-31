@@ -1,5 +1,5 @@
-model model.mod;
-data model.dat;
+model /home/abui/workspace/optiq/dev/model/path_based/model.mod;
+data /gpfs/mira-fs0/projects/Performance/abui/optiq/tests/optiq/pathbased/model.dat;
 option solver snopt;
 solve;
 

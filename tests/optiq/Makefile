@@ -60,7 +60,7 @@ realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
-TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
+TEST_DIR = /gpfs/mira-fs0/projects/Performance/abui/optiq/tests
 
 cp:
 	cp test_optiq_init.x $(TEST_DIR)/optiq/init/

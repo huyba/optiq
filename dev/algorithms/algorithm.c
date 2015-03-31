@@ -111,8 +111,20 @@ void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector
 	MPI_Barrier (MPI_COMM_WORLD);
 
 	char pathfile[] = "paths";
-	if (!optiq_model_read_flow_value_from_file (jobFile, jobs)) {
+        bool available = optiq_model_read_flow_value_from_file (jobFile, jobs);
+
+        if (world_rank == 0) {
+            printf("available = %s\n", available ? "true" : "false");
+        }
+
+	if (!available) 
+        {
 	    sleep (10);
+            available = optiq_model_read_flow_value_from_file (jobFile, jobs);
+
+            if (world_rank == 0) {
+                printf("available = %s\n", available ? "true" : "false");
+            }
 	}
 
 	MPI_Barrier (MPI_COMM_WORLD);
