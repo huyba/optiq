@@ -2,8 +2,29 @@
 #include <stdlib.h>
 #include <vector>
 
+#include <iostream>
+#include <fstream>
+
 #include "util.h"
 #include "job.h"
+
+void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
+{
+    std::ofstream myfile;
+
+    myfile.open (filepath);
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    myfile << "J " << jobs[i].job_id << " " << jobs[i].paths[j]->path_id << " " << jobs[i].paths[j]->flow << std::endl;
+	}
+	myfile << std::endl;
+    }
+
+    myfile.close();
+}
 
 void optiq_job_print(std::vector<struct job> &jobs, int world_rank)
 {

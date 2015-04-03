@@ -85,4 +85,6 @@ void optiq_topology_print_all_arcs(int num_dims, int *size, double cap);
 
 void optiq_topology_finalize();
 
+void optiq_topology_write_graph(struct topology *topo, int cost, char *filePath);
+
 #endif

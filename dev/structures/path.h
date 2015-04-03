@@ -35,6 +35,8 @@ int optiq_path_compare(struct path *p1, struct path *p2);
 
 int optiq_path_compare_by_max_load(struct path *p1, struct path *p2);
 
+void optiq_path_write_paths(std::vector<struct path *> &paths, char *filepath);
+
 void optiq_path_print_path(struct path *p);
 
 void optiq_path_print_path_coords(struct path *p, int** coords);

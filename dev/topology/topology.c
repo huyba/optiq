@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
+#include <fstream>
 #include <math.h>
 #include <time.h>
 
@@ -797,4 +799,21 @@ void optiq_topology_reduce_intermediate_nodes (std::vector<struct path *> paths,
 
 	reduced_paths.push_back(np);
     }
+}
+
+void optiq_topology_write_graph(struct topology *topo, int cost, char *filePath)
+{
+    std::ofstream myfile;
+    myfile.open (filePath);
+    myfile << topo->num_nodes << "\n\n";
+
+    for (int i = 0; i < topo->num_nodes; i++)
+    {
+        for (int j = 0; j < topo->neighbors[i].size(); j++)
+        {
+            myfile << i << " " << topo->neighbors[i][j] << " " << cost << "\n";
+        }
+    }
+
+    myfile.close();
 }

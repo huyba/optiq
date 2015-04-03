@@ -240,6 +240,8 @@ int main(int argc, char **argv)
     optiq_multibfs_init();
     struct multibfs *bfs = optiq_multibfs_get();
 
+    optiq_topology_init();
+
     if (world_rank == 0) {
 	printf("Topology: \n");
 	for (int i = 0; i < bfs->num_dims; i++) {
@@ -262,7 +264,7 @@ int main(int argc, char **argv)
 
     if (world_rank == 0) {
 	int cost = 1;
-        optiq_graph_print_graph (bfs, cost, graphFilePath);
+        optiq_topology_write_graph (topology, cost, graphFilePath);
     }
 
     sleep(10);

@@ -1,6 +1,6 @@
 #include "yen.h"
-#include "multibfs.h"
-#include "multipaths.h"
+#include "topology.h"
+#include "job.h"
 #include <mpi.h>
 #include <vector>
 
@@ -11,30 +11,32 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    optiq_multibfs_init ();
-    struct multibfs *bfs = optiq_multibfs_get();
+    optiq_topology_init();
 
     std::vector<struct path *> complete_paths;
-    std::vector<std::pair<int, std::vector<int> > > source_dests;
+    std::vector<struct job> jobs;
     int num_paths = 3;
-    char *graphFilePath = "graph";
+    char graphFilePath[] = "graph";
 
+    int id = 0;
     for (int i = 0; i < size/2; i++) 
     {
-	int dest_id = (i+size/2)/8;
-	std::vector<int> d;
-	d.push_back(dest_id);
-	std::pair<int, std::vector<int> > p = make_pair(i/8, d);
-	source_dests.push_back(p);
+	struct job new_job;
+	new_job.source_id = i/8;
+	new_job.dest_id = (i+size/2)/8;
+	new_job.job_id = id;
+	id++;
+
+	jobs.push_back(new_job);
     }
     
     if (rank == 0) {
-	optiq_graph_print_graph(bfs, 1, graphFilePath);
+	optiq_topology_write_graph (topo, 1, graphFilePath);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    get_yen_k_shortest_paths (complete_paths, source_dests, num_paths, graphFilePath);
+    optiq_alg_yen_k_shortest_paths(complete_paths, jobs, num_paths, graphFilePath);
 
     if (rank == 0) {
 	optiq_path_print_paths(complete_paths);

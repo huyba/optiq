@@ -231,6 +231,29 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     free(load_stat);
 }
 
+void optiq_path_write_paths(std::vector<struct path *> &paths, char *filepath)
+{
+    std::ofstream myfile;
+
+    myfile.open (filepath);
+
+    myfile << "#paths = " << paths.size() << std::endl << std::endl;
+
+    for (int i = 0; i < paths.size(); i++)
+    {
+        struct path *p = paths[i];
+
+        myfile << "J " << p->job_id << " " << p->path_id << " " << p->flow << std::endl;
+
+        for (int j = 0; j < p->arcs.size(); j++) {
+	    myfile << p->arcs[j].u << " " << p->arcs[j].v << std::endl;
+        }
+	myfile << std::endl;
+    }
+
+    myfile.close();
+}
+
 void optiq_path_print_paths(std::vector<struct path *> &paths)
 {
     printf("#paths = %ld\n", paths.size());
@@ -276,11 +299,6 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
     fp = fopen(filePath, "r");
     if (fp == NULL) {
         exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < 6; i++)
-    {
-        fgets(line, 80, fp);
     }
 
     int job_id = 0, path_id = 0, u, v;

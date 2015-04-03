@@ -85,7 +85,7 @@ void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector
 	char graphFilePath[] = "graph";
 
 	if (world_rank == 0) {
-	    optiq_graph_print_graph(bfs, 1, graphFilePath);
+	    optiq_topology_write_graph(topo, 1, graphFilePath);
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -98,7 +98,7 @@ void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector
 	char graphFilePath[] = "graph";
 
         if (world_rank == 0) {
-            optiq_graph_print_graph (bfs, 1, graphFilePath);
+            optiq_topology_write_graph (topo, 1, graphFilePath);
         }
 
         MPI_Barrier (MPI_COMM_WORLD);

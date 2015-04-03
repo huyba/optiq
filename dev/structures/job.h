@@ -16,6 +16,8 @@ struct job {
     std::vector<struct path *> paths;
 };
 
+void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath);
+
 void optiq_job_print(std::vector<struct job> &jobs, int rank);
 
 void optiq_job_map_jobs_to_source_dests (std::vector<struct job> &jobs, std::vector<std::pair<int, std::vector<int> > > &source_dests);
