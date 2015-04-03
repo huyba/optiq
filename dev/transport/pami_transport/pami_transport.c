@@ -1107,17 +1107,30 @@ void optiq_pami_transport_exchange_memregions ()
 	    int dest = sched->next_dests[path_id];
 	    int bufsize = sched->local_jobs[i].buf_length;
 
-	    optiq_pami_send_immediate(pami_transport->context, OPTIQ_MR_REQUEST_ADV, &path_id, sizeof(int), &bufsize, sizeof(int), pami_transport->endpoints[dest]);
+	    if (dest != rank) {
+		optiq_pami_send_immediate(pami_transport->context, OPTIQ_MR_REQUEST_ADV, &path_id, sizeof(int), &bufsize, sizeof(int), pami_transport->endpoints[dest]);
+	    } else {
+		pami_transport->sched->recv_mr.offset = pami_transport->sched->rdispls[rank];
+		pami_transport->transport_info.path_mr[path_id] =  pami_transport->sched->recv_mr;
+		outgoingpaths--;
+		incomingpaths--;
+	    }
 	}
     }
 
     /* Wait until all mem exchanges done */
     while (pami_transport->transport_info.num_mr_requests != incomingpaths || pami_transport->transport_info.num_mr_responses != outgoingpaths) {
 	PAMI_Context_advance (pami_transport->context, 100);
+
+	/*printf("Rank %d num_mr_requests  %d, incomingpaths = %d, num_mr_responses = %d, outgoingpaths = %d\n", rank, pami_transport->transport_info.num_mr_requests, incomingpaths, pami_transport->transport_info.num_mr_responses, outgoingpaths);*/
     }
 
     pami_transport->transport_info.num_mr_requests = 0;
     pami_transport->transport_info.num_mr_responses = 0;
+
+    /*if (true) {
+	printf("Rank = %d Memory regions exchange completed.\n", rank);
+    }*/
 }
 
 void optiq_pami_transport_rput_message (struct optiq_message_header *header)
@@ -1263,9 +1276,9 @@ void optiq_pami_transport_execute_new ()
 	/*If a destination has received all of its data*/
 	optiq_pami_transport_check_and_notify ();
 
-	/*if (true) {
-	  printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d, processing_headers = %d, mr_responses = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length, pami_transport->transport_info.processing_headers.size(), pami_transport->transport_info.mr_responses.size());
-	  }*/
+	if (odp.print_pami_transport_status) {
+	    printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d, processing_headers = %d, mr_responses = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length, pami_transport->transport_info.processing_headers.size(), pami_transport->transport_info.mr_responses.size());
+	}
 
 	/* If there is a message to send */
 	gettimeofday(&t2, NULL);

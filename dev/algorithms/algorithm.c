@@ -53,6 +53,8 @@ void optiq_algorithm_destroy()
 
 void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector<struct job> &jobs, struct multibfs *bfs, int world_rank)
 {
+    paths.clear();
+
     std::vector<std::pair<int, std::vector<int> > > source_dests;
     source_dests.clear();
 
@@ -60,8 +62,6 @@ void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector
 
     struct optiq_algorithm *algorithm = optiq_algorithm_get();
     struct topology *topo = optiq_topology_get();
-
-    paths.clear();
 
     if (algorithm->search_alg == OPTIQ_ALG_HOPS_CONSTRAINT) 
     {
@@ -130,5 +130,17 @@ void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector
 	}
 
 	MPI_Barrier (MPI_COMM_WORLD);
+    }
+
+    for (int i = 0; i < paths.size(); i++)
+    {
+	if (paths[i]->arcs.front().u == paths[i]->arcs.back().v && paths[i]->arcs.size() > 1) 
+	{
+	    paths[i]->arcs.clear();
+	    struct arc a;
+	    a.u = paths[i]->source_id;
+	    a.v = paths[i]->source_id;
+	    paths[i]->arcs.push_back(a);
+	}
     }
 }

@@ -190,7 +190,7 @@ void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std
         }
     }
 
-    /*Clean the jobs*/
+    /*Reset the buffers of the jobs*/
     for (int i = 0; i < jobs.size(); i++)
     {
         jobs[i].buf_offset = 0;
@@ -332,19 +332,19 @@ void optiq_schedule_print_jobs (std::vector<struct optiq_job> jobs)
 }
 
 
-void optiq_schedule_mem_destroy(struct optiq_schedule &schedule, struct optiq_pami_transport *pami_transport)
+void optiq_schedule_mem_destroy (struct optiq_schedule *schedule, struct optiq_pami_transport *pami_transport)
 {
     size_t bytes;
 
     pami_result_t result;
 
-    result = PAMI_Memregion_destroy (pami_transport->context, &schedule.send_mr.mr);
+    result = PAMI_Memregion_destroy (pami_transport->context, &schedule->send_mr.mr);
     if (result != PAMI_SUCCESS)
     {
         printf("Destroy send_mr : No success\n");
     }
 
-    result = PAMI_Memregion_destroy (pami_transport->context, &schedule.recv_mr.mr);
+    result = PAMI_Memregion_destroy (pami_transport->context, &schedule->recv_mr.mr);
     if (result != PAMI_SUCCESS)
     {
         printf("Destroy recv_mr : No success\n");
@@ -656,11 +656,13 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     if (schedule->jobs.size() == 0) {
 	num_jobs = optiq_schedule_get_pair (sendcounts, source_dest_ranks, &(schedule->jobs));
+    } else {
+	optiq_job_map_jobs_to_source_dests(schedule->jobs, source_dest_ranks);
     }
 
-    /*if (world_rank == 0) {
-      printf ("Done getting %d pairs of ranks\n", source_dest_ranks.size());
-      }*/
+    if (world_rank == 0 && odp.print_sourcedests_rank) {
+	printf ("Done getting %d pairs of ranks\n", source_dest_ranks.size());
+    }
 
     std::vector<std::pair<int, std::vector<int> > > source_dest_ids;
     source_dest_ids.clear();
@@ -672,10 +674,11 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
         source_dest_ids = source_dest_ranks;
     }
 
-    /*if (world_rank == 0) {
-      printf("Done mapping pairs: %d pairs of ranks -> %d pairs of node ids\n", source_dest_ranks.size(), source_dest_ids.size());
-      optiq_util_print_source_dests(source_dest_ids);
-      }*/
+    if (world_rank == 0 && odp.print_sourcedests_id) 
+    {
+	printf("Done mapping pairs: %d pairs of ranks -> %d pairs of node ids\n", source_dest_ranks.size(), source_dest_ids.size());
+	optiq_util_print_source_dests(source_dest_ids);
+    }
 
     /* Search for paths */
     std::vector<struct path *> path_ids;
@@ -685,6 +688,8 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     }
 
     optiq_algorithm_search_path (path_ids, schedule->jobs, bfs, world_rank);
+
+    printf("Rank %d done searching\n", world_rank);
 
     if (world_rank == 0 && odp.print_path_id) 
     {
@@ -764,7 +769,9 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /* Add local jobs */
     optiq_schedule_create_local_jobs (schedule->jobs, path_ranks, schedule->local_jobs, sendcounts, sdispls);
 
-    //optiq_schedule_print_jobs (schedule->local_jobs);
+    if (odp.print_local_jobs) {
+	optiq_schedule_print_jobs (schedule->local_jobs);
+    }
 
     schedule->maxnumpaths = 1;
     if (schedule->local_jobs.size() > 0) {
@@ -787,12 +794,14 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /*Reset a few parameters*/
     optiq_schedule_set (*schedule, num_jobs, pami_transport->size);
 
+    printf("Rank %d done scheduling\n", world_rank);
+
     /*Free path_ids*/
     /*optiq_algorithm_destroy();*/
 }
 
 /* Destroy the registered memory regions */
-void optiq_schedule_destroy()
+void optiq_schedule_clear()
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
@@ -806,7 +815,7 @@ void optiq_schedule_destroy()
     memset(schedule->all_num_dests, 0, pami_transport->size * sizeof(int));
     schedule->active_immsends = pami_transport->size;
 
-    optiq_schedule_mem_destroy(*schedule, pami_transport);
+    optiq_schedule_mem_destroy (schedule, pami_transport);
 
     for (int i = 0; i < schedule->paths.size(); i++) {
         free(schedule->paths[i]);

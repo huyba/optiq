@@ -9,7 +9,7 @@ int testid = 1;
 void test(int rank, int size, int demand, char *filepath)
 {
     /* First m send data to last n */
-    for (int m = size/16; m <= size/2; m *= 2)
+    /*for (int m = size/16; m <= size/2; m *= 2)
     {
 	for (int n = size/16; n <= size/2; n *= 2) 
 	{
@@ -33,7 +33,7 @@ void test(int rank, int size, int demand, char *filepath)
             MPI_Barrier(MPI_COMM_WORLD);
             optiq_benchmark_pattern_from_file (filepath, rank, size);
 	}
-    }
+    }*/
 
     /* Benchmark for subgroup aggregation */
     for (int i = 4; i < 128; i *= 2)
@@ -101,9 +101,15 @@ int main(int argc, char **argv)
     }
 
     struct optiq_algorithm *alg = optiq_algorithm_get();
-    alg->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT;
+    alg->search_alg = OPTIQ_ALG_KPATHS;
+    alg->num_paths_per_pair = 3;
 
-    odp.print_path_id = true;
+    //odp.print_path_id = true;
+    //odp.print_path_rank = true;
+    //odp.print_local_jobs = true;
+    //odp.print_sourcedests_id = true;
+    //odp.print_sourcedests_rank = true;
+    //odp.print_pami_transport_status = true;
 
     test(rank, size, demand, filepath);
     

@@ -95,7 +95,7 @@ void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<stru
 
 void optiq_schedule_print_jobs (std::vector<struct optiq_job> jobs);
 
-void optiq_schedule_mem_destroy(struct optiq_schedule &schedule, struct optiq_pami_transport *pami_transport);
+void optiq_schedule_mem_destroy(struct optiq_schedule *schedule, struct optiq_pami_transport *pami_transport);
 
 void optiq_schedule_mem_reg (struct optiq_schedule &schedule, struct optiq_comm_mem &comm_mem, struct optiq_pami_transport *pami_transport);
 
@@ -113,7 +113,7 @@ void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
 
 void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, std::vector<std::pair<int, std::vector<int> > > &intermediate_notify_list, int &num_active_paths, int world_rank);
 
-void optiq_schedule_destroy();
+void optiq_schedule_clear();
 
 int optiq_schedule_get_chunk_size(int message_size, int num_hops);
 

@@ -83,6 +83,10 @@ void optiq_opi_clear()
     odp.print_debug_msg = false;
     odp.print_timestamp = false;
     odp.print_reduced_paths = false;
+    odp.print_local_jobs = false;
+    odp.print_sourcedests_id = false;
+    odp.print_sourcedests_rank = false;
+    odp.print_pami_transport_status = false;
 }
 
 void optiq_opi_timestamp_print(int rank)

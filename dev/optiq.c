@@ -48,9 +48,7 @@ void optiq_alltoallv(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf
 
     optiq_pami_transport_execute_new ();
 
-    //optiq_pami_transport_execute (pami_transport);
-
-    optiq_schedule_destroy ();
+    optiq_schedule_clear ();
 }
 
 void optiq_mton_from_file(char *mtonfile)
