@@ -36,11 +36,11 @@ int main(int argc, char **argv)
     }
 
     int id = 0;
-    for (int i = 0; i < size/2; i++)
+    for (int i = 0; i < 64; i++)
     {
         struct job new_job;
-        new_job.source_id = i/8;
-        new_job.dest_id = (i+size/2)/8;
+        new_job.source_id = i;
+        new_job.dest_id = topo->num_nodes - 64 + i;
         new_job.job_id = id;
         id++;
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    optiq_alg_yen_k_shortest_paths(complete_paths, jobs, num_paths, graphFilePath);
+    optiq_alg_yen_k_shortest_paths (complete_paths, jobs, num_paths, graphFilePath);
 
     if (rank == 0) {
 	char jobfile[] = "jobs";
