@@ -19,6 +19,11 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
 	for (int j = 0; j < jobs[i].paths.size(); j++)
 	{
 	    myfile << "J " << jobs[i].job_id << " " << jobs[i].paths[j]->path_id << " " << jobs[i].paths[j]->flow << std::endl;
+	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
+	    {
+		myfile << jobs[i].paths[j]->arcs[k].u << " " << jobs[i].paths[j]->arcs[k].v << std::endl;
+	    }
+	    myfile << std::endl;
 	}
 	myfile << std::endl;
     }
