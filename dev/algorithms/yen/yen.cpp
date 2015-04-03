@@ -91,7 +91,7 @@ bool check_path_disjoint(struct job *nj, struct path *pa)
     return true;
 }
 
-void get_Yen_k_distint_shortest_paths(char *filePath, int k, struct job *nj, int &path_id)
+void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj, int &path_id)
 {
     Graph my_graph(filePath);
 
@@ -128,6 +128,15 @@ void get_Yen_k_distint_shortest_paths(char *filePath, int k, struct job *nj, int
     }
 }
 
+void optiq_alg_yen_k_distinct_shortest_paths (std::vector<struct path *> &complete_paths, std::vector<struct job> &jobs, int num_paths, char *graphFilePath)
+{
+    int path_id = 0;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        optiq_alg_yen_distinct_shortest_paths(graphFilePath, num_paths, &jobs[i], path_id);
+    }
+}
 
 void get_most_h_hops_k_shortest_paths (char *filePath, int h, int k, struct job *nj, int &path_id)
 {

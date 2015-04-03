@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    optiq_alg_yen_k_shortest_paths (complete_paths, jobs, num_paths, graphFilePath);
+    optiq_alg_yen_k_distinct_shortest_paths (complete_paths, jobs, num_paths, graphFilePath);
 
     if (rank == 0) {
 	char jobfile[] = "jobs";
