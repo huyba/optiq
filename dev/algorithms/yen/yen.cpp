@@ -61,17 +61,13 @@ void get_Yen_k_shortest_paths(char *filePath, int k, struct job *nj, int &path_i
 
 bool check_two_paths_disjoint(struct path *p1, struct path *p2)
 {
-    bool load[256][256] = {false};
-
     for (int i = 0; i < p1->arcs.size(); i++)
     {
-	load[p1->arcs[i].u][p1->arcs[i].v] = true;
-    }
-
-    for (int i = 0; i < p2->arcs.size(); i++)
-    {
-	if (load[p2->arcs[i].u][p2->arcs[i].v] == true) {
-	    return false;
+	for (int j = 0; j < p2->arcs.size(); j++)
+	{
+	    if (p1->arcs[i].u == p2->arcs[j].u && p1->arcs[i].v == p2->arcs[j].v) {
+		return false;
+	    }
 	}
     }
 
@@ -117,6 +113,8 @@ void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj
 	    pa->arcs.push_back(a);
 	}
 
+	/*optiq_path_print_path (pa);*/
+
 	if (check_path_disjoint(nj, pa)) 
 	{
 	    nj->paths.push_back(pa);
@@ -134,6 +132,7 @@ void optiq_alg_yen_k_distinct_shortest_paths (std::vector<struct path *> &comple
 
     for (int i = 0; i < jobs.size(); i++)
     {
+	/*printf("job_id = %d from %d to %d\n", jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id);*/
         optiq_alg_yen_distinct_shortest_paths(graphFilePath, num_paths, &jobs[i], path_id);
     }
 }
