@@ -16,6 +16,8 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
 
     myfile.open (filepath);
 
+    myfile << jobs[0].name;
+
     for (int i = 0; i < jobs.size(); i++)
     {
 	for (int j = 0; j < jobs[i].paths.size(); j++)
@@ -50,8 +52,10 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 
     int job_id = 0, path_id = 0, u, v, source_id, dest_id, source_rank, dest_rank;
     float flow;
-    char temp[256];
+    char temp[256], name[256];
     bool exist;
+
+    fgets(name, 256, fp);
 
     while (fgets(line, 80, fp) != NULL)
     {
@@ -99,6 +103,7 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 	    if (!exist) 
 	    {
 		struct job new_job;
+		new_job.name = name;
 		new_job.job_id = job_id;
 		new_job.source_id = source_id;
 		new_job.source_rank = source_rank;

@@ -325,7 +325,9 @@ void optiq_pattern_firstm_lastn_to_jobs (std::vector<struct job> &jobs, int numr
 	    {
 		struct job new_job;
 		new_job.source_rank = i + j;
+		new_job.source_id = i + j;
 		new_job.dest_rank = d;
+		new_job.dest_id = d;
 		new_job.demand = demand;
 
 		jobs.push_back(new_job);
@@ -344,7 +346,9 @@ void optiq_pattern_firstm_lastn_to_jobs (std::vector<struct job> &jobs, int numr
             {
 		struct job new_job;
 		new_job.source_rank = i;
+		new_job.source_id = i;
 		new_job.dest_rank = d + j;
+		new_job.dest_id = d + j;
 		new_job.demand = demand;
 
 		jobs.push_back(new_job);
