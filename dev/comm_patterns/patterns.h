@@ -6,6 +6,8 @@
 
 #include "job.h"
 
+void optiq_pattern_firstm_lastn_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int n);
+
 void optiq_patterns_read_requests_from_file(char *filename, std::vector<struct job> &jobs);
 
 void optiq_patterns_convert_requests_to_sendrecvcounts (std::vector<struct job> &jobs, int* sendcounts, int* recvcounts, int rank);
