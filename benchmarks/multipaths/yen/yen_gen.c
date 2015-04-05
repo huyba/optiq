@@ -34,13 +34,12 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     jobs.clear();
 }
 
-void gen_jobs_paths (int size, int demand, char *graphFilePath)
+void gen_jobs_paths (int size, int demand, char *graphFilePath, int k)
 {
     std::vector<struct job> jobs;
     char name[256];
     int testid = 0;
     char jobfile[256];
-    int k = 3;
 
     /* First m send data to last n */
     for (int m = size/16; m <= size/2; m *= 2)
@@ -69,7 +68,9 @@ int main(int argc, char **argv)
     psize[3] = atoi (argv[4]);
     psize[4] = atoi (argv[5]);
 
-    int demand = atoi (argv[6]);
+    int k = atoi (argv[6]);
+
+    int demand = atoi (argv[7]) * 1024;
 
     optiq_topology_init_with_params(num_dims, psize, topo);
     topo->num_ranks_per_node = 1;
@@ -77,5 +78,5 @@ int main(int argc, char **argv)
     char graphFilePath[] = "graph";
     optiq_topology_write_graph (topo, 1, graphFilePath);
 
-    gen_jobs_paths (topo->num_nodes, demand, graphFilePath);
+    gen_jobs_paths (topo->num_nodes, demand, graphFilePath, k);
 }
