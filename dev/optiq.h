@@ -59,4 +59,9 @@ void optiq_mton_from_file_and_buffers(void *sendbuf, int *sdispls, void *recvbuf
  * */
 void optiq_mton_from_file(char *mtonfile);
 
+/*
+ * Tranport data with jobs and paths read from file
+ * */
+void optiq_execute_jobs_from_file (char *jobfile, int datasize);
+
 #endif

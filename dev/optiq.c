@@ -101,3 +101,78 @@ void optiq_mton_from_file_and_buffers (void *sendbuf, int *sdispls, void *recvbu
     free (sendcounts);
     free (recvcounts);
 }
+
+void optiq_execute_jobs_from_file (char *jobfile, int datasize)
+{
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    int rank = pami_transport->rank;
+    int size = pami_transport->size;
+
+    struct optiq_schedule *sched = optiq_schedule_get();
+
+    std::vector<struct job> &jobs = sched->jobs;
+    jobs.clear();
+    std::vector<struct path *> &paths = sched->paths;
+    paths.clear();
+
+    optiq_jobs_read_from_file (jobs, paths, jobfile);
+
+    int *sendcounts = (int *) calloc (1, sizeof(int) * size);
+    int *recvcounts = (int *) calloc (1, sizeof(int) * size);
+    int *sdispls = (int *) calloc (1, sizeof(int) * size);
+    int *rdispls = (int *) calloc (1, sizeof(int) * size);
+
+    void *sendbuf, *recvbuf;
+
+    int sendbytes = 0, recvbytes = 0;
+
+    for (int i = 0; i < jobs.size(); i++) 
+    {
+	if (jobs[i].source_rank == rank)
+	{
+	    sendcounts[jobs[i].dest_rank] = datasize;
+	    sdispls[jobs[i].dest_rank] = sendbytes;
+	    sendbytes += datasize;
+	}
+
+	if (jobs[i].dest_rank == rank)
+	{
+	    recvcounts[jobs[i].source_rank] = datasize;
+	    rdispls[jobs[i].source_rank] = recvbytes;
+	    recvbytes += datasize;
+	}
+    }
+
+    if (sendbytes > 0) {
+	sendbuf = malloc (sendbytes);
+    }
+
+    if (recvbytes > 0) {
+	recvbuf = malloc (recvbytes);
+    }
+
+    optiq_schedule_build_new (jobs, paths, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    
+    if (rank == 0) {
+	printf("Schedule done.\n");
+    }
+
+    optiq_pami_transport_exchange_memregions ();
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Memory exchange done.\n");
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    optiq_pami_transport_execute_new ();
+
+    optiq_schedule_clear ();
+    
+    free (sendcounts);
+    free (recvcounts);    
+}
