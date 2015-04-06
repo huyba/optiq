@@ -32,39 +32,42 @@ Main:
 \begin{algorithmic}
     \Function {Heuristic\_search\_I}{}
 
-    \For {each source \textit{s$_i$}}
-	\State check\_and\_add\_new\_path({\it s}$_i$, {\it s}$_i$, null);
-    \EndFor
+    \While {exist a source \textit{s$_i$} with unvisted neighbor \textit{u}}
+	\State check\_and\_add\_new\_path({\it s}$_i$, \textit{u}, null);
+	\State Pick next \textit{s$_i$} in the sources
+    \EndWhile
 
     \While {(\textit{exploring\_path} != $\varnothing$)}
 	\State path \textit{p} = \textit{exploring\_paths}.pop();
 	\State {\it u} = last vertex in the path {\it p};
-	\State check\_and\_add\_new\_path({\it s}$_i$, \textit{v}, {\it p});
+	\For {each neighbor \textit{v} of \textit{u}}
+	    \State check\_and\_add\_new\_path({\it u}, \textit{v}, {\it p});
+	\EndFor
     \EndWhile
 
     \EndFunction
 \\
-    \Function{check\_and\_add\_new\_path}{int \textit{s$_i$}, int \textit{u}, path {\it op}}
-	\For {each neighbor {\it v} of \textit{u}}
-	    \If {(!{\it visited}[{\it s$_i$}][{\it v}])}
-                \State create a path \textit{np} = {\it op}
-	        \State add arc $<$\textit{u}, \textit{v}$>$ to \textit{np}
-	        \State enqueue \textit{np} to \textit{exploring\_paths}
-		\If {{\it v} is one of the destinations of \textit{s$_i$}}
-		    \State enqueue \textit{np} to \textit{complete\_paths}
-                \EndIf
-	        \State {\it visited}[\textit{s$_i$}][\textit{v}] = true;
-	    \EndIf
-	\EndFor
+    \Function{check\_and\_add\_new\_path}{int \textit{u}, int \textit{v}, path {\it op}}
+	\If {(!{\it visited}[{\it u}][{\it v}])}
+	    \State create a path \textit{np} = {\it op}
+	    \State add arc $<$\textit{u}, \textit{v}$>$ to \textit{np}
+	    \State enqueue \textit{np} to \textit{exploring\_paths}
+	    \If {{\it v} is one of the destinations of \textit{s$_i$} of \textit{np}}
+	        \State enqueue \textit{np} to \textit{complete\_paths}
+            \EndIf
+	    \State {\it visited}[\textit{u}][\textit{v}] = true;
+	\EndIf
     \EndFunction
 \end{algorithmic}
 
-\caption{Heuristic Alg 1: Exploring all paths}
+\caption{Heuristic Alg 1: Exploring all paths without constraints}
 \label{alg:h1}
 
 \end{algorithm}
 
-In the \textbf{Algorithm \ref{alg:h1}}, we start at every source and add 1-hop paths to \textit{exploring\_paths} queue. Those paths are the paths from sources to their neighbors.
+The \textbf{Algorithm \ref{alg:h1}} can be divided into 2 parts. In the first part, which is in the first \textbf{while} loop of the function Heuristic\_search\_I, we start at every source and add 1-hop paths to \textit{exploring\_paths} queue. Those paths are the paths from sources to their neighbors. We need a \textit{break} statement after each adding to make sure that every source can a path before they can all start again. This is to help ...
+
+In the second part, which is the second \textbf{while} loop of the function Heuristic\_search\_I, we pop an exploring path \textit{p}from the \textit{exploring\_paths}. From the last added vertex \textit{u} of \textit{p}, we exploring all edges from it to it neighbors and add new path \textit{np} = \textit{p} + newly explored edge. If any of its neighbors is final destination of source \textit{s$_i$}, we then add \textit{np} into \textit{complete\_paths}. We continue the work until all the paths are explored.
 
 Time complexity: The graph has V vertices and E edges. We have M sources and N destination making K pairs of (source, destinatinon), then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is XXXX.
 
@@ -73,7 +76,7 @@ This algorithm is an extension from Heuristic 1, while we limit the exploring pa
 
 \begin{algorithm}
 
-\caption{Heuristic Alg 2: Constraints by number of hops and max load}
+\caption{Heuristic Alg 2: Exploring all paths with hops length and max load constraints}
 \label{alg:h2}
 \end{algorithm}
 
