@@ -1,33 +1,7 @@
 \section{Approaches}
 \label{sec:approach}
 
-In this paper, we introduce a framework named OPTIQ. The framework provides ways to improve data movement performance on the Blue Gene/Q supercomputer. Our framework does so by balancing loads on physical links on the Blue Gene/Q supercomputer.
-
-\subsection{Framework}
-
-Our framework has 3 main components: Path searching algorithms, Schedule and Transport and an extra component depicted in Figure \ref{fig:framework}.
-
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.7]{figures/framework.pdf}
-\vspace{-0.2in}
-\caption{Three components of OPTIQ framework}
-\vspace{-0.1in}
-\label{fig:framework}
-\end{figure}
-
-The functionarity of each component is as following:
-\begin{itemize}
-\item Path searching: search for path to transfer data from a set of sources to a set of destination. Multiple or single paths can be found using a set of algorithm. User can decide what algorithm to be used or let the framework use a default algorithm.
-\item Schedule: Split a buffer data that needed to tranfer into smaller messages and put those messages into a queue of transport layer to be transferred. It also handles incoming messages for itself and for forwardig them to its neighbors on a way to a message final destination.
-\item Transport: actually transfer an amount of data from one point to another point in the system.
-\item Extra component: To get system specific information such as partition size, topology, coordinates, torus, and to compute neighbors of available nodes given to an application.
-\end{itemize}
-
-In the next subsections, we explain in detail our contributions in each component.
-
-\subsection{Path searching layer}
+\subsection{Path searching approaches}
 All paths searching algorihtms here are centric algorithms i.e. run at every node in exact oder thus, every node has the same results. The algorithms need some information in advance such as size, topology, torus of the partition, coordinates of all nodes in the partition. The informaition is collected once at the begining. The algorithms, also need to have the pair of source-destination and sometimes the data size to find paths between them.
 
 \subsubsection{Heuristic 1}
@@ -223,18 +197,32 @@ Model explanation:
 \item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
 \end{itemize}
 
-\subsection{Schedule layer}
+We realize algoirthms and other work in a framework named OPTIQ. The framework provides ways to improve data movement performance on the Blue Gene/Q supercomputer. Our framework does so by balancing loads on physical links on the Blue Gene/Q supercomputer.
 
+\subsection{Framework}
+
+Our framework has 3 main components: Path searching algorithms, Schedule and Transport and an extra component depicted in Figure \ref{fig:framework}.
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.7]{figures/framework.pdf}
+\vspace{-0.2in}
+\caption{Three components of OPTIQ framework}
+\vspace{-0.1in}
+\label{fig:framework}
+\end{figure}
+
+The functionarity of each component is as following:
+\begin{itemize}
+\item Path searching: search for path to transfer data from a set of sources to a set of destination. Multiple or single paths can be found using a set of algorithm. User can decide what algorithm to be used or let the framework use a default algorithm.
+\item Schedule: Split a buffer data that needed to tranfer into smaller messages and put those messages into a queue of transport layer to be transferred. It also handles incoming messages for itself and for forwardig them to its neighbors on a way to a message final destination.
 As we route data in our own ways, we search for the paths, and we also need to schedule messages transfer. It includes sending local messages, forwarding messages form other sources, receiving data as the intermediate node or the destination node.
 
 Order of messages into sending queue: 3 types of messages: local messages (needed to send), fowarding messages (needed to send), its receiving messages. first come first serve, local messages first. forwa
 
 When there are multiple ranks per node, which one will be choosen to receive data at the next dest (forwarding). Single rank to do or many rank to do, currently every rank executes data transfer.
 
-\subsection{Transport layer}
-
-\subsection{Supported components}
-
-Topology reading, coord, neighbors, torus, size, routing order, graph generated.
-
-Also set of benchmarks, tests.
+\item Transport: actually transfer an amount of data from one point to another point in the system.
+\item Extra component: To get system specific information such as partition size, topology, coordinates, torus, and to compute neighbors of available nodes given to an application. Topology reading, coord, neighbors, torus, size, routing order, graph generated. Also set of benchmarks, tests.
+\end{itemize}
