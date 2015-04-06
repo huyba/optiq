@@ -5,37 +5,50 @@ endif
 ifeq ($(COMPILER),GNU)
   CC      = mpicc
   COPT    = -g -Wall -std=gnu99 -O2 -mcpu=a2 -mtune=a2
+  LD	  = mpixlc_r
 endif
 
 ifeq ($(COMPILER),XL)
   CC      = mpicxx
   COPT    = -g -O3 #-DDEBUG
+  LD	  = mpixlc_r
 endif
 
-LD      = mpixlc_r
+ifeq ($(COMPILER),gxx)
+    CC	    = g++
+    COPT    = -g -Wall
+    LG	    = g++
+endif
 
 OPTIQ = ../../..
 DEV = $(OPTIQ)/dev
+MOD = $(DEV)/model
+BM = $(OPTIQ)/benchmarks
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
-TOPO = $(DEV)/topology
+TOPOLOGY = $(DEV)/topology
+ALG = $(DEV)/algorithms
 HEU = $(DEV)/algorithms/heuristics
 YEN = $(DEV)/algorithms/yen
 PAT = $(DEV)/comm_patterns
+SCHED = $(DEV)/schedule
+TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(YEN) -I$(HEU) -I$(DEV) -I$(TOPO) -I$(PAT)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV) -I$(BM)/mpi -I$(BM)/optiq/ -I$(MOD)
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(STRUCT)/*.o $(UTIL)/util.o $(YEN)/YenTopKShortestPathsAlg.o $(YEN)/Graph.o $(YEN)/DijkstraShortestPathAlg.o $(YEN)/yen.o $(HEU)/*.o $(TOPO)/*.o $(PAT)/*.o
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o
 
-all: yen_gen.x cp
+all: bdev mpibm yen_gen.x perf_optiq_kpaths.x cp
 
-optiq:
+bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
+mpibm:
+	cd $(BM)/mpi && $(MAKE) -f Makefile
 
-%.o: %.cpp
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.x: %.o $(OBJ)
@@ -46,10 +59,12 @@ clean:
 	rm *.o
 
 realclean: clean
+	rm $(OBJ)
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
-BM = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
+BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
-	cp yen_gen.x $(BM)/multipaths/yen/
+	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/
+	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/

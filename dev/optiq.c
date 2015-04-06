@@ -117,6 +117,10 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 
     optiq_jobs_read_from_file (jobs, paths, jobfile);
 
+    if (rank == 0) {
+	printf("%s\n", jobs[0].name);
+    }
+
     int *sendcounts = (int *) calloc (1, sizeof(int) * size);
     int *recvcounts = (int *) calloc (1, sizeof(int) * size);
     int *sdispls = (int *) calloc (1, sizeof(int) * size);

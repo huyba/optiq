@@ -16,7 +16,7 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
 
     myfile.open (filepath);
 
-    myfile << jobs[0].name;
+    myfile << jobs[0].name << std::endl << std::endl;
 
     for (int i = 0; i < jobs.size(); i++)
     {
@@ -123,7 +123,7 @@ void optiq_job_print_jobs (std::vector<struct job> &jobs)
 {
     for (int i = 0; i < jobs.size(); i++)
     {
-	printf("job_id = %d source_id = %d dest_id = %d, source_rank = %d, dest_id = %d, #paths = %ld\n", jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id, jobs[i].source_rank, jobs[i].dest_rank, jobs[i].paths.size());
+	printf("job_id = %d source_id = %d dest_id = %d, source_rank = %d, dest_id = %d, demand = %d, #paths = %ld\n", jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id, jobs[i].source_rank, jobs[i].dest_rank, jobs[i].demand, jobs[i].paths.size());
 
         for (int j = 0; j < jobs[i].paths.size(); j++)
         {

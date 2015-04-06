@@ -94,10 +94,11 @@ void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj
     YenTopKShortestPathsAlg yenAlg(my_graph, my_graph.get_vertex(nj->source_id), my_graph.get_vertex(nj->dest_id));
 
     int i = 0;
-    while (yenAlg.has_next() && i < k)
+    int trials = 0;
+    while (yenAlg.has_next() && i < k && trials <= 200)
     {
 	BasePath *p = yenAlg.next();
-
+	trials++;
 	struct path *pa = (struct path *) calloc (1, sizeof(struct path));
 
 	pa->job_id = nj->job_id;
@@ -113,7 +114,7 @@ void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj
 	    pa->arcs.push_back(a);
 	}
 
-	/*optiq_path_print_path (pa);*/
+	//optiq_path_print_path (pa);
 
 	if (check_path_disjoint(nj, pa)) 
 	{
