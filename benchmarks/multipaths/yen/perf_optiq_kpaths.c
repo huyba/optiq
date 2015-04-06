@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     int demand = 1024 * 1024;
 
     if (argc > 1) {
-	demand = atoi(argv[2]) * 1024;
+	demand = atoi(argv[1]) * 1024;
     }
 
     //odp.print_local_jobs = true;
