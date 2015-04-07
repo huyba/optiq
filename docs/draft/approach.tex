@@ -69,12 +69,38 @@ The \textbf{Algorithm \ref{alg:h1}} can be divided into 2 parts. In the first pa
 
 In the second part, which is the second \textbf{while} loop of the function Heuristic\_search\_I, we pop an exploring path \textit{p}from the \textit{exploring\_paths}. From the last added vertex \textit{u} of \textit{p}, we exploring all edges from it to it neighbors and add new path \textit{np} = \textit{p} + newly explored edge. If any of its neighbors is final destination of source \textit{s$_i$}, we then add \textit{np} into \textit{complete\_paths}. We continue the work until all the paths are explored.
 
-Time complexity: The graph has V vertices and E edges. We have M sources and N destination making K pairs of (source, destinatinon), then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is XXXX.
+Time complexity: The graph has V vertices and E edges. We have K pairs of (source, destinatinon), each source has at most D neighborhoods, then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is $O$(K * (|V| + |E|)). The time complexity is breakdown as following:
+\begin{itemize}
+\item First part: we have K pairs hence K sources, for each source we discover its D neighbors, thus time will be $O$(K*D).
+\item Second part: For this part, we get a path out of \textit{exploring\_paths}, create new paths by exploring its neighbors that are not visited by its source and add the new paths back to \textit{exploring\_paths}. For each sources, every vertex and every edge can be visited in the worst case, the time complexity would be $O$(|V| + |E|) minus to the vertices and edges visited by the first part. As we have K sources, the time complexity is $O$(K * (|V| + |E|)).
+\end{itemize}
 
 \subsubsection{Heuristic 2}
-This algorithm is an extension from Heuristic 1, while we limit the exploring paths by both the number of hops and minimizing the maximum load. We do so by maintaining a min heap of paths. We use the heap to contain all the exploring paths instead of using a queue to manage the exploring paths as in Heuristic 1. This leads to increasing algorithm's time complexity in heap extracting (as taking data from a queue is O(1), from a min heap is O(log(n)) with n entries in the heap), but decreasing time to explorering (?). More important, we have finer results as we have always explored from least congested paths. The comparison function of the heap is based on both the number of hops and maximum load on each path. 
+In the Algorithm \ref{alg:h1}, we explore all paths without concerning the number of hops that a path would take or maximum number of paths using a physical link. This leads to a long path or many paths sharing a physical link. A longer path results in more intermediate nodes, hence higher total transfer time. Higher maximum number of paths sharing a link leads to less bandwidth for each path. Both of them can lead to degraded performance.
+
+This algorithm is an extension from Heuristic 1, in which we limit the exploring paths by both the number of hops and minimizing the maximum load. We do so by maintaining a min heap of paths. We use the heap to contain all the exploring paths instead of using a queue to manage the exploring paths as in Heuristic 1. This leads to increasing algorithm's time complexity in heap extracting (as taking data from a queue is O(1), from a min heap is O(log(n)) with n entries in the heap), but increasing the quality of explored paths. In this approach, we have finer results as we explore from least congested paths. The comparison function of the heap is based on both the number of hops and maximum load on each path. 
+
+As most of the work in Heuristic 2 is similar to Heuristic 1, we do not repeat them, but only describe the differences between the two. The differences include:
+\begin{itemize}
+\item Use min heap of paths instead of queue of paths.
+\item Need to heapify everytime we insert/delete from the min queue.
+\end{itemize}
+
+In the following, we describe the comparison function, which the core of the min heap for heapification. We also describe how to calculate the max load from the current load when adding a new path. We compare 2 paths based on its current max load and hop length. Among the two, max load has higher priority as max load affects the performance more.
 
 \begin{algorithm}
+
+Heap element comparison:
+    \begin{algorithmic}
+	\Function{heap\_compare} {path p1, path p2, int maxload, int maxhops}
+	    \If {both paths has max load greater than maxload} 
+		\State choose the one with smaller number of hops.
+	    \EndIf
+	    \If {One path has max load greater but one path has max load smaller than maxload}
+		\State Choose the one with smaller load.
+	    \EndIf
+        \EndFunction
+    \end{algorithmic}
 
 \caption{Heuristic Alg 2: Exploring all paths with hops length and max load constraints}
 \label{alg:h2}
