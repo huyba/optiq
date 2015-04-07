@@ -1,5 +1,6 @@
 #include "optiq.h"
 #include <mpi.h>
+#include "optiq_benchmark.h"
 
 void optiq_init(int argc, char **argv)
 {
@@ -154,6 +155,8 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
     if (recvbytes > 0) {
 	recvbuf = malloc (recvbytes);
     }
+
+    optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     optiq_schedule_build_new (jobs, paths, sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 

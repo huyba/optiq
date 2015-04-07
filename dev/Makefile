@@ -22,6 +22,7 @@ endif
 
 OPTIQ = ..
 DEV = $(OPTIQ)/dev
+BM = $(OPTIQ)/benchmarks
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 TOPOLOGY = $(DEV)/topology
@@ -33,12 +34,12 @@ SCHED = $(DEV)/schedule
 MOD = $(DEV)/model
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(ALG) -I$(MOD)
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(ALG) -I$(MOD) -I$(BM)/optiq -I$(BM)/mpi
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(ALG)/*.o $(MOD)/*.o
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(ALG)/*.o $(MOD)/*.o $(BM)/optiq/optiq_benchmark.o $(BM)/mpi/mpi_benchmark.o
 
 all: makeutil struct topo heu yen pat sched trans alg makemod optiq.o
 

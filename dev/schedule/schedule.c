@@ -667,6 +667,8 @@ void optiq_schedule_build_new (std::vector<struct job> &jobs, std::vector<struct
     struct optiq_schedule *schedule = optiq_schedule_get();
     struct topology *topo = optiq_topology_get();
 
+    opi.paths = paths;
+
     int rank = pami_transport->rank;
     int size = pami_transport->size;
 

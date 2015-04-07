@@ -87,6 +87,8 @@ void optiq_opi_clear()
     odp.print_sourcedests_id = false;
     odp.print_sourcedests_rank = false;
     odp.print_pami_transport_status = false;
+
+    odp.test_mpi_perf = true;
 }
 
 void optiq_opi_timestamp_print(int rank)

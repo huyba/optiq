@@ -33,6 +33,28 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
     optiq_topology_path_reconstruct_new (source_dests, mpi_paths);
 }
 
+void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls)
+{
+    MPI_Barrier (MPI_COMM_WORLD);
+
+    optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    std::vector<struct path *> mpi_paths;
+    mpi_paths.clear();
+    optiq_benchmark_reconstruct_mpi_paths(sendcounts, mpi_paths);
+
+    int rank, size;
+
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &size);
+
+    if (rank == 0) {
+        optiq_path_print_stat (mpi_paths, size, topo->num_edges);
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+}
+
 void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
 {
     struct topology *topo = optiq_topology_get();
@@ -47,19 +69,7 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
         printf("\nTest A - MPI\n\n");
     }
 
-    optiq_benchmark_mpi_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
-
-    std::vector<struct path *> mpi_paths;
-    mpi_paths.clear();
-    optiq_benchmark_reconstruct_mpi_paths(sendcounts, mpi_paths);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    if (rank == 0) {
-	//optiq_path_print_paths_coords(mpi_paths, topo->all_coords);
-	/*printf("#paths = %d, size = %d, #edges = %d\n", mpi_paths.size(), size, topo->num_edges);*/
-        optiq_path_print_stat (mpi_paths, size, topo->num_edges);
-    }
+    optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     if (rank == 0) {
         printf("Test B - OPTIQ\n\n");
