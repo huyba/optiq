@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o
 
-all: bdev mpibm yen_gen.x perf_optiq_kpaths.x cp
+all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -63,14 +63,19 @@ realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
-BENCHMARKS_DIR = /gpfs/mira-fs0/projects/Performance/abui/optiq/benchmarks
+BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
-	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/8k/
-	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/4k/
-	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/2k/
-	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/1k/
 	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/512/
+	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/1k/
+	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/2k/
+	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/4k/
+	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/8k/
+	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/512/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/1k/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/2k/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/4k/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/8k/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/512/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/1k/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/2k/

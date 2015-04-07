@@ -38,7 +38,6 @@ struct:
 	$(LD) $< $(OBJ) -o $@ $(LDFLAGS)
 
 clean: $(OBJ)
-	rm $(OBJ)
 	rm *.o
 
 realclean: clean

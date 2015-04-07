@@ -23,6 +23,8 @@
 #include "job.h"
 #include "path.h"
 
+#include "yen.h"
+
 using namespace std;
 
 
@@ -108,15 +110,56 @@ bool check_path_load(struct path *p, int **load, int maxload)
     return true;
 }
 
-void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj, int &path_id, int **load, int maxload)
+void optiq_alg_yen_k_shortest_paths_jobs (char *graphfile, std::vector<struct job> &jobs, int num_paths)
+{
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	optiq_alg_yen_k_shortest_paths_job (graphfile, jobs[i], num_paths);
+    }
+}
+
+void optiq_alg_yen_k_shortest_paths_job (char *graphfile, struct job &x, int num_paths)
+{
+    optiq_alg_yen_k_shortest_paths_2vertices (graphfile, x.source_id, x.dest_id, num_paths, x.paths);
+}
+
+void optiq_alg_yen_k_shortest_paths_2vertices(char *graphfile, int v1, int v2, int num_paths, std::vector<struct path *> &paths)
+{
+    Graph my_graph (graphfile);
+
+    YenTopKShortestPathsAlg yenAlg(my_graph, my_graph.get_vertex(v1), my_graph.get_vertex(v2));
+
+    int k = 0;
+
+    while (yenAlg.has_next() && k < num_paths)
+    {
+	BasePath *p = yenAlg.next();
+	struct path *pa = (struct path *) calloc (1, sizeof(struct path));
+	pa->path_id = k;
+
+	for (int i = 0; i < p->m_vtVertexList.size() - 1; i++)
+        {
+            struct arc a;
+
+            a.u = p->m_vtVertexList[i]->getID();
+            a.v = p->m_vtVertexList[i + 1]->getID();
+
+            pa->arcs.push_back(a);
+        }
+
+	paths.push_back(pa);
+	k++;
+    }
+}
+
+void optiq_alg_yen_distinct_shortest_paths(char *filePath, struct job *nj, int &path_id, int **load, int maxload)
 {
     Graph my_graph(filePath);
 
     YenTopKShortestPathsAlg yenAlg(my_graph, my_graph.get_vertex(nj->source_id), my_graph.get_vertex(nj->dest_id));
 
-    int i = 0;
     int trials = 0;
-    while (yenAlg.has_next() && i < k && trials <= 200)
+    while (yenAlg.has_next() && trials <= 200)
     {
 	BasePath *p = yenAlg.next();
 	trials++;
@@ -125,6 +168,7 @@ void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj
 	pa->job_id = nj->job_id;
 	pa->path_id = path_id;
 
+	bool underload = true;
 	for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
 	{
 	    struct arc a;
@@ -132,18 +176,21 @@ void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj
 	    a.u = p->m_vtVertexList[j]->getID();
 	    a.v = p->m_vtVertexList[j + 1]->getID();
 
+	    if (load[a.u][a.v] >= maxload) 
+	    {
+		free(pa);
+		underload = false;
+		break;
+	    }
+
 	    pa->arcs.push_back(a);
 	}
 
-	//optiq_path_print_path (pa);
-
-	if (check_path_load(pa, load, maxload)) 
+	if (underload) 
 	{
 	    nj->paths.push_back(pa);
-	    i++;
 	    path_id++;
-	} else {
-	    free(pa);
+	    break;
 	}
     }
 }
@@ -153,14 +200,18 @@ void optiq_alg_yen_k_distinct_shortest_paths (std::vector<struct path *> &comple
     int path_id = 0;
 
     int **load = (int **) malloc (sizeof (int *) * numnodes);
+
     for (int i = 0; i < numnodes; i++) {
         load[i] = (int *) calloc (1, sizeof(int) * numnodes);
     }
 
-    for (int i = 0; i < jobs.size(); i++)
+    for (int k = 0; k < num_paths; k++)
     {
-	/*printf("job_id = %d from %d to %d\n", jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id);*/
-        optiq_alg_yen_distinct_shortest_paths(graphFilePath, num_paths, &jobs[i], path_id, load, maxload);
+	for (int i = 0; i < jobs.size(); i++)
+	{
+	    /*printf("job_id = %d from %d to %d\n", jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id);*/
+	    optiq_alg_yen_distinct_shortest_paths(graphFilePath, &jobs[i], path_id, load, maxload);
+	}
     }
 
     for (int i = 0; i < numnodes; i++) {
