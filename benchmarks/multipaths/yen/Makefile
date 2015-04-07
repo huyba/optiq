@@ -63,7 +63,7 @@ realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
-BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
+BENCHMARKS_DIR = /gpfs/mira-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
 	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/8k/
@@ -73,3 +73,6 @@ cp:
 	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/512/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/512/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/1k/
+	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/2k/
+	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/4k/
+	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/8k/

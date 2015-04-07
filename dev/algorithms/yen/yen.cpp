@@ -87,7 +87,28 @@ bool check_path_disjoint(struct job *nj, struct path *pa)
     return true;
 }
 
-void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj, int &path_id)
+bool check_path_load(struct path *p, int **load, int maxload)
+{
+    for (int i = 0; i < p->arcs.size(); i++)
+    {
+        if (load[p->arcs[i].u][p->arcs[i].v] >= maxload) {
+            return false;
+        }
+    }
+
+    for (int i = 0; i < p->arcs.size(); i++)
+    {
+        load[p->arcs[i].u][p->arcs[i].v]++;
+
+        if (p->max_load < load[p->arcs[i].u][p->arcs[i].v]) {
+            p->max_load = load[p->arcs[i].u][p->arcs[i].v];
+        }
+    }
+
+    return true;
+}
+
+void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj, int &path_id, int **load, int maxload)
 {
     Graph my_graph(filePath);
 
@@ -116,7 +137,7 @@ void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj
 
 	//optiq_path_print_path (pa);
 
-	if (check_path_disjoint(nj, pa)) 
+	if (check_path_load(pa, load, maxload)) 
 	{
 	    nj->paths.push_back(pa);
 	    i++;
@@ -127,15 +148,25 @@ void optiq_alg_yen_distinct_shortest_paths(char *filePath, int k, struct job *nj
     }
 }
 
-void optiq_alg_yen_k_distinct_shortest_paths (std::vector<struct path *> &complete_paths, std::vector<struct job> &jobs, int num_paths, char *graphFilePath)
+void optiq_alg_yen_k_distinct_shortest_paths (std::vector<struct path *> &complete_paths, std::vector<struct job> &jobs, int num_paths, char *graphFilePath, int maxload, int numnodes)
 {
     int path_id = 0;
+
+    int **load = (int **) malloc (sizeof (int *) * numnodes);
+    for (int i = 0; i < numnodes; i++) {
+        load[i] = (int *) calloc (1, sizeof(int) * numnodes);
+    }
 
     for (int i = 0; i < jobs.size(); i++)
     {
 	/*printf("job_id = %d from %d to %d\n", jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id);*/
-        optiq_alg_yen_distinct_shortest_paths(graphFilePath, num_paths, &jobs[i], path_id);
+        optiq_alg_yen_distinct_shortest_paths(graphFilePath, num_paths, &jobs[i], path_id, load, maxload);
     }
+
+    for (int i = 0; i < numnodes; i++) {
+        free(load[i]);
+    }
+    free(load);
 }
 
 void get_most_h_hops_k_shortest_paths (char *filePath, int h, int k, struct job *nj, int &path_id)

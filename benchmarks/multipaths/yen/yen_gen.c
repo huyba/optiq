@@ -8,7 +8,7 @@
 #include "patterns.h"
 #include <vector>
 
-void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths)
+void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths, int maxload, int numnodes)
 {
     std::vector< struct path *> paths;
 
@@ -16,7 +16,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
 
     gettimeofday(&t0, NULL);
 
-    optiq_alg_yen_k_distinct_shortest_paths (paths, jobs, num_paths, graphFilePath);
+    optiq_alg_yen_k_distinct_shortest_paths (paths, jobs, num_paths, graphFilePath, maxload, numnodes);
 
     gettimeofday(&t1, NULL);
 
@@ -34,7 +34,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     jobs.clear();
 }
 
-void gen_jobs_paths (int size, int demand, char *graphFilePath, int k)
+void gen_jobs_paths (int size, int demand, char *graphFilePath, int k, int maxload)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -59,7 +59,7 @@ void gen_jobs_paths (int size, int demand, char *graphFilePath, int k)
 
 		jobs[0].name = name;
 		sprintf(jobfile, "test%d", testid);
-		search_and_write_to_file (jobs, jobfile, graphFilePath, k);
+		search_and_write_to_file (jobs, jobfile, graphFilePath, k, maxload, size);
 
 		printf("Rank %d wrote %s\n", rank, name);
 	    }
@@ -86,7 +86,9 @@ int main(int argc, char **argv)
 
     int k = atoi (argv[6]);
 
-    int demand = atoi (argv[7]) * 1024;
+    int maxload = atoi (argv[7]);
+
+    int demand = atoi (argv[8]) * 1024;
 
     optiq_topology_init_with_params(num_dims, psize, topo);
     topo->num_ranks_per_node = 1;
@@ -100,5 +102,5 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    gen_jobs_paths (topo->num_nodes, demand, graphFilePath, k);
+    gen_jobs_paths (topo->num_nodes, demand, graphFilePath, k, maxload);
 }
