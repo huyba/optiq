@@ -1,23 +1,15 @@
 \section{Benchmarks}
 \label{sec:benchmark}
 
-Our framework includes 3 main parts: algorithms for path searching, schedule to order messges into a sending queue an, transport to transfer message between nodes. We first show our performance studies each part from the bottom of the framework to the top. We then show the overall performance in several communication patterns.
+In this section, we demonstrate the efficacy of our approaches via a set of benchmarks.
 
-\subsection{Transport performance}
+\subsection{MPI Paths Reconstruction}
 
-\subsubsection{Single hop data transfer}
+In our experiment, we need to measure not only the performance of MPI routines but also loads on physical links and number of hops of path that MPI takes to move data from a set of sources to a set of destination. The load and hops informaiton can reveal insight of performance difference between MPI and our framework OPTIQ. Thus reconstructing MPI's paths is necessary to get load and hops information.
 
-\subsubsection{Multiple hops data transfer}
+We reconstruct MPI's paths based on our understanding of default routing algorithms described in \cite{Chen:BGQ}. For each pair of source and destination, we start at a source node and follow the rules of the routing algorithm to move data from the source node to its destination. We then record paths for all the pairs and use them to calculate load and number of hops. 
 
-\subsubsection{Various message sizes}
-
-\subsubsection{Many ranks}
-
-\subsection{Schedule performance}
-
-\subsection{Algorithms for path searching performance }
-
-\subsection{Communication patterns}
+\subsection{Communication Patterns}
 In this paper we demostrate data movement performance of our OPTIQ framework and existing MPI's routines on the following communication patters:
 
 \begin{figure}[!htb]
@@ -31,12 +23,66 @@ In this paper we demostrate data movement performance of our OPTIQ framework and
 \end{figure}
 
 \begin{itemize}
-\item All to many, many to all
-\item I/O Aggregation: a special case of All to many (or many to many)
-\item Many to many: disjoint/exclusive
-\item Many to many: subset
-\item Many to many: partially joint (not subset, not disjoint)
-\item Many to many: sparse
+\item Subgroup Data Aggregation: a special case of All to many (or many to many.)
+\item Many to many: disjoint sets.
+\item Many to many: subset.
+\item Many to many: overlapped sets.
 \end{itemize}
 
-\subsection{All to many or Many to all}
+\subsubsection{Subgroup Data Aggregation}
+
+In the subgroup data aggregation experiment, we aggregated data within a subgroup to one node in the subgroup. In this experiment, we used a 512-nodes partition. The partition was divided into subgroup of size 4, 8, 16, 32, and 64 nodes each. One node in the middle of a subgroup was selected as the destination to aggregate data from all nodes in the subgroup(including itself). The data size is 1MB. We aggregate data using MPI\_Alltoallv and our framework for 20 times, measured and reported the average of the measurements. The aggregation bandwidths are shown in Figure \ref{fig:aggbw}.
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/agg.pdf}
+\vspace{-0.1in}
+\caption{Aggregation bandwidth}
+\vspace{-0.1in}
+\label{fig:aggbw}
+\end{figure}
+
+As we can see in the figure, our work shows better performance as we increased subgroup size due to more balanced networking load. At the beginning when teh size of subgroups is 4, MPI\_Alltoallv performed better. But as we doubled the subgroup size OPTIQ started to get better i.e. 1.25X at 8 nodes/subgroup, 1.7X at 16 nodes/subgroup, 2X at 32 nodes/subgroup and 2.5X at 64 nodes/subgroup. This is because OPTIQ has better network load balancing. We show the network load in the Figure \ref{fig:aggload}
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/load.pdf}
+\vspace{-0.1in}
+\caption{Networking load over links}
+\vspace{-0.1in}
+\label{fig:aggload}
+\end{figure}
+
+Figure \ref{fig:aggload} shows the max and average loads for both MPI\_Alltoallv and OPTIQ. Load is number of paths that used a physical link. As we can see in the figure, when the group size increased the average load is approximate the same, but max load increased much faster in MPI\_Alltoallv compare to OPTiQ. This is because MPI\_Alltoallv used default routing algorithm. The default routing algorithm routes data in the longest dimension first leading to more load on certain links and no loads on many other links. Hence the max load in MPI\_Alltoalllv is higher than OPTIQ. Our work distributes the networking load over more links with lower max load. The networking distribution is shown in Figure \ref{fig:aggdist}
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/distribution.pdf}
+\vspace{-0.1in}
+\caption{Networking load disitribution over links}
+\vspace{-0.1in}
+\label{fig:aggdist}
+\end{figure}
+
+Figure \ref{fig:aggdist} shows that our work has a better networking load distribution. All of the loaded links have max load at most of 15, with many links has low load. While MPI\_Alltoallv has 8 links with max load of 32. We achieved better load distribution by using more links and by using longer links. This leads to a litte higher max hops (1 or 2 hops) and average hops used. The Figure \ref{fig:agghop} shows the maximum and average nuber of hops used.
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/hop.pdf}
+\vspace{-0.1in}
+\caption{Max and average hops in data aggregation}
+\vspace{-0.1in}
+\label{fig:agghop}
+\end{figure}
+
+In the Figure \ref{fig:agghop} we can see that compare to MPI\_Alltoallv, OPTIQ used 1 to 2 hops more in case of maximum number of hops and 0.5 hops more in case of average number of hops. This is because OPTIQ explored longer paths to avoid increasing max load. The algorithms we have also try to balance between number of hops and max load as too long paths can actually increase time hence degrade data movement bandwidth.
+
+\subsubsection{Disjoint sets of sources and destinations}
+
+\subsubsection{Overlaped sets of sources and destinations}
+
+
