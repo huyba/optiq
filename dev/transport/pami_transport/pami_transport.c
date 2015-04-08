@@ -637,6 +637,8 @@ void optiq_recv_mr_request_adv_fn(pami_context_t context, void *cookie, const vo
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
     struct optiq_schedule *sched = pami_transport->sched;
 
+    printf("Rank %d recv mem req from %d\n", pami_transport->rank, origin);
+
     pami_transport->transport_info.num_mr_requests++;
 
     /* Send back a mem response */
@@ -653,6 +655,7 @@ void optiq_recv_mr_request_adv_fn(pami_context_t context, void *cookie, const vo
 	pami_transport->transport_info.forward_mr->offset += *bufsize;
 
 	/* Send a mem req forward*/
+	printf("Rank %d send mem req to %d\n", pami_transport->rank, dest);
 	optiq_pami_send_immediate (pami_transport->context, OPTIQ_MR_REQUEST_ADV, path_id, sizeof(int), &bufsize, sizeof(int), pami_transport->endpoints[dest]);
     }
     else /* If this is the final destination*/
@@ -1108,6 +1111,7 @@ void optiq_pami_transport_exchange_memregions ()
 	    int bufsize = sched->local_jobs[i].buf_length;
 
 	    if (dest != rank) {
+		printf("Rank %d send mem req to %d\n", rank, dest);
 		optiq_pami_send_immediate(pami_transport->context, OPTIQ_MR_REQUEST_ADV, &path_id, sizeof(int), &bufsize, sizeof(int), pami_transport->endpoints[dest]);
 	    } else {
 		pami_transport->sched->recv_mr.offset = pami_transport->sched->rdispls[rank];

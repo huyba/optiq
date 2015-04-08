@@ -319,12 +319,21 @@ void optiq_schedule_print_jobs (std::vector<struct optiq_job> jobs)
 
     int world_rank = pami_transport->rank;
 
+    char strpath[1024];
     for (int i = 0; i < jobs.size(); i++)
     {
 	printf("Rank %d job_id = %d source = %d dest = %d, bufsize = %d, offset = %d\n", world_rank, jobs[i].job_id, jobs[i].source_rank, jobs[i].dest_rank, jobs[i].buf_length, jobs[i].send_mr.offset);
 	for (int j = 0; j < jobs[i].paths.size(); j++)
 	{
 	    printf("Rank %d job_id = %d #paths = %ld path_id = %d flow = %d\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
+
+	    sprintf(strpath, "%s", "");
+            for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
+            {
+                sprintf(strpath, "%s%d->", strpath, jobs[i].paths[j]->arcs[k].u);
+            }
+            sprintf(strpath, "%s%d", strpath, jobs[i].paths[j]->arcs.back().v);
+            printf("Rank %d job_id = %d #paths = %ld path_id = %d %s\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, strpath);
 	}
     }
 }
@@ -616,6 +625,10 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
     }
     else 
     {
+	if (world_rank == 31) {
+	    optiq_path_print_paths (path_ranks);
+	}
+
 	for (int i = 0; i < path_ranks.size(); i++)
 	{
 	    if (path_ranks[i]->arcs.front().u == world_rank)
@@ -627,6 +640,7 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 		    if (local_jobs[j].dest_rank == path_ranks[i]->arcs.back().v)
 		    {
 			local_jobs[j].paths.push_back (path_ranks[i]);
+			printf("Rank %d added path %d\n", world_rank, path_ranks[i]->path_id);
 			existed = true;
 			break;
 		    }
@@ -639,6 +653,7 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 		    new_job.source_rank = world_rank;
 		    new_job.dest_rank = path_ranks[i]->arcs.back().v;
 		    new_job.paths.push_back(path_ranks[i]);
+		    printf("Rank %d added path %d\n", world_rank, path_ranks[i]->path_id);
 		    new_job.buf_offset = 0;
 		    new_job.last_path_index = 0;
 		    memcpy(&new_job.send_mr, &schedule->send_mr, sizeof (struct optiq_memregion));
@@ -689,6 +704,10 @@ void optiq_schedule_build_new (std::vector<struct job> &jobs, std::vector<struct
 		jobs[i].paths[j]->arcs.back().v = jobs[i].dest_rank;
 	    }
 	}
+    }
+
+    if (rank == 0 && odp.print_path_rank) {
+	optiq_path_print_paths (paths);
     }
 
     /* Build next dest*/

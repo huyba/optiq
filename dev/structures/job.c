@@ -141,6 +141,7 @@ void optiq_job_print_jobs (std::vector<struct job> &jobs)
 void optiq_job_print(std::vector<struct job> &jobs, int world_rank)
 {
     printf("Rank %d has %ld jobs\n", world_rank, jobs.size());
+    char strpath[1024];
 
     for (int i = 0; i < jobs.size(); i++)
     {
@@ -148,6 +149,14 @@ void optiq_job_print(std::vector<struct job> &jobs, int world_rank)
         for (int j = 0; j < jobs[i].paths.size(); j++)
         {
             printf("Rank %d job_id = %d #paths = %ld path_id = %d flow = %d\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
+
+	    sprintf(strpath, "%s", "");
+	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
+	    {
+		sprintf(strpath, "%s%d->", strpath, jobs[i].paths[j]->arcs[k].u);
+	    }
+	    sprintf(strpath, "%s%d", strpath, jobs[i].paths[j]->arcs.back().v);
+	    printf("Rank %d job_id = %d #paths = %ld path_id = %d %s\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, strpath);
         }
     }
 }

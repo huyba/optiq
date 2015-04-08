@@ -19,7 +19,8 @@ int main(int argc, char **argv)
 	demand = atoi(argv[2]) * 1024;
     }
 
-    //odp.print_local_jobs = true;
+    //odp.print_path_rank = true;
+    odp.print_local_jobs = true;
     char filepath[256];
 
     for (int i = 0; i < 16; i++)
