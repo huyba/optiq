@@ -625,10 +625,6 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
     }
     else 
     {
-	if (world_rank == 31) {
-	    optiq_path_print_paths (path_ranks);
-	}
-
 	for (int i = 0; i < path_ranks.size(); i++)
 	{
 	    if (path_ranks[i]->arcs.front().u == world_rank)
@@ -640,7 +636,6 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 		    if (local_jobs[j].dest_rank == path_ranks[i]->arcs.back().v)
 		    {
 			local_jobs[j].paths.push_back (path_ranks[i]);
-			printf("Rank %d added path %d\n", world_rank, path_ranks[i]->path_id);
 			existed = true;
 			break;
 		    }
@@ -653,7 +648,6 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 		    new_job.source_rank = world_rank;
 		    new_job.dest_rank = path_ranks[i]->arcs.back().v;
 		    new_job.paths.push_back(path_ranks[i]);
-		    printf("Rank %d added path %d\n", world_rank, path_ranks[i]->path_id);
 		    new_job.buf_offset = 0;
 		    new_job.last_path_index = 0;
 		    memcpy(&new_job.send_mr, &schedule->send_mr, sizeof (struct optiq_memregion));

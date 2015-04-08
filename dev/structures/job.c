@@ -51,6 +51,8 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
     }
 
     int job_id = 0, path_id = 0, u, v, source_id, dest_id, source_rank, dest_rank;
+    int job_path_id = 0; /* This is to read the path_id in, but it is never used*/
+
     float flow;
     char temp[256], name[256];
     bool exist;
@@ -62,8 +64,8 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
         if (line[0] == 'J')
         {
             trim(line);
-            sscanf(line, "%s %d %d %f %d %d %d %d", temp, &job_id, &path_id, &flow, &source_id, &dest_id, &source_rank, &dest_rank);
-            /*printf("job_id = %d path_id = %d, flow = %f\n", job_id, path_id, flow);*/
+            sscanf(line, "%s %d %d %f %d %d %d %d", temp, &job_id, &job_path_id, &flow, &source_id, &dest_id, &source_rank, &dest_rank);
+            /*printf("job_id = %d job_path_id = %d, flow = %f\n", job_id, job_path_id, flow);*/
 
             struct path *p = (struct path *) calloc (1, sizeof(struct path));
             p->job_id = job_id;
@@ -89,6 +91,7 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
             }
 
 	    paths.push_back(p);
+	    path_id++;	    /* We need distinct path_id for entire system, we route message based on path_id */
 
 	    exist = false;
 	    for (int i = 0; i < jobs.size(); i++)

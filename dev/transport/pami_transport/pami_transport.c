@@ -637,8 +637,6 @@ void optiq_recv_mr_request_adv_fn(pami_context_t context, void *cookie, const vo
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
     struct optiq_schedule *sched = pami_transport->sched;
 
-    printf("Rank %d recv mem req from %d\n", pami_transport->rank, origin);
-
     pami_transport->transport_info.num_mr_requests++;
 
     /* Send back a mem response */
@@ -655,7 +653,6 @@ void optiq_recv_mr_request_adv_fn(pami_context_t context, void *cookie, const vo
 	pami_transport->transport_info.forward_mr->offset += *bufsize;
 
 	/* Send a mem req forward*/
-	printf("Rank %d send mem req to %d\n", pami_transport->rank, dest);
 	optiq_pami_send_immediate (pami_transport->context, OPTIQ_MR_REQUEST_ADV, path_id, sizeof(int), &bufsize, sizeof(int), pami_transport->endpoints[dest]);
     }
     else /* If this is the final destination*/
@@ -1111,7 +1108,6 @@ void optiq_pami_transport_exchange_memregions ()
 	    int bufsize = sched->local_jobs[i].buf_length;
 
 	    if (dest != rank) {
-		printf("Rank %d send mem req to %d\n", rank, dest);
 		optiq_pami_send_immediate(pami_transport->context, OPTIQ_MR_REQUEST_ADV, &path_id, sizeof(int), &bufsize, sizeof(int), pami_transport->endpoints[dest]);
 	    } else {
 		pami_transport->sched->recv_mr.offset = pami_transport->sched->rdispls[rank];
@@ -1126,15 +1122,15 @@ void optiq_pami_transport_exchange_memregions ()
     while (pami_transport->transport_info.num_mr_requests != incomingpaths || pami_transport->transport_info.num_mr_responses != outgoingpaths) {
 	PAMI_Context_advance (pami_transport->context, 100);
 
-	printf("Rank %d num_mr_requests  %d, incomingpaths = %d, num_mr_responses = %d, outgoingpaths = %d\n", rank, pami_transport->transport_info.num_mr_requests, incomingpaths, pami_transport->transport_info.num_mr_responses, outgoingpaths);
+	/*printf("Rank %d num_mr_requests  %d, incomingpaths = %d, num_mr_responses = %d, outgoingpaths = %d\n", rank, pami_transport->transport_info.num_mr_requests, incomingpaths, pami_transport->transport_info.num_mr_responses, outgoingpaths);*/
     }
 
     pami_transport->transport_info.num_mr_requests = 0;
     pami_transport->transport_info.num_mr_responses = 0;
 
-    if (true) {
+    /*if (true) {
 	printf("Rank = %d Memory regions exchange completed.\n", rank);
-    }
+    }*/
 }
 
 void optiq_pami_transport_rput_message (struct optiq_message_header *header)

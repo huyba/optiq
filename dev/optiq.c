@@ -127,7 +127,7 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
     int *sdispls = (int *) calloc (1, sizeof(int) * size);
     int *rdispls = (int *) calloc (1, sizeof(int) * size);
 
-    void *sendbuf, *recvbuf;
+    char *sendbuf, *recvbuf, *testbuf;
 
     int sendbytes = 0, recvbytes = 0;
 
@@ -148,12 +148,23 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 	}
     }
 
-    if (sendbytes > 0) {
-	sendbuf = malloc (sendbytes);
+    if (sendbytes > 0)
+    {
+	sendbuf = (char *) malloc (sendbytes);
+    
+	for (int i = 0; i < sendbytes; i++) {
+	    sendbuf[i] = i%128;
+	}
     }
 
-    if (recvbytes > 0) {
-	recvbuf = malloc (recvbytes);
+    if (recvbytes > 0) 
+    {
+	recvbuf = (char *) malloc (recvbytes);
+
+	testbuf = (char *) malloc (recvbytes);
+	for (int i = 0; i < recvbytes; i++) {
+	    testbuf[i] = i % 128;
+	}
     }
 
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
@@ -179,6 +190,12 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
     optiq_pami_transport_execute_new ();
 
     optiq_schedule_clear ();
+
+    if (recvbytes > 0) {
+	if (memcmp (recvbuf, testbuf, recvbytes) != 0) {
+	    printf("Rank %d encounter data corrupted\n", rank);
+	}
+    }
     
     free (sendcounts);
     free (recvcounts);    
