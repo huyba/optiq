@@ -27,6 +27,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
 
 	    /*free paths*/
 	    for (int j = 0; j < jobs[i].paths.size(); j++) {
+		jobs[i].paths[j]->arcs.clear();
 	        free (jobs[i].paths[j]);
 	    }
 	    jobs[i].paths.clear();
@@ -50,6 +51,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
 	optiq_job_write_to_file (jobs, jobfile);
 
 	for (int i = 0; i < paths.size(); i++) {
+	    paths[i]->arcs.clear();
 	    free(paths[i]);
 	}
 	paths.clear();

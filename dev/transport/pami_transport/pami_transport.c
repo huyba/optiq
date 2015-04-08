@@ -1122,15 +1122,15 @@ void optiq_pami_transport_exchange_memregions ()
     while (pami_transport->transport_info.num_mr_requests != incomingpaths || pami_transport->transport_info.num_mr_responses != outgoingpaths) {
 	PAMI_Context_advance (pami_transport->context, 100);
 
-	/*printf("Rank %d num_mr_requests  %d, incomingpaths = %d, num_mr_responses = %d, outgoingpaths = %d\n", rank, pami_transport->transport_info.num_mr_requests, incomingpaths, pami_transport->transport_info.num_mr_responses, outgoingpaths);*/
+	printf("Rank %d num_mr_requests  %d, incomingpaths = %d, num_mr_responses = %d, outgoingpaths = %d\n", rank, pami_transport->transport_info.num_mr_requests, incomingpaths, pami_transport->transport_info.num_mr_responses, outgoingpaths);
     }
 
     pami_transport->transport_info.num_mr_requests = 0;
     pami_transport->transport_info.num_mr_responses = 0;
 
-    /*if (true) {
+    if (true) {
 	printf("Rank = %d Memory regions exchange completed.\n", rank);
-    }*/
+    }
 }
 
 void optiq_pami_transport_rput_message (struct optiq_message_header *header)
