@@ -81,48 +81,36 @@ extern "C" struct optiq_schedule *schedule;
 
 void optiq_schedule_init();
 
-void optiq_schedule_finalize();
-
 struct optiq_schedule *optiq_schedule_get();
-
-void optiq_schedule_set_dqueue_mode(enum dequeue_mode dmode);
-
-void optiq_schedule_split_jobs (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
-
-void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
-
-void optiq_schedule_add_paths (struct optiq_schedule &schedule, std::vector<struct path *> &complete_paths);
-
-void optiq_schedule_print_jobs (std::vector<struct optiq_job> jobs);
-
-void optiq_schedule_mem_destroy(struct optiq_schedule *schedule, struct optiq_pami_transport *pami_transport);
-
-void optiq_schedule_mem_reg (struct optiq_schedule &schedule, struct optiq_comm_mem &comm_mem, struct optiq_pami_transport *pami_transport);
-
-void optiq_schedule_assign_job_demand(std::vector<struct optiq_job> &local_jobs, int nbytes);
-
-void optiq_schedule_set(struct optiq_schedule &schedule, int num_jobs, int world_size);
-
-int optiq_schedule_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests, std::vector<struct job> *jobs);
-
-void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls);
-
-void optiq_schedule_build_new (std::vector<struct job> &jobs, std::vector<struct path *> &paths, void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls);
-
-void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls,  struct optiq_schedule *schedule);
-
-void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
 
 void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, std::vector<std::pair<int, std::vector<int> > > &intermediate_notify_list, int &num_active_paths, int world_rank);
 
-void optiq_schedule_clear();
+void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
+
+void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls,  struct optiq_schedule *schedule);
+
+void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
+
+void optiq_schedule_mem_destroy(struct optiq_schedule *schedule, struct optiq_pami_transport *pami_transport);
+
+void optiq_schedule_set(struct optiq_schedule *schedule, int world_size);
 
 int optiq_schedule_get_chunk_size(int message_size, int num_hops);
 
-void optiq_schedule_map_from_rankpairs_to_idpairs(std::vector<std::pair<int, std::vector<int> > > &source_dest_ranks, std::vector<std::pair<int, std::vector<int> > > &source_dest_ids);
+void optiq_schedule_print_optiq_jobs (std::vector<struct optiq_job> &local_jobs);
 
-void optiq_schedule_map_from_pathids_to_pathranks (std::vector<struct path *> &path_ids, std::vector<std::pair<int, std::vector<int> > > &source_dest_ranks, std::vector<struct path *> &path_ranks);
+/* Will do the follows:
+ * 1. build next_dest look-up table to look for next dest for forwarding message.
+ * 2. build notify list of end nodes and intermediate nodes to nofity that a path is done.
+ * 3. register send/recv mem for the schedule
+ * 4. create local optiq jobs.
+ * 5. split the jobs into messages.
+ * 6. set recv_length for the local rank.
+ * */
+void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls, std::vector<struct job> &jobs, std::vector<struct path *> &path_ranks);
 
-void optiq_schedule_print_sourcedests(std::vector<std::pair<int, std::vector<int> > > &source_dests);
+void optiq_schedule_clear();
+
+void optiq_schedule_finalize();
 
 #endif

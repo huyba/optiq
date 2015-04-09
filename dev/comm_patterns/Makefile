@@ -26,7 +26,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ =
 
-all: cesm.o patterns.o
+all: cesm.o patterns.o input.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
