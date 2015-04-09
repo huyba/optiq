@@ -49,16 +49,12 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < recvranks.size(); i++)
     {
-<<<<<<< HEAD
 	recv_rank = recvranks[i];
 	//printf("recv_rank = %d\n", recv_rank);
-=======
-        recv_rank = recvranks[i];
 
         if (world_rank == 0) {
             printf("Test %d source = %d dest = %d\n", i, send_rank, recv_rank);
         }
->>>>>>> fc763bb2eca8ec4be9580951e15813c0f86fed7a
 
 	odp.print_path_id = true;
 

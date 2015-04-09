@@ -886,7 +886,11 @@ void optiq_schedule_clear()
     for (int i = 0; i < schedule->paths.size(); i++) {
 	free(schedule->paths[i]);
     }
+    schedule->jobs.clear();
     schedule->paths.clear();
+    schedule->local_jobs.clear();
+    schedule->notify_list.clear();
+    schedule->intermediate_notify_list.clear();
 }
 
 int optiq_schedule_get_chunk_size(int message_size, int num_hops) 

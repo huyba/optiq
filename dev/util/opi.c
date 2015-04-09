@@ -48,15 +48,19 @@ void optiq_opi_print()
     else {
 	printf("OPTIQ_Alltoallv: total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", max_opi.recv_len/1024/1024, max_time, bw);
     }
-    printf("context_advance_time time is %8.4f\n", max_opi.context_advance_time);
-    printf("matching_procesing_header_mr_response_time time is %8.4f\n", max_opi.matching_procesing_header_mr_response_time);
-    printf("get_header_time time is %8.4f\n", max_opi.get_header_time);
-    printf("post_rput_time time is %8.4f\n", max_opi.post_rput_time);
-    printf("check_complete_rput_time time is %8.4f\n", max_opi.check_complete_rput_time);
-    printf("notification done time is %8.4f\n", max_opi.notification_done_time);
-    printf("send_immediate time is %8.4f\n", max_opi.sendimm_time);
-    printf("local mem req time is %8.4f\n", max_opi.local_mem_req_time);
-    printf("total mem req time is %8.4f\n", max_opi.total_mem_req_time);
+
+    if (odp.print_elapsed_time)
+    {
+	printf("context_advance_time time is %8.4f\n", max_opi.context_advance_time);
+	printf("matching_procesing_header_mr_response_time time is %8.4f\n", max_opi.matching_procesing_header_mr_response_time);
+	printf("get_header_time time is %8.4f\n", max_opi.get_header_time);
+	printf("post_rput_time time is %8.4f\n", max_opi.post_rput_time);
+	printf("check_complete_rput_time time is %8.4f\n", max_opi.check_complete_rput_time);
+	printf("notification done time is %8.4f\n", max_opi.notification_done_time);
+	printf("send_immediate time is %8.4f\n", max_opi.sendimm_time);
+	printf("local mem req time is %8.4f\n", max_opi.local_mem_req_time);
+	printf("total mem req time is %8.4f\n", max_opi.total_mem_req_time);
+    }
     printf("\n");
 }
 
@@ -89,6 +93,8 @@ void optiq_opi_clear()
     odp.print_pami_transport_status = false;
 
     odp.test_mpi_perf = true;
+
+    odp.print_elapsed_time = false;
 }
 
 void optiq_opi_timestamp_print(int rank)

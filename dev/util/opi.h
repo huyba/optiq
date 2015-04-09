@@ -65,6 +65,7 @@ struct optiq_debug_print {
     bool print_sourcedests_rank;
     bool print_pami_transport_status;
     bool test_mpi_perf;
+    bool print_elapsed_time;
 };
 
 extern "C" struct optiq_performance_index opi, max_opi;
