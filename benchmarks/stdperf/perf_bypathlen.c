@@ -30,14 +30,15 @@ int main(int argc, char **argv)
     }
 
     int sendcoord[5] = {0, 0, 0, 0, 0};
-    int recvcoord[5];
+    int recvcoord[5] = {0, 0, 0, 0, 0};
     int send_rank = optiq_topology_compute_node_id (topo->num_dims, topo->size, sendcoord);
     int recv_rank;
     std::vector<int> recvranks;
+    recvranks.clear();
 
-    for (int i = 0; i < 5; i++) 
+    for (int i = 4; i >= 0; i--) 
     {
-	for (int j = sendcoord[i]+1; j <= topo->size[i]/2; j++) 
+	for (int j = sendcoord[i] + 1; j <= topo->size[i] / 2; j++) 
 	{
 	    recvcoord[i] = j;
 	    recv_rank = optiq_topology_compute_node_id (topo->num_dims, topo->size, recvcoord);
@@ -47,7 +48,11 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < recvranks.size(); i++)
     {
-	recv_rank = recvranks[i];
+        recv_rank = recvranks[i];
+
+        if (world_rank == 0) {
+            printf("Test %d source = %d dest = %d\n", i, send_rank, recv_rank);
+        }
 
 	odp.print_path_id = true;
 
