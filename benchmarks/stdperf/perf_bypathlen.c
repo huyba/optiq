@@ -30,24 +30,27 @@ int main(int argc, char **argv)
     }
 
     int sendcoord[5] = {0, 0, 0, 0, 0};
-    int recvcoord[5];
+    int recvcoord[5] = {0, 0, 0, 0, 0};
     int send_rank = optiq_topology_compute_node_id (topo->num_dims, topo->size, sendcoord);
     int recv_rank;
     std::vector<int> recvranks;
+    recvranks.clear();
 
-    for (int i = 0; i < 5; i++) 
+    for (int i = 4; i >= 0; i--) 
     {
-	for (int j = sendcoord[i]+1; j <= topo->size[i]/2; j++) 
+	for (int j = sendcoord[i] + 1; j <= topo->size[i] / 2; j++) 
 	{
 	    recvcoord[i] = j;
 	    recv_rank = optiq_topology_compute_node_id (topo->num_dims, topo->size, recvcoord);
-	    recvranks.push_back(recv_rank);
+	    recvranks.push_back (recv_rank);
+	    //printf("recv coord [%d %d %d %d %d] recv_rank = %d\n", recvcoord[0], recvcoord[1], recvcoord[2], recvcoord[3], recvcoord[4], recv_rank);
 	}
     }
 
     for (int i = 0; i < recvranks.size(); i++)
     {
 	recv_rank = recvranks[i];
+	//printf("recv_rank = %d\n", recv_rank);
 
 	odp.print_path_id = true;
 
@@ -74,7 +77,7 @@ int main(int argc, char **argv)
 	    opi.iters = 1;
 	    optiq_opi_collect();
 	    if (world_rank == 0) {
-		printf("chunksize = %d\n", sched->chunk_size);
+		printf("\nchunksize = %d\n", sched->chunk_size);
 		optiq_opi_print();
 	    }
 
