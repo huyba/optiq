@@ -25,6 +25,10 @@ int main(int argc, char **argv)
     char *sendbuf = (char *) malloc (maxbytes);
     char *recvbuf = (char *) calloc (1, maxbytes);
 
+    for (int i = 0; i < maxbytes; i++) {
+	sendbuf[i] = i % 128;
+    }
+
     if (world_rank == 0) {
 	printf("Start to benchmark time to send by hops\n");
     }
@@ -58,10 +62,10 @@ int main(int argc, char **argv)
 
 	odp.print_path_id = true;
 
-	for (int nbytes = 1024; nbytes <= maxbytes; nbytes *= 2)
-	{
-	    sched->auto_chunksize = false;
-	    sched->chunk_size = nbytes;
+	//for (int nbytes = 1024; nbytes <= maxbytes; nbytes *= 2)
+	//{
+	//    sched->auto_chunksize = false;
+	//    sched->chunk_size = nbytes;
 
 	    memset (sendcounts, 0, sizeof(int) * world_size);
 	    memset (recvcounts, 0, sizeof(int) * world_size);
@@ -78,6 +82,12 @@ int main(int argc, char **argv)
 
 	    optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
+	    if (world_rank == recv_rank) {
+		if (memcmp(sendbuf, recvbuf, maxbytes) != 0) {
+		    printf("Rank %d recv invalid data\n", world_rank);
+		}
+	    }
+
 	    opi.iters = 1;
 	    optiq_opi_collect();
 	    if (world_rank == 0) {
@@ -86,7 +96,7 @@ int main(int argc, char **argv)
 	    }
 
 	    optiq_opi_clear();
-	}
+	//}
     }
 
     if (world_rank == 0) {

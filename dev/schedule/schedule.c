@@ -238,15 +238,15 @@ void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls
 
     for (int i = 0; i < pami_transport->size; i++)
     {
-        recv_len += recvcounts[i];
-        send_len += sendcounts[i];
+	recv_len += recvcounts[i];
+	send_len += sendcounts[i];
     }
 
     if (recv_len > 0) {
-        schedule->isDest = true;
+	schedule->isDest = true;
     }
     if (send_len > 0) {
-        schedule->isSource = true;
+	schedule->isSource = true;
     }
 
     /* Build a schedule to transfer data */
@@ -331,36 +331,56 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 
     schedule->maxnumpaths = 1;
     if (schedule->local_jobs.size() > 0) {
-        for (int i = 0; i < schedule->local_jobs.size(); i++) {
-            if (schedule->maxnumpaths < schedule->local_jobs[i].paths.size()) {
-                schedule->maxnumpaths = schedule->local_jobs[i].paths.size();
-            }
-        }
+	for (int i = 0; i < schedule->local_jobs.size(); i++) {
+	    if (schedule->maxnumpaths < schedule->local_jobs[i].paths.size()) {
+		schedule->maxnumpaths = schedule->local_jobs[i].paths.size();
+	    }
+	}
     }
 }
 
 void optiq_scheduler_map (std::vector<struct job> &jobs, std::vector<struct path *> &path_ids, std::vector<struct path *> &path_ranks)
 {
     /* Map paths to from node id to rank for jobs */
-        for (int i = 0; i < jobs.size(); i++)
-        {
-            for (int j = 0; j < jobs[i].paths.size(); j++)
-            {
-                for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
-                {
-                    jobs[i].paths[j]->arcs[k].u = jobs[i].paths[j]->arcs[k].u * topo->num_ranks_per_node + jobs[i].source_rank % topo->num_ranks_per_node;
-                    jobs[i].paths[j]->arcs[k].v = jobs[i].paths[j]->arcs[k].v * topo->num_ranks_per_node + jobs[i].source_rank % topo->num_ranks_per_node;
-                }
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
+	    {
+		jobs[i].paths[j]->arcs[k].u = jobs[i].paths[j]->arcs[k].u * topo->num_ranks_per_node + jobs[i].source_rank % topo->num_ranks_per_node;
+		jobs[i].paths[j]->arcs[k].v = jobs[i].paths[j]->arcs[k].v * topo->num_ranks_per_node + jobs[i].source_rank % topo->num_ranks_per_node;
+	    }
 
-                jobs[i].paths[j]->arcs.front().u = jobs[i].source_rank;
-                jobs[i].paths[j]->arcs.back().v = jobs[i].dest_rank;
-            }
-        }
+	    jobs[i].paths[j]->arcs.front().u = jobs[i].source_rank;
+	    jobs[i].paths[j]->arcs.back().v = jobs[i].dest_rank;
+	}
+    }
 }
 
-void optiq_schedule_print_optiq_jobs (std::vector<struct optiq_job> &local_jobs)
+void optiq_schedule_print_optiq_jobs (std::vector<struct optiq_job> &jobs)
 {
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
 
+    int world_rank = pami_transport->rank;
+
+    char strpath[1024];
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	printf("Rank %d job_id = %d source = %d dest = %d, bufsize = %d, offset = %d\n", world_rank, jobs[i].job_id, jobs[i].source_rank, jobs[i].dest_rank, jobs[i].buf_length, jobs[i].send_mr.offset);
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    printf("Rank %d job_id = %d #paths = %ld path_id = %d flow = %d\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
+
+	    sprintf(strpath, "%s", "");
+	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
+	    {
+		sprintf(strpath, "%s%d->", strpath, jobs[i].paths[j]->arcs[k].u);
+	    }
+	    sprintf(strpath, "%s%d", strpath, jobs[i].paths[j]->arcs.back().v);
+	    printf("Rank %d job_id = %d #paths = %ld path_id = %d %s\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, strpath);
+	}
+    }
 }
 
 /* Will do the follows:
@@ -380,8 +400,10 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
 
     int rank = pami_transport->rank;
 
+    /* Build lookup table for next dest of a forwarding message with the key is path id*/
     build_next_dests (rank, schedule->next_dests, path_ranks);
 
+    /* Build notify list for the final dest and immediate nodes to notify path is done */
     build_notify_lists (path_ranks, schedule->notify_list, schedule->intermediate_notify_list, schedule->num_active_paths, rank);
 
     /* Register memories */
@@ -456,13 +478,13 @@ void optiq_schedule_mem_destroy (struct optiq_schedule *schedule, struct optiq_p
     result = PAMI_Memregion_destroy (pami_transport->context, &schedule->send_mr.mr);
     if (result != PAMI_SUCCESS)
     {
-        printf("Destroy send_mr : No success\n");
+	printf("Destroy send_mr : No success\n");
     }
 
     result = PAMI_Memregion_destroy (pami_transport->context, &schedule->recv_mr.mr);
     if (result != PAMI_SUCCESS)
     {
-        printf("Destroy recv_mr : No success\n");
+	printf("Destroy recv_mr : No success\n");
     }
 }
 
@@ -484,7 +506,7 @@ void optiq_schedule_clear()
     optiq_schedule_mem_destroy (schedule, pami_transport);
 
     for (int i = 0; i < schedule->paths.size(); i++) {
-        free(schedule->paths[i]);
+	free(schedule->paths[i]);
     }
     schedule->jobs.clear();
     schedule->paths.clear();

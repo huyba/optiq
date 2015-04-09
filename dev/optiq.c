@@ -200,3 +200,17 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
     free (sendcounts);
     free (recvcounts);    
 }
+
+void optiq_execute ()
+{
+    std::vector<struct job> jobs;
+    std::vecotr<struct path *> paths;
+
+    optiq_input_get(jobs, paths);
+
+    optiq_algorithm_search_paths(jobs, paths);
+
+    optiq_scheduler_build_schedule(jobs, paths);
+
+    optiq_pami_transport_execute();
+}
