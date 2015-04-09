@@ -63,7 +63,7 @@ realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
-BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
+BENCHMARKS_DIR = /gpfs/mira-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
 	cp perf_bypathlen.x $(BENCHMARKS_DIR)/stdperf/pathlen/
