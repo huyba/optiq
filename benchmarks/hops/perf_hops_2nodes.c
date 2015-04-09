@@ -13,6 +13,7 @@ int main(int argc, char **argv)
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     int world_size = pami_transport->size;
     int world_rank = pami_transport->rank;
+    struct optiq_schedule *sched = optiq_schedule_get();
 
     int *sendcounts = (int *)calloc(1, sizeof(int) * world_size);
     int *sdispls = (int *)calloc(1, sizeof(int) * world_size);
@@ -34,8 +35,13 @@ int main(int argc, char **argv)
 	printf("Start to benchmark time to send by hops\n");
     }
 
-    for (int nbytes = 1024; nbytes < maxbytes; nbytes *= 2)
+    odp.print_path_rank = true;
+
+    for (int nbytes = 1024; nbytes <= maxbytes; nbytes *= 2)
     {
+	sched->auto_chunksize = false;
+	sched->chunk_size = nbytes;
+
 	memset (sendcounts, 0, sizeof(int) * world_size);
 	memset (recvcounts, 0, sizeof(int) * world_size);
 
@@ -54,9 +60,9 @@ int main(int argc, char **argv)
 	opi.iters = 1;
 	optiq_opi_collect();
 	if (world_rank == 0) {
+	    printf("chunksize = %d\n", sched->chunk_size);
 	    optiq_opi_print();
 	}
-
 
 	optiq_opi_clear();
     }

@@ -782,7 +782,9 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
 
     optiq_algorithm_search_path (path_ids, schedule->jobs, bfs, world_rank);
 
-    printf("Rank %d done searching\n", world_rank);
+    if (world_rank == 0) {
+	printf("Rank %d done searching\n", world_rank);
+    }
 
     if (world_rank == 0 && odp.print_path_id) 
     {
@@ -856,7 +858,9 @@ void optiq_schedule_build (void *sendbuf, int *sendcounts, int *sdispls, void *r
     /*Reset a few parameters*/
     optiq_schedule_set (*schedule, num_jobs, pami_transport->size);
 
-    printf("Rank %d done scheduling\n", world_rank);
+    if (world_rank == 0) {
+	printf("Rank %d done scheduling\n", world_rank);
+    }
 
     /*Free path_ids*/
     /*optiq_algorithm_destroy();*/
