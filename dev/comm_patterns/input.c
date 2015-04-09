@@ -1,18 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <vector>
+
 #include <mpi.h>
 
 #include "input.h"
 
-int optiq_input_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector<int> > > &source_dests, std::vector<struct job> *jobs)
+int optiq_input_convert_sendcounts_to_jobs (int *sendcounts, std::vector<struct job> *jobs, int world_size, int ranks_per_node)
 {
-    source_dests.clear();
-
-    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-
-    int world_size = pami_transport->size;
-    int world_rank = pami_transport->rank;
     int num_dests = 0;
 
     for (int i = 0; i < world_size; i++) {
@@ -34,7 +30,7 @@ int optiq_input_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector
 	}
     }
 
-    int *all_num_dests = pami_transport->sched->all_num_dests;
+    int *all_num_dests = (int *) calloc (1, sizeof(int) * world_size);
 
     MPI_Allgather(&num_dests, 1, MPI_INT, all_num_dests, 1, MPI_INT, MPI_COMM_WORLD);
 
@@ -59,18 +55,17 @@ int optiq_input_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector
     {
 	if (all_num_dests[i] > 0) 
 	{
-	    std::vector<int> d;
-
 	    for (int j = offset; j < offset + all_num_dests[i]; j++) 
 	    {
-		d.push_back (all_dests[j]);
 		distinguished_dests[all_dests[j]] = true;
 
 		if (jobs != NULL)
 		{
 		    struct job newjob;
 		    newjob.source_rank = i;
+		    newjob.source_id = newjob.source_rank / ranks_per_node;
 		    newjob.dest_rank = all_dests[j];
+		    newjob.dest_id = newjob.dest_rank / ranks_per_node;
 		    newjob.job_id = id;
 
 		    jobs->push_back(newjob);
@@ -79,8 +74,6 @@ int optiq_input_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector
 		}
 	    }
 
-	    std::pair<int, std::vector<int> > p = make_pair(i, d);
-	    source_dests.push_back(p);
 	}
 	offset += all_num_dests[i];
     }
@@ -104,18 +97,4 @@ int optiq_input_get_pair(int *sendcounts, std::vector<std::pair<int, std::vector
     free(displs);
 
     return num_distinguished_dests;
-}
-
-void optiq_input_alltoallv (std::vector<struct job> &jobs)
-{
-    struct topology *topo = optiq_topology_get();
-
-    if (topo->num_ranks_per_node > 1) 
-    {
-        for (int i = 0; i < jobs.size(); i++)
-        {
-            jobs[i].source_id = jobs[i].source_rank / topo->num_ranks_per_node;
-            jobs[i].dest_id = jobs[i].dest_rank / topo->num_ranks_per_node;
-        }
-    }
 }

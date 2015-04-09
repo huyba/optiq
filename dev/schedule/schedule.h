@@ -59,7 +59,6 @@ struct optiq_schedule {
 
     std::vector<struct optiq_job> local_jobs;
 
-    int *all_num_dests;
     int active_immsends;
 
     std::vector<struct path *> paths;
@@ -82,6 +81,8 @@ extern "C" struct optiq_schedule *schedule;
 void optiq_schedule_init();
 
 struct optiq_schedule *optiq_schedule_get();
+
+void optiq_schedule_assign_path_ids_to_jobs (std::vector<struct path *> &path_ids, std::vector<struct job> &jobs, std::vector<struct path *> &path_ranks, int ranks_per_node);
 
 void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, std::vector<std::pair<int, std::vector<int> > > &intermediate_notify_list, int &num_active_paths, int world_rank);
 

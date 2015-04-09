@@ -20,6 +20,7 @@
 
 #include "cesm.h"
 #include "patterns.h"
+#include "input.h"
 
 /*
  * Init the optiq lib. Will init topology, algorithm, schedule and transport.

@@ -37,7 +37,6 @@ void optiq_schedule_init()
 
     schedule->chunk_size = 0;
 
-    schedule->all_num_dests = (int *) malloc (sizeof(int) * pami_transport->size);
     schedule->active_immsends = pami_transport->size;
 
     schedule->dmode = DQUEUE_ROUND_ROBIN;
@@ -49,6 +48,29 @@ void optiq_schedule_init()
 struct optiq_schedule *optiq_schedule_get()
 {
     return schedule;
+}
+
+void optiq_schedule_assign_path_ids_to_jobs (std::vector<struct path *> &path_ids, std::vector<struct job> &jobs, std::vector<struct path *> &path_ranks, int ranks_per_node)
+{
+    int path_id = 0;
+
+    for (int i = 0; i < path_ids.size(); i++)
+    {
+	for (int j = 0; j < jobs.size(); j++) 
+	{
+	    if (path_ids[i]->arcs.front().u == jobs[j].source_id && path_ids[i]->arcs.back().v == jobs[j].dest_id)
+	    {
+		struct path *np = (struct path*) calloc (1, sizeof(struct path));
+
+		memcpy (np, path_ids[i], sizeof(struct path));
+		np->path_id = path_id;
+		np->arcs = path_ids[i]->arcs;
+
+		path_ranks.push_back(np);
+		path_id++;
+	    }
+	}
+    }
 }
 
 void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, std::vector<std::pair<int, std::vector<int> > > &intermediate_notify_list, int &num_active_paths, int world_rank)
@@ -339,7 +361,7 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
     }
 }
 
-void optiq_scheduler_map (std::vector<struct job> &jobs, std::vector<struct path *> &path_ids, std::vector<struct path *> &path_ranks)
+void optiq_scheduler_map_job_path_id_rank (std::vector<struct job> &jobs, std::vector<struct path *> &path_ids, std::vector<struct path *> &path_ranks)
 {
     /* Map paths to from node id to rank for jobs */
     for (int i = 0; i < jobs.size(); i++)
@@ -500,7 +522,6 @@ void optiq_schedule_clear()
     schedule->isSource = false;
     schedule->isDest = false;
 
-    memset(schedule->all_num_dests, 0, pami_transport->size * sizeof(int));
     schedule->active_immsends = pami_transport->size;
 
     optiq_schedule_mem_destroy (schedule, pami_transport);
@@ -521,7 +542,6 @@ void optiq_schedule_finalize()
 
     free(schedule->next_dests);
     free(schedule->recv_bytes);
-    free(schedule->all_num_dests);
 
     free(schedule);
 }
