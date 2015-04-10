@@ -116,13 +116,13 @@ void test_cesm_coupling (std::vector<int> &source_ranks, std::vector<int> &dest_
 
 	    optiq_schedule_split_jobs (pami_transport, schedule.local_jobs, chunk_size);
 
-	    optiq_schedule_set (schedule, dest_ranks.size(), pami_transport->size);
+	    optiq_schedule_set (&schedule, dest_ranks.size(), pami_transport->size);
 	    optiq_schedule_execute (schedule, pami_transport);
 	}
     }
 
     /*Deregister meme*/
-    optiq_schedule_mem_destroy(schedule, pami_transport);
+    optiq_schedule_mem_destroy(&schedule, pami_transport);
 
     optiq_schedule_finalize ();
 
