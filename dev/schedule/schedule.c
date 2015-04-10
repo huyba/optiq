@@ -235,7 +235,7 @@ void optiq_mem_reg (void *buf, int *counts, int *displs, pami_memregion_t *mr)
     }
 
     reg_size = max_pivot - min_pivot;
-    if (reg_size > 0)
+    /*if (reg_size > 0 && odp->print_mem_reg_msg)
     {
 	if (schedule->isSource) {
 	    printf("Rank %d reg_size = %d to send, min_pivot = %d, max_pivot = %d\n", pami_transport->rank, reg_size, min_pivot, max_pivot);
@@ -243,7 +243,7 @@ void optiq_mem_reg (void *buf, int *counts, int *displs, pami_memregion_t *mr)
 	if (schedule->isDest) {
             printf("Rank %d reg_size = %d to recv, min_pivot = %d, max_pivot = %d\n", pami_transport->rank, reg_size, min_pivot, max_pivot);
         }
-    }
+    }*/
 
     if (reg_size > 0)
     {

@@ -7,27 +7,22 @@
 
 void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct path *> &mpi_paths)
 {
+    int world_size;
+
+    MPI_Comm_size (MPI_COMM_WORLD, &world_size);
+
+    std::vector<struct job> jobs;
+    optiq_input_convert_sendcounts_to_jobs (sendcounts, &jobs, world_size, topo->num_ranks_per_node);
+
     mpi_paths.clear();
 
-    std::vector<std::pair<int, std::vector<int> > > source_dests;
+    std::vector<std::pair<int, int> > source_dests;
     source_dests.clear();
 
-    optiq_schedule_get_pair (sendcounts, source_dests, NULL);
-
-    /*if (pami_transport->rank == 0) {
-	optiq_schedule_print_sourcedests(source_dests);
-    }*/
-
-    if (topo->num_ranks_per_node > 1) 
+    for (int i = 0; i < jobs.size(); i++)
     {
-	for (int i = 0; i < source_dests.size(); i++)
-	{
-	    source_dests[i].first = source_dests[i].first / topo->num_ranks_per_node;
-	    for (int j = 0; j < source_dests[i].second.size(); j++)
-	    {
-		source_dests[i].second[j] = source_dests[i].second[j] / topo->num_ranks_per_node;
-	    }
-	}
+	std::pair<int, int> p = std::make_pair (jobs[i].source_id, jobs[i].dest_id);
+	source_dests.push_back(p);
     }
 
     optiq_topology_path_reconstruct_new (source_dests, mpi_paths);

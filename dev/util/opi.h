@@ -63,6 +63,7 @@ struct optiq_debug_print {
     bool print_local_jobs;
     bool print_sourcedests_id;
     bool print_sourcedests_rank;
+    bool print_mem_reg_msg;
     bool print_mem_exchange_status;
     bool print_pami_transport_status;
     bool test_mpi_perf;
