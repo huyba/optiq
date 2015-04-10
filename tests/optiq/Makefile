@@ -63,6 +63,12 @@ realclean: clean
 TEST_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/tests
 
 cp:
+	mkdir -p $(TEST_DIR)
+	mkdir -p $(TEST_DIR)/optiq/init/
+	mkdir -p $(TEST_DIR)/optiq/alltoallv/
+	mkdir -p $(TEST_DIR)/optiq/file/
+	mkdir -p $(TEST_DIR)/optiq/pathbased/
+	mkdir -p $(TEST_DIR)/optiq/kpaths/
 	cp test_optiq_init.x $(TEST_DIR)/optiq/init/
 	cp test_optiq_alltoallv.x $(TEST_DIR)/optiq/alltoallv/
 	cp test_optiq_file.x $(TEST_DIR)/optiq/file/
