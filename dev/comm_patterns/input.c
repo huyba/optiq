@@ -95,6 +95,7 @@ int optiq_input_convert_sendcounts_to_jobs (int *sendcounts, std::vector<struct 
     }
 
     free(displs);
+    free(all_num_dests);
 
     return num_distinguished_dests;
 }

@@ -24,7 +24,7 @@ bool add_more_load (int u, int v, int **current_load, int max_load)
 }
 
 
-void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > all_sd, struct multibfs *bfs, int**current_load, int max_load) 
+void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path *> &complete_paths, std::vector<std::pair<int, int> > &source_dests, struct multibfs *bfs, int**current_load, int max_load) 
 {
     struct timeval t0, t1, t2, t3;
 
@@ -32,22 +32,12 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
 
     int num_nodes = bfs->num_nodes;
 
-    std::vector<std::pair<int, std::vector<int> > > sd;
-    sd.clear();
-
-    bool isReverted = check_and_reverse (all_sd, sd, num_nodes);
-    if (!isReverted) {
-	sd = all_sd;
-    }
-
-    int num_sources = sd.size();
+    int num_sources = source_dests.size();
 
     int *source_dest = (int *) calloc (1, sizeof(int) * num_nodes * num_nodes);
 
-    for (int i = 0; i < sd.size(); i++) {
-	for (int j = 0; j < sd[i].second.size(); j++) {
-	    source_dest[sd[i].first * num_nodes + sd[i].second[j]] = 1;
-	}
+    for (int i = 0; i < source_dests.size(); i++) {
+	source_dest[source_dests[i].first * num_nodes + source_dests[i].second] = 1;
     }
 
     int *load = (int *) calloc (1, sizeof(int) * num_nodes * num_nodes);
@@ -71,9 +61,9 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
     while (!done) 
     {
 	done = true;
-	for (int i = 0; i < sd.size(); i++) 
+	for (int i = 0; i < source_dests.size(); i++) 
 	{
-	    int source_id = sd[i].first;
+	    int source_id = source_dests[i].first;
 
 	    for (int j = 0; j < bfs->neighbors[source_id].size(); j++) 
 	    {
@@ -183,29 +173,6 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
     hp_destroy(bfs->heap);
     free(bfs->heap);
 
-    /*Reverted path again*/
-    if (isReverted) {
-	for (int i = 0; i < complete_paths.size(); i++) {
-	    struct path *p = complete_paths[i];
-
-	    /*Rever edges order*/
-	    for (int j = 0; j < p->arcs.size()/2; j++) 
-	    {
-		struct arc a = p->arcs[j];
-		p->arcs[j] = p->arcs[p->arcs.size() - j -1];
-		p->arcs[p->arcs.size() - j -1] = a;
-	    }
-
-	    /*Revert endpoints order*/
-	    for (int j = 0; j < p->arcs.size(); j++) 
-	    {
-		int temp = p->arcs[j].u;
-		p->arcs[j].u = p->arcs[j].v;
-		p->arcs[j].v = temp;
-	    }
-	}
-    }
-
     optiq_path_assign_ids(complete_paths);
 
     /*
@@ -220,7 +187,7 @@ void optiq_alg_heuristic_search_manytomany_current_load (std::vector<struct path
        */
 }
 
-void optiq_alg_heuristic_search_mpiplus (std::vector<struct path *> &paths, std::vector<std::pair<int, std::vector<int> > > source_dests)
+void optiq_alg_heuristic_search_mpiplus (std::vector<struct path *> &paths, std::vector<std::pair<int, int> > &source_dests)
 {
     struct multibfs *bfs = optiq_multibfs_get();
 

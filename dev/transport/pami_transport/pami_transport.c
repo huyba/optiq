@@ -701,8 +701,6 @@ void optiq_recv_mem_response_fn(pami_context_t context, void *cookie, const void
 void optiq_recv_num_dests_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
 {
     struct optiq_pami_transport *pami_transport = (struct optiq_pami_transport *)cookie;
-
-    pami_transport->sched->all_num_dests[origin] = *((int *) data);
     pami_transport->sched->active_immsends--;
 }
 
@@ -1128,9 +1126,9 @@ void optiq_pami_transport_exchange_memregions ()
     pami_transport->transport_info.num_mr_requests = 0;
     pami_transport->transport_info.num_mr_responses = 0;
 
-    /*if (true) {
+    if (odp.print_mem_exchange_status) {
 	printf("Rank = %d Memory regions exchange completed.\n", rank);
-    }*/
+    }
 }
 
 void optiq_pami_transport_rput_message (struct optiq_message_header *header)

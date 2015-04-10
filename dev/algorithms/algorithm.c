@@ -60,6 +60,14 @@ void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector
 
     optiq_job_map_jobs_to_source_dests (jobs, source_dests);
 
+    std::vector<std::pair<int, int> > sd;
+    sd.clear();
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	std::pair<int, int> p = std::make_pair (jobs[i].source_id, jobs[i].dest_id);
+        sd.push_back(p);
+    }
+
     struct optiq_algorithm *algorithm = optiq_algorithm_get();
     struct topology *topo = optiq_topology_get();
 
@@ -77,7 +85,7 @@ void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector
 
     if (algorithm->search_alg == OPTIQ_ALG_MPIPLUS)
     {
-        optiq_alg_heuristic_search_mpiplus (paths, source_dests);
+        optiq_alg_heuristic_search_mpiplus (paths, sd);
     }
 
     if (algorithm->search_alg == OPTIQ_ALG_KPATHS) 

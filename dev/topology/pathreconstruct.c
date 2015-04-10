@@ -5,22 +5,18 @@
 
 #include "pathreconstruct.h"
 
-void optiq_topology_path_reconstruct_new (std::vector<std::pair<int, std::vector<int> > > &source_dests, std::vector<struct path *> &mpi_paths)
+void optiq_topology_path_reconstruct_new (std::vector<std::pair<int, int> > &source_dests, std::vector<struct path *> &mpi_paths)
 {
-    for (int i = 0; i < source_dests.size(); i ++)
+    for (int i = 0; i < source_dests.size(); i++)
     {
         int source_rank = source_dests[i].first;
+	int dest_rank = source_dests[i].second;
 
-        for (int j = 0; j < source_dests[i].second.size(); j++)
-        {
-            int dest_rank = source_dests[i].second[j];
+        struct path *p = (struct path*) calloc (1, sizeof (struct path));
 
-            struct path *p = (struct path*) calloc (1, sizeof (struct path));
+        optiq_topolog_reconstruct_path(source_rank, dest_rank, *p);
 
-            optiq_topolog_reconstruct_path(source_rank, dest_rank, *p);
-
-	    mpi_paths.push_back(p);
-	}
+	mpi_paths.push_back(p);
     }
 }
 

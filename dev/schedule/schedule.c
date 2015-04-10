@@ -235,9 +235,15 @@ void optiq_mem_reg (void *buf, int *counts, int *displs, pami_memregion_t *mr)
     }
 
     reg_size = max_pivot - min_pivot;
-    /*if (schedule->isSource || schedule->isDest) {
-      printf("Rank %d reg_size = %d, min_pivot = %d, max_pivot = %d\n", pami_transport->rank, reg_size, min_pivot, max_pivot);
-      }*/
+    if (reg_size > 0)
+    {
+	if (schedule->isSource) {
+	    printf("Rank %d reg_size = %d to send, min_pivot = %d, max_pivot = %d\n", pami_transport->rank, reg_size, min_pivot, max_pivot);
+	}
+	if (schedule->isDest) {
+            printf("Rank %d reg_size = %d to recv, min_pivot = %d, max_pivot = %d\n", pami_transport->rank, reg_size, min_pivot, max_pivot);
+        }
+    }
 
     if (reg_size > 0)
     {
@@ -300,7 +306,7 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 	    if (world_rank == jobs[i].source_rank) 
 	    {
 		struct optiq_job new_job;
-
+		new_job.job_id = jobs[i].job_id;
 		new_job.source_rank = jobs[i].source_rank;
 		new_job.dest_rank = jobs[i].dest_rank;
 		new_job.paths = jobs[i].paths;
@@ -432,13 +438,13 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     optiq_schedule_memory_register (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, sched);
 
     /* Add local jobs */
-    optiq_schedule_create_local_jobs (schedule->jobs, path_ranks, schedule->local_jobs, sendcounts, sdispls);
+    optiq_schedule_create_local_jobs (jobs, path_ranks, schedule->local_jobs, sendcounts, sdispls);
 
     if (odp.print_local_jobs) {
 	optiq_schedule_print_optiq_jobs (schedule->local_jobs);
     }
 
-    /* Split a message into chunk-size messages*/
+    /* Split a message into chunk-size messages */
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, schedule->chunk_size);
 
     /*Reset a few parameters*/

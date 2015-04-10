@@ -61,8 +61,6 @@ struct optiq_schedule {
 
     int active_immsends;
 
-    std::vector<struct path *> paths;
-
     std::vector<std::pair<int, std::vector<int> > > notify_list;
     std::vector<std::pair<int, std::vector<int> > > intermediate_notify_list;
 
@@ -73,6 +71,7 @@ struct optiq_schedule {
     bool auto_chunksize;
     int maxnumpaths;
 
+    std::vector<struct path *> paths;
     std::vector<struct job> jobs;
 };
 

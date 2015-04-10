@@ -1,6 +1,5 @@
 #include "optiq.h"
 #include <mpi.h>
-#include "optiq_benchmark.h"
 
 void optiq_init(int argc, char **argv)
 {
@@ -41,15 +40,16 @@ void optiq_alltoallv (void *sendbuf, int *sendcounts, int *sdispls, void *recvbu
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     int rank = pami_transport->rank;
-    int size = pami_transport->size;
+    int num_ranks = pami_transport->size;
+    struct optiq_schedule *sched = optiq_schedule_get();
 
-    std::vector<struct job> jobs;
-    std::vector<struct path *> path_ids, path_ranks;
+    std::vector<struct job> &jobs = sched->jobs;
+    std::vector<struct path *> path_ids, &path_ranks = sched->paths;
     jobs.clear();
     path_ids.clear();
     path_ranks.clear();
 
-    optiq_input_convert_sendcounts_to_jobs(sendcounts, &jobs, size, topo->num_ranks_per_node);
+    optiq_input_convert_sendcounts_to_jobs(sendcounts, &jobs, num_ranks, topo->num_ranks_per_node);
     
     optiq_algorithm_search_path (path_ids, jobs, bfs, rank);
 
@@ -182,8 +182,6 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 	    testbuf[i] = i % 128;
 	}
     }
-
-    optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, paths);
 

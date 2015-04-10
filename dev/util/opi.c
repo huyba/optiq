@@ -90,6 +90,7 @@ void optiq_opi_clear()
     odp.print_local_jobs = false;
     odp.print_sourcedests_id = false;
     odp.print_sourcedests_rank = false;
+    odp.print_mem_exchange_status = false;
     odp.print_pami_transport_status = false;
 
     odp.test_mpi_perf = true;

@@ -40,6 +40,11 @@ int main(int argc, char **argv)
 	printf("Start to test optiq_alltoallv\n");
     }
 
+    /*odp.print_local_jobs = true;
+    odp.print_mem_exchange_status = true;
+    odp.print_pami_transport_status = true;
+    odp.print_rput_msg = true;*/
+
     int iters = 20;
     for (int i = 0; i < iters; i++) {
 	optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
