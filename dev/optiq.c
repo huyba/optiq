@@ -1,6 +1,16 @@
 #include "optiq.h"
 #include <mpi.h>
 
+/*
+ * Init the optiq, includes:
+ * 1. topology
+ * 2. transport
+ * 3. schedule
+ * 4. algorithm
+ * 5. mpi
+ * 6. print topo info
+ * 7. clear the statistic info.
+ * */
 void optiq_init(int argc, char **argv)
 {
     optiq_topology_init();
@@ -36,6 +46,10 @@ void optiq_finalize()
     MPI_Finalize();
 }
 
+
+/*
+ * Transfer data in the form of alltoallv format.
+ * */
 void optiq_alltoallv (void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
@@ -76,6 +90,9 @@ void optiq_alltoallv (void *sendbuf, int *sendcounts, int *sdispls, void *recvbu
     optiq_schedule_clear ();
 }
 
+/* 
+ * Transfer data with requests from file in the format of : source dest demand
+ * */
 void optiq_mton_from_file(char *mtonfile)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
@@ -104,6 +121,9 @@ void optiq_mton_from_file(char *mtonfile)
     free(rdispls);
 }
 
+/* 
+ * Transfer data with requests from file in the format of : source dest demand with buffer provided.
+ * */
 void optiq_mton_from_file_and_buffers (void *sendbuf, int *sdispls, void *recvbuf, int *rdispls, char *mtonfile)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
@@ -127,6 +147,9 @@ void optiq_mton_from_file_and_buffers (void *sendbuf, int *sdispls, void *recvbu
     free (recvcounts);
 }
 
+/*
+ * Transfer data with paths and jobs from file.
+ * */
 void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
