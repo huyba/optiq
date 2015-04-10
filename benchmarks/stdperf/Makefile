@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(MOD)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o
 
-all: bdev mpibm perf_bypathlen.x cp
+all: bdev mpibm perf_bypathlen.x perf_jobs_fromfile.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -67,3 +67,4 @@ BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
 	cp perf_bypathlen.x $(BENCHMARKS_DIR)/stdperf/pathlen/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/

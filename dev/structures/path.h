@@ -55,4 +55,6 @@ void optiq_path_assign_ids(std::vector<struct path *> &complete_paths);
 
 void optiq_path_reverse_paths (std::vector<struct path *> &complete_paths);
 
+void optiq_path_creat_path_ids_from_path_ranks(std::vector<struct path *> &path_ids, std::vector<struct path *> &path_ranks, int num_ranks_per_node);
+
 #endif

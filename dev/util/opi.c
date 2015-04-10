@@ -1,5 +1,6 @@
 #include "opi.h"
 #include <mpi.h>
+#include <stdlib.h>
 
 struct optiq_performance_index opi, max_opi;
 struct optiq_debug_print odp;
@@ -66,6 +67,14 @@ void optiq_opi_print()
 
 void optiq_opi_clear()
 {
+    for (int i = 0; i < opi.paths.size(); i++)
+    {
+	if (opi.paths[i] != NULL) {
+	    free(opi.paths[i]);
+	}
+    }
+    opi.paths.clear();
+
     opi.recv_len = 0;
     opi.sendimm_time  = 0;
     opi.notification_done_time = 0;
@@ -76,7 +85,6 @@ void optiq_opi_clear()
     opi.get_header_time = 0;
     opi.post_rput_time = 0;
     opi.check_complete_rput_time = 0;
-    opi.paths.clear();
     opi.timestamps.clear();
     opi.total_mem_req_time = 0;
     opi.local_mem_req_time = 0;

@@ -44,7 +44,7 @@ void optiq_alltoallv (void *sendbuf, int *sendcounts, int *sdispls, void *recvbu
     struct optiq_schedule *sched = optiq_schedule_get();
 
     std::vector<struct job> &jobs = sched->jobs;
-    std::vector<struct path *> path_ids, &path_ranks = sched->paths;
+    std::vector<struct path *> &path_ids = opi.paths, &path_ranks = sched->paths;
     jobs.clear();
     path_ids.clear();
     path_ranks.clear();
@@ -54,6 +54,14 @@ void optiq_alltoallv (void *sendbuf, int *sendcounts, int *sdispls, void *recvbu
     optiq_algorithm_search_path (path_ids, jobs, bfs, rank);
 
     optiq_schedule_assign_path_ids_to_jobs (path_ids, jobs, path_ranks, topo->num_ranks_per_node);
+
+    if (rank == 0) 
+    {
+	char filepath[256];
+	jobs[0].name = filepath;
+	sprintf(filepath, "test%d_%d", jobs[0].source_id, jobs[0].dest_id);
+	optiq_job_write_to_file (jobs, filepath);
+    }
 
     optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, path_ranks);
 
@@ -129,10 +137,12 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 
     std::vector<struct job> &jobs = sched->jobs;
     jobs.clear();
-    std::vector<struct path *> &paths = sched->paths;
-    paths.clear();
+    std::vector<struct path *> &path_ids = opi.paths, &path_ranks = sched->paths;
+    path_ranks.clear();
 
-    optiq_jobs_read_from_file (jobs, paths, jobfile);
+    optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
+
+    optiq_path_creat_path_ids_from_path_ranks(path_ids, path_ranks, topo->num_ranks_per_node);
 
     if (rank == 0) {
 	printf("%s\n", jobs[0].name);
@@ -183,7 +193,7 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 	}
     }
 
-    optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, paths);
+    optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, path_ranks);
 
     MPI_Barrier(MPI_COMM_WORLD);
     

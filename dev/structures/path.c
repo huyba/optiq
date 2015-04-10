@@ -375,3 +375,24 @@ void optiq_path_reverse_paths (std::vector<struct path *> &complete_paths)
 	}
     }
 }
+
+void optiq_path_creat_path_ids_from_path_ranks(std::vector<struct path *> &path_ids, std::vector<struct path *> &path_ranks, int num_ranks_per_node)
+{
+    for (int i = 0; i < path_ranks.size(); i++)
+    {
+	struct path *p = (struct path *) calloc (1, sizeof (struct path));
+	memcpy (p, path_ranks[i], sizeof (struct path));
+	p->arcs = path_ranks[i]->arcs;
+
+	if (num_ranks_per_node > 1)
+	{
+	    for (int j = 0; j < p->arcs.size(); j++)
+	    {
+		p->arcs[j].u = p->arcs[j].u / num_ranks_per_node;
+		p->arcs[j].v = p->arcs[j].v / num_ranks_per_node;
+	    }
+	}
+
+	path_ids.push_back(p);
+    }
+}
