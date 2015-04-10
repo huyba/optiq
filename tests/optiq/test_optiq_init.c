@@ -6,11 +6,11 @@ int main(int argc, char **argv)
 
     if (pami_transport->rank == 0)
     {
-	optiq_topology_print(topo);
+        optiq_topology_print(topo);
 
-	optiq_multibfs_print();
+        optiq_multibfs_print();
 
-	optiq_pami_transport_print();
+        optiq_pami_transport_print();
     }
 
     optiq_finalize();
