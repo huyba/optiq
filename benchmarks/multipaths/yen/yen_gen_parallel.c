@@ -16,6 +16,8 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     MPI_Comm_size (MPI_COMM_WORLD, &size);
     char pairfile[256];
 
+    MPI_Barrier (MPI_COMM_WORLD);
+
     for (int i = 0; i < jobs.size(); i++)
     {
 	if (rank == i % size)
@@ -46,6 +48,8 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
 	    sprintf(pairfile, "%s_%d", jobfile, jobs[i].job_id);
 	    optiq_jobs_read_from_file (jobs, paths, pairfile);
 	}
+
+	optiq_job_remove_paths_over_maxload (jobs, 1, size, topo->num_ranks_per_node);
 
 	/*Write to a file*/
 	optiq_job_write_to_file (jobs, jobfile);

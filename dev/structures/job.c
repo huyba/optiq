@@ -193,3 +193,68 @@ void optiq_job_map_jobs_to_source_dests (std::vector<struct job> &jobs, std::vec
         }
     }
 }
+
+void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int maxload, int size, int num_ranks_per_node)
+{
+    int **load = (int **) calloc (1, sizeof(int *) * size);
+
+    for (int i = 0; i < size; i++) {
+	load[i] = (int *) calloc (1, sizeof(int *) * size);
+    }
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	jobs[i].kpaths = jobs[i].paths;
+    }
+
+    bool finished = false;
+
+    int iters = 0;
+
+    while (!finished)
+    {
+	finished = true;
+
+	for (int i = 0; i < jobs.size(); i++)
+	{
+	    bool kept = false;
+
+	    /* Any path at index less than iters is kept */
+	    while (jobs[i].paths.size() > iters && !kept)
+	    {
+	        struct path *p = jobs[i].paths[iters];
+		    
+		bool underload = true;
+
+		for (int j = 0; j < p->arcs.size(); j++)
+		{
+		    int u = p->arcs[j].u / num_ranks_per_node;
+		    int v = p->arcs[j].v / num_ranks_per_node;
+
+		    if (load[u][v] >= maxload) {
+			underload = false;
+			break;
+		    }
+		}
+
+		if (underload) 
+		{
+		    for (int j = 0; j < p->arcs.size(); j++)
+		    {
+			int u = p->arcs[j].u / num_ranks_per_node;
+			int v = p->arcs[j].v / num_ranks_per_node;
+			load[u][v]++;
+		    }
+
+		    kept = true;
+		    finished = false;
+		} 
+		else {
+		    jobs[i].paths.erase(jobs[i].paths.begin() + iters);
+		}
+	    }
+	}
+
+	iters++;
+    }
+}
