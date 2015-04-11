@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(MOD)/model.o
 
-all: bdev test_optiq_init.x test_optiq_alltoallv.x test_optiq_file.x test_optiq_pathbased.x test_optiq_kpaths.x cp
+all: bdev test_optiq_init.x test_optiq_alltoallv.x test_optiq_file.x test_optiq_pathbased.x test_optiq_kpaths.x test_optiq_jobs_from_file.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -74,3 +74,4 @@ cp:
 	cp test_optiq_file.x $(TEST_DIR)/optiq/file/
 	cp test_optiq_pathbased.x $(TEST_DIR)/optiq/pathbased/
 	cp test_optiq_kpaths.x $(TEST_DIR)/optiq/kpaths/
+	co test_optiq_jobs_from_file.x $(TEST_DIR)/optiq/jobfile/

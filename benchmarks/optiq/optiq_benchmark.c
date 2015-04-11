@@ -94,3 +94,73 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     optiq_opi_clear();
 }
 
+void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
+{
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    int rank = pami_transport->rank;
+    int size = pami_transport->size;
+
+    struct optiq_schedule *sched = optiq_schedule_get();
+
+    std::vector<struct job> &jobs = sched->jobs;
+    jobs.clear();
+    std::vector<struct path *> &path_ids = opi.paths, &path_ranks = sched->paths;
+    path_ranks.clear();
+
+    optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
+
+    for (int i = 0; i < jobs.size(); i++) {
+	jobs[i].demand = datasize;
+    }
+
+    optiq_path_creat_path_ids_from_path_ranks(path_ids, path_ranks, topo->num_ranks_per_node);
+
+    if (rank == 0) {
+	printf("%s\n", jobs[0].name);
+    }
+
+    int *sendcounts, *sdispls, *recvcounts, *rdispls;
+    char *sendbuf, *recvbuf;
+
+    optiq_input_convert_jobs_to_alltoallv (jobs, &sendbuf, &sendcounts, &sdispls, &recvbuf, &recvcounts, &rdispls, size, rank);
+
+    optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, path_ranks);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    
+    if (rank == 0) {
+	printf("Schedule done.\n");
+    }
+
+    optiq_pami_transport_exchange_memregions ();
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Memory exchange done.\n");
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    optiq_pami_transport_execute_new ();
+
+    optiq_schedule_clear ();
+
+    if (schedule->recv_len > 0) 
+    {
+	char *testbuf = (char *) malloc (schedule->recv_len);
+
+	for (int i = 0; i < schedule->recv_len; i++) {
+	    testbuf[i] = i % 128;
+	}
+
+	if (memcmp (recvbuf, testbuf, schedule->recv_len) != 0) {
+	    printf("Rank %d encounter data corrupted\n", rank);
+	}
+    }
+    
+    free (sendcounts);
+    free (recvcounts);
+}

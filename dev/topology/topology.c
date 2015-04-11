@@ -34,6 +34,7 @@ void optiq_topology_init ()
     optiq_topology_get_size_bgq(topo->size);
     optiq_topology_init_with_params(num_dims, topo->size, topo);
 
+    topo->num_ranks_per_node = 1;
     topo->initialized = true;
 }
 
@@ -67,10 +68,6 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct topology *t
 
 struct topology* optiq_topology_get()
 {
-    if (topo == NULL) {
-	optiq_topology_init();
-    }
-
     return topo;
 }
 

@@ -165,56 +165,21 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 
     optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
 
+    for (int i = 0; i < jobs.size(); i++) 
+    {
+	jobs[i].demand = datasize;
+    }
+
     optiq_path_creat_path_ids_from_path_ranks(path_ids, path_ranks, topo->num_ranks_per_node);
 
     if (rank == 0) {
 	printf("%s\n", jobs[0].name);
     }
 
-    int *sendcounts = (int *) calloc (1, sizeof(int) * size);
-    int *recvcounts = (int *) calloc (1, sizeof(int) * size);
-    int *sdispls = (int *) calloc (1, sizeof(int) * size);
-    int *rdispls = (int *) calloc (1, sizeof(int) * size);
+    int *sendcounts, *sdispls, *recvcounts, *rdispls;
+    char *sendbuf, *recvbuf;
 
-    char *sendbuf, *recvbuf, *testbuf;
-
-    int sendbytes = 0, recvbytes = 0;
-
-    for (int i = 0; i < jobs.size(); i++) 
-    {
-	if (jobs[i].source_rank == rank)
-	{
-	    sendcounts[jobs[i].dest_rank] = datasize;
-	    sdispls[jobs[i].dest_rank] = sendbytes;
-	    sendbytes += datasize;
-	}
-
-	if (jobs[i].dest_rank == rank)
-	{
-	    recvcounts[jobs[i].source_rank] = datasize;
-	    rdispls[jobs[i].source_rank] = recvbytes;
-	    recvbytes += datasize;
-	}
-    }
-
-    if (sendbytes > 0)
-    {
-	sendbuf = (char *) malloc (sendbytes);
-    
-	for (int i = 0; i < sendbytes; i++) {
-	    sendbuf[i] = i%128;
-	}
-    }
-
-    if (recvbytes > 0) 
-    {
-	recvbuf = (char *) malloc (recvbytes);
-
-	testbuf = (char *) malloc (recvbytes);
-	for (int i = 0; i < recvbytes; i++) {
-	    testbuf[i] = i % 128;
-	}
-    }
+    optiq_input_convert_jobs_to_alltoallv (jobs, &sendbuf, &sendcounts, &sdispls, &recvbuf, &recvcounts, &rdispls, size, rank);
 
     optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, path_ranks);
 
@@ -238,12 +203,19 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 
     optiq_schedule_clear ();
 
-    if (recvbytes > 0) {
-	if (memcmp (recvbuf, testbuf, recvbytes) != 0) {
+    if (schedule->recv_len > 0) 
+    {
+	char *testbuf = (char *) malloc (schedule->recv_len);
+
+	for (int i = 0; i < schedule->recv_len; i++) {
+	    testbuf[i] = i % 128;
+	}
+
+	if (memcmp (recvbuf, testbuf, schedule->recv_len) != 0) {
 	    printf("Rank %d encounter data corrupted\n", rank);
 	}
     }
     
     free (sendcounts);
-    free (recvcounts);    
+    free (recvcounts);
 }

@@ -99,3 +99,43 @@ int optiq_input_convert_sendcounts_to_jobs (int *sendcounts, std::vector<struct 
 
     return num_distinguished_dests;
 }
+
+void optiq_input_convert_jobs_to_alltoallv (std::vector<struct job> &jobs, char **sendbuf, int **sendcounts, int **sdispls, char **recvbuf, int **recvcounts, int **rdispls, int size, int rank)
+{
+    *sendcounts = (int *) calloc (1, sizeof(int) * size);
+    *recvcounts = (int *) calloc (1, sizeof(int) * size);
+    *sdispls = (int *) calloc (1, sizeof(int) * size);
+    *rdispls = (int *) calloc (1, sizeof(int) * size);
+
+    int sendbytes = 0, recvbytes = 0;
+
+    for (int i = 0; i < jobs.size(); i++) 
+    {
+	if (jobs[i].source_rank == rank)
+	{
+	    (*sendcounts)[jobs[i].dest_rank] = jobs[i].demand;
+	    (*sdispls)[jobs[i].dest_rank] = sendbytes;
+	    sendbytes += jobs[i].demand;
+	}
+
+	if (jobs[i].dest_rank == rank)
+	{
+	    (*recvcounts)[jobs[i].source_rank] = jobs[i].demand;
+	    (*rdispls)[jobs[i].source_rank] = recvbytes;
+	    recvbytes += jobs[i].demand;
+	}
+    }
+
+    if (sendbytes > 0)
+    {
+	*sendbuf = (char *) malloc (sendbytes);
+	for (int i = 0; i < sendbytes; i++) {
+	    (*sendbuf)[i] = i % 128;
+	}
+    }
+
+    if (recvbytes > 0) 
+    {
+	*recvbuf = (char *) malloc (recvbytes);
+    }
+}

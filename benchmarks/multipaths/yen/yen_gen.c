@@ -8,7 +8,7 @@
 #include "patterns.h"
 #include <vector>
 
-void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths, int maxload, int numnodes)
+void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths, int maxload, struct topology *topo)
 {
     std::vector< struct path *> paths;
 
@@ -16,11 +16,13 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
 
     gettimeofday(&t0, NULL);
 
-    optiq_alg_yen_k_distinct_shortest_paths (paths, jobs, num_paths, graphFilePath, maxload, numnodes);
+    optiq_alg_yen_k_distinct_shortest_paths (paths, jobs, num_paths, graphFilePath, maxload, topo->num_nodes);
 
     gettimeofday(&t1, NULL);
 
     double elapsedtime = (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);
+
+    optiq_job_remove_paths_over_maxload (jobs, 1, topo->num_nodes, topo->num_ranks_per_node);
 
     optiq_job_write_to_file (jobs, jobfile);
 
@@ -34,7 +36,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     jobs.clear();
 }
 
-void gen_jobs_paths (int size, int demand, char *graphFilePath, int k, int maxload)
+void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int k, int maxload)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -44,6 +46,8 @@ void gen_jobs_paths (int size, int demand, char *graphFilePath, int k, int maxlo
     char name[256];
     int testid = 0;
     char jobfile[256];
+
+    int size = topo->num_nodes;
 
     /* First m send data to last n */
     for (int m = size/16; m <= size/2; m *= 2)
@@ -59,7 +63,7 @@ void gen_jobs_paths (int size, int demand, char *graphFilePath, int k, int maxlo
 
 		jobs[0].name = name;
 		sprintf(jobfile, "test%d", testid);
-		search_and_write_to_file (jobs, jobfile, graphFilePath, k, maxload, size);
+		search_and_write_to_file (jobs, jobfile, graphFilePath, k, maxload, topo);
 
 		printf("Rank %d wrote %s\n", rank, name);
 	    }
@@ -74,6 +78,7 @@ int main(int argc, char **argv)
     int rank;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
 
+    
     struct topology *topo = (struct topology *) malloc (sizeof (struct topology));
     int num_dims = 5;
     int psize[5];
@@ -102,5 +107,5 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    gen_jobs_paths (topo->num_nodes, demand, graphFilePath, k, maxload);
+    gen_jobs_paths (topo, demand, graphFilePath, k, maxload);
 }

@@ -28,41 +28,45 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
 	    optiq_job_write_to_file (jobs, pairfile);
 
 	    /*free paths*/
-	    for (int j = 0; j < jobs[i].paths.size(); j++) {
+	    for (int j = 0; j < jobs[i].paths.size(); j++) 
+	    {
 		jobs[i].paths[j]->arcs.clear();
-	        free (jobs[i].paths[j]);
+		free (jobs[i].paths[j]);
 	    }
 	    jobs[i].paths.clear();
 	}
     }
-
-    MPI_Barrier (MPI_COMM_WORLD);
-
-    /*Gather data into one file*/
-    if (rank == 0) 
-    {
-	std::vector<struct path *> paths;
-
-	for (int i = 0; i < jobs.size(); i++)
-	{
-	    sprintf(pairfile, "%s_%d", jobfile, jobs[i].job_id);
-	    optiq_jobs_read_from_file (jobs, paths, pairfile);
-	}
-
-	optiq_job_remove_paths_over_maxload (jobs, 1, size, topo->num_ranks_per_node);
-
-	/*Write to a file*/
-	optiq_job_write_to_file (jobs, jobfile);
-
-	for (int i = 0; i < paths.size(); i++) {
-	    paths[i]->arcs.clear();
-	    free(paths[i]);
-	}
-	paths.clear();
-    }
 }
 
-void gen_jobs_paths (int size, int demand, char *graphFilePath, int k)
+void aggregate_paths_from_file (std::vector<struct job> &jobs, char*jobfile, struct topology *topo, int maxload)
+{
+    char pairfile[256];
+
+    /*Gather data into one file*/
+    std::vector<struct path *> paths;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	sprintf(pairfile, "%s_%d", jobfile, jobs[i].job_id);
+	optiq_jobs_read_from_file (jobs, paths, pairfile);
+    }
+
+    printf("done reading from file\n");
+
+    optiq_job_remove_paths_over_maxload (jobs, maxload, topo->num_nodes, topo->num_ranks_per_node);
+
+    /*Write to a file*/
+    optiq_job_write_to_file (jobs, jobfile);
+
+    for (int i = 0; i < paths.size(); i++) 
+    {
+	paths[i]->arcs.clear();
+	free(paths[i]);
+    }
+    paths.clear();
+}
+
+void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int k)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -72,6 +76,8 @@ void gen_jobs_paths (int size, int demand, char *graphFilePath, int k)
     char name[256];
     int testid = 0;
     char jobfile[256];
+
+    int size = topo->num_nodes;
 
     /* First m send data to last n */
     for (int m = size/16; m <= size/2; m *= 2)
@@ -87,7 +93,29 @@ void gen_jobs_paths (int size, int demand, char *graphFilePath, int k)
 	    sprintf(jobfile, "test%d", testid);
 	    search_and_write_to_file (jobs, jobfile, graphFilePath, k);
 
-	    printf("Rank %d wrote %s\n", rank, name);
+	    //printf("Rank %d wrote %s\n", rank, name);
+	    testid++;
+	}
+    }
+
+    /* Collect the paths */
+    testid = 0;
+    int maxload = 1;
+
+    for (int m = size/16; m <= size/2; m *= 2)
+    {
+        for (int n = size/16; n <= size/2; n *= 2)
+        {
+	    if (testid == rank) 
+	    {
+		sprintf(name, "Test No. %d: First %d ranks send data to last %d ranks", testid, m, n);
+		optiq_pattern_firstm_lastn_to_jobs (jobs, size, demand, m, n);
+		jobs[0].name = name;
+		sprintf(jobfile, "test%d", testid);
+
+		maxload = 1;
+		aggregate_paths_from_file (jobs, jobfile, topo, maxload);
+	    }
 	    testid++;
 	}
     }
@@ -125,5 +153,5 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    gen_jobs_paths (topo->num_nodes, demand, graphFilePath, k);
+    gen_jobs_paths (topo, demand, graphFilePath, k);
 }

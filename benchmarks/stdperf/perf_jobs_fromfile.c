@@ -1,5 +1,7 @@
 #include "optiq.h"
-#include "mpi.h"
+#include <mpi.h>
+
+#include "optiq_benchmark.h"
 
 int main(int argc, char **argv)
 {
@@ -12,13 +14,19 @@ int main(int argc, char **argv)
     int size = pami_transport->size;
 
     int demand = 1024 * 1024;
+    int numfile = 0;
     char *path;
 
     if (argc > 1) {
 	path = argv[1];
     }
+
     if (argc > 2) {
-	demand = atoi(argv[2]) * 1024;
+	numfile = atoi(argv[2]);
+    }
+
+    if (argc > 3) {
+	demand = atoi(argv[3]) * 1024;
     }
 
     //odp.print_path_rank = true;
@@ -26,14 +34,14 @@ int main(int argc, char **argv)
     char filepath[256];
 
     schedule->auto_chunksize = false;
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < numfile; i++)
     {
 	sprintf(filepath, "%s/test%d", path, i);
 
 	//for (int chunk = 4 * 1024; chunk <=  demand; chunk *= 2)
 	//{
 	    //schedule->chunk_size = chunk;
-	    optiq_execute_jobs_from_file (filepath, demand);
+	    optiq_benchmark_jobs_from_file (filepath, demand);
 
 	    opi.iters = 1;
 	    optiq_opi_collect();

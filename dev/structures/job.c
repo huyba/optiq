@@ -96,7 +96,8 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 	    exist = false;
 	    for (int i = 0; i < jobs.size(); i++)
 	    {
-		if (jobs[i].job_id == job_id){
+		if (jobs[i].job_id == job_id) 
+		{
 		    jobs[i].paths.push_back(p);
 		    exist = true;
 		    break;
@@ -176,7 +177,8 @@ void optiq_job_map_jobs_to_source_dests (std::vector<struct job> &jobs, std::vec
 
         for (int j = 0; j < source_dests.size(); j++)
         {
-            if (source_dests[j].first == source_id) {
+            if (source_dests[j].first == source_id) 
+	    {
                 source_dests[j].second.push_back(dest_id);
                 found = true;
                 break;
@@ -198,13 +200,9 @@ void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int max
 {
     int **load = (int **) calloc (1, sizeof(int *) * size);
 
-    for (int i = 0; i < size; i++) {
-	load[i] = (int *) calloc (1, sizeof(int *) * size);
-    }
-
-    for (int i = 0; i < jobs.size(); i++)
+    for (int i = 0; i < size; i++) 
     {
-	jobs[i].kpaths = jobs[i].paths;
+	load[i] = (int *) calloc (1, sizeof(int) * size);
     }
 
     bool finished = false;
@@ -217,6 +215,7 @@ void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int max
 
 	for (int i = 0; i < jobs.size(); i++)
 	{
+	    /*printf("job_id = %d, pathsize = %d\n", jobs[i].job_id, jobs[i].paths.size());*/
 	    bool kept = false;
 
 	    /* Any path at index less than iters is kept */
@@ -231,7 +230,8 @@ void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int max
 		    int u = p->arcs[j].u / num_ranks_per_node;
 		    int v = p->arcs[j].v / num_ranks_per_node;
 
-		    if (load[u][v] >= maxload) {
+		    if (load[u][v] >= maxload) 
+		    {
 			underload = false;
 			break;
 		    }
@@ -248,9 +248,12 @@ void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int max
 
 		    kept = true;
 		    finished = false;
+		    /*printf("keep path id = %d\n", p->path_id);*/
 		} 
-		else {
+		else 
+		{
 		    jobs[i].paths.erase(jobs[i].paths.begin() + iters);
+		    /*printf("remove path id = %d\n", jobs[i].paths[iters]->path_id);*/
 		}
 	    }
 	}
