@@ -101,6 +101,9 @@ void optiq_opi_clear()
     odp.print_mem_reg_msg = false;
     odp.print_mem_exchange_status = false;
     odp.print_pami_transport_status = false;
+    odp.print_rput_rdone_notify_msg = false;
+    odp.print_recv_rput_done_msg = false;
+    odp.print_mem_adv_response_msg = false;
 
     odp.test_mpi_perf = true;
 

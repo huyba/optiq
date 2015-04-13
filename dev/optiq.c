@@ -189,6 +189,8 @@ void optiq_execute_jobs_from_file (char *jobfile, int datasize)
 	printf("Schedule done.\n");
     }
 
+    optiq_pami_transport_info_status(pami_transport->transport_info, rank);
+
     optiq_pami_transport_exchange_memregions ();
 
     MPI_Barrier(MPI_COMM_WORLD);

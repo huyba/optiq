@@ -273,10 +273,13 @@ void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls
 	send_len += sendcounts[i];
     }
 
-    if (recv_len > 0) {
+    if (recv_len > 0) 
+    {
 	schedule->isDest = true;
     }
-    if (send_len > 0) {
+
+    if (send_len > 0) 
+    {
 	schedule->isSource = true;
     }
 

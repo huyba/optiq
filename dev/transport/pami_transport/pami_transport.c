@@ -650,6 +650,11 @@ void optiq_recv_mr_request_adv_fn(pami_context_t context, void *cookie, const vo
     {
 	/* Send a forward memergion back */
 	optiq_pami_send_immediate (pami_transport->context, OPTIQ_MR_RESPONSE_ADV, path_id, sizeof (int), pami_transport->transport_info.forward_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
+
+	if (odp.print_mem_adv_response_msg)
+	{
+	    printf("Rank %d send back to %d mem offset %d\n", pami_transport->rank, origin, pami_transport->transport_info.forward_mr->offset);
+	}
 	pami_transport->transport_info.forward_mr->offset += *bufsize;
 
 	/* Send a mem req forward*/
@@ -795,8 +800,13 @@ void optiq_recv_rput_done_adv_fn(pami_context_t context, void *cookie, const voi
     else
     {
 	struct optiq_message_header *message_header = pami_transport->transport_info.message_headers.back();
-	pami_transport->transport_info.message_headers.pop_back();
-	memcpy(message_header, data, data_size);
+        pami_transport->transport_info.message_headers.pop_back();
+        memcpy(message_header, data, data_size);
+
+	if (odp.print_recv_rput_done_msg) 
+	{
+	    printf("Rank %d recv from %d nbytes = %d at offset %d, forward_headers size = %d\n", pami_transport->rank, origin, message_header->length, message_header->mem.offset, pami_transport->transport_info.forward_headers.size());
+	}
 
 	pami_transport->transport_info.forward_headers.push_back (message_header);
     }
@@ -906,6 +916,12 @@ void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_
 
     //pami_transport->transport_info.complete_rputs.push_back(rput_cookie);
     optiq_pami_send_immediate(pami_transport->context, OPTIQ_RPUT_DONE_ADV, NULL, 0, rput_cookie->message_header, sizeof(struct optiq_message_header), pami_transport->endpoints[rput_cookie->dest]);
+
+    if (odp.print_rput_rdone_notify_msg) 
+    {
+	printf("Rank %d notify rank %d that %d bytes is ready at offset %d\n", pami_transport->rank, rput_cookie->dest, rput_cookie->message_header->length, rput_cookie->message_header->mem.offset);
+    }
+
     pami_transport->transport_info.message_headers.push_back (rput_cookie->message_header);
     pami_transport->transport_info.rput_cookies.push_back (rput_cookie);
 
@@ -1126,8 +1142,22 @@ void optiq_pami_transport_exchange_memregions ()
     pami_transport->transport_info.num_mr_requests = 0;
     pami_transport->transport_info.num_mr_responses = 0;
 
-    if (odp.print_mem_exchange_status) {
+    if (odp.print_mem_exchange_status) 
+    {
 	printf("Rank = %d Memory regions exchange completed.\n", rank);
+
+	for (int i = 0; i < sched->paths.size(); i++)
+        {
+	    for (int j = 0; j < sched->paths[i]->arcs.size(); j++)
+	    {
+		if (sched->paths[i]->arcs[j].u == rank)
+		{
+		    int path_id = sched->paths[i]->path_id;
+		    printf("Rank %d has path_id = %d offset = %d of %d\n", rank, path_id, pami_transport->transport_info.path_mr[path_id].offset, sched->paths[i]->arcs[j].v);
+		    break;
+		}
+	    }
+	}
     }
 }
 
@@ -1136,7 +1166,7 @@ void optiq_pami_transport_rput_message (struct optiq_message_header *header)
     struct optiq_pami_transport *transport = optiq_pami_transport_get();
     struct optiq_memregion far_mr = pami_transport->transport_info.path_mr[header->path_id];
 
-    /*Actual rput data*/
+    /* Actual rput data */
     struct optiq_rput_cookie *rput_cookie = pami_transport->transport_info.rput_cookies.back();
     pami_transport->transport_info.rput_cookies.pop_back();
 
@@ -1145,13 +1175,17 @@ void optiq_pami_transport_rput_message (struct optiq_message_header *header)
     rput_cookie->dest = dest;
 
     /*Rput for destination message. This is because if the next dest is final dest, the dest only gives the offset of the source, not offset for each chunk*/
-    if (dest == header->dest) {
+    if (dest == header->dest) 
+    {
 	far_mr.offset += header->original_offset;
-    } else {
+    } 
+    else 
+    {
 	pami_transport->transport_info.path_mr[header->path_id].offset += header->length;
     }
 
-    if (odp.print_rput_msg) {
+    if (odp.print_rput_msg) 
+    {
 	printf("Rank %d rput %d bytes at offset %d of orin[s %d, d %d] along path_id = %d of data to %d at offset = %d\n", pami_transport->rank, header->length, header->mem.offset, header->source, header->dest, header->path_id, dest, far_mr.offset);
     }
 
@@ -1280,6 +1314,8 @@ void optiq_pami_transport_execute_new ()
 
 	/* If there is a message to send */
 	gettimeofday(&t2, NULL);
+
+	/* Check and send message for all paths i.e. maxnumpaths, before returning to the outer loop of checking*/
 	for (int i = 0; i < schedule->maxnumpaths; i++)
 	{
 	    struct optiq_message_header *header = NULL;

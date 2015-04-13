@@ -31,16 +31,22 @@ int main(int argc, char **argv)
 
     //odp.print_path_rank = true;
     //odp.print_local_jobs = true;
+    //odp.print_rput_msg = true;
     char filepath[256];
 
-    schedule->auto_chunksize = false;
     for (int i = 0; i < numfile; i++)
     {
 	sprintf(filepath, "%s/test%d", path, i);
+	//odp.print_local_jobs = true;
+	//odp.print_rput_rdone_notify_msg = true;
+	//odp.print_recv_rput_done_msg = true;
+	//odp.print_mem_exchange_status = true;
+	odp.print_mem_adv_response_msg = true;
 
 	//for (int chunk = 4 * 1024; chunk <=  demand; chunk *= 2)
 	//{
 	    //schedule->chunk_size = chunk;
+	    //schedule->auto_chunksize = false;
 	    optiq_benchmark_jobs_from_file (filepath, demand);
 
 	    opi.iters = 1;

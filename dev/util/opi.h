@@ -68,6 +68,9 @@ struct optiq_debug_print {
     bool print_pami_transport_status;
     bool test_mpi_perf;
     bool print_elapsed_time;
+    bool print_rput_rdone_notify_msg;
+    bool print_recv_rput_done_msg;
+    bool print_mem_adv_response_msg;
 };
 
 extern "C" struct optiq_performance_index opi, max_opi;
