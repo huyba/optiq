@@ -2,6 +2,7 @@
 #include <mpi.h>
 
 #include "optiq_benchmark.h"
+#include "mpi_benchmark.h"
 
 int main(int argc, char **argv)
 {
@@ -32,35 +33,42 @@ int main(int argc, char **argv)
     //odp.print_path_rank = true;
     //odp.print_local_jobs = true;
     //odp.print_rput_msg = true;
+
     char filepath[256];
 
-    for (int i = 0; i < numfile; i++)
-    {
-	sprintf(filepath, "%s/test%d", path, i);
+    //for (int i = 0; i < numfile; i++)
+    //{
+	//sprintf(filepath, "%s/test%d", path, i);
 	//odp.print_local_jobs = true;
 	//odp.print_rput_rdone_notify_msg = true;
 	//odp.print_recv_rput_done_msg = true;
 	//odp.print_mem_exchange_status = true;
-	odp.print_mem_adv_response_msg = true;
+	//odp.print_mem_adv_exchange_msg = true;
 
-	//for (int chunk = 4 * 1024; chunk <=  demand; chunk *= 2)
-	//{
-	    //schedule->chunk_size = chunk;
-	    //schedule->auto_chunksize = false;
-	    optiq_benchmark_jobs_from_file (filepath, demand);
+	for (int chunk = 16 * 1024; chunk <=  demand; chunk *= 2)
+	{
+	    schedule->chunk_size = chunk;
+	    schedule->auto_chunksize = false;
+	    optiq_benchmark_jobs_from_file (path, demand);
 
 	    opi.iters = 1;
 	    optiq_opi_collect();
 
 	    if (rank == 0) 
 	    {
-		//printf("chunk size = %d\n", chunk);
+		printf("chunk size = %d\n", chunk);
 		optiq_opi_print();
+
+		if (mpi_time > max_opi.transfer_time) 
+		{
+		    printf("Bingo mpitime = %8.0f, optiqtime = %8.0f\n", mpi_time, opi.transfer_time);
+		}
+
 		optiq_path_print_stat (opi.paths, size, topo->num_edges);
 		optiq_opi_clear();
 	    }
-	//}
-    }
+	}
+    //}
 
     if (pami_transport->rank == 0) {
         printf("Finished testing optiq_alltoallv\n");

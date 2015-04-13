@@ -165,7 +165,7 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 	    int nbytes = schedule->chunk_size;
 
 	    if (schedule->auto_chunksize || schedule->chunk_size == 0) {
-		nbytes = optiq_schedule_get_chunk_size (jobs[i].buf_length, jobs[i].paths[jobs[i].last_path_index]->arcs.size());
+		nbytes = optiq_schedule_get_chunk_size (jobs[i]);
 	    }
 
 	    if (jobs[i].buf_offset < jobs[i].buf_length) 
@@ -461,8 +461,13 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     }
 }
 
-int optiq_schedule_get_chunk_size(int message_size, int num_hops) 
+int optiq_schedule_get_chunk_size(struct optiq_job &ojob)
 {
+
+    int message_size = ojob.buf_length;
+    int num_hops = ojob.paths[ojob.last_path_index]->arcs.size();
+    int num_paths = ojob.paths.size();
+    
     int chunk_size = message_size;
 
     if (num_hops < 2) {
@@ -475,28 +480,45 @@ int optiq_schedule_get_chunk_size(int message_size, int num_hops)
 	}
     }
 
-    if (2 <= num_hops && num_hops <= 4) {
-	if (message_size < 16 * 1024) {
+    if (2 <= num_hops && num_hops <= 4) 
+    {
+	if (message_size < 16 * 1024) 
+	{
 	    chunk_size = message_size;
 	}
-	else if (message_size < 32 * 1024) {
+	else if (message_size < 32 * 1024) 
+	{
 	    chunk_size = 16 * 1024;
 	}
-	else if (32 * 1024 <= message_size && message_size <= 64 * 1024) {
+	else if (32 * 1024 <= message_size && message_size <= 64 * 1024) 
+	{
 	    chunk_size = 32 * 1024;
 	}
-	else if (message_size >= 64 * 1024) {
-	    chunk_size = 16 * 1024;
+	else if (message_size >= 64 * 1024) 
+	{
+	    if (num_paths < 3) 
+	    {
+                chunk_size = 16 * 1024;
+            } else 
+	    {
+                chunk_size = 32 * 1024;
+            }
 	}
     }
 
     if (num_hops >= 5) {
-	if (message_size < 64 * 1024) {
+	if (message_size < 64 * 1024) 
+	{
 	    chunk_size = message_size;
 	}
 
-	if (message_size >= 64 * 1024) {
-	    chunk_size = 16 * 1024;
+	if (message_size >= 64 * 1024) 
+	{
+	    if (num_paths < 3) {
+		chunk_size = 16 * 1024;
+	    } else {
+		chunk_size = 32 * 1024;
+	    }
 	}
     }
 

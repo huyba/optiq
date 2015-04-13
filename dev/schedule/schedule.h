@@ -95,7 +95,7 @@ void optiq_schedule_mem_destroy(struct optiq_schedule *schedule, struct optiq_pa
 
 void optiq_schedule_set(struct optiq_schedule *schedule, int world_size);
 
-int optiq_schedule_get_chunk_size(int message_size, int num_hops);
+int optiq_schedule_get_chunk_size(struct optiq_job &ojob);
 
 void optiq_schedule_print_optiq_jobs (std::vector<struct optiq_job> &local_jobs);
 

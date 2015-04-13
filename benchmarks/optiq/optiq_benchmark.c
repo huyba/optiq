@@ -75,8 +75,10 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     opi.iters = 1;
     optiq_opi_collect ();
 
-    if (rank == 0) {
-	if (mpi_time > max_opi.transfer_time) {
+    if (rank == 0) 
+    {
+	if (mpi_time > max_opi.transfer_time) 
+	{
 	    printf("Bingo mpi_time = %8.0fd optiq time = %8.0f\n", mpi_time, max_opi.transfer_time);
 	}
 	optiq_opi_print();
@@ -134,11 +136,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 	printf("Schedule done.\n");
     }
 
-    optiq_pami_transport_info_status(pami_transport->transport_info, rank);
-
     optiq_pami_transport_exchange_memregions ();
-
-    optiq_pami_transport_info_status(pami_transport->transport_info, rank);
 
     MPI_Barrier(MPI_COMM_WORLD);
 

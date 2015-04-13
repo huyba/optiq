@@ -70,7 +70,9 @@ struct optiq_debug_print {
     bool print_elapsed_time;
     bool print_rput_rdone_notify_msg;
     bool print_recv_rput_done_msg;
-    bool print_mem_adv_response_msg;
+    bool print_mem_adv_exchange_msg;
+
+    bool collect_timestamp;
 };
 
 extern "C" struct optiq_performance_index opi, max_opi;

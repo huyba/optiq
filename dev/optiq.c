@@ -72,7 +72,7 @@ void optiq_alltoallv (void *sendbuf, int *sendcounts, int *sdispls, void *recvbu
     if (rank == 0) 
     {
 	char filepath[256];
-	jobs[0].name = filepath;
+	sprintf(jobs[0].name, "From %d to %d", jobs[0].source_id, jobs[0].dest_id);
 	sprintf(filepath, "test%d_%d", jobs[0].source_id, jobs[0].dest_id);
 	optiq_job_write_to_file (jobs, filepath);
     }

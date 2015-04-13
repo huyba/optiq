@@ -8,7 +8,7 @@
 struct optiq_memregion;
 
 struct job {
-    char *name;
+    char name[256];
     int job_id;
     int source_id;
     int dest_id;
