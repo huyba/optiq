@@ -653,6 +653,12 @@ void optiq_recv_mr_request_adv_fn(pami_context_t context, void *cookie, const vo
     /* If need to forward to next dest*/
     if (dest >= 0) 
     {
+	/* If the current available memory is not enough, reset the offset */
+	if (pami_transport->transport_info.forward_mr->offset + *bufsize > OPTIQ_FORWARD_BUFFER_SIZE) 
+	{
+            pami_transport->transport_info.forward_mr->offset = 0;
+        }
+
 	/* Send a forward memergion back */
 	optiq_pami_send_immediate (pami_transport->context, OPTIQ_MR_RESPONSE_ADV, path_id, sizeof (int), pami_transport->transport_info.forward_mr, sizeof(struct optiq_memregion), pami_transport->endpoints[origin]);
 

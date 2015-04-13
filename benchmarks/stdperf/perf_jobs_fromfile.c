@@ -36,9 +36,9 @@ int main(int argc, char **argv)
 
     char filepath[256];
 
-    //for (int i = 0; i < numfile; i++)
-    //{
-	//sprintf(filepath, "%s/test%d", path, i);
+    for (int i = 0; i < numfile; i++)
+    {
+	sprintf(filepath, "%s/test%d", path, i);
 	//odp.print_local_jobs = true;
 	//odp.print_rput_rdone_notify_msg = true;
 	//odp.print_recv_rput_done_msg = true;
@@ -49,7 +49,8 @@ int main(int argc, char **argv)
 	{
 	    schedule->chunk_size = chunk;
 	    schedule->auto_chunksize = false;
-	    optiq_benchmark_jobs_from_file (path, demand);
+
+	    optiq_benchmark_jobs_from_file (filepath, demand);
 
 	    opi.iters = 1;
 	    optiq_opi_collect();
@@ -68,7 +69,7 @@ int main(int argc, char **argv)
 		optiq_opi_clear();
 	    }
 	}
-    //}
+    }
 
     if (pami_transport->rank == 0) {
         printf("Finished testing optiq_alltoallv\n");

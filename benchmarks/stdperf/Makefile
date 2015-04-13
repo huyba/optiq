@@ -68,3 +68,5 @@ BENCHMARKS_DIR = /gpfs/vesta-fs0/projects/Performance/abui/optiq/benchmarks
 cp:
 	cp perf_bypathlen.x $(BENCHMARKS_DIR)/stdperf/pathlen/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/512/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/1k/
