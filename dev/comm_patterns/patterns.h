@@ -6,6 +6,10 @@
 
 #include "job.h"
 
+void optiq_pattern_m_to_n_to_pairs(std::vector<std::pair<int, int> > &source_dests, int numranks, int demand, int m, int startm, int n, int startn, bool random);
+
+void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int startm, int n, int startn, bool random);
+
 void optiq_pattern_firstm_lastn_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int n);
 
 void optiq_patterns_read_requests_from_file(char *filename, std::vector<struct job> &jobs);

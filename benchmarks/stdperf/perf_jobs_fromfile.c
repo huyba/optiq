@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 	//odp.print_mem_exchange_status = true;
 	//odp.print_mem_adv_exchange_msg = true;
 
-	for (int chunk = 16 * 1024; chunk <=  demand; chunk *= 2)
+	for (int chunk = 8 * 1024; chunk <=  demand; chunk *= 2)
 	{
 	    schedule->chunk_size = chunk;
 	    schedule->auto_chunksize = false;
@@ -62,7 +62,10 @@ int main(int argc, char **argv)
 
 		if (mpi_time > max_opi.transfer_time) 
 		{
-		    printf("Bingo mpitime = %8.0f, optiqtime = %8.0f\n", mpi_time, opi.transfer_time);
+		    double mpi_bw = max_opi.recv_len / mpi_time / 1024 / 1024 * 1e6;
+		    double optiq_bw = max_opi.recv_len / max_opi.transfer_time / 1024 / 1024 * 1e6;
+
+		    printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", demand, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
 		}
 
 		optiq_path_print_stat (opi.paths, size, topo->num_edges);

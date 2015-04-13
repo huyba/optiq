@@ -61,7 +61,7 @@ void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int
 
 		//optiq_job_print_jobs (jobs);
 
-		jobs[0].name = name;
+		sprintf(jobs[0].name, "%s", name);
 		sprintf(jobfile, "test%d", testid);
 		search_and_write_to_file (jobs, jobfile, graphFilePath, k, maxload, topo);
 

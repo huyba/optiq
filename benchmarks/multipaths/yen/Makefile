@@ -77,6 +77,13 @@ cp:
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/2k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/4k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/8k/
+	
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/512/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/1k/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/2k/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/4k/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/8k/
+
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/512/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/1k/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/2k/

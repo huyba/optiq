@@ -426,14 +426,35 @@ void optiq_pattern_subgroup_agg (char *filepath, int numranks, int subgroupsize,
     file.close();
 }
 
-void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int startm, int n, int startn, bool random)
+
+void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int startm, int n, int startn, bool random)
 {
     std::vector<std::pair<int, int> > source_dests;
+
     source_dests.clear();
 
-    std::ofstream file;
-    file.open(filepath);
+    optiq_pattern_m_to_n_to_pairs(source_dests, numranks, demand, m, startm, n, startn, random);
 
+    int jobid = 0;
+
+    for (int i = 0; i < source_dests.size() ; i++)
+    {
+	struct job new_job;
+
+        new_job.job_id = jobid;
+        new_job.source_rank = source_dests[i].first;
+        new_job.source_id = source_dests[i].first;
+        new_job.dest_rank = source_dests[i].second;
+        new_job.dest_id = source_dests[i].second;
+        new_job.demand = demand;
+
+        jobs.push_back(new_job);
+        jobid++;
+    }
+}
+ 
+void optiq_pattern_m_to_n_to_pairs(std::vector<std::pair<int, int> > &source_dests, int numranks, int demand, int m, int startm, int n, int startn, bool random)
+{
     if (m > n)
     {
         int r = m/n;
@@ -468,6 +489,18 @@ void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int s
     if (random) {
         optiq_util_randomize_source_dests (source_dests);
     }
+}
+
+void optiq_pattern_m_to_n(char *filepath, int numranks, int demand, int m, int startm, int n, int startn, bool random)
+{
+    std::ofstream file;
+    file.open(filepath);
+
+    std::vector<std::pair<int, int> > source_dests;
+
+    source_dests.clear();
+
+    optiq_pattern_m_to_n_to_pairs(source_dests, numranks, demand, m, startm, n, startn, random);
 
     for (int i = 0; i < source_dests.size(); i++)
     {
