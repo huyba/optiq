@@ -357,6 +357,11 @@ void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int
 	for (int n = size/16; n <= size/2; n *= 2) 
 	{
 	    sprintf(name, "Test No. %d: First %d ranks send data to last %d ranks", testid, m, n);
+
+	    if (rank == 0) {
+		optiq_util_print_mem_info();
+	    }
+
 	    optiq_pattern_firstm_lastn_to_jobs (jobs, size, demand, m, n);
 
 	    //optiq_job_print_jobs (jobs);
@@ -380,6 +385,11 @@ void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int
     {
 	for (int n = size/16; n <= size/2; n *= 2)
 	{
+	    if (rank == 0)
+	    {
+		optiq_util_print_mem_info();
+	    }
+
 	    if (testid == rank) 
 	    {
 		sprintf(name, "Test No. %d: First %d ranks send data to last %d ranks", testid, m, n);
