@@ -281,6 +281,8 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 	}
     }
 
+    start_testid = testid;
+
     /* Subset Generate paths*/
     for (int m = size/8; m <= size/2; m *= 2)
     {
