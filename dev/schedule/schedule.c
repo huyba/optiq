@@ -312,6 +312,8 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 	    if (world_rank == jobs[i].source_rank) 
 	    {
 		struct optiq_job new_job;
+		new_job.paths.clear();
+
 		new_job.job_id = jobs[i].job_id;
 		new_job.source_rank = jobs[i].source_rank;
 		new_job.dest_rank = jobs[i].dest_rank;
@@ -347,6 +349,8 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 		if (!existed)
 		{
 		    struct optiq_job new_job;
+
+		    new_job.paths.clear();
 
 		    new_job.source_rank = world_rank;
 		    new_job.dest_rank = path_ranks[i]->arcs.back().v;

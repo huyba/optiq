@@ -107,6 +107,8 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 	    if (!exist) 
 	    {
 		struct job new_job;
+		new_job.paths.clear();
+
 		sprintf(new_job.name, "%s", name);
 		new_job.job_id = job_id;
 		new_job.source_id = source_id;
