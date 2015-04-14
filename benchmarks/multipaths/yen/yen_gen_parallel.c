@@ -5,6 +5,7 @@
 #include <mpi.h>
 #include "topology.h"
 #include "job.h"
+#include "util.h"
 #include "patterns.h"
 #include <vector>
 
@@ -178,6 +179,8 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 
     int size = topo->num_nodes;
 
+    optiq_util_print_mem_info(rank);
+
     /* Generate disjoint First m send data to last n */
     for (int m = size/16; m <= size/2; m *= 2)
     {
@@ -196,6 +199,8 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 	    jobs.clear();
 	}
     }
+    
+    optiq_util_print_mem_info(rank);
 
     MPI_Barrier (MPI_COMM_WORLD);
 
@@ -210,6 +215,7 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 	{
 	    if (rank == testid % size) 
 	    {
+		optiq_util_print_mem_info (rank);
 		sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
                 optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, false);
 
@@ -358,10 +364,6 @@ void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int
 	{
 	    sprintf(name, "Test No. %d: First %d ranks send data to last %d ranks", testid, m, n);
 
-	    if (rank == 0) {
-		optiq_util_print_mem_info();
-	    }
-
 	    optiq_pattern_firstm_lastn_to_jobs (jobs, size, demand, m, n);
 
 	    //optiq_job_print_jobs (jobs);
@@ -385,11 +387,6 @@ void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int
     {
 	for (int n = size/16; n <= size/2; n *= 2)
 	{
-	    if (rank == 0)
-	    {
-		optiq_util_print_mem_info();
-	    }
-
 	    if (testid == rank) 
 	    {
 		sprintf(name, "Test No. %d: First %d ranks send data to last %d ranks", testid, m, n);

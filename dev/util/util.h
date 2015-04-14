@@ -17,4 +17,6 @@ void optiq_util_print_source_dests(std::vector<std::pair<int, std::vector<int> >
 
 void optiq_util_randomize_source_dests (std::vector<std::pair<int, int> > &source_dests);
 
+void optiq_util_print_mem_info(int rank);
+
 #endif

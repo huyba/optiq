@@ -102,6 +102,8 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     int rank = pami_transport->rank;
     int size = pami_transport->size;
 
+    optiq_util_print_mem_info(rank);
+
     struct optiq_schedule *sched = optiq_schedule_get();
 
     std::vector<struct job> &jobs = sched->jobs;
@@ -122,11 +124,13 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     }
 
     int *sendcounts, *sdispls, *recvcounts, *rdispls;
-    char *sendbuf, *recvbuf;
+    char *sendbuf = NULL, *recvbuf = NULL;
 
     optiq_input_convert_jobs_to_alltoallv (jobs, &sendbuf, &sendcounts, &sdispls, &recvbuf, &recvcounts, &rdispls, size, rank);
 
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    optiq_util_print_mem_info(rank);
 
     optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, path_ranks);
 
@@ -161,8 +165,19 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 	if (memcmp (recvbuf, testbuf, schedule->recv_len) != 0) {
 	    printf("Rank %d encounter data corrupted\n", rank);
 	}
+
+	free (testbuf);
+	free (recvbuf);
     }
     
     free (sendcounts);
     free (recvcounts);
+    free (rdispls);
+    free (sdispls);
+
+    if (sendbuf != NULL) {
+	free (sendbuf);
+    }
+
+    optiq_util_print_mem_info(rank);
 }
