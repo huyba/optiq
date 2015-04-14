@@ -17,8 +17,6 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     MPI_Comm_size (MPI_COMM_WORLD, &size);
     char pairfile[256];
 
-    MPI_Barrier (MPI_COMM_WORLD);
-
     for (int i = 0; i < jobs.size(); i++)
     {
 	if (rank == i % size)
@@ -89,6 +87,8 @@ void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int n
 	    for (int r = 1; r <= 4; r *= 2)
 	    {
 		sprintf (name, "Test %d: Disjoint %d ranks from %d to %d send data to %d rank from %d to %d", testid, n/i, 0, n/i-1, n/i/r, j*n/i, n/i/r + j*n/i - 1);
+
+		jobs.clear();
 		optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, 0, n/i/r, j*n/i, false);
 
 		sprintf(jobs[0].name, "%s", name);
@@ -97,7 +97,7 @@ void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int n
 
 		if (rank == 0) 
 		{
-		    printf("%s", name);
+		    printf("%s\n", name);
 		}
 
 		testid++;
@@ -117,6 +117,7 @@ void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int n
 		{
 		    sprintf (name, "Test %d: Overlap %d ranks from %d to %d send data to %d rank from %d to %d", testid, n/i, j*n/i, n/i + j*n/i - 1, n/i/r , j*n/i + n/i - n/i/r/k, n/i/r + j*n/i + n/i - n/i/r/k - 1);
 
+		    jobs.clear();
 		    optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, j*n/i, n/i/r, j*n/i + n/i - n/i/r/k, false);
 
                     sprintf(jobs[0].name, "%s", name);
@@ -125,7 +126,7 @@ void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int n
 
 		    if (rank == 0) 
 		    {
-			printf("%s", name);
+			printf("%s\n", name);
 		    }
 
 		    testid++;
@@ -144,8 +145,9 @@ void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int n
 	    {
 		for (int r = 2; r <= 4; r *= 2)
 		{
-		    sprintf (name, "Test %d: %d ranks from %d to %d send data to %d rank from %d to %d\n", testid, n/i, j*n/i, n/i + j*n/i - 1, n/i/r, j*n/i + n/i/r/k, n/i/r + j*n/i + n/i/r/k - 1);
+		    sprintf (name, "Test %d: Subset %d ranks from %d to %d send data to %d rank from %d to %d", testid, n/i, j*n/i, n/i + j*n/i - 1, n/i/r, j*n/i + n/i/r/k, n/i/r + j*n/i + n/i/r/k - 1);
 
+		    jobs.clear();
 		    optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, j*n/i, n/i/r, j*n/i + n/i/r/k, false);
 
 		    sprintf(jobs[0].name, "%s", name);
@@ -154,7 +156,7 @@ void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int n
 
 		    if (rank == 0) 
 		    {
-			printf("%s", name);
+			printf("%s\n", name);
 		    }
 
 		    testid++;
@@ -195,6 +197,8 @@ void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int
 	    testid++;
 	}
     }
+
+    MPI_Barrier (MPI_COMM_WORLD);
 
     /* Collect the paths */
     testid = 0;
