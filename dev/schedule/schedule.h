@@ -40,6 +40,7 @@ struct optiq_schedule {
     int remaining_jobs;
     int *next_dests;
 
+    int send_len;
     int recv_len;
     int expecting_length;
 

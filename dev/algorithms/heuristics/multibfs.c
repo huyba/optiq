@@ -11,20 +11,23 @@ struct multibfs *bfs = NULL;
 
 void optiq_multibfs_init()
 {
-    bfs = (struct multibfs *) calloc (1, sizeof(struct multibfs));
-
-    bfs->num_dims = 5;
-    optiq_topology_get_size_bgq(bfs->size);
-    bfs->num_nodes = 1;
-    bfs->diameter = 0;
-
-    for (int i = 0; i < bfs->num_dims; i++)
+    if (bfs == NULL)
     {
-        bfs->num_nodes *= bfs->size[i];
-        bfs->diameter += bfs->size[i];
-    }
+	bfs = (struct multibfs *) calloc (1, sizeof(struct multibfs));
 
-    bfs->neighbors = optiq_topology_get_all_nodes_neighbors(bfs->num_dims, bfs->size);
+	bfs->num_dims = 5;
+	optiq_topology_get_size_bgq(bfs->size);
+	bfs->num_nodes = 1;
+	bfs->diameter = 0;
+
+	for (int i = 0; i < bfs->num_dims; i++)
+	{
+	    bfs->num_nodes *= bfs->size[i];
+	    bfs->diameter += bfs->size[i];
+	}
+
+	bfs->neighbors = optiq_topology_get_all_nodes_neighbors(bfs->num_dims, bfs->size);
+    }
 }
 
 struct multibfs *optiq_multibfs_get()

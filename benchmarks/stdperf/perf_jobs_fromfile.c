@@ -42,14 +42,16 @@ int main(int argc, char **argv)
 	//odp.print_local_jobs = true;
 	//odp.print_rput_rdone_notify_msg = true;
 	//odp.print_recv_rput_done_msg = true;
-	//odp.print_mem_exchange_status = true;
-	//odp.print_mem_adv_exchange_msg = true;
+	odp.print_mem_exchange_status = true;
+	odp.print_mem_adv_exchange_msg = true;
 
 	for (int chunk = 8 * 1024; chunk <=  demand; chunk *= 2)
 	{
 	    schedule->chunk_size = chunk;
 	    schedule->auto_chunksize = false;
 
+	    odp.print_mem_reg_msg =  true;
+	    //odp.print_mem_avail = true;
 	    optiq_benchmark_jobs_from_file (filepath, demand);
 
 	    opi.iters = 1;

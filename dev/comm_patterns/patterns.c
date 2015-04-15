@@ -18,6 +18,8 @@ void optiq_patterns_read_requests_from_file(char *filename, std::vector<struct j
     {
 	struct job newjob;
 
+	newjob.paths.clear();
+
 	newjob.job_id = id;
 	newjob.source_id = source;
 	newjob.dest_id = dest;
@@ -325,6 +327,9 @@ void optiq_pattern_firstm_lastn_to_jobs (std::vector<struct job> &jobs, int numr
 	    for (int j = 0; j < r; j++) 
 	    {
 		struct job new_job;
+
+		new_job.paths.clear();
+
 		new_job.job_id = jobid;
 		new_job.source_rank = i + j;
 		new_job.source_id = i + j;
@@ -348,6 +353,9 @@ void optiq_pattern_firstm_lastn_to_jobs (std::vector<struct job> &jobs, int numr
             for (int j = 0; j < r; j++) 
             {
 		struct job new_job;
+
+		new_job.paths.clear();
+
 		new_job.job_id = jobid;
 		new_job.source_rank = i;
 		new_job.source_id = i;
@@ -440,6 +448,8 @@ void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, 
     for (int i = 0; i < source_dests.size() ; i++)
     {
 	struct job new_job;
+
+	new_job.paths.clear();
 
         new_job.job_id = jobid;
         new_job.source_rank = source_dests[i].first;

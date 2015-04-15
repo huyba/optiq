@@ -9,16 +9,19 @@ struct optiq_algorithm *algorithm = NULL;
 
 void optiq_algorithm_init()
 {
-    algorithm = (struct optiq_algorithm *) calloc (1, sizeof(struct optiq_algorithm));
+    if (algorithm == NULL)
+    {
+	algorithm = (struct optiq_algorithm *) calloc (1, sizeof(struct optiq_algorithm));
 
-    algorithm->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT;
-    algorithm->max_hops = 0;
+	algorithm->search_alg = OPTIQ_ALG_HOPS_CONSTRAINT;
+	algorithm->max_hops = 0;
 
-    algorithm->num_paths_per_pair = 1;
+	algorithm->num_paths_per_pair = 1;
 
-    optiq_multibfs_init();
+	optiq_multibfs_init();
 
-    algorithm->bfs = optiq_multibfs_get();
+	algorithm->bfs = optiq_multibfs_get();
+    }
 }
 
 struct optiq_algorithm* optiq_algorithm_get()

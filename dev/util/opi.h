@@ -72,6 +72,8 @@ struct optiq_debug_print {
     bool print_recv_rput_done_msg;
     bool print_mem_adv_exchange_msg;
 
+    bool print_mem_avail;
+
     bool collect_timestamp;
 };
 

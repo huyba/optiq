@@ -22,7 +22,13 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     {
 	if (rank == i % size)
 	{
+	    printf("Rank %d avail mem before call yen\n", rank);
+	    optiq_util_print_mem_info(rank);
+
 	    optiq_alg_yen_k_shortest_paths_job (graphFilePath, jobs[i], num_paths);
+
+	    printf("Rank %d avail mem after call yen\n", rank);
+            optiq_util_print_mem_info(rank);
 
 	    sprintf(pairfile, "%s_%d", jobfile, jobs[i].job_id);
 	    optiq_job_write_to_file (jobs, pairfile);
@@ -42,8 +48,9 @@ void aggregate_paths_from_file (std::vector<struct job> &jobs, char*jobfile, str
 {
     char pairfile[256];
 
-    /*Gather data into one file*/
+    /* Gather data into one file */
     std::vector<struct path *> paths;
+    paths.clear();
 
     for (int i = 0; i < jobs.size(); i++)
     {
@@ -61,6 +68,7 @@ void aggregate_paths_from_file (std::vector<struct job> &jobs, char*jobfile, str
 	paths[i]->arcs.clear();
 	free(paths[i]);
     }
+
     paths.clear();
 }
 
@@ -179,8 +187,6 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 
     int size = topo->num_nodes;
 
-    //optiq_util_print_mem_info(rank);
-
     /* Generate disjoint First m send data to last n */
     for (int m = size/16; m <= size/2; m *= 2)
     {
@@ -188,8 +194,6 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 	{
 	    sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
             optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, false);
-
-	    //optiq_job_print_jobs (jobs);
 
 	    sprintf(jobs[0].name, "%s", name);
 	    sprintf(jobfile, "test%d", testid);
@@ -199,8 +203,6 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 	    jobs.clear();
 	}
     }
-    
-    //optiq_util_print_mem_info(rank);
 
     MPI_Barrier (MPI_COMM_WORLD);
 
@@ -215,7 +217,6 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 	{
 	    if (rank == testid % size) 
 	    {
-		//optiq_util_print_mem_info (rank);
 		sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
                 optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, false);
 
@@ -242,7 +243,7 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 	{
 	    for (int l = m/8; l <= m/2; l *= 2)
 	    {
-		//optiq_util_print_mem_info(rank);
+		optiq_util_print_mem_info(rank);
 
 		sprintf(name, "Test No. %d: Overlap %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, m-l, n + m -l -1);
 		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, false);

@@ -177,6 +177,13 @@ BasePath* DijkstraShortestPathAlg::update_cost_forward( BaseVertex* vertex )
  		}
  	}
 
+	for(set<BaseVertex*>::const_iterator pos=adj_vertex_set->begin(); pos!=adj_vertex_set->end();++pos)
+	{
+	    delete *pos;
+	}
+
+	//delete adj_vertex_set;
+
  	// 4. create the sub_path if exists
 	BasePath* sub_path = NULL;
 	if(cost < Graph::DISCONNECT) 

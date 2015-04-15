@@ -147,6 +147,14 @@ void optiq_alg_yen_k_shortest_paths_2vertices(char *graphfile, int v1, int v2, i
             pa->arcs.push_back(a);
         }
 
+	for (int i = 0; i < p->m_vtVertexList.size(); i++)
+        {
+	    delete p->m_vtVertexList[i];
+	}
+	p->m_vtVertexList.clear();
+
+	//delete p;
+
 	paths.push_back(pa);
 	k++;
     }

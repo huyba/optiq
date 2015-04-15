@@ -136,6 +136,7 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *> &complete_paths)
 {
     memset(next_dests, 0, sizeof(int) * OPTIQ_MAX_NUM_PATHS);
+
     for (int i = 0; i < OPTIQ_MAX_NUM_PATHS; i++) {
 	next_dests[i] = -1;
     }
@@ -238,6 +239,7 @@ void optiq_mem_reg (void *buf, int *counts, int *displs, pami_memregion_t *mr)
     }
 
     reg_size = max_pivot - min_pivot;
+
     if (reg_size > 0 && odp.print_mem_reg_msg)
     {
 	if (schedule->isSource) {
@@ -263,8 +265,15 @@ void optiq_mem_reg (void *buf, int *counts, int *displs, pami_memregion_t *mr)
     }
 }
 
+void dump_func(struct optiq_schedule *sched)
+{
+
+}
+
 void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls,  struct optiq_schedule *schedule)
 {
+    printf("Rank %d start to reg mem\n", pami_transport->rank);
+
     int recv_len = 0, send_len = 0;
 
     for (int i = 0; i < pami_transport->size; i++)
@@ -284,9 +293,12 @@ void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls
     }
 
     /* Build a schedule to transfer data */
+    schedule->send_len = send_len;
     schedule->rdispls = rdispls;
     schedule->recv_len = recv_len;
     schedule->expecting_length = recv_len;
+
+    printf("Rank %d recv_len = %d, send_len = %d\n", pami_transport->rank, recv_len, send_len);
 
     optiq_mem_reg(sendbuf, sendcounts, sdispls, &(schedule->send_mr.mr));
     schedule->send_mr.offset = 0;
@@ -367,6 +379,14 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 	}
     }
 
+    for (int i = 0; i < local_jobs.size(); i++)
+    {
+	if (local_jobs[i].paths.size() == 0)
+	{
+	    printf("Error ! Rank %d has no path to transfer data to %d\n", world_rank, local_jobs[i].dest_rank);
+	}
+    }
+
     schedule->maxnumpaths = 1;
     if (schedule->local_jobs.size() > 0) {
 	for (int i = 0; i < schedule->local_jobs.size(); i++) {
@@ -444,11 +464,26 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /* Build notify list for the final dest and immediate nodes to notify path is done */
     build_notify_lists (path_ranks, schedule->notify_list, schedule->intermediate_notify_list, schedule->num_active_paths, rank);
 
-    /* Register memories */
-    optiq_schedule_memory_register (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, sched);
+    optiq_schedule_print_notify_list(schedule->notify_list, rank);
+    optiq_schedule_print_notify_list(schedule->intermediate_notify_list, rank);
 
+    for (int i = 0; i < 10; i++)
+    {
+	printf("Rank %d start dump_func\n", rank);
+
+	dump_func(schedule);
+    }
+
+    printf("Rank %d start to reg memories\n", rank);
+
+    /* Register memories */
+    optiq_schedule_memory_register (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, schedule);
+
+    printf("Rank %d start to create local jobs\n", rank);
     /* Add local jobs */
     optiq_schedule_create_local_jobs (jobs, path_ranks, schedule->local_jobs, sendcounts, sdispls);
+
+    printf("Rank %d start to split local jobs\n", rank);
 
     if (odp.print_local_jobs) {
 	optiq_schedule_print_optiq_jobs (schedule->local_jobs);
@@ -457,12 +492,14 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /* Split a message into chunk-size messages */
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, schedule->chunk_size);
 
+    printf("Rank %d start to set schedule\n", rank);
+
     /*Reset a few parameters*/
     optiq_schedule_set (schedule, pami_transport->size);
 
-    if (rank == 0) {
+    //if (rank == 0) {
 	printf("Rank %d done scheduling\n", rank);
-    }
+    //}
 }
 
 int optiq_schedule_get_chunk_size(struct optiq_job &ojob)

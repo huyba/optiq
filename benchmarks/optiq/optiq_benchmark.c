@@ -102,7 +102,10 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     int rank = pami_transport->rank;
     int size = pami_transport->size;
 
-    optiq_util_print_mem_info(rank);
+    if (odp.print_mem_avail) 
+    {
+	optiq_util_print_mem_info(rank);
+    }
 
     struct optiq_schedule *sched = optiq_schedule_get();
 
@@ -113,13 +116,15 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
 
-    for (int i = 0; i < jobs.size(); i++) {
+    for (int i = 0; i < jobs.size(); i++) 
+    {
 	jobs[i].demand = datasize;
     }
 
     optiq_path_creat_path_ids_from_path_ranks(path_ids, path_ranks, topo->num_ranks_per_node);
 
-    if (rank == 0) {
+    if (rank == 0) 
+    {
 	printf("%s\n", jobs[0].name);
     }
 
@@ -127,10 +132,50 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     char *sendbuf = NULL, *recvbuf = NULL;
 
     optiq_input_convert_jobs_to_alltoallv (jobs, &sendbuf, &sendcounts, &sdispls, &recvbuf, &recvcounts, &rdispls, size, rank);
+    
+    /*sendcounts = (int *) calloc (1, sizeof(int) * size);
+    recvcounts = (int *) calloc (1, sizeof(int) * size);
+    sdispls = (int *) calloc (1, sizeof(int) * size);
+    rdispls = (int *) calloc (1, sizeof(int) * size);
 
+    int sendbytes = 0, recvbytes = 0;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        if (jobs[i].source_rank == rank)
+        {
+            (sendcounts)[jobs[i].dest_rank] = jobs[i].demand;
+            (sdispls)[jobs[i].dest_rank] = sendbytes;
+            sendbytes += jobs[i].demand;
+        }
+
+        if (jobs[i].dest_rank == rank)
+        {
+            (recvcounts)[jobs[i].source_rank] = jobs[i].demand;
+            (rdispls)[jobs[i].source_rank] = recvbytes;
+            recvbytes += jobs[i].demand;
+        }
+    }
+
+    if (sendbytes > 0)
+    {
+        sendbuf = (char *) malloc (sendbytes);
+        for (int i = 0; i < sendbytes; i++) {
+            (sendbuf)[i] = i % 128;
+        }
+    }
+
+    if (recvbytes > 0)
+    {
+        recvbuf = (char *) malloc (recvbytes);
+    }*/
+    
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
-    optiq_util_print_mem_info(rank);
+    if (odp.print_mem_avail)
+    {
+	optiq_util_print_mem_info(rank);
+    }
 
     optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, path_ranks);
 
@@ -140,7 +185,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 	printf("Schedule done.\n");
     }
 
-    optiq_pami_transport_exchange_memregions ();
+    //optiq_pami_transport_exchange_memregions ();
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -150,7 +195,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    optiq_pami_transport_execute_new ();
+    //optiq_pami_transport_execute_new ();
 
     optiq_schedule_clear ();
 
@@ -175,9 +220,12 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     free (rdispls);
     free (sdispls);
 
-    if (sendbuf != NULL) {
+    if (schedule->send_len > 0) {
 	free (sendbuf);
     }
 
-    optiq_util_print_mem_info(rank);
+    if (odp.print_mem_avail)
+    {
+	optiq_util_print_mem_info(rank);
+    }
 }
