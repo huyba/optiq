@@ -456,8 +456,8 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /* Build notify list for the final dest and immediate nodes to notify path is done */
     build_notify_lists (path_ranks, schedule->notify_list, schedule->intermediate_notify_list, schedule->num_active_paths, rank);
 
-    optiq_schedule_print_notify_list(schedule->notify_list, rank);
-    optiq_schedule_print_notify_list(schedule->intermediate_notify_list, rank);
+    //optiq_schedule_print_notify_list(schedule->notify_list, rank);
+    //optiq_schedule_print_notify_list(schedule->intermediate_notify_list, rank);
 
     /* Register memories */
     optiq_schedule_memory_register (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, schedule);
