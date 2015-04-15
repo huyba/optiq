@@ -158,7 +158,9 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    //optiq_pami_transport_execute_new ();
+    optiq_pami_transport_execute_new ();
+
+    optiq_pami_transport_clear();
 
     optiq_schedule_clear ();
 

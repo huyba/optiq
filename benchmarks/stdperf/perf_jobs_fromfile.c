@@ -52,6 +52,8 @@ int main(int argc, char **argv)
 
 	    odp.print_mem_reg_msg =  true;
 	    //odp.print_mem_avail = true;
+	    odp.print_rput_msg = true;
+
 	    optiq_benchmark_jobs_from_file (filepath, demand);
 
 	    opi.iters = 1;

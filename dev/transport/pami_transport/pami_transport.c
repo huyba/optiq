@@ -287,6 +287,13 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
 
     pami_transport->transport_info.forward_buf = forward_buf;
     pami_transport->transport_info.forward_mr = forward_mr;
+
+    optiq_pami_transport_clear();
+}
+
+void optiq_pami_transport_clear()
+{
+    memset (pami_transport->transport_info.forward_buf, 0, OPTIQ_FORWARD_BUFFER_SIZE);
     pami_transport->transport_info.forward_mr->offset = 0;
 
     pami_transport->transport_info.global_header_id = 0;
