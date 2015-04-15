@@ -116,6 +116,11 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
 
+    if (rank == 0 && odp.print_path_rank)
+    {
+	optiq_path_print_paths(schedule->paths);
+    }
+
     for (int i = 0; i < jobs.size(); i++) 
     {
 	jobs[i].demand = datasize;
@@ -139,6 +144,13 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     {
 	optiq_util_print_mem_info(rank);
     }
+
+    if (rank == 0 && odp.print_path_rank) 
+    {
+	optiq_path_print_paths(schedule->paths);
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, path_ranks);
 

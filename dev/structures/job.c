@@ -41,7 +41,7 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
     char line[256];
 
     if( access( filepath, F_OK ) == -1 ) {
-        return false;
+	return false;
     }
 
     fp = fopen(filepath, "r");
@@ -61,65 +61,73 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 
     while (fgets(line, 80, fp) != NULL)
     {
-        if (line[0] == 'J')
-        {
-            trim(line);
-            sscanf(line, "%s %d %d %f %d %d %d %d", temp, &job_id, &job_path_id, &flow, &source_id, &dest_id, &source_rank, &dest_rank);
-            /*printf("job_id = %d job_path_id = %d, flow = %f\n", job_id, job_path_id, flow);*/
+	if (line[0] == 'J')
+	{
+	    trim(line);
+	    sscanf(line, "%s %d %d %f %d %d %d %d", temp, &job_id, &job_path_id, &flow, &source_id, &dest_id, &source_rank, &dest_rank);
+	    /*printf("job_id = %d job_path_id = %d, flow = %f\n", job_id, job_path_id, flow);*/
 
-            struct path *p = (struct path *) calloc (1, sizeof(struct path));
-            p->job_id = job_id;
-            p->path_id = path_id;
+	    struct path *p = (struct path *) calloc (1, sizeof(struct path));
+	    p->job_id = job_id;
+	    p->path_id = path_id;
 	    p->flow = rintf(flow);
+	    p->arcs.clear();
 
-            while(fgets(line,80,fp) != NULL)
-            {
-                trim(line);
-                if (strcmp(line, "") == 0)
-                {
-                    break;
-                }
-                sscanf(line, "%d %d", &u, &v);
-
-                struct arc a;
-                a.u = u;
-                a.v = v;
-
-                p->arcs.push_back(a);
-
-                /*printf("u = %d, v = %d\n", u, v);*/
-            }
-
-	    paths.push_back(p);
-	    path_id++;	    /* We need distinct path_id for entire system, we route message based on path_id */
-
-	    exist = false;
-	    for (int i = 0; i < jobs.size(); i++)
+	    while(fgets(line,80,fp) != NULL)
 	    {
-		if (jobs[i].job_id == job_id) 
+		trim(line);
+		if (strcmp(line, "") == 0)
 		{
-		    jobs[i].paths.push_back(p);
-		    exist = true;
 		    break;
 		}
+		sscanf(line, "%d %d", &u, &v);
+
+		struct arc a;
+		a.u = u;
+		a.v = v;
+
+		p->arcs.push_back(a);
+
+		/*printf("u = %d, v = %d\n", u, v);*/
 	    }
 
-	    if (!exist) 
+	    if (p->arcs.size() > 0)
 	    {
-		struct job new_job;
-		new_job.paths.clear();
+		paths.push_back(p);
+		path_id++;	    /* We need distinct path_id for entire system, we route message based on path_id */
 
-		sprintf(new_job.name, "%s", name);
-		new_job.job_id = job_id;
-		new_job.source_id = source_id;
-		new_job.source_rank = source_rank;
-		new_job.dest_id = dest_id;
-		new_job.dest_rank = dest_rank;
-		new_job.paths.push_back(p);
+		exist = false;
+		for (int i = 0; i < jobs.size(); i++)
+		{
+		    if (jobs[i].job_id == job_id) 
+		    {
+			jobs[i].paths.push_back(p);
+			exist = true;
+			break;
+		    }
+		}
 
-		jobs.push_back(new_job);
+		if (!exist) 
+		{
+		    struct job new_job;
+		    new_job.paths.clear();
+
+		    sprintf(new_job.name, "%s", name);
+		    new_job.job_id = job_id;
+		    new_job.source_id = source_id;
+		    new_job.source_rank = source_rank;
+		    new_job.dest_id = dest_id;
+		    new_job.dest_rank = dest_rank;
+		    new_job.paths.push_back(p);
+
+		    jobs.push_back(new_job);
+		}
 	    }
-        }
+	    else
+	    {
+		free(p);
+	    }
+	}
     }
 
     fclose(fp);
@@ -131,15 +139,15 @@ void optiq_job_print_jobs (std::vector<struct job> &jobs)
     {
 	printf("job_id = %d source_id = %d dest_id = %d, source_rank = %d, dest_id = %d, demand = %d, #paths = %ld\n", jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id, jobs[i].source_rank, jobs[i].dest_rank, jobs[i].demand, jobs[i].paths.size());
 
-        for (int j = 0; j < jobs[i].paths.size(); j++)
-        {
-            printf("job_id = %d path_id = %d flow = %d\n", jobs[i].job_id, jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    printf("job_id = %d path_id = %d flow = %d\n", jobs[i].job_id, jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
 	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
 	    {
 		printf("%d->", jobs[i].paths[j]->arcs[k].u);
 	    }
 	    printf("%d\n", jobs[i].paths[j]->arcs.back().v);
-        }
+	}
 	printf("\n");
     }
 }
@@ -151,10 +159,10 @@ void optiq_job_print(std::vector<struct job> &jobs, int world_rank)
 
     for (int i = 0; i < jobs.size(); i++)
     {
-        printf("Rank %d job_id = %d source = %d dest = %d\n", world_rank, jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id);
-        for (int j = 0; j < jobs[i].paths.size(); j++)
-        {
-            printf("Rank %d job_id = %d #paths = %ld path_id = %d flow = %d\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
+	printf("Rank %d job_id = %d source = %d dest = %d\n", world_rank, jobs[i].job_id, jobs[i].source_id, jobs[i].dest_id);
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    printf("Rank %d job_id = %d #paths = %ld path_id = %d flow = %d\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow);
 
 	    sprintf(strpath, "%s", "");
 	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
@@ -163,7 +171,7 @@ void optiq_job_print(std::vector<struct job> &jobs, int world_rank)
 	    }
 	    sprintf(strpath, "%s%d", strpath, jobs[i].paths[j]->arcs.back().v);
 	    printf("Rank %d job_id = %d #paths = %ld path_id = %d %s\n", world_rank, jobs[i].job_id, jobs[i].paths.size(), jobs[i].paths[j]->path_id, strpath);
-        }
+	}
     }
 }
 
@@ -173,28 +181,28 @@ void optiq_job_map_jobs_to_source_dests (std::vector<struct job> &jobs, std::vec
 
     for (int i = 0; i < jobs.size(); i++)
     {
-        int source_id = jobs[i].source_id;
-        int dest_id = jobs[i].dest_id;
-        bool found = false;
+	int source_id = jobs[i].source_id;
+	int dest_id = jobs[i].dest_id;
+	bool found = false;
 
-        for (int j = 0; j < source_dests.size(); j++)
-        {
-            if (source_dests[j].first == source_id) 
+	for (int j = 0; j < source_dests.size(); j++)
+	{
+	    if (source_dests[j].first == source_id) 
 	    {
-                source_dests[j].second.push_back(dest_id);
-                found = true;
-                break;
-            }
-        }
+		source_dests[j].second.push_back(dest_id);
+		found = true;
+		break;
+	    }
+	}
 
-        if (!found)
-        {
-            std::vector<int> dests;
-            dests.clear();
-            dests.push_back(dest_id);
-            std::pair<int, std::vector<int> > sd = std::make_pair(source_id, dests);
-            source_dests.push_back(sd);
-        }
+	if (!found)
+	{
+	    std::vector<int> dests;
+	    dests.clear();
+	    dests.push_back(dest_id);
+	    std::pair<int, std::vector<int> > sd = std::make_pair(source_id, dests);
+	    source_dests.push_back(sd);
+	}
     }
 }
 
@@ -223,8 +231,8 @@ void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int max
 	    /* Any path at index less than iters is kept */
 	    while (jobs[i].paths.size() > iters && !kept)
 	    {
-	        struct path *p = jobs[i].paths[iters];
-		    
+		struct path *p = jobs[i].paths[iters];
+
 		bool underload = true;
 
 		for (int j = 0; j < p->arcs.size(); j++)
