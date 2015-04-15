@@ -265,15 +265,9 @@ void optiq_mem_reg (void *buf, int *counts, int *displs, pami_memregion_t *mr)
     }
 }
 
-void dump_func(struct optiq_schedule *sched)
-{
-
-}
 
 void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls,  struct optiq_schedule *schedule)
 {
-    printf("Rank %d start to reg mem\n", pami_transport->rank);
-
     int recv_len = 0, send_len = 0;
 
     for (int i = 0; i < pami_transport->size; i++)
@@ -297,8 +291,6 @@ void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls
     schedule->rdispls = rdispls;
     schedule->recv_len = recv_len;
     schedule->expecting_length = recv_len;
-
-    printf("Rank %d recv_len = %d, send_len = %d\n", pami_transport->rank, recv_len, send_len);
 
     optiq_mem_reg(sendbuf, sendcounts, sdispls, &(schedule->send_mr.mr));
     schedule->send_mr.offset = 0;
@@ -467,23 +459,11 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     optiq_schedule_print_notify_list(schedule->notify_list, rank);
     optiq_schedule_print_notify_list(schedule->intermediate_notify_list, rank);
 
-    for (int i = 0; i < 10; i++)
-    {
-	printf("Rank %d start dump_func\n", rank);
-
-	dump_func(schedule);
-    }
-
-    printf("Rank %d start to reg memories\n", rank);
-
     /* Register memories */
     optiq_schedule_memory_register (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, schedule);
 
-    printf("Rank %d start to create local jobs\n", rank);
     /* Add local jobs */
     optiq_schedule_create_local_jobs (jobs, path_ranks, schedule->local_jobs, sendcounts, sdispls);
-
-    printf("Rank %d start to split local jobs\n", rank);
 
     if (odp.print_local_jobs) {
 	optiq_schedule_print_optiq_jobs (schedule->local_jobs);
@@ -492,14 +472,12 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /* Split a message into chunk-size messages */
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, schedule->chunk_size);
 
-    printf("Rank %d start to set schedule\n", rank);
-
     /*Reset a few parameters*/
     optiq_schedule_set (schedule, pami_transport->size);
 
-    //if (rank == 0) {
+    if (rank == 0) {
 	printf("Rank %d done scheduling\n", rank);
-    //}
+    }
 }
 
 int optiq_schedule_get_chunk_size(struct optiq_job &ojob)

@@ -133,43 +133,6 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     optiq_input_convert_jobs_to_alltoallv (jobs, &sendbuf, &sendcounts, &sdispls, &recvbuf, &recvcounts, &rdispls, size, rank);
     
-    /*sendcounts = (int *) calloc (1, sizeof(int) * size);
-    recvcounts = (int *) calloc (1, sizeof(int) * size);
-    sdispls = (int *) calloc (1, sizeof(int) * size);
-    rdispls = (int *) calloc (1, sizeof(int) * size);
-
-    int sendbytes = 0, recvbytes = 0;
-
-    for (int i = 0; i < jobs.size(); i++)
-    {
-        if (jobs[i].source_rank == rank)
-        {
-            (sendcounts)[jobs[i].dest_rank] = jobs[i].demand;
-            (sdispls)[jobs[i].dest_rank] = sendbytes;
-            sendbytes += jobs[i].demand;
-        }
-
-        if (jobs[i].dest_rank == rank)
-        {
-            (recvcounts)[jobs[i].source_rank] = jobs[i].demand;
-            (rdispls)[jobs[i].source_rank] = recvbytes;
-            recvbytes += jobs[i].demand;
-        }
-    }
-
-    if (sendbytes > 0)
-    {
-        sendbuf = (char *) malloc (sendbytes);
-        for (int i = 0; i < sendbytes; i++) {
-            (sendbuf)[i] = i % 128;
-        }
-    }
-
-    if (recvbytes > 0)
-    {
-        recvbuf = (char *) malloc (recvbytes);
-    }*/
-    
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     if (odp.print_mem_avail)
