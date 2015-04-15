@@ -63,7 +63,8 @@ realclean: clean
 	$(RM) $(RMFLAGS) *.x
 	$(RM) $(RMFLAGS) core.*
 
-BENCHMARKS_DIR = /gpfs/mira-fs0/projects/Performance/abui/optiq/benchmarks
+M = mira
+BENCHMARKS_DIR = /gpfs/$(M)-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
 	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/512/

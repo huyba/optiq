@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     int size = pami_transport->size;
 
     int demand = 1024 * 1024;
-    int numfile = 0;
+    int start = 0, end = 0;
     char *path;
 
     if (argc > 1) {
@@ -23,11 +23,15 @@ int main(int argc, char **argv)
     }
 
     if (argc > 2) {
-	numfile = atoi(argv[2]);
+	start = atoi(argv[2]);
     }
 
     if (argc > 3) {
-	demand = atoi(argv[3]) * 1024;
+	end = atoi(argv[3]);
+    }
+
+    if (argc > 4) {
+	demand = atoi(argv[4]) * 1024;
     }
 
     //odp.print_path_rank = true;
@@ -36,7 +40,7 @@ int main(int argc, char **argv)
 
     char filepath[256];
 
-    for (int i = 0; i < numfile; i++)
+    for (int i = start; i < end; i++)
     {
 	sprintf(filepath, "%s/test%d", path, i);
 	//odp.print_local_jobs = true;
@@ -50,9 +54,9 @@ int main(int argc, char **argv)
 	    schedule->chunk_size = chunk;
 	    schedule->auto_chunksize = false;
 
-	    odp.print_mem_reg_msg =  true;
+	    //odp.print_mem_reg_msg =  true;
 	    //odp.print_mem_avail = true;
-	    odp.print_rput_msg = true;
+	    //odp.print_rput_msg = true;
 
 	    optiq_benchmark_jobs_from_file (filepath, demand);
 
