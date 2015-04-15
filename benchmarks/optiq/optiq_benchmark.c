@@ -114,14 +114,27 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     std::vector<struct path *> &path_ids = opi.paths, &path_ranks = sched->paths;
     path_ranks.clear();
 
-    optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
+    int maxload = 1;
+    optiq_job_read_and_select(jobs, path_ranks, jobfile, maxload, topo->num_nodes, topo->num_ranks_per_node);
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        jobs[i].demand = datasize;
+    }
+
+    /*optiq_jobs_read_from_file (jobs, path_ranks, jobfile);*/
 
     if (rank == 0 && odp.print_path_rank)
     {
 	optiq_path_print_paths(schedule->paths);
     }
 
-    /*Check if enough paths to send, if not return. This should not happen, but still in current alg.*/
+    if (rank == 0 && odp.print_job)
+    {
+	optiq_job_print_jobs(jobs);
+    }
+
+    /* Check if enough paths to send, if not return. This should not happen, but still in current alg. */
     for (int i = 0; i < jobs.size(); i++) 
     {
 	if (jobs[i].paths.size() == 0)
@@ -138,11 +151,6 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
 	    return;
 	}
-    }
-
-    for (int i = 0; i < jobs.size(); i++) 
-    {
-	jobs[i].demand = datasize;
     }
 
     optiq_path_creat_path_ids_from_path_ranks(path_ids, path_ranks, topo->num_ranks_per_node);

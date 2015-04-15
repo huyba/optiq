@@ -20,6 +20,12 @@ struct job {
     std::vector<struct path *> kpaths;
 };
 
+void optiq_job_add_path_under_load (struct job &ajob, int maxload, int** &load);
+
+void optiq_job_read_from_file (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath);
+
+void optiq_job_read_and_select (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int maxload, int size, int num_ranks_per_node);
+
 bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath);
 
 void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath);

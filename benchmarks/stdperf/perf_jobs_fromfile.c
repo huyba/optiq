@@ -45,7 +45,8 @@ int main(int argc, char **argv)
 	    schedule->chunk_size = chunk;
 	    schedule->auto_chunksize = false;
 
-	    odp.print_path_rank = true;
+	    //odp.print_path_rank = true;
+	    odp.print_job = true;
 	    //odp.print_mem_reg_msg =  true;
 	    //odp.print_mem_exchange_status = true;
             //odp.print_mem_adv_exchange_msg = true;
