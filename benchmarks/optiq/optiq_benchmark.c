@@ -121,6 +121,25 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 	optiq_path_print_paths(schedule->paths);
     }
 
+    /*Check if enough paths to send, if not return. This should not happen, but still in current alg.*/
+    for (int i = 0; i < jobs.size(); i++) 
+    {
+	if (jobs[i].paths.size() == 0)
+	{
+	    for (int j = 0; j < path_ranks.size(); j++)
+	    {
+		free (path_ranks[i]);
+	    }
+
+	    if (rank == 0)
+	    {
+		printf("Not enought paths\n");
+	    }
+
+	    return;
+	}
+    }
+
     for (int i = 0; i < jobs.size(); i++) 
     {
 	jobs[i].demand = datasize;
@@ -143,11 +162,6 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     if (odp.print_mem_avail)
     {
 	optiq_util_print_mem_info(rank);
-    }
-
-    if (rank == 0 && odp.print_path_rank) 
-    {
-	optiq_path_print_paths(schedule->paths);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);

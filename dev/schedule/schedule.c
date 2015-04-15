@@ -456,8 +456,11 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /* Build notify list for the final dest and immediate nodes to notify path is done */
     build_notify_lists (path_ranks, schedule->notify_list, schedule->intermediate_notify_list, schedule->num_active_paths, rank);
 
-    optiq_schedule_print_notify_list(schedule->notify_list, rank);
-    optiq_schedule_print_notify_list(schedule->intermediate_notify_list, rank);
+    if (odp.print_notify_list)
+    {
+	optiq_schedule_print_notify_list(schedule->notify_list, rank);
+	optiq_schedule_print_notify_list(schedule->intermediate_notify_list, rank);
+    }
 
     /* Register memories */
     optiq_schedule_memory_register (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, schedule);
@@ -475,9 +478,9 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /*Reset a few parameters*/
     optiq_schedule_set (schedule, pami_transport->size);
 
-    //if (rank == 0) {
+    if (rank == 0) {
 	printf("Rank %d done scheduling\n", rank);
-    //}
+    }
 }
 
 int optiq_schedule_get_chunk_size(struct optiq_job &ojob)

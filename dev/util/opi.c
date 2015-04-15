@@ -106,7 +106,7 @@ void optiq_opi_clear()
     odp.print_mem_adv_exchange_msg = false;
     odp.print_mem_avail = false;
     odp.test_mpi_perf = true;
-
+    odp.print_notify_list = true;
     odp.print_elapsed_time = false;
 
     odp.collect_timestamp = false;
