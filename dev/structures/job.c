@@ -81,6 +81,98 @@ bool optiq_job_add_one_path_under_load (struct job &ajob, int maxload, int** &lo
     return false;
 }
 
+void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, char *modeldat)
+{
+    std::vector<struct job> jobs;
+    std::vector<struct path*> paths;
+
+    optiq_job_read_and_select(jobs, paths, filekpath, maxload, size, num_ranks_per_node);
+
+    std::ofstream myfile;
+
+    myfile.open (modeldat);
+
+    myfile << "set Nodes :=" << std::endl;
+
+    for (int i = 0; i < size; i++)
+    {
+	myfile << i << std::endl;
+    }
+    
+    myfile << ";" << std::endl;
+
+    myfile << "set Arcs :=" << std::endl;
+
+    for (int i = 0; i < size; i++)
+    {
+	for (int j = 0; j < neighbors[i].size(); j++)
+	{
+	    myfile << i << " " << neighbors[i][j] << std::endl;
+	}
+    }
+
+    myfile << ";" << std::endl;
+
+    myfile << "param Capacity :=" << std::endl;
+
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < neighbors[i].size(); j++)
+        {
+            myfile << i << " " << neighbors[i][j] << " " << capacity << std::endl;
+        }   
+    }
+
+    myfile << ";" << std::endl;
+
+    myfile << "set Jobs :=" << std::endl;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	myfile << jobs[i].job_id << std::endl;
+    }
+
+    myfile << ";" << std::endl;
+
+    myfile << "param Demand :=" << std::endl;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        myfile << jobs[i].job_id << " " << jobs[i].demand << std::endl;
+    }
+
+    myfile << ";" << std::endl;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	myfile << "set Path[" << jobs[i].job_id << "] :=" << std::endl;
+
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    myfile << jobs[i].paths[j]->path_id << std::endl;
+	}
+
+	myfile << ";" << std::endl;
+    }
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+        {
+	    myfile << "set Path_Arcs[" << jobs[i].job_id << "," << jobs[i].paths[j]->path_id << "] :=" << std::endl;
+
+	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
+	    {
+		myfile << jobs[i].paths[j]->arcs[k].u << " "  << jobs[i].paths[j]->arcs[k].v << std::endl;
+	    }
+
+	    myfile << ";" << std::endl;
+	}
+    }
+
+    myfile.close();
+}
+
 void optiq_job_read_and_select (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int maxload, int size, int num_ranks_per_node)
 {
     optiq_job_read_from_file (jobs, paths, filepath);
