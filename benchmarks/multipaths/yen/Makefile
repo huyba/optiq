@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o
 
-all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_gather.x cp
+all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_gather.x yen_model.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -91,6 +91,12 @@ cp:
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/gather/2k/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/gather/4k/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/gather/8k/
+
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/2k/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/4k/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/8k/
 
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/512/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/1k/
