@@ -81,7 +81,7 @@ bool optiq_job_add_one_path_under_load (struct job &ajob, int maxload, int** &lo
     return false;
 }
 
-void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, char *modeldat)
+void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, int demand, char *modeldat)
 {
     std::vector<struct job> jobs;
     std::vector<struct path*> paths;
@@ -138,7 +138,7 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 
     for (int i = 0; i < jobs.size(); i++)
     {
-        myfile << jobs[i].job_id << " " << jobs[i].demand << std::endl;
+        myfile << jobs[i].job_id << " " << demand << std::endl;
     }
 
     myfile << ";" << std::endl;
