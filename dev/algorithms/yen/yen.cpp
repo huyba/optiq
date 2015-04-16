@@ -55,8 +55,6 @@ void get_Yen_k_shortest_paths(char *filePath, int k, struct job *nj, int &path_i
 	    pa->arcs.push_back(a);
 	}
 
-	optiq_path_print_path(pa);
-
 	nj->paths.push_back(pa);
 
 	path_id++;
@@ -129,11 +127,7 @@ void optiq_alg_yen_k_shortest_paths_2vertices(char *graphfile, int v1, int v2, i
 {
     Graph my_graph (graphfile);
 
-    printf("Get %d shortest paths between %d and %d\n", num_paths, v1, v2);
-
     YenTopKShortestPathsAlg yenAlg(my_graph, my_graph.get_vertex(v1), my_graph.get_vertex(v2));
-
-    printf("Got %d shortest paths between %d and %d\n", num_paths, v1, v2);
 
     int k = 0;
 
@@ -153,8 +147,6 @@ void optiq_alg_yen_k_shortest_paths_2vertices(char *graphfile, int v1, int v2, i
 
             pa->arcs.push_back(a);
         }
-
-	optiq_path_print_path(pa);
 
 	/*for (int i = 0; i < p->m_vtVertexList.size(); i++)
         {
