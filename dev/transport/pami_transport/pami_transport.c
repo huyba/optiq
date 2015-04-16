@@ -934,7 +934,7 @@ void optiq_recv_path_done_notification_fn(pami_context_t context, void *cookie, 
 	}
     }
 
-    /*printf("Rank %d recv path done notification from %d\n", pami_transport->rank, origin);*/
+    printf("Rank %d recv path done notification from %d\n", pami_transport->rank, origin);
 }
 
 void optiq_recv_job_done_notification_fn(pami_context_t context, void *cookie, const void *header, size_t header_size, const void *data, size_t data_size, pami_endpoint_t origin, pami_recv_t *recv)
@@ -1318,6 +1318,7 @@ void optiq_pami_transport_check_and_notify ()
 		pami_transport->sched->notify_list.erase(pami_transport->sched->notify_list.begin() + i);
 
 		pami_transport->sched->num_active_paths--;
+		printf("Rank %d send notify\n", pami_transport->rank);
 	    }
 
 	    i++;

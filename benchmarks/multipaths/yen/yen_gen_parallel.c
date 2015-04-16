@@ -22,13 +22,13 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     {
 	if (rank == i % size)
 	{
-	    printf("Rank %d avail mem before call yen\n", rank);
-	    optiq_util_print_mem_info(rank);
+	    //printf("Rank %d avail mem before call yen\n", rank);
+	    //optiq_util_print_mem_info(rank);
 
 	    optiq_alg_yen_k_shortest_paths_job (graphFilePath, jobs[i], num_paths);
 
-	    printf("Rank %d avail mem after call yen\n", rank);
-            optiq_util_print_mem_info(rank);
+	    //printf("Rank %d avail mem after call yen\n", rank);
+            //optiq_util_print_mem_info(rank);
 
 	    sprintf(pairfile, "%s_%d", jobfile, jobs[i].job_id);
 	    optiq_job_write_to_file (jobs, pairfile);
@@ -168,6 +168,85 @@ void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int n
 
 		    testid++;
 		}
+	    }
+	}
+    }
+}
+
+
+void gen_patterns_new (struct topology *topo, int demand, char *graphFilePath, int numpaths)
+{
+    int rank, numranks;
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &numranks);
+
+    std::vector<struct job> jobs;
+    char name[256];
+    int testid = 0;
+    int start_testid = 0;
+    char jobfile[256];
+
+    int size = topo->num_nodes;
+
+    /* Generate disjoint First m send data to last n */
+    for (int m = size/16; m <= size/2; m *= 2)
+    {
+	for (int n = size/16; n <= size/2; n *= 2) 
+	{
+	    sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
+            optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, false);
+
+	    sprintf(jobs[0].name, "%s", name);
+	    sprintf(jobfile, "test%d", testid);
+	    search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
+
+	    testid++;
+	    jobs.clear();
+	}
+    }
+
+    /* Overlap Generate paths */
+    for (int m = size/16; m <= size/2; m *= 2)
+    {
+	for (int n = size/16; n <= size/2; n *= 2) 
+	{
+	    for (int l = m/8; l <= m/2; l *= 2)
+	    {
+		optiq_util_print_mem_info(rank);
+
+		sprintf(name, "Test No. %d: Overlap %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, m-l, n + m -l -1);
+		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, false);
+
+		//optiq_job_print_jobs (jobs);
+
+		sprintf(jobs[0].name, "%s", name);
+		sprintf(jobfile, "test%d", testid);
+		search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
+
+		testid++;
+		jobs.clear();
+	    }
+	}
+    }
+
+    /* Subset Generate paths*/
+    for (int m = size/8; m <= size/2; m *= 2)
+    {
+	for (int n = m/16; n <= m/4; n *= 2) 
+	{
+	    for (int p = 0; p <= m/2; p += m/4)
+	    {
+		sprintf(name, "Test No. %d: Subset %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, p, p+n-1);
+		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, false);
+
+		//optiq_job_print_jobs (jobs);
+
+		sprintf(jobs[0].name, "%s", name);
+		sprintf(jobfile, "test%d", testid);
+		search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
+
+		testid++;
+		jobs.clear();
 	    }
 	}
     }
@@ -439,7 +518,8 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    gen_jobs_paths_new (topo, demand, graphFilePath, numpaths);
+    gen_patterns_new (topo, demand, graphFilePath, numpaths);
+    //gen_jobs_paths_new (topo, demand, graphFilePath, numpaths);
     //gen_patterns (topo, demand, graphFilePath, numpaths);
     //gen_jobs_paths (topo, demand, graphFilePath, numpaths);
 }

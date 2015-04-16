@@ -193,6 +193,8 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     optiq_pami_transport_execute_new ();
 
+    printf("Rank %d done transport\n", rank);
+
     optiq_pami_transport_clear();
 
     optiq_schedule_clear ();

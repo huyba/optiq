@@ -36,17 +36,17 @@ int main(int argc, char **argv)
 
     char filepath[256];
 
-    for (int i = start; i < end; i++)
+    for (int i = start; i <= end; i++)
     {
 	sprintf(filepath, "%s/test%d", path, i);
 
-	for (int chunk = 8 * 1024; chunk <=  demand; chunk *= 2)
+	for (int chunk = 65 * 1024; chunk <=  demand; chunk *= 2)
 	{
-	    schedule->chunk_size = chunk;
+	    schedule->chunk_size = 65*1024;
 	    schedule->auto_chunksize = false;
 
-	    //odp.print_path_rank = true;
-	    odp.print_job = true;
+	    odp.print_path_rank = true;
+	    //odp.print_job = true;
 	    //odp.print_mem_reg_msg =  true;
 	    //odp.print_mem_exchange_status = true;
             //odp.print_mem_adv_exchange_msg = true;
@@ -58,6 +58,7 @@ int main(int argc, char **argv)
 	    //odp.print_rput_msg = true;
 	    //odp.print_rput_rdone_notify_msg = true;
             //odp.print_recv_rput_done_msg = true;
+	    odp.print_pami_transport_status = true;
 
 	    optiq_benchmark_jobs_from_file (filepath, demand);
 

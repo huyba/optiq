@@ -45,15 +45,17 @@ void get_Yen_k_shortest_paths(char *filePath, int k, struct job *nj, int &path_i
 	pa->job_id = nj->job_id;
 	pa->path_id = path_id;
 
-	for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
+	for (int j = 0; j < p->length() - 1; j++)
 	{
 	    struct arc a;
 
-	    a.u = p->m_vtVertexList[j]->getID();
-	    a.v = p->m_vtVertexList[j + 1]->getID();
+	    a.u = p->GetVertex(j)->getID();
+	    a.v = p->GetVertex(j + 1)->getID();
 
 	    pa->arcs.push_back(a);
 	}
+
+	optiq_path_print_path(pa);
 
 	nj->paths.push_back(pa);
 
@@ -127,7 +129,11 @@ void optiq_alg_yen_k_shortest_paths_2vertices(char *graphfile, int v1, int v2, i
 {
     Graph my_graph (graphfile);
 
+    printf("Get %d shortest paths between %d and %d\n", num_paths, v1, v2);
+
     YenTopKShortestPathsAlg yenAlg(my_graph, my_graph.get_vertex(v1), my_graph.get_vertex(v2));
+
+    printf("Got %d shortest paths between %d and %d\n", num_paths, v1, v2);
 
     int k = 0;
 
@@ -135,23 +141,26 @@ void optiq_alg_yen_k_shortest_paths_2vertices(char *graphfile, int v1, int v2, i
     {
 	BasePath *p = yenAlg.next();
 	struct path *pa = (struct path *) calloc (1, sizeof(struct path));
+	pa->arcs.clear();
 	pa->path_id = k;
 
-	for (int i = 0; i < p->m_vtVertexList.size() - 1; i++)
+	for (int i = 0; i < p->length() - 1; i++)
         {
             struct arc a;
 
-            a.u = p->m_vtVertexList[i]->getID();
-            a.v = p->m_vtVertexList[i + 1]->getID();
+            a.u = p->GetVertex(i)->getID();
+            a.v = p->GetVertex(i + 1)->getID();
 
             pa->arcs.push_back(a);
         }
 
-	for (int i = 0; i < p->m_vtVertexList.size(); i++)
+	optiq_path_print_path(pa);
+
+	/*for (int i = 0; i < p->m_vtVertexList.size(); i++)
         {
 	    delete p->m_vtVertexList[i];
 	}
-	p->m_vtVertexList.clear();
+	p->m_vtVertexList.clear();*/
 
 	//delete p;
 
@@ -177,12 +186,12 @@ void optiq_alg_yen_distinct_shortest_paths(char *filePath, struct job *nj, int &
 	pa->path_id = path_id;
 
 	bool underload = true;
-	for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
+	for (int j = 0; j < p->length() - 1; j++)
 	{
 	    struct arc a;
 
-	    a.u = p->m_vtVertexList[j]->getID();
-	    a.v = p->m_vtVertexList[j + 1]->getID();
+	    a.u = p->GetVertex(j)->getID();
+	    a.v = p->GetVertex(j + 1)->getID();
 
 	    if (load[a.u][a.v] >= maxload) 
 	    {
@@ -253,12 +262,12 @@ void get_most_h_hops_k_shortest_paths (char *filePath, int h, int k, struct job 
 	pa->job_id = nj->job_id;
 	pa->path_id = path_id;
 
-	for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
+	for (int j = 0; j < p->length() - 1; j++)
 	{
 	    struct arc a;
 
-	    a.u = p->m_vtVertexList[j]->getID();
-	    a.v = p->m_vtVertexList[j + 1]->getID();
+	    a.u = p->GetVertex(j)->getID();
+	    a.v = p->GetVertex(j + 1)->getID();
 
 	    pa->arcs.push_back(a);
 	}
@@ -454,12 +463,12 @@ void optiq_alg_yen_k_shortest_paths (std::vector<struct path *> &complete_paths,
 
             struct path *pa = (struct path *) calloc (1, sizeof(struct path));
 
-            for (int j = 0; j < p->m_vtVertexList.size() - 1; j++)
+            for (int j = 0; j < p->length() - 1; j++)
             {
                 struct arc a;
 
-                a.u = p->m_vtVertexList[j]->getID();
-                a.v = p->m_vtVertexList[j + 1]->getID();
+                a.u = p->GetVertex(j)->getID();
+                a.v = p->GetVertex(j + 1)->getID();
 
                 pa->arcs.push_back(a);
             }
