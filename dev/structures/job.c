@@ -28,8 +28,21 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
 		myfile << jobs[i].paths[j]->arcs[k].u << " " << jobs[i].paths[j]->arcs[k].v << std::endl;
 	    }
 	    myfile << std::endl;
+
+	    /* Specical print for debuging*/
+	    if (jobs[i].job_id == 183)
+	    {
+		optiq_path_print_path(jobs[i].paths[j]);
+	    }
 	}
-	myfile << std::endl;
+
+	if (i + 1 < jobs.size())
+	{
+	    if (jobs[i + 1].paths.size() > 0) 
+	    {
+		myfile << std::endl;
+	    }
+	}
     }
 
     myfile.close();
@@ -221,7 +234,8 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 		/*printf("u = %d, v = %d\n", u, v);*/
 	    }
 
-	    if (p->arcs.size() > 0)
+	    /*Sometimes the path is disrupted*/
+	    if (p->arcs.size() > 0 && p->arcs.front().u == source_id && p->arcs.back().v == dest_id)
 	    {
 		paths.push_back(p);
 		path_id++;	    /* We need distinct path_id for entire system, we route message based on path_id */
