@@ -55,8 +55,6 @@ int main(int argc, char **argv)
 	    paths.clear();
 
 	    optiq_job_write_jobs_model_format(filepath, maxload, topo->num_nodes, num_ranks_per_node, topo->neighbors, capacity, modeldat);
-            sprintf(filepath, "test%d", i);
-            optiq_job_write_to_file (jobs, filepath);
         }
     }
 
