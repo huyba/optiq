@@ -15,10 +15,10 @@ void optiq_model_print_graph (int num_nodes, std::vector<int> *neighbors , int c
     myfile << "set Arcs :=\n";
     for (int i = 0; i < num_nodes; i++) 
     {
-	for (int j = 0; j < neighbors[i].size(); j++)
-	{
-	    myfile << i << " " << neighbors[i][j] << std::endl;
-	}
+    for (int j = 0; j < neighbors[i].size(); j++)
+    {
+        myfile << i << " " << neighbors[i][j] << std::endl;
+    }
     }
     myfile << ";\n\n";
 
@@ -106,7 +106,7 @@ bool optiq_model_read_flow_value_from_file (char *filePath, std::vector<struct j
     fp = fopen(filePath, "r");
 
     if (fp == NULL) {
-	return false;
+    return false;
     }
 
     for (int i = 0; i < 6; i++)
@@ -128,21 +128,22 @@ bool optiq_model_read_flow_value_from_file (char *filePath, std::vector<struct j
             sscanf(line, "%s %d %d %f", temp, &job_id, &path_id, &flow);
             //printf("job_id = %d path_id = %d, flow = %f\n", job_id, path_id, flow);
 
-	    for (int i = 0; i < jobs.size(); i++)
+        for (int i = 0; i < jobs.size(); i++)
+        {
+	if (jobs[i].job_id == job_id) 
+	{
+	    for (int j = 0; j < jobs[i].paths.size(); j++)
 	    {
-		if (jobs[i].job_id == job_id) 
-		{
-		    for (int j = 0; j < jobs[i].paths.size(); j++)
-		    {
-			if (jobs[i].paths[j]->path_id == path_id) {
-			    jobs[i].paths[j]->flow = flow;
-			}
-		    }
-		}
+	    if (jobs[i].paths[j]->path_id == path_id) {
+	        jobs[i].paths[j]->flow = flow;
 	    }
+	    }
+	}
+        }
 
         }
     }
 
     fclose(fp);
 }
+
