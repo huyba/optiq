@@ -28,12 +28,6 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
 		myfile << jobs[i].paths[j]->arcs[k].u << " " << jobs[i].paths[j]->arcs[k].v << std::endl;
 	    }
 	    myfile << std::endl;
-
-	    /* Specical print for debuging*/
-	    if (jobs[i].job_id == 183)
-	    {
-		optiq_path_print_path(jobs[i].paths[j]);
-	    }
 	}
 
 	if (i + 1 < jobs.size())
