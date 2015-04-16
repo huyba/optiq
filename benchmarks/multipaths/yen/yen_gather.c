@@ -36,7 +36,9 @@ int main(int argc, char **argv)
             printf("Rank %d working on %s\n", rank, filepath);
 
             std::vector<struct job> jobs;
+	    jobs.clear();
             std::vector<struct path*> paths;
+	    paths.clear();
 
             optiq_job_read_and_select(jobs, paths, filepath, maxload, num_nodes, num_ranks_per_node);
             sprintf(filepath, "test%d", i);
