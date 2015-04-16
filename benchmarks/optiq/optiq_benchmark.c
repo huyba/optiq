@@ -113,16 +113,15 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     jobs.clear();
     std::vector<struct path *> &path_ids = opi.paths, &path_ranks = sched->paths;
     path_ranks.clear();
+        
+    optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
 
-    int maxload = 1;
-    optiq_job_read_and_select(jobs, path_ranks, jobfile, maxload, topo->num_nodes, topo->num_ranks_per_node);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     for (int i = 0; i < jobs.size(); i++)
     {
         jobs[i].demand = datasize;
     }
-
-    /*optiq_jobs_read_from_file (jobs, path_ranks, jobfile);*/
 
     if (rank == 0 && odp.print_path_rank)
     {

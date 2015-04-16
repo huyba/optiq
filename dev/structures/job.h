@@ -20,7 +20,7 @@ struct job {
     std::vector<struct path *> kpaths;
 };
 
-void optiq_job_add_path_under_load (struct job &ajob, int maxload, int** &load);
+bool optiq_job_add_one_path_under_load (struct job &ajob, int maxload, int** &load);
 
 void optiq_job_read_from_file (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath);
 

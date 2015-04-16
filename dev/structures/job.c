@@ -35,7 +35,7 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
     myfile.close();
 }
 
-void optiq_job_add_path_under_load (struct job &ajob, int maxload, int** &load)
+bool optiq_job_add_one_path_under_load (struct job &ajob, int maxload, int** &load)
 {
     for (int j = 0; j < ajob.paths.size(); j++)
     {
@@ -66,8 +66,12 @@ void optiq_job_add_path_under_load (struct job &ajob, int maxload, int** &load)
 	    }
 
 	    ajob.paths.erase (ajob.paths.begin() + j);
+
+            return true;
 	}
     }
+
+    return false;
 }
 
 void optiq_job_read_and_select (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int maxload, int size, int num_ranks_per_node)
@@ -86,29 +90,42 @@ void optiq_job_read_and_select (std::vector<struct job> &jobs, std::vector<struc
 	jobs[i].kpaths.clear();
     }
 
-    int cload = 1;
+    int cload = 1, mload;
 
-    /* Add paths in a job that has load less than cload and update load */
+    /* Add paths in a job that has load less than cload and update load. Add one path per job at time */
+    bool added = false;
     while (cload <= maxload)
     {
-	for (int i = 0; i < jobs.size(); i++)
-	{
-	    optiq_job_add_path_under_load(jobs[i], cload, load);
-	}
+        added = false;
+        for (int i = 0; i < jobs.size(); i++)
+        {
+            if (optiq_job_add_one_path_under_load(jobs[i], cload, load))
+            {
+                added = true;
+            }
 
-	cload++;
-    }
+            mload = cload;
 
-    /* Check to make sure that each job has at least 1 path, if not increase the maxload*/
-    for (int i = 0; i < jobs.size(); i++)
-    {
-	cload = maxload + 1;
+            while (jobs[i].kpaths.size() == 0) 
+            {
+                mload++;
 
-	while (jobs[i].kpaths.size() == 0)
-	{
-	    optiq_job_add_path_under_load(jobs[i], cload, load);
-	    cload++;
-	}
+                if (optiq_job_add_one_path_under_load(jobs[i], mload, load))
+                {
+                    added = true;
+                }
+            }
+
+            if (mload > maxload) 
+            {
+                maxload = mload;
+            }
+        }
+
+        if (!added)
+        {
+            cload++;
+        }
     }
 
     /* Free remaining paths and copy from kpaths back to paths */
@@ -142,8 +159,8 @@ void optiq_job_read_from_file (std::vector<struct job> &jobs, std::vector<struct
     while (exist)
     {
 	sprintf(fullfilename, "%s_%d", filepath, i);
-	printf("Try to open file %s\n", fullfilename);
 	exist = optiq_jobs_read_from_file(jobs, paths, fullfilename);
+        printf("Tried to open file %s: %s\n", fullfilename, exist ? "Successful" : "Failed");
 	i++;
     }
 }
@@ -244,6 +261,8 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
     }
 
     fclose(fp);
+
+    return true;
 }
 
 void optiq_job_print_jobs (std::vector<struct job> &jobs)
