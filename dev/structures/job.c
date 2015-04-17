@@ -105,6 +105,8 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 
     for (int i = 0; i < size; i++)
     {
+	myfile << i << " " << i << std::endl;
+
 	for (int j = 0; j < neighbors[i].size(); j++)
 	{
 	    myfile << i << " " << neighbors[i][j] << std::endl;
@@ -117,6 +119,8 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 
     for (int i = 0; i < size; i++)
     {
+	myfile << i << " " << i << " " << capacity << std::endl;
+
         for (int j = 0; j < neighbors[i].size(); j++)
         {
             myfile << i << " " << neighbors[i][j] << " " << capacity << std::endl;
@@ -145,7 +149,7 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 
     for (int i = 0; i < jobs.size(); i++)
     {
-	myfile << "set Path[" << jobs[i].job_id << "] :=" << std::endl;
+	myfile << "set Paths[" << jobs[i].job_id << "] :=" << std::endl;
 
 	for (int j = 0; j < jobs[i].paths.size(); j++)
 	{

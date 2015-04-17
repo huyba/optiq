@@ -513,8 +513,8 @@ int main(int argc, char **argv)
 
     int demand = atoi (argv[7]) * 1024;
 
-    mintestid = atoi (argv[8]) * 1024;
-    maxtestid = atoi (argv[9]) * 1024;
+    mintestid = atoi (argv[8]);
+    maxtestid = atoi (argv[9]);
 
     optiq_topology_init_with_params(num_dims, psize, topo);
     topo->num_ranks_per_node = 1;

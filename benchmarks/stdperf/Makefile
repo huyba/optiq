@@ -72,3 +72,4 @@ cp:
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/512/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/1k/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/2k/
