@@ -40,6 +40,10 @@ int main(int argc, char **argv)
     {
 	sprintf(filepath, "%s/test%d", path, i);
 
+	if (rank == 0) {
+	    printf("Test No. %d\n", i);
+	}
+
 	for (int chunk = 8 * 1024; chunk <=  demand; chunk *= 2)
 	{
 	    schedule->chunk_size = chunk;

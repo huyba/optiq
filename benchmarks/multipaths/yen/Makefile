@@ -95,10 +95,29 @@ cp:
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload1/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload2/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload3/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/2k/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/4k/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/8k/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload7/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload10/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload20/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/mxload1/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/mxload3/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/mxload7/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/mxload10/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/mxload20/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/2k/mxload1/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/2k/mxload3/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/2k/mxload7/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/2k/mxload10/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/2k/mxload20/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/4k/mxload1/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/4k/mxload3/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/4k/mxload7/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/4k/mxload10/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/4k/mxload20/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/8k/mxload1/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/8k/mxload3/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/8k/mxload7/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/8k/mxload10/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/8k/mxload20/
 
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/512/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/1k/

@@ -68,6 +68,10 @@ M = mira
 BENCHMARKS_DIR = /gpfs/$(M)-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/pathbased/512/mxload1
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/pathbased/512/mxload3
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/pathbased/512/mxload7
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/pathbased/512/mxload10
 	cp perf_bypathlen.x $(BENCHMARKS_DIR)/stdperf/pathlen/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/jobfile/512/

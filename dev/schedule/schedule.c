@@ -164,19 +164,17 @@ void optiq_schedule_compute_assinged_len_for_path (std::vector<struct optiq_job>
 	    total_flow += jobs[i].paths[j]->flow;
 	}
 
-	if (total_flow == 0) 
-	{
-	    for (int j = 0; j < jobs[i].paths.size(); j++)
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+        {
+	    if (total_flow == 0) 
 	    {
 		jobs[i].paths[j]->assigned_len = jobs[i].buf_length / jobs[i].paths.size();
 	    }
-	}
-	else 
-	{
-	    for (int j = 0; j < jobs[i].paths.size(); j++)
+	    else 
             {
-		jobs[i].paths[j]->assigned_len = jobs[i].buf_length * jobs[i].paths[j]->flow / total_flow;
+		jobs[i].paths[j]->assigned_len = jobs[i].buf_length * ((double)(jobs[i].paths[j]->flow) / total_flow);
 	    }
+	    /*printf("Rank %d path_id = %d flow = %d, total_flow = %d buf_len = %d, assigned_len = %d\n", jobs[i].paths[j]->arcs.front().u, jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow, total_flow, jobs[i].buf_length, jobs[i].paths[j]->assigned_len); */
 	}
     }
 }
@@ -215,6 +213,7 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 
 		while (!found)
 		{
+		    /*printf("Rank %d on path %d assigned_len = %d\n", jobs[i].paths[0]->arcs.front().u, jobs[i].paths[jobs[i].current_path_index]->path_id, jobs[i].paths[jobs[i].current_path_index]->assigned_len);*/
 		    if (jobs[i].paths[jobs[i].current_path_index]->assigned_len > 0)
 		    {
 			jobs[i].paths[jobs[i].current_path_index]->assigned_len -= nbytes;
@@ -516,15 +515,17 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /* Assign data len for each path based on its flow value - proportional bandwidth */
     optiq_schedule_compute_assinged_len_for_path(schedule->local_jobs);
 
+    /*printf("Rank % done done assigning len\n", rank);*/
+
     /* Split a message into chunk-size messages */
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, schedule->chunk_size);
 
     /*Reset a few parameters*/
     optiq_schedule_set (schedule, pami_transport->size);
 
-    if (rank == 0) {
+    /*if (rank == 0) {
 	printf("Rank %d done scheduling\n", rank);
-    }
+    }*/
 }
 
 int optiq_schedule_get_chunk_size(struct optiq_job &ojob)
