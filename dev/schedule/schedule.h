@@ -22,7 +22,7 @@ struct optiq_job {
     int buf_offset;			/* offset of the memory region */
     int buf_length;			/* length the buffer for the job */
     std::vector<struct path *> paths;	/* paths that the job will use to transfer data */
-    int last_path_index;		/* the index of the path that was used last time. Assume that multiple paths are available. */
+    int current_path_index;		/* the index of the path that is currently used time. Assume that multiple paths are available. */
 };
 
 enum dequeue_mode {
@@ -89,6 +89,8 @@ void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<
 void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
 
 void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls,  struct optiq_schedule *schedule);
+
+void optiq_schedule_compute_assinged_len_for_path (std::vector<struct optiq_job> &jobs);
 
 void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
 

@@ -153,6 +153,34 @@ void build_next_dests(int world_rank, int *next_dests, std::vector<struct path *
     }
 }
 
+void optiq_schedule_compute_assinged_len_for_path (std::vector<struct optiq_job> &jobs)
+{
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	int total_flow = 0;
+
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    total_flow += jobs[i].paths[j]->flow;
+	}
+
+	if (total_flow == 0) 
+	{
+	    for (int j = 0; j < jobs[i].paths.size(); j++)
+	    {
+		jobs[i].paths[j]->assigned_len = jobs[i].buf_length / jobs[i].paths.size();
+	    }
+	}
+	else 
+	{
+	    for (int j = 0; j < jobs[i].paths.size(); j++)
+            {
+		jobs[i].paths[j]->assigned_len = jobs[i].buf_length * jobs[i].paths[j]->flow / total_flow;
+	    }
+	}
+    }
+}
+
 void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size)
 {
     bool done = false;
@@ -181,8 +209,21 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 		header->length = nbytes;
 		header->source = jobs[i].source_rank;
 		header->dest = jobs[i].dest_rank;
-		header->path_id = jobs[i].paths[jobs[i].last_path_index]->path_id;
-		jobs[i].last_path_index = (jobs[i].last_path_index + 1) % jobs[i].paths.size();
+
+		/* Determine which path to use */
+		bool found = false;
+
+		while (!found)
+		{
+		    if (jobs[i].paths[jobs[i].current_path_index]->assigned_len > 0)
+		    {
+			jobs[i].paths[jobs[i].current_path_index]->assigned_len -= nbytes;
+			header->path_id = jobs[i].paths[jobs[i].current_path_index]->path_id;
+			found = true;
+		    }
+
+		    jobs[i].current_path_index = (jobs[i].current_path_index + 1) % jobs[i].paths.size();
+		}
 
 		memcpy(&header->mem, &jobs[i].send_mr, sizeof(struct optiq_memregion));
 		header->mem.offset = jobs[i].send_mr.offset + jobs[i].buf_offset;
@@ -323,7 +364,7 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 		new_job.dest_rank = jobs[i].dest_rank;
 		new_job.paths = jobs[i].paths;
 		new_job.buf_offset = 0;
-		new_job.last_path_index = 0;
+		new_job.current_path_index = 0;
 		memcpy(&new_job.send_mr, &schedule->send_mr, sizeof (struct optiq_memregion));
 		new_job.send_mr.offset = sdispls[new_job.dest_rank];
 		new_job.buf_length = sendcounts[new_job.dest_rank];
@@ -360,7 +401,7 @@ void optiq_schedule_create_local_jobs (std::vector<struct job > &jobs, std::vect
 		    new_job.dest_rank = path_ranks[i]->arcs.back().v;
 		    new_job.paths.push_back(path_ranks[i]);
 		    new_job.buf_offset = 0;
-		    new_job.last_path_index = 0;
+		    new_job.current_path_index = 0;
 		    memcpy(&new_job.send_mr, &schedule->send_mr, sizeof (struct optiq_memregion));
 		    new_job.send_mr.offset = sdispls[new_job.dest_rank];
 		    new_job.buf_length = sendcounts[new_job.dest_rank];
@@ -472,6 +513,9 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
 	optiq_schedule_print_optiq_jobs (schedule->local_jobs);
     }
 
+    /* Assign data len for each path based on its flow value - proportional bandwidth */
+    optiq_schedule_compute_assinged_len_for_path(schedule->local_jobs);
+
     /* Split a message into chunk-size messages */
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, schedule->chunk_size);
 
@@ -487,7 +531,7 @@ int optiq_schedule_get_chunk_size(struct optiq_job &ojob)
 {
 
     int message_size = ojob.buf_length;
-    int num_hops = ojob.paths[ojob.last_path_index]->arcs.size();
+    int num_hops = ojob.paths[ojob.current_path_index]->arcs.size();
     int num_paths = ojob.paths.size();
     
     int chunk_size = message_size;

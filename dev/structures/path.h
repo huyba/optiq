@@ -22,6 +22,7 @@ struct path {
     int dest_id;
     int source_rank;
     int dest_rank;
+    int assigned_len;
 };
 
 extern int max_path_length;
