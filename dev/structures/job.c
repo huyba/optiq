@@ -324,6 +324,15 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 		/*printf("u = %d, v = %d\n", u, v);*/
 	    }
 
+	    /* Data reading from model-based approach currently doesn't have those info*/
+	    if (source_id == 0 && dest_id == 0 && source_rank == 0 && dest_rank == 0)
+	    {
+		source_id = p->arcs.front().u;
+		source_rank = source_id;
+		dest_id = p->arcs.back().v;
+		dest_rank = dest_id;
+	    }
+
 	    /*Sometimes the path is disrupted*/
 	    if (p->arcs.size() > 0 && p->arcs.front().u == source_id && p->arcs.back().v == dest_id)
 	    {
