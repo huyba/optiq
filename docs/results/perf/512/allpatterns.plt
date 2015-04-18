@@ -25,8 +25,10 @@ set key bottom left spacing 3
 set xtics () font ",23"
 set ytics ("16" 16384, "32" 32768, "64" 65536, "128" 131072, "256" 262144, "320" 327680) font ",23"
 plot "model20.dat" using 1:5 ls 1 title "     OPTIQ Maxload = 20" with linespoints, \
-"kpath.dat" using 1:5 ls 2 title "     OPTIQ K paths" with linespoints, \
+"model30.dat" using 1:5 ls 2 title "     OPTIQ Maxload = 30" with linespoints, \
 "kpath.dat" using 1:3 ls 6 title "   MPI_Alltoallv" with linespoints
+#"kpath.dat" using 1:5 ls 2 title "     OPTIQ K paths" with linespoints, \
+#"kpath.dat" using 1:3 ls 6 title "   MPI_Alltoallv" with linespoints
 #"model10.dat" using 1:5 ls 2 title "     OPTIQ Maxload = 10" with linespoints, \
 #"model7.dat" using 1:5 ls 3 title "     OPTIQ Maxload = 7" with linespoints, \
 #"model3.dat" using 1:5 ls 4 title "     OPTIQ Maxload = 3" with linespoints, \
