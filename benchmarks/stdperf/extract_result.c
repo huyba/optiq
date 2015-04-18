@@ -16,8 +16,8 @@ int main (int argc, char **argv)
 
     int testid, len, chunk;
     char temp[256], temp1[256], temp2[256], temp3[256];
-    float mpitime = DBL_MAX, mpibw, opttime = DBL_MAX, optbw;
-    float mmpitime, mmpibw, mopttime, moptbw;
+    float mpitime, mpibw, opttime, optbw;
+    float mmpitime = DBL_MAX, mmpibw = DBL_MAX, mopttime, moptbw;
     bool newtest = false, newbingo, firsttime = true;
     char s1[256], s2[256], s3[256],s4[256], s5[256],s6[256],s7[256],s8[256],s9[256];
 
