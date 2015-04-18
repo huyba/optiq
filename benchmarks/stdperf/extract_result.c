@@ -14,7 +14,7 @@ int main (int argc, char **argv)
     char *inpath = argv[1];
     char *outpath = argv[2];
 
-    int testid, len, chunk;
+    int prevtestid = 0, testid, len, chunk;
     char temp[256], temp1[256], temp2[256], temp3[256];
     float mpitime, mpibw, opttime, optbw;
     float mmpitime = DBL_MAX, mmpibw, mopttime = DBL_MAX, moptbw;
@@ -33,19 +33,17 @@ int main (int argc, char **argv)
     {
 	if (line[0] == 'T')
 	{
-	    if (!firsttime) 
+	    trim(line);
+            sscanf(line, "%s %s %d", temp, temp1, &testid);
+
+	    if (testid != prevtestid) 
 	    {
-		outfile << testid << " " << mmpitime << " " << mmpibw << " " << mopttime << " " << moptbw << std::endl;
+		outfile << prevtestid << " " << mmpitime << " " << mmpibw << " " << mopttime << " " << moptbw << std::endl;
 		mmpitime = DBL_MAX;
 		mopttime = DBL_MAX;
-	    } 
-	    else 
-	    {
-		firsttime = false;
 	    }
 
-	    trim(line);
-	    sscanf(line, "%s %s %d", temp, temp1, &testid);
+	    prevtestid = testid;
 	}
 
 	if (line[0] == 'M')
