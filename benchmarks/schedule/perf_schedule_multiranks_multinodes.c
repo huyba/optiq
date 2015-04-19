@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     optiq_init(argc, argv);
 
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
     struct optiq_schedule *schedule = optiq_schedule_get();
     struct optiq_algorithm *algorithm = optiq_algorithm_get();
 

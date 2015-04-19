@@ -11,7 +11,7 @@
 
 #include "path.h"
 
-struct topology {
+struct optiq_topology {
     int num_dims;
     int num_nodes;
     int num_edges;
@@ -31,17 +31,17 @@ struct topology {
     bool finalized;
 };
 
-extern "C" struct topology *topo;
+extern "C" struct optiq_topology *topo;
 
 void optiq_topology_init();
 
-void optiq_topology_init_with_params(int num_dims, int *size, struct topology *topo);
+void optiq_topology_init_with_params(int num_dims, int *size, struct optiq_topology *topo);
 
-struct topology* optiq_topology_get();
+struct optiq_topology* optiq_topology_get();
 
-void optiq_topology_print(struct topology *topo);
+void optiq_topology_print(struct optiq_topology *topo);
 
-void optiq_topology_print_basic(struct topology *topo);
+void optiq_topology_print_basic(struct optiq_topology *topo);
 
 void optiq_topology_get_size_bgq(int *size);
 
@@ -85,6 +85,6 @@ void optiq_topology_print_all_arcs(int num_dims, int *size, double cap);
 
 void optiq_topology_finalize();
 
-void optiq_topology_write_graph(struct topology *topo, int cost, char *filePath);
+void optiq_topology_write_graph(struct optiq_topology *topo, int cost, char *filePath);
 
 #endif

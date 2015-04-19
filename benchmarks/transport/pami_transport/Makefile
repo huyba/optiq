@@ -26,6 +26,7 @@ BM = $(OPTIQ)/benchmarks
 UTIL = $(DEV)/util
 STRUCT = $(DEV)/structures
 TOPOLOGY = $(DEV)/topology
+MOD = $(DEV)/model
 ALG = $(DEV)/algorithms
 HEU = $(DEV)/algorithms/heuristics
 YEN = $(DEV)/algorithms/yen
@@ -33,12 +34,12 @@ PAT = $(DEV)/comm_patterns
 SCHED = $(DEV)/schedule
 TRANS = $(DEV)/transport/pami_transport
 
-CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV) -I$(BM)/mpi
+CFLAGS  = $(COPT) -I. -I$(UTIL) -I$(STRUCT) -I$(TOPOLOGY) -I$(ALG) -I$(HEU) -I$(YEN) -I$(PAT) -I$(SCHED) -I$(TRANS) -I$(DEV) -I$(MOD)  -I$(BM)/mpi
 LDFLAGS = $(COPT) -lpthread -lm -L/bgsys/drivers/ppcfloor/bgpm/lib
 
 CFLAGS += -DPROGRESS_THREAD
 
-OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o
+OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(MOD)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o
 
 all: bdev mpibm perf_rput.x perf_execute.x perf_optiq_rput.x perf_immediate.x cp
 

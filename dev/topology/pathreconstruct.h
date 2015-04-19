@@ -9,6 +9,6 @@
 
 void optiq_topology_path_reconstruct_new (std::vector<std::pair<int, int> > &source_dests, std::vector<struct path *> &mpi_paths);
 
-void optiq_topology_path_reconstruct (std::vector < std::pair <int, std::vector<int> > > &source_dests, struct topology *topo, std::vector<struct path *> &mpi_paths);
+void optiq_topology_path_reconstruct (std::vector < std::pair <int, std::vector<int> > > &source_dests, struct optiq_topology *topo, std::vector<struct path *> &mpi_paths);
 
 #endif

@@ -5,7 +5,7 @@
 
 void gen_dests(std::vector<int> &dests)
 {
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     int coord[5] = {0, 0, 0, 0, 0};
 
@@ -79,7 +79,11 @@ int main(int argc, char **argv)
 
 	    //for (int chunk = nbytes; chunk <= nbytes; chunk *= 2)
 	    //{
-		schedule->chunk_size = optiq_schedule_get_chunk_size(nbytes, sendrank, recvrank);
+		struct optiq_job oj;
+		oj.source_rank = sendrank;
+		oj.dest_rank = recvrank;
+		oj.buf_length = nbytes;
+		schedule->chunk_size = optiq_schedule_get_chunk_size(oj);
 
 		optiq_alltoallv(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 

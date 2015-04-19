@@ -8,7 +8,7 @@
 #include "util.h"
 #include "topology.h"
 
-struct topology *topo = NULL;
+struct optiq_topology *topo = NULL;
 
 /*
  * Will init the topology with:
@@ -28,7 +28,7 @@ void optiq_topology_init ()
 	return;
     }
 
-    topo = (struct topology *) calloc (1, sizeof (struct topology));
+    topo = (struct optiq_topology *) calloc (1, sizeof (struct optiq_topology));
 
     int num_dims = 5;
     optiq_topology_get_size_bgq(topo->size);
@@ -38,7 +38,7 @@ void optiq_topology_init ()
     topo->initialized = true;
 }
 
-void optiq_topology_init_with_params(int num_dims, int *size, struct topology *topo)
+void optiq_topology_init_with_params(int num_dims, int *size, struct optiq_topology *topo)
 {
     topo->num_dims = num_dims;
     int num_nodes = 1;
@@ -66,12 +66,12 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct topology *t
     topo->all_coords = optiq_topology_get_all_coords (topo->num_dims, topo->size);
 }
 
-struct topology* optiq_topology_get()
+struct optiq_topology* optiq_topology_get()
 {
     return topo;
 }
 
-void optiq_topology_print_basic(struct topology *topo)
+void optiq_topology_print_basic(struct optiq_topology *topo)
 {
     printf("num dimension = %d\n", topo->num_dims);
 
@@ -98,7 +98,7 @@ void optiq_topology_print_basic(struct topology *topo)
     printf("\n\n");
 }
 
-void optiq_topology_print(struct topology *topo)
+void optiq_topology_print(struct optiq_topology *topo)
 {
     optiq_topology_print_basic(topo);
 
@@ -117,7 +117,7 @@ void optiq_topology_print(struct topology *topo)
     }
 }
 
-void optiq_topology_print_graph(struct topology *topo, int cost)
+void optiq_topology_print_graph(struct optiq_topology *topo, int cost)
 {
     for (int i = 0; i < topo->num_nodes; i++)
     {
@@ -330,7 +330,7 @@ void optiq_topology_move_along_one_dimension_bgq(int num_dims, int *size, int *s
 
 void optiq_topology_route_along_dimension (int *scoord, int routing_dimension, int destcoord, struct path &p)
 {
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     int *torus = topo->torus;
     int *size = topo->size;
@@ -488,7 +488,7 @@ void optiq_topology_route_along_dimension (int *scoord, int routing_dimension, i
 
 void optiq_topolog_reconstruct_path (int source, int dest, struct path &p)
 {
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     int *size = topo->size;
     int *torus = topo->torus;
@@ -669,7 +669,7 @@ void optiq_topology_finalize()
 
 int optiq_topology_get_hop_distance_2nodes(int node1, int node2)
 {
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     int *coord1 = topo->all_coords[node1];
     int *coord2 = topo->all_coords[node2];
@@ -679,7 +679,7 @@ int optiq_topology_get_hop_distance_2nodes(int node1, int node2)
 
 int optiq_topology_get_hop_distance(int rank1, int rank2)
 {
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     if (topo == NULL) {
         optiq_topology_init();
@@ -693,7 +693,7 @@ int optiq_topology_get_hop_distance(int rank1, int rank2)
 
 int optiq_topology_max_distance_2sets (std::vector<std::pair<int, std::vector<int> > > &source_dests)
 {
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     int max_distance = 0;
 
@@ -717,7 +717,7 @@ int optiq_topology_max_distance_2sets (std::vector<std::pair<int, std::vector<in
 
 int optiq_topology_max_distance_2sets_with_torus (std::vector<std::pair<int, std::vector<int> > > &source_dests)
 {
-   struct topology *topo = optiq_topology_get();
+   struct optiq_topology *topo = optiq_topology_get();
 
     int max_distance = 0;
 
@@ -757,7 +757,7 @@ bool optiq_path_compare_2paths (struct path *p1, int s1, int e1, struct path *p2
 
 void optiq_topology_reduce_intermediate_nodes (std::vector<struct path *> paths, std::vector<struct path *> &reduced_paths)
 {
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     for (int i = 0; i < paths.size(); i++)
     {
@@ -798,7 +798,7 @@ void optiq_topology_reduce_intermediate_nodes (std::vector<struct path *> paths,
     }
 }
 
-void optiq_topology_write_graph(struct topology *topo, int cost, char *filePath)
+void optiq_topology_write_graph(struct optiq_topology *topo, int cost, char *filePath)
 {
     std::ofstream myfile;
     myfile.open (filePath);

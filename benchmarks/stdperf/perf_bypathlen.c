@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     int world_size = pami_transport->size;
     int world_rank = pami_transport->rank;
     struct optiq_schedule *sched = optiq_schedule_get();
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     int *sendcounts = (int *)calloc(1, sizeof(int) * world_size);
     int *sdispls = (int *)calloc(1, sizeof(int) * world_size);

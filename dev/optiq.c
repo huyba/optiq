@@ -29,7 +29,7 @@ void optiq_init(int argc, char **argv)
 void optiq_print_basic ()
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     if (pami_transport->rank == 0) {
         optiq_topology_print_basic (topo);

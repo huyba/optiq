@@ -52,7 +52,7 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
 
 void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
 {
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
     struct optiq_schedule *sched = optiq_schedule_get();
 
     void *sendbuf = NULL, *recvbuf = NULL;

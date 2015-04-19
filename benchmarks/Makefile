@@ -39,7 +39,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o
 
-all: heu trans opt mpi sched bmhops
+all: trans opt mpi sched bmhops
 
 opt:
 	cd $(BENCHMARKS)/optiq && $(MAKE) -f Makefile

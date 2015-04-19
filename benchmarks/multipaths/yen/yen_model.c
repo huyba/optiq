@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     size[3] = atoi (argv[10]);
     size[4] = atoi (argv[11]);
 
-    struct topology *topo = (struct topology*) calloc (1, sizeof(struct topology));
+    struct optiq_topology *topo = (struct optiq_topology*) calloc (1, sizeof(struct optiq_topology));
     optiq_topology_init_with_params (num_dims, size, topo);
 
     char filepath[256];

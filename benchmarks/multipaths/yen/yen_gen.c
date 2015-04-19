@@ -8,7 +8,7 @@
 #include "patterns.h"
 #include <vector>
 
-void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths, int maxload, struct topology *topo)
+void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths, int maxload, struct optiq_topology *topo)
 {
     std::vector< struct path *> paths;
 
@@ -36,7 +36,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     jobs.clear();
 }
 
-void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int k, int maxload)
+void gen_jobs_paths (struct optiq_topology *topo, int demand, char *graphFilePath, int k, int maxload)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
 
     
-    struct topology *topo = (struct topology *) malloc (sizeof (struct topology));
+    struct optiq_topology *topo = (struct optiq_topology *) malloc (sizeof (struct optiq_topology));
     int num_dims = 5;
     int psize[5];
 

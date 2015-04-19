@@ -14,7 +14,8 @@ int main(int argc, char **argv)
     int rank = pami_transport->rank;
     int size = pami_transport->size;
 
-    int demand = 1024 * 1024;
+    int demand = 8* 1024 * 1024;
+    int mindemand = 16 * 1024;
     int start = 0, end = 0;
     char *path;
 
@@ -32,6 +33,10 @@ int main(int argc, char **argv)
 
     if (argc > 4) {
 	demand = atoi(argv[4]) * 1024;
+    }
+
+    if (argc > 5) {
+	demand = atoi (argv[5] * 1024);
     }
 
     char filepath[256];

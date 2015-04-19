@@ -486,7 +486,7 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     struct optiq_schedule *sched = optiq_schedule_get();
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     int rank = pami_transport->rank;
 

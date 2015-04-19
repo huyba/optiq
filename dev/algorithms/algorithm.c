@@ -72,7 +72,7 @@ void optiq_algorithm_search_path (std::vector<struct path *> &paths, std::vector
     }
 
     struct optiq_algorithm *algorithm = optiq_algorithm_get();
-    struct topology *topo = optiq_topology_get();
+    struct optiq_topology *topo = optiq_topology_get();
 
     if (algorithm->search_alg == OPTIQ_ALG_HOPS_CONSTRAINT) 
     {

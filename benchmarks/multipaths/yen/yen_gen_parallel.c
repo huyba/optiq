@@ -45,7 +45,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     }
 }
 
-void aggregate_paths_from_file (std::vector<struct job> &jobs, char*jobfile, struct topology *topo, int maxload)
+void aggregate_paths_from_file (std::vector<struct job> &jobs, char*jobfile, struct optiq_topology *topo, int maxload)
 {
     char pairfile[256];
 
@@ -73,7 +73,7 @@ void aggregate_paths_from_file (std::vector<struct job> &jobs, char*jobfile, str
     paths.clear();
 }
 
-void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int numpaths)
+void gen_patterns (struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -175,7 +175,7 @@ void gen_patterns (struct topology *topo, int demand, char *graphFilePath, int n
 }
 
 
-void gen_patterns_new (struct topology *topo, int demand, char *graphFilePath, int numpaths)
+void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -259,7 +259,7 @@ void gen_patterns_new (struct topology *topo, int demand, char *graphFilePath, i
     }
 }
 
-void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath, int numpaths)
+void gen_jobs_paths_new (struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -435,7 +435,7 @@ void gen_jobs_paths_new (struct topology *topo, int demand, char *graphFilePath,
 }
 
 
-void gen_jobs_paths (struct topology *topo, int demand, char *graphFilePath, int numpaths)
+void gen_jobs_paths (struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -499,7 +499,7 @@ int main(int argc, char **argv)
     int rank;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
 
-    struct topology *topo = (struct topology *) malloc (sizeof (struct topology));
+    struct optiq_topology *topo = (struct optiq_topology *) malloc (sizeof (struct optiq_topology));
     int num_dims = 5;
     int psize[5];
 
