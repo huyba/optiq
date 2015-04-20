@@ -235,6 +235,26 @@ Model explanation:
 \item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
 \end{itemize}
 
+So far, we have presented different algorithms/approaches: here is when to use what:
+
+\begin{table}[h]
+\begin{center}
+    \begin{tabular}{ | p{1.6cm} | l | p{3cm} |}
+    \hline
+    Approach & Time complexity & When to use \\ \hline
+    Heuristic 1 & $O$(K * (|V| + |E|)) &  Used as first step for Heuristic 2\\ \hline
+    Heuristic 2 & $O$(K * (|V| + |E|)) &  Very dense communication\\ \hline
+    Heuristic 3 & $O$(K * (|V| + |E|)) & Sparse comminication \\ \hline
+    Path-based model & $O$(K * (|V| + |E|)) & Medium dense where proportional throughtput can be gained \\
+    \hline
+    \end{tabular}
+
+    \caption{Approaches: time complexity and usage}
+    \label{tbl:experiment}
+
+\end{center}
+\end{table}
+
 We realize algoirthms and other work in a framework named OPTIQ. The framework provides ways to improve data movement performance on the Blue Gene/Q supercomputer. Our framework does so by balancing loads on physical links on the Blue Gene/Q supercomputer.
 
 \subsection{Framework}
@@ -263,4 +283,6 @@ When there are multiple ranks per node, which one will be choosen to receive dat
 
 \item Transport: actually transfer an amount of data from one point to another point in the system.
 \item Extra component: To get system specific information such as partition size, topology, coordinates, torus, and to compute neighbors of available nodes given to an application. Topology reading, coord, neighbors, torus, size, routing order, graph generated. Also set of benchmarks, tests.
+
+the framework allow various options that allow to do: forwarding/local message sending order, algorithm selection, chunk size, transport implementations...
 \end{itemize}
