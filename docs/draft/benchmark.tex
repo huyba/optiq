@@ -70,9 +70,41 @@ In the next subsections, we go into each communication and study in details the 
 
 \subsubsection{Disjoint sets of sources and destinations}
 
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/disjoint_512.pdf}
+\vspace{-0.1in}
+\caption{Disjoint sets - 512}
+\vspace{-0.1in}
+\label{fig:disjoint_512}
+\end{figure}
+
 \subsubsection{Overlaped sets of sources and destinations}
 
-\subsubsection{Subgroup Data Aggregation}
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/overlap_512.pdf}
+\vspace{-0.1in}
+\caption{Overlapped sets 512 nodes}
+\vspace{-0.1in}
+\label{fig:overlap_512}
+\end{figure}
+
+\subsubsection{Subset - Type 1}
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/subset_512.pdf}
+\vspace{-0.1in}
+\caption{Subset 512 nodes}
+\vspace{-0.1in}
+\label{fig:subset_512}
+\end{figure}
+
+\subsubsection{Subgroup - Type 2 Data Aggregation}
 
 In the subgroup data aggregation experiment, we aggregated data within a subgroup to one node in the subgroup. In this experiment, we used a 512-nodes partition. The partition was divided into subgroup of size 4, 8, 16, 32, and 64 nodes each. One node in the middle of a subgroup was selected as the destination to aggregate data from all nodes in the subgroup(including itself). The data size is 1MB. We aggregate data using MPI\_Alltoallv and our framework for 20 times, measured and reported the average of the measurements. The aggregation bandwidths are shown in Figure \ref{fig:aggbw}.
 
