@@ -191,37 +191,32 @@ Model explanation:
 \fontsize{9pt}{10pt}\selectfont
 
 \begin{verbatim}
+
 set Nodes;
 set Arcs within Nodes cross Nodes;
-# Origin/Destination pairs
-set OD within Nodes cross Nodes;
-set Paths{OD};
-set Path_Arcs{od in OD, p in Paths[od]}
+
+set Jobs;
+set Paths{Jobs};
+set Path_Arcs{job in Jobs, p in Paths[job]} 
     within Arcs;
 
+param Capacity{Arcs} >= 0 default Infinity;
+param Demand {Jobs} default 0;
 
-param Capacity {Arcs} >= 0 default Infinity;
-param Demand {OD} default 0;
-
-var Flow {Paths} >= 0;
+var Flow {job in Jobs, Paths[job]} >= 0;
 var Z >= 0;
-
-var total_flow{(i,j) in Arcs} = 
-    sum {p in Paths} Flow[job,i,j];
 
 maximize obj: Z;
 
 subject to
 
-zero_flow {p in Paths, i in Nodes}:
-sum{(i,j) in Arcs} Flow[job,i,j] - 
-    sum{(j,i) in Arcs} Flow[job,j,i] =
-    if (i == Source[job]) then Demand[job]*Z else 
-    if (i == Destination[job]) then -Demand[job]*Z 
-    else 0;
+demand {job in Jobs}:
+  sum {p in Paths[job]} Flow[job,p] = Demand[job]*Z;
 
 capacity {(i,j) in Arcs}:
-total_flow[i,j] <= Capacity[i,j];
+  sum {job in Jobs, p in Paths[job]: (i,j) in 
+    Path_Arcs[job,p]} Flow[job,p] <= Capacity[i,j];
+
 \end{verbatim}
 
 \endgroup
