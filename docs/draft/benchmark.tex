@@ -25,9 +25,52 @@ In this paper we demostrate data movement performance of our OPTIQ framework and
 \begin{itemize}
 \item Subgroup Data Aggregation: a special case of All to many (or many to many.)
 \item Many to many: disjoint sets.
-\item Many to many: subset.
 \item Many to many: overlapped sets.
+\item Many to many: subsets. In this category, there are 2 sub types: (Type 1) concetrated subset of destinations and (Type 2) distributed destination nodes as in I/O data aggregation.
 \end{itemize}
+
+We carried a set of experiments to study the system's behavior in various patterns and demontrate throughput improvement.
+
+\subsection{Experimental results}
+
+In the experiments, we collected the throughput and loading related information while varying communication patterns, partition sizes, message sizes, number of MPI ranks per node.
+The results of 96 experiments in the Figure \ref{fig:96tests_512} show the throughput of 512-nodes partition with in 96 experiments of 3 above communication patterns.
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/96tests_512.pdf}
+\vspace{-0.1in}
+\caption{Communication patterns}
+\vspace{-0.1in}
+\label{fig:96tests_512}
+\end{figure}
+
+The Table \ref{tbl:experiment} describes the details of the experiments.
+
+\begin{table}[h]
+\begin{center}
+    \begin{tabular}{ | p{1cm} | l | p{5cm} |}
+    \hline
+    Pattern & Test Ids & Sets of source/destination \\ \hline
+    Disjoint & 0-15 & Vary the size of sources and destinations sets from N/16 to N/2 \\ \hline
+    Overlap & 16-63 & Vary the size of sources and destinations sets from N/16 to N/2, overlapped size varies from 1/8 to 1/2 of the source size \\ \hline
+    Subset: Type 1 & 63-90 & Vary the size of source set from N/8 to N/2 and destination set from N/16 to N/4 lying inside source set \\ \hline
+    Subset: Type 2 & 91-95 & Vary the subgroup size from 4, 8, 16, 32 to 64. The destination of each subgroup is in the middle of the group \\
+    \hline
+    \end{tabular}
+
+    \caption{Experiments description}
+    \label{tbl:experiment}
+
+\end{center}
+\end{table}
+
+In the next subsections, we go into each communication and study in details the system's behaviors and performance.
+
+\subsubsection{Disjoint sets of sources and destinations}
+
+\subsubsection{Overlaped sets of sources and destinations}
 
 \subsubsection{Subgroup Data Aggregation}
 
@@ -81,8 +124,5 @@ Figure \ref{fig:aggdist} shows that our work has a better networking load distri
 
 In the Figure \ref{fig:agghop} we can see that compare to MPI\_Alltoallv, OPTIQ used 1 to 2 hops more in case of maximum number of hops and 0.5 hops more in case of average number of hops. This is because OPTIQ explored longer paths to avoid increasing max load. The algorithms we have also try to balance between number of hops and max load as too long paths can actually increase time hence degrade data movement bandwidth.
 
-\subsubsection{Disjoint sets of sources and destinations}
-
-\subsubsection{Overlaped sets of sources and destinations}
-
-
+\subsection{Scalability}
+Show scalability by partition size, number of ranks per node and message sizes
