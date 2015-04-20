@@ -70,7 +70,7 @@ In the next subsections, we go into each communication and study in details the 
 
 \subsubsection{Disjoint sets of sources and destinations}
 
-In this experiement, we show the throughput of data movement between 2 disjoint sets of source and destination nodes. The 
+In this experiement, we measured the throughput of data movement between 2 disjoint sets of source and destinat = 512ion nodes. The source set has N/16 up to N/2 out of N = 512 total number of nodes. The destination set also has N/16 to N/2 number of nodes. Each node in the source set send data to corresponding nodes in the destination set. Depending on the number of source nodes and destination nodes, it can be paired m nodes in the source set to n nodes in the destination set, with m and n can be any values of 1, 2, 4 or 8. The data size for each pair of communication is 8 MB. We run only 1 rank per node. If more ranks are at a node, data can be aggregated to 1 rank before sending out.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -81,6 +81,8 @@ In this experiement, we show the throughput of data movement between 2 disjoint 
 \vspace{-0.1in}
 \label{fig:disjoint_512}
 \end{figure}
+
+As the Figure \ref{fig:disjoint_512} shows, in most of case our framework gained higher throughput than MPI\_Alltoallv. The throughput improved from 20\% up to 90\%. This because OPTIQ can find more paths with lower load to transfer data from sources to destinations.
 
 \subsubsection{Overlaped sets of sources and destinations}
 
@@ -96,6 +98,8 @@ In this experiement, we show the throughput of data movement between 2 disjoint 
 
 \subsubsection{Subset - Type 1}
 
+In this experiment, the destination set lies entirely within the source set. We varied the source set size from N/8 to N/2 and the destination set size from 1/8 to 1/4 of source set set size. The experiment was carried in 512-node partition with 1 rank per node and data size is also 8MB for each pair of communicaition.
+
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
@@ -106,7 +110,7 @@ In this experiement, we show the throughput of data movement between 2 disjoint 
 \label{fig:subset_512}
 \end{figure}
 
-\subsubsection{Subgroup - Type 2 Data Aggregation}
+\subsubsection{Subset - Type 2 (Subgroup Data Aggregation)}
 
 In the subgroup data aggregation experiment, we aggregated data within a subgroup to one node in the subgroup. In this experiment, we used a 512-nodes partition. The partition was divided into subgroup of size 4, 8, 16, 32, and 64 nodes each. One node in the middle of a subgroup was selected as the destination to aggregate data from all nodes in the subgroup(including itself). The data size is 1MB. We aggregate data using MPI\_Alltoallv and our framework for 20 times, measured and reported the average of the measurements. The aggregation bandwidths are shown in Figure \ref{fig:aggbw}.
 
