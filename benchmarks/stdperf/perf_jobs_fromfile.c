@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     }
 
     if (argc > 5) {
-	demand = atoi (argv[5] * 1024);
+	mindemand = atoi (argv[5]) * 1024;
     }
 
     char filepath[256];
@@ -54,7 +54,9 @@ int main(int argc, char **argv)
 	    schedule->chunk_size = chunk;
 	    schedule->auto_chunksize = false;
 
-	    //odp.print_path_rank = true;
+	    odp.print_done_status = true;
+
+	    odp.print_path_rank = true;
 	    //odp.print_job = true;
 	    //odp.print_mem_reg_msg =  true;
 	    //odp.print_mem_exchange_status = true;
@@ -67,7 +69,7 @@ int main(int argc, char **argv)
 	    //odp.print_rput_msg = true;
 	    //odp.print_rput_rdone_notify_msg = true;
             //odp.print_recv_rput_done_msg = true;
-	    //odp.print_pami_transport_status = true;
+	    odp.print_pami_transport_status = true;
 
 	    optiq_benchmark_jobs_from_file (filepath, demand);
 

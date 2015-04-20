@@ -109,6 +109,7 @@ void optiq_opi_clear()
     odp.print_notify_list = false;
     odp.print_elapsed_time = false;
     odp.print_job = false;
+    odp.print_done_status = false;
 
     odp.collect_timestamp = false;
 }

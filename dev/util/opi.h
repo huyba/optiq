@@ -74,6 +74,7 @@ struct optiq_debug_print {
     bool print_notify_list;
     bool print_mem_avail;
     bool print_job;
+    bool print_done_status;
 
     bool collect_timestamp;
 };

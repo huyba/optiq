@@ -58,7 +58,7 @@ void optiq_schedule_assign_path_ids_to_jobs (std::vector<struct path *> &path_id
     {
 	for (int j = 0; j < jobs.size(); j++) 
 	{
-	    if (path_ids[i]->arcs.front().u == jobs[j].source_id && path_ids[i]->arcs.back().v == jobs[j].dest_id)
+	    if (path_ids[i]->arcs.front().u == jobs[j].source_rank && path_ids[i]->arcs.back().v == jobs[j].dest_rank)
 	    {
 		struct path *np = (struct path*) calloc (1, sizeof(struct path));
 
@@ -523,9 +523,9 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /*Reset a few parameters*/
     optiq_schedule_set (schedule, pami_transport->size);
 
-    /*if (rank == 0) {
+    if (rank == 0 && odp.print_done_status) {
 	printf("Rank %d done scheduling\n", rank);
-    }*/
+    }
 }
 
 int optiq_schedule_get_chunk_size(struct optiq_job &ojob)
