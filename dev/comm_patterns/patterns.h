@@ -8,7 +8,7 @@
 
 void optiq_pattern_m_to_n_to_pairs(std::vector<std::pair<int, int> > &source_dests, int numranks, int demand, int m, int startm, int n, int startn, bool random);
 
-void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int startm, int n, int startn, bool random);
+void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int startm, int n, int startn, int num_ranks_per_node, bool random);
 
 void optiq_pattern_firstm_lastn_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int n);
 

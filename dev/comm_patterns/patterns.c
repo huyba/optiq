@@ -435,7 +435,7 @@ void optiq_pattern_subgroup_agg (char *filepath, int numranks, int subgroupsize,
 }
 
 
-void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int startm, int n, int startn, bool random)
+void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int startm, int n, int startn, int num_ranks_per_node, bool random)
 {
     std::vector<std::pair<int, int> > source_dests;
 
@@ -453,9 +453,9 @@ void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, 
 
         new_job.job_id = jobid;
         new_job.source_rank = source_dests[i].first;
-        new_job.source_id = source_dests[i].first;
+        new_job.source_id = source_dests[i].first / num_ranks_per_node;
         new_job.dest_rank = source_dests[i].second;
-        new_job.dest_id = source_dests[i].second;
+        new_job.dest_id = source_dests[i].second / num_ranks_per_node;
         new_job.demand = demand;
 
         jobs.push_back(new_job);

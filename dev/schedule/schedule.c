@@ -229,7 +229,7 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 		header->original_offset = jobs[i].buf_offset;
 		jobs[i].buf_offset += nbytes;
 
-		pami_transport->transport_info.send_headers.push_back(header);
+		pami_transport->transport_info.local_headers.push_back(header);
 
 		if (jobs[i].buf_offset < jobs[i].buf_length) {
 		    done = false;
