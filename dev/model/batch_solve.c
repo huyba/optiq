@@ -16,6 +16,9 @@ void gen_cmd_file(char *datfile, char *outputfile)
     myfile << "option solver snopt;" << std::endl;
     myfile << "solve;" << std::endl;
 
+    myfile << "display _ampl_elapsed_time;" << std::endl;
+    myfile << "display _total_solve_elapsed_time;"  << std::endl;
+
     myfile << "for {job in Jobs} {" << std::endl;
     myfile << "    for {p in Paths[job]} {"  << std::endl;
     myfile << "        if Flow[job, p] > 0.01 then {" << std::endl;
@@ -37,5 +40,19 @@ void gen_cmd_file(char *datfile, char *outputfile)
 }
 int main(int argc, char **argv)
 {
-    gen_cmd_file("./path_based/data/model0.dat", "flows/flow0.dat");
+    char infile[256];
+    char outfile[256];
+
+    char *inbasepath = argv[1];
+    char *outbasepath = argv[2];
+
+    for (int i = 0; i < 91; i++)
+    {
+	sprintf(infile, "%s/model%d.dat", inbasepath, i) ;
+	sprintf(outfile, "%s/test%d", outbasepath, i);
+    
+	gen_cmd_file(infile, outfile);
+    }
+
+    return 0;
 }
