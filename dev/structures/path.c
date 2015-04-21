@@ -381,8 +381,9 @@ void optiq_path_creat_path_ids_from_path_ranks(std::vector<struct path *> &path_
     for (int i = 0; i < path_ranks.size(); i++)
     {
 	struct path *p = (struct path *) calloc (1, sizeof (struct path));
-	memcpy (p, path_ranks[i], sizeof (struct path));
-	p->arcs = path_ranks[i]->arcs;
+	(*p) = (*path_ranks[i]);
+	//memcpy (p, path_ranks[i], sizeof (struct path));
+	//p->arcs = path_ranks[i]->arcs;
 
 	if (num_ranks_per_node > 1)
 	{

@@ -130,7 +130,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     if (rank == 0 && odp.print_job)
     {
-	optiq_job_print_jobs(jobs);
+	optiq_job_print(jobs, rank);
     }
 
     /* Check if enough paths to send, if not return. This should not happen, but still in current alg. */

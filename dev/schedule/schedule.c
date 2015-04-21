@@ -490,6 +490,11 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
 
     int rank = pami_transport->rank;
 
+    if (odp.print_path_rank && odp.print_job) {
+	optiq_path_print_paths(path_ranks);
+	optiq_job_print(jobs, rank);
+    }
+
     /* Build lookup table for next dest of a forwarding message with the key is path id*/
     build_next_dests (rank, schedule->next_dests, path_ranks);
 
