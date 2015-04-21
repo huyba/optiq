@@ -177,23 +177,25 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     MPI_Barrier(MPI_COMM_WORLD);
     
-    /*if (rank == 0) {
-	printf("Schedule done.\n");
-    }*/
+    if (odp.print_done_status) {
+	printf("Rank %d Schedule done.\n", rank);
+    }
 
     optiq_pami_transport_exchange_memregions ();
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    /*if (rank == 0) {
-        printf("Memory exchange done.\n");
-    }*/
+    if (odp.print_done_status) {
+        printf("Rank %d Memory exchange done.\n", rank);
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     optiq_pami_transport_execute_new ();
 
-    /*printf("Rank %d done transport\n", rank);*/
+    if (odp.print_done_status) {
+	printf("Rank %d done transport\n", rank);
+    }
 
     optiq_pami_transport_clear();
 

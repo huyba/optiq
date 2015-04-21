@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 	    //odp.print_mem_exchange_status = true;
             //odp.print_mem_adv_exchange_msg = true;
 
-	    //odp.print_local_jobs = true;
+	    odp.print_local_jobs = true;
 
 	    //odp.print_mem_avail = true;
 
