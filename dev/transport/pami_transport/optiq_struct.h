@@ -3,13 +3,18 @@
 
 #include <pami.h>
 
-struct optiq_memregion {
+struct optiq_memregion 
+{
+#ifdef __bgq__
     pami_memregion_t mr;    /* PAMI memory region structure */
+#endif
+
     int offset;             /* Offset of data in the memregion mr */
     int header_id;          /* Header id: used to keep track of memregion request and return. The local side uses this in the request. The remote side return a memregion with this id. */
 };
 
-struct optiq_message_header {
+struct optiq_message_header 
+{
     int length;                 /* Length of the message */
     int source;                 /* Original source of the message - maybe not the previous/last source */
     int dest;                   /* Final destination of the message - maybe not the next destination */

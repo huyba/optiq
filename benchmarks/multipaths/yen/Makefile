@@ -88,6 +88,7 @@ cp:
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/8k/
 
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/gather/512/
+	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/gather/512_c8/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/gather/1k/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/gather/2k/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/gather/4k/
@@ -99,6 +100,7 @@ cp:
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload7/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload10/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/512/mxload20/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/all/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/mxload1/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/mxload3/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/model/1k/mxload7/

@@ -181,6 +181,12 @@ void optiq_job_read_and_select (std::vector<struct job> &jobs, std::vector<struc
 {
     optiq_job_read_from_file (jobs, paths, filepath);
 
+    /* If there is not loading specified, use all paths */
+    if (maxload == 0) 
+    {
+	return;
+    }
+
     int **load = (int **) calloc (1, sizeof(int *) * size);
 
     for (int i = 0; i < size; i++)
