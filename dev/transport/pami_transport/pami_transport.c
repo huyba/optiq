@@ -302,7 +302,7 @@ void optiq_pami_transport_clear()
 
     pami_transport->transport_info.forward_headers.clear();
     pami_transport->transport_info.complete_rputs.clear();
-    pami_transport->transport_info.send_headers.clear();
+    pami_transport->transport_info.local_headers.clear();
     pami_transport->transport_info.processing_headers.clear();
     pami_transport->transport_info.mr_responses.clear();
     pami_transport->transport_info.mem_responses.clear();
@@ -1024,15 +1024,15 @@ void optiq_pami_transport_get_message ()
     struct optiq_schedule *schedule = optiq_schedule_get();
     bool fwd = false;
 
-    if (pami_transport->transport_info.send_headers.size() + pami_transport->transport_info.forward_headers.size() > 0)
+    if (pami_transport->transport_info.local_headers.size() + pami_transport->transport_info.forward_headers.size() > 0)
     {
-	std::vector<struct optiq_message_header *> *mh;
+	std::list<struct optiq_message_header *> *mh;
 	struct optiq_message_header *header = NULL;
 
 	if (schedule->dmode == DQUEUE_LOCAL_MESSAGE_FIRST) 
 	{
-	    if (pami_transport->transport_info.send_headers.size() > 0) {
-		mh = &(pami_transport->transport_info.send_headers);
+	    if (pami_transport->transport_info.local_headers.size() > 0) {
+		mh = &(pami_transport->transport_info.local_headers);
 	    } else {
 		mh = &(pami_transport->transport_info.forward_headers);
 		fwd = true;
@@ -1044,16 +1044,16 @@ void optiq_pami_transport_get_message ()
 		mh = &(pami_transport->transport_info.forward_headers);
 		fwd = true;
 	    } else {
-		mh = &(pami_transport->transport_info.send_headers);
+		mh = &(pami_transport->transport_info.local_headers);
 	    }
 	}
 	else if (schedule->dmode == DQUEUE_ROUND_ROBIN)
 	{
 	    if (pami_transport->transport_info.current_queue == 0) 
 	    {
-		if (pami_transport->transport_info.send_headers.size() > 0) 
+		if (pami_transport->transport_info.local_headers.size() > 0) 
 		{
-		    mh = &(pami_transport->transport_info.send_headers);
+		    mh = &(pami_transport->transport_info.local_headers);
 		    pami_transport->transport_info.current_queue = 1;
 		} else {
 		    mh = &(pami_transport->transport_info.forward_headers);
@@ -1068,7 +1068,7 @@ void optiq_pami_transport_get_message ()
 		    pami_transport->transport_info.current_queue = 0;
 		    fwd = true;
 		} else {
-		    mh = &(pami_transport->transport_info.send_headers);
+		    mh = &(pami_transport->transport_info.local_headers);
 		}
 	    }
 	}
@@ -1110,10 +1110,10 @@ void optiq_pami_transport_send_local_mem_requests ()
     gettimeofday(&t2, NULL);
 
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
-
-    for (int i = 0; i < pami_transport->transport_info.send_headers.size(); i++)
+/*
+    for (int i = 0; i < pami_transport->transport_info.local_headers.size(); i++)
     {
-	struct optiq_message_header *header = pami_transport->transport_info.send_headers[i];
+	struct optiq_message_header *header = pami_transport->transport_info.local_headers[i];
 
 	header->header_id = pami_transport->transport_info.global_header_id;
 	pami_transport->transport_info.global_header_id++;
@@ -1122,8 +1122,8 @@ void optiq_pami_transport_send_local_mem_requests ()
 	optiq_pami_transport_mem_request(header);
     }
 
-    pami_transport->transport_info.send_headers.clear();
-
+    pami_transport->transport_info.local_headers.clear();
+*/
     gettimeofday(&t3, NULL);
     opi.local_mem_req_time += (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
 }
@@ -1368,7 +1368,7 @@ void optiq_pami_transport_execute_new ()
 	optiq_pami_transport_check_and_notify ();
 
 	if (odp.print_pami_transport_status) {
-	    printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d, processing_headers = %d, mr_responses = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length, pami_transport->transport_info.processing_headers.size(), pami_transport->transport_info.mr_responses.size());
+	    printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d, processing_headers = %d, mr_responses = %d\n", pami_transport->rank, pami_transport->transport_info.local_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length, pami_transport->transport_info.processing_headers.size(), pami_transport->transport_info.mr_responses.size());
 	}
 
 	/* If there is a message to send */
@@ -1383,10 +1383,10 @@ void optiq_pami_transport_execute_new ()
 		header = pami_transport->transport_info.forward_headers.front();
 		pami_transport->transport_info.forward_headers.erase (pami_transport->transport_info.forward_headers.begin());
 	    }
-	    else if (pami_transport->transport_info.send_headers.size() > 0)
+	    else if (pami_transport->transport_info.local_headers.size() > 0)
 	    {
-		header = pami_transport->transport_info.send_headers.front();
-		pami_transport->transport_info.send_headers.erase (pami_transport->transport_info.send_headers.begin());
+		header = pami_transport->transport_info.local_headers.front();
+		pami_transport->transport_info.local_headers.erase (pami_transport->transport_info.local_headers.begin());
 	    }
 
 	    if (header != NULL) {
@@ -1450,7 +1450,7 @@ void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport)
 	optiq_pami_transport_check_and_notify ();
 
 	/*if (true) {
-	  printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d, processing_headers = %d, mr_responses = %d\n", pami_transport->rank, pami_transport->transport_info.send_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length, pami_transport->transport_info.processing_headers.size(), pami_transport->transport_info.mr_responses.size());
+	  printf("Rank %d local size = %d, forward size = %d, num_active_paths = %d, isDest = %d, expecting_length = %d, processing_headers = %d, mr_responses = %d\n", pami_transport->rank, pami_transport->transport_info.local_headers.size(), pami_transport->transport_info.forward_headers.size(), pami_transport->sched->num_active_paths, pami_transport->sched->isDest, pami_transport->sched->expecting_length, pami_transport->transport_info.processing_headers.size(), pami_transport->transport_info.mr_responses.size());
 	  }*/
 
 	/*If there is a mem region ready to be transferred*/
@@ -1566,7 +1566,7 @@ void optiq_pami_transport_info_status(struct optiq_transport_info &transport_inf
 
     printf("Rank = %d, forward_headers.size() = %d\n", rank, transport_info.forward_headers.size());
     printf("Rank = %d, message_headers.size() = %d\n", rank, transport_info.message_headers.size());
-    printf("Rank = %d, send_headers.size() = %d\n", rank, transport_info.send_headers.size());
+    printf("Rank = %d, local_headers.size() = %d\n", rank, transport_info.local_headers.size());
     printf("Rank = %d, processing_headers.size() = %d\n", rank, transport_info.processing_headers.size());
 
     printf("Rank = %d, mr_responses.size() = %d\n", rank, transport_info.mr_responses.size());
@@ -1609,9 +1609,10 @@ void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport)
 	free(pami_transport->transport_info.rput_cookies[i]);
     }
 
-    for (int i = 0; i < pami_transport->transport_info.message_headers.size(); i++)
+    std::list<struct optiq_message_header *>::const_iterator iter;
+    for (iter = pami_transport->transport_info.message_headers.begin(); iter != pami_transport->transport_info.message_headers.end(); ++iter)
     {
-	free(pami_transport->transport_info.message_headers[i]);
+	free(*iter);
     }
 }
 
