@@ -59,5 +59,7 @@ int main(int argc, char **argv)
         }
     }
 
+    printf("Rank %d done\n", rank);
+
     return 0;
 }
