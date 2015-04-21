@@ -15,31 +15,32 @@
 \numberofauthors{4}
 \author{
 % 1st. author
-\alignauthor
-Ben Trovato\\
-       \affaddr{Institute for Clarity in Documentation}\\
-       \affaddr{1932 Wallamaloo Lane}\\
-       \affaddr{Wallamaloo, New Zealand}\\
-       \email{trovato@corporation.com}
+\alignauthor Huy Bui, Andrew Johnson\\
+       \affaddr{Dept. of Computer Science}\\
+       \affaddr{University of Illinois at Chicago}\\
+       %\affaddr{842 W Taylor St}
+       \affaddr{Chicago IL, 60612}\\
+       \email{abui4, ajohnson@uic.edu}
 \and  % use '\and' if you need 'another row' of author names
 % 4th. author
-\alignauthor Lawrence P. Leipuner\\
-       \affaddr{Brookhaven Laboratories}\\
-       \affaddr{Brookhaven National Lab}\\
-       \affaddr{P.O. Box 5000}\\
-       \email{lleipuner@researchlabs.org}
+\alignauthor Preeti Malakar, Eun-Sung Jung, Venkatram Vishwanath, Todd S. Munson, Sven Leyffer, Michael E. Papka\\
+       \affaddr{Argonne National Laboratory}\\
+       %\affaddr{9700 South Cass Avenue}\\
+       \affaddr{Lemont, IL 60439}\\
+       \email{pmalakar@anl.gov, esjung@mcs.anl.gov, venkat, tmunson, leyffer, papka@anl.gov}
 \and
 % 6th. author
-\alignauthor Charles Palmer\\
-       \affaddr{Palmer Research Laboratories}\\
-       \affaddr{8600 Datapoint Drive}\\
-       \affaddr{San Antonio, Texas 78229}\\
-       \email{cpalmer@prl.com}
+\alignauthor Jason Leigh\\
+       \affaddr{Dept. of Computer Science}\\
+       \affaddr{University of Hawaii at Manoa}\\
+       %\affaddr{1733 Donaghho Rd}
+       \affaddr{ Honolulu HI 96822}\\
+       \email{leigh@hawaii.edu}
 }
 
 \maketitle
 \begin{abstract}
-Achievable networking performance in a supercomputer depends on the exact combination of communication patterns of applications and routing algorithms used by the supercomputer. However, while the communication patterns usually have wide spectrum and vary from application to applicaiton and phase to phase in an application, the routing algorithms have a limited variation and usually are optimized for typical communication patters. This results in high networking performance for favored communication patterns but low networking performance for other communication patterns. In this paper, we introduce approaches for improving networking performance by rebalancing load on physical links on the Blue Gene Q supercomputer. We realize our approaches into a framework called OPTIQ and demonstrate the efficacy of our framework via a set of benchmarks. The results show that we can achieve serveral times higher bandwidth than default mechannism MPI used in the Blue Gene Q supercomputer for certain communication patterns.
+Achievable networking performance in a supercomputer depends on the exact combination of communication patterns of applications and routing algorithms used by the supercomputer. In order to achieve the highest networking performance for applications, the routing algorithms need to be designed optimally for the communication patterns. However, while the communication patterns usually have wide spectrum and vary from application to application and even from phase to phase in an application, the routing algorithms have a limited variation and usually are optimized for typical communication patters. Thus, the routing algorithms are optimally design for often used communication patterns while not for others. This results in high networking performance for favored communication patterns but low networking performance for others. In this paper, we introduce approaches for improving networking performance by rebalancing load on physical links on the Blue Gene Q supercomputer. We realize our approaches into a framework called OPTIQ and demonstrate the efficacy of our framework via a set of benchmarks. The results show that we can achieve serveral times higher bandwidth than default mechannism MPI used in the Blue Gene Q supercomputer for certain communication patterns.
 \end{abstract}
 
 % A category with the (minimum) three required fields

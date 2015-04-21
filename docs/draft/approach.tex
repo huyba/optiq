@@ -9,7 +9,7 @@ Four approaches that we present in this section include two heuristic algorithms
 \subsubsection{Heuristic 1}
 In this approach, we search for paths between each pair of source and destination. From a source, we explore from all the destination in all possible directions. Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. In this algorithm, we do not limit exploring paths by any constraints. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
 
-\begin{algorithm}
+\begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
 \textbf{Output:} Set of paths: one path for a pair of source-destination \\
 \\
@@ -88,7 +88,7 @@ As most of the work in Heuristic 2 is similar to Heuristic 1, we do not repeat t
 
 In the following, we describe the comparison function, which the core of the min heap for heapification. We also describe how to calculate the max load from the current load when adding a new path. We compare 2 paths based on its current max load and hop length. Among the two, max load has higher priority as max load affects the performance more.
 
-\begin{algorithm}
+\begin{algorithm}[!htp]
 
 Heap element comparison:
     \begin{algorithmic}
@@ -108,7 +108,7 @@ Heap element comparison:
 
 \subsubsection{Heuristic 3}
 
-\begin{algorithm}
+\begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
 \textbf{Output:} Set of paths: \textit{k} paths for a pair of source-destination\\
 Init:
