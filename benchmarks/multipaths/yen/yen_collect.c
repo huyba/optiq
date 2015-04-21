@@ -6,6 +6,9 @@ int main(int argc, char **argv)
     char *path = argv[1];
     char cmd[1024];
 
+
+    system("cat test30_* > test30");
+
     for (int i = 0; i <= 90; i++)
     {
 	sprintf(cmd, "cat %s/test%d_* > test%d", path, i, i);
