@@ -4,10 +4,13 @@
 #include <iostream>
 #include <fstream>
 
-void gen_cmd_file(char *datfile, char *outputfile)
+void gen_cmd_file(char *datfile, char *outputfile, int i)
 {
     std::ofstream myfile;
-    myfile.open ("model.cmd");
+    char filename[256];
+    sprintf(filename, "model%d.cmd", i);
+
+    myfile.open (filename);
 
     myfile << "model /homes/huybui/optiq/dev/model/path_based/model.mod;" << std::endl;
     
@@ -32,8 +35,10 @@ void gen_cmd_file(char *datfile, char *outputfile)
     myfile << "    printf(\"\\n\");" << std::endl;
     myfile << "}" << std::endl;
 
+    myfile.close();
+
     char cmd[256];
-    sprintf(cmd, "ampl model.cmd > %s", outputfile);
+    sprintf(cmd, "ampl model%d.cmd > %s", i, outputfile);
 
     system(cmd);
 
@@ -46,12 +51,23 @@ int main(int argc, char **argv)
     char *inbasepath = argv[1];
     char *outbasepath = argv[2];
 
-    for (int i = 0; i < 91; i++)
+    int start = 0;
+    int end = 90;
+
+    if (argc > 3) {
+	start = atoi (argv[3]);
+    }
+
+    if (argc > 4) {
+	end = atoi (argv[4]);
+    }
+
+    for (int i = start; i <= end; i++)
     {
 	sprintf(infile, "%s/model%d.dat", inbasepath, i) ;
 	sprintf(outfile, "%s/test%d", outbasepath, i);
     
-	gen_cmd_file(infile, outfile);
+	gen_cmd_file(infile, outfile, i);
     }
 
     return 0;
