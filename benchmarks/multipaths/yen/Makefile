@@ -81,6 +81,7 @@ cp:
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/8k/
 	
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/512/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/512_c8/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/1k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/2k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/jobpath/4k/

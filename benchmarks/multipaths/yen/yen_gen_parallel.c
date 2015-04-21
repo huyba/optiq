@@ -97,7 +97,7 @@ void gen_patterns (struct optiq_topology *topo, int demand, char *graphFilePath,
 		sprintf (name, "Test %d: Disjoint %d ranks from %d to %d send data to %d rank from %d to %d", testid, n/i, 0, n/i-1, n/i/r, j*n/i, n/i/r + j*n/i - 1);
 
 		jobs.clear();
-		optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, 0, n/i/r, j*n/i, false);
+		optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, 0, n/i/r, j*n/i, topo->num_ranks_per_node, false);
 
 		sprintf(jobs[0].name, "%s", name);
 		sprintf(jobfile, "test%d", testid);
@@ -126,7 +126,7 @@ void gen_patterns (struct optiq_topology *topo, int demand, char *graphFilePath,
 		    sprintf (name, "Test %d: Overlap %d ranks from %d to %d send data to %d rank from %d to %d", testid, n/i, j*n/i, n/i + j*n/i - 1, n/i/r , j*n/i + n/i - n/i/r/k, n/i/r + j*n/i + n/i - n/i/r/k - 1);
 
 		    jobs.clear();
-		    optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, j*n/i, n/i/r, j*n/i + n/i - n/i/r/k, false);
+		    optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, j*n/i, n/i/r, j*n/i + n/i - n/i/r/k, topo->num_ranks_per_node, false);
 
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
@@ -156,7 +156,7 @@ void gen_patterns (struct optiq_topology *topo, int demand, char *graphFilePath,
 		    sprintf (name, "Test %d: Subset %d ranks from %d to %d send data to %d rank from %d to %d", testid, n/i, j*n/i, n/i + j*n/i - 1, n/i/r, j*n/i + n/i/r/k, n/i/r + j*n/i + n/i/r/k - 1);
 
 		    jobs.clear();
-		    optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, j*n/i, n/i/r, j*n/i + n/i/r/k, false);
+		    optiq_pattern_m_to_n_to_jobs (jobs, numranks, demand, n/i, j*n/i, n/i/r, j*n/i + n/i/r/k, topo->num_ranks_per_node, false);
 
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
@@ -187,7 +187,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
     int start_testid = 0;
     char jobfile[256];
 
-    int size = topo->num_nodes;
+    int size = topo->num_nodes * topo->num_ranks_per_node;
 
     /* Generate disjoint First m send data to last n */
     for (int m = size/16; m <= size/2; m *= 2)
@@ -197,7 +197,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	    if (mintestid <= testid && testid <=maxtestid) 
 	    {
 		sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
-		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, false);
+		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node, false);
 
 		sprintf(jobs[0].name, "%s", name);
 		sprintf(jobfile, "test%d", testid);
@@ -219,7 +219,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 		if (mintestid <= testid && testid <=maxtestid) 
 		{
 		    sprintf(name, "Test No. %d: Overlap %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, m-l, n + m -l -1);
-		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, false);
+		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, false);
 
 		    //optiq_job_print_jobs (jobs);
 
@@ -243,7 +243,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 		if (mintestid <= testid && testid <=maxtestid) 
 		{
 		    sprintf(name, "Test No. %d: Subset %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, p, p+n-1);
-		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, false);
+		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, topo->num_ranks_per_node, false);
 
 		    //optiq_job_print_jobs (jobs);
 
@@ -279,7 +279,7 @@ void gen_jobs_paths_new (struct optiq_topology *topo, int demand, char *graphFil
 	for (int n = size/16; n <= size/2; n *= 2) 
 	{
 	    sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
-            optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, false);
+            optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node, false);
 
 	    sprintf(jobs[0].name, "%s", name);
 	    sprintf(jobfile, "test%d", testid);
@@ -304,7 +304,7 @@ void gen_jobs_paths_new (struct optiq_topology *topo, int demand, char *graphFil
 	    if (rank == testid % size) 
 	    {
 		sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
-                optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, false);
+                optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node, false);
 
 		sprintf(jobs[0].name, "%s", name);
 		sprintf(jobfile, "test%d", testid);
@@ -332,7 +332,7 @@ void gen_jobs_paths_new (struct optiq_topology *topo, int demand, char *graphFil
 		optiq_util_print_mem_info(rank);
 
 		sprintf(name, "Test No. %d: Overlap %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, m-l, n + m -l -1);
-		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, false);
+		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, false);
 
 		//optiq_job_print_jobs (jobs);
 
@@ -363,7 +363,7 @@ void gen_jobs_paths_new (struct optiq_topology *topo, int demand, char *graphFil
 		    optiq_util_print_mem_info(rank);
 
 		    sprintf(name, "Test No. %d: Overlap %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, m-l, n + m -l -1);
-		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, false);
+		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, false);
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
 
@@ -388,7 +388,7 @@ void gen_jobs_paths_new (struct optiq_topology *topo, int demand, char *graphFil
 	    for (int p = 0; p <= m/2; p += m/4)
 	    {
 		sprintf(name, "Test No. %d: Subset %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, p, p+n-1);
-		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, false);
+		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, topo->num_ranks_per_node, false);
 
 		//optiq_job_print_jobs (jobs);
 
@@ -417,7 +417,7 @@ void gen_jobs_paths_new (struct optiq_topology *topo, int demand, char *graphFil
 		if (rank == testid % size) 
 		{
 		    sprintf(name, "Test No. %d: Subset %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, p, p+n-1);
-		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, false);
+		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, topo->num_ranks_per_node, false);
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
 
@@ -517,7 +517,7 @@ int main(int argc, char **argv)
     maxtestid = atoi (argv[9]);
 
     optiq_topology_init_with_params(num_dims, psize, topo);
-    topo->num_ranks_per_node = 1;
+    topo->num_ranks_per_node = atoi (argv[10]);
 
     char graphFilePath[] = "graph";
 
