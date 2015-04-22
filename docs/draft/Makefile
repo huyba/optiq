@@ -1,12 +1,12 @@
 all:
-	pdflatex optiq.tex
-	bibtex optiq
-	pdflatex optiq.tex
-	pdflatex optiq.tex
+	pdflatex hipc.tex
+	bibtex hipc
+	pdflatex hipc.tex
+	pdflatex hipc.tex
 
-	rm optiq.aux
-	rm optiq.log
-	rm optiq.bbl
-	rm optiq.blg
+	rm hipc.aux
+	rm hipc.log
+	rm hipc.bbl
+	rm hipc.blg
 
-	open optiq.pdf
+	open hipc.pdf
