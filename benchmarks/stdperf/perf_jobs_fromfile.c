@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     int size = pami_transport->size;
 
     int demand = 8* 1024 * 1024;
-    int mindemand = 16 * 1024;
+    int mindemand = demand;
     int start = 0, end = 0;
     char *path;
 
@@ -41,6 +41,8 @@ int main(int argc, char **argv)
 
     char filepath[256];
 
+    for (int nbytes = mindemand; nbytes <= demand; nbytes *= 2)
+    {
     for (int i = start; i <= end; i++)
     {
 	sprintf(filepath, "%s/test%d", path, i);
@@ -49,7 +51,7 @@ int main(int argc, char **argv)
 	    printf("Test No. %d\n", i);
 	}
 
-	for (int chunk = 8 * 1024; chunk <=  demand; chunk *= 2)
+	for (int chunk = 8 * 1024; chunk <=  nbytes; chunk *= 2)
 	{
 	    schedule->chunk_size = chunk;
 	    schedule->auto_chunksize = false;
@@ -71,7 +73,7 @@ int main(int argc, char **argv)
             //odp.print_recv_rput_done_msg = true;
 	    odp.print_pami_transport_status = true;
 
-	    optiq_benchmark_jobs_from_file (filepath, demand);
+	    optiq_benchmark_jobs_from_file (filepath, nbytes);
 
 	    opi.iters = 1;
 	    optiq_opi_collect();
@@ -86,13 +88,14 @@ int main(int argc, char **argv)
 		    double mpi_bw = max_opi.recv_len / mpi_time / 1024 / 1024 * 1e6;
 		    double optiq_bw = max_opi.recv_len / max_opi.transfer_time / 1024 / 1024 * 1e6;
 
-		    printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", demand, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
+		    printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
 		}
 
 		optiq_path_print_stat (opi.paths, size, topo->num_edges);
 		optiq_opi_clear();
 	    }
 	}
+    }
     }
 
     if (pami_transport->rank == 0) {
