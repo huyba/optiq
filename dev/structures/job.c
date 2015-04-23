@@ -264,12 +264,12 @@ void optiq_job_read_from_file (std::vector<struct job> &jobs, std::vector<struct
 
     bool exist = true;
 
-    while (exist)
-    {
+    //while (exist)
+    //{
 	sprintf(fullfilename, "%s", filepath);
 	exist = optiq_jobs_read_from_file(jobs, paths, fullfilename);
         printf("Tried to open file %s: %s\n", fullfilename, exist ? "Successful" : "Failed");
-    }
+    //}
 }
 
 bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath)
