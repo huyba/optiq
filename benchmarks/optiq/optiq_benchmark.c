@@ -113,8 +113,12 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     jobs.clear();
     std::vector<struct path *> &path_ids = opi.paths, &path_ranks = sched->paths;
     path_ranks.clear();
-        
+     
+    /* When reading from file, always return jobs with path of node ids, not ranks */   
     optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
+
+    /* Convert to have paths with node ids and jobs with ranks */
+    optiq_jobs_convert_ids_to_ranks (jobs, path_ids, topo->num_ranks_per_node);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -151,8 +155,6 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 	    return;
 	}
     }
-
-    optiq_path_creat_path_ids_from_path_ranks(path_ids, path_ranks, topo->num_ranks_per_node);
 
     if (rank == 0) 
     {
