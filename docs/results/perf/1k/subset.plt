@@ -4,9 +4,9 @@ set bmarg 0
 set lmarg 2
 set rmarg 2
 set output "subset_1k.ps"
-set title "Transfer bandwidth for MPI_Alltoallv and OPTIQ: Subset pattern 1K" font ",22"
+set title "Transfer bandwidth for MPI_Alltoallv and OPTIQ \n Subset pattern, 1024 nodes, 1 rank/node, message size = 8 MB" font ",22"
 set logscale y 10
-set yrange [4096:1048576]
+set yrange [4096:262144]
 set xrange [64:90]
 set xlabel "Test Id" font ",24"
 set ylabel "Total throughput(GB/s)" font ",24"
@@ -24,8 +24,8 @@ set ytics font ",22"
 set key bottom left spacing 3
 set xtics () font ",23"
 set ytics ("16" 16384, "32" 32768, "64" 65536, "128" 131072, "256" 262144, "512" 524288, "1024" 1048576) font ",23"
-plot "model30.dat" using 1:5 ls 2 title "     OPTIQ Maxload = 30" with linespoints, \
-"kpath.dat" using 1:5 ls 3 title "     OPTIQ K paths" with linespoints, \
+plot "opt.dat" using 1:5 ls 1 title "          OPTIQ Optimization Model" with linespoints, \
+"kpath.dat" using 1:5 ls 2 title "     OPTIQ Heuristics" with linespoints, \
 "kpath.dat" using 1:3 ls 6 title "   MPI_Alltoallv" with linespoints
 #"model20.dat" using 1:5 ls 1 title "     OPTIQ Maxload = 20" with linespoints, \
 #"model10.dat" using 1:5 ls 3 title "     OPTIQ Maxload = 10" with linespoints

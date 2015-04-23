@@ -6,7 +6,7 @@ set rmarg 2
 set output "allpatterns.ps"
 set title "Total networking throughput of OPTIQ vs. MPI_Alltoallv in the overlap subset" font ",22"
 set logscale y 10
-set yrange [4096:131072]
+set yrange [4096:524288]
 set xrange [0:90]
 set xlabel "Test Id" font ",24" offset -1
 set ylabel "Total throughput(GB/s)" font ",24" offset -2
@@ -23,7 +23,7 @@ set xtics font ",22"
 set ytics font ",22"
 set key bottom right spacing 3
 set xtics () font ",23"
-set ytics ("16" 16384, "32" 32768, "64" 65536, "128" 131072, "256" 262144, "320" 327680) font ",23"
+set ytics ("16" 16384, "32" 32768, "64" 65536, "128" 131072, "256" 262144, "512" 524288) font ",23"
 plot "model30.dat" using 1:5 ls 1 title "          OPTIQ path-based model" with linespoints, \
 "kpath.dat" using 1:5 ls 2 title "     OPTIQ K paths" with linespoints, \
 "kpath.dat" using 1:3 ls 6 title "   MPI_Alltoallv" with linespoints
