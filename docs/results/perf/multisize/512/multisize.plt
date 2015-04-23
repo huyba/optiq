@@ -24,9 +24,9 @@ set ytics font ",22"
 set key bottom right spacing 3
 set xtics () font ",23"
 set ytics ("16" 16384, "32" 32768, "64" 65536, "128" 131072, "256" 262144, "320" 327680) font ",23"
-plot "heu16m.dat" using 1:5 ls 1 title "          OPTIQ Heuristics Message size = 16M" with linespoints, \
-"heu16m.dat" using 1:3 ls 2 title "          MPI_Alltoallv Message size = 16M" with linespoints, \
-"heu4m.dat" using 1:5 ls 3 title "          OPTIQ Heuristics Message size = 4M" with linespoints, \
-"heu4m.dat" using 1:3 ls 4 title "          MPI_Alltoallv Message size = 4M" with linespoints, \
-"heu1m.dat" using 1:5 ls 5 title "          OPTIQ Heuristics Message size = 1M" with linespoints, \
-"heu1m.dat" using 1:3 ls 6 title "          MPI_Alltoallv Message size = 1M" with linespoints
+plot "opt16m.dat" using 1:5 ls 1 title "          OPTIQ Heuristics Message size = 16M" with linespoints, \
+"opt16m.dat" using 1:3 ls 2 title "          MPI_Alltoallv Message size = 16M" with linespoints, \
+"opt4m.dat" using 1:5 ls 3 title "          OPTIQ Heuristics Message size = 4M" with linespoints, \
+"opt4m.dat" using 1:3 ls 4 title "          MPI_Alltoallv Message size = 4M" with linespoints
+#"opt1m.dat" using 1:5 ls 5 title "          OPTIQ Heuristics Message size = 1M" with linespoints, \
+#"opt1m.dat" using 1:3 ls 6 title "          MPI_Alltoallv Message size = 1M" with linespoints
