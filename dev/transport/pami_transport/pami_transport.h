@@ -75,8 +75,9 @@ struct optiq_transport_info {
     char *forward_buf;
     struct optiq_memregion *forward_mr;
 
-    std::vector<struct optiq_rput_cookie *> rput_cookies;
-    std::vector<struct optiq_rput_cookie *> complete_rputs;
+    std::list<int> a;
+    std::list<struct optiq_rput_cookie *> rput_cookies;
+    std::list<struct optiq_rput_cookie *> complete_rputs;
 
     std::list<struct optiq_message_header *> forward_headers;
     std::list<struct optiq_message_header *> message_headers;

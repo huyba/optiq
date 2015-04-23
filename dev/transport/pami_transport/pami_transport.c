@@ -22,7 +22,8 @@ void optiq_pami_transport_init()
     pami_configuration_t *configurations = NULL;
 
     /*Init the pami_transport variable*/
-    pami_transport = (struct optiq_pami_transport *) calloc(1, sizeof(struct optiq_pami_transport));
+    //pami_transport = (struct optiq_pami_transport *) calloc(1, sizeof(struct optiq_pami_transport));
+    pami_transport = new struct optiq_pami_transport();
 
     /* Create client */
     result = PAMI_Client_create(client_name, &pami_transport->client, configurations, configuration_count);
@@ -249,8 +250,9 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
     int num_rput_cookies = OPTIQ_NUM_RPUT_COOKIES;
     int num_message_headers = OPTIQ_NUM_MESSAGE_HEADERS;
 
-    /*Allocate memory for rput cookies*/
+    /* Allocate memory for rput cookies */
     pami_transport->transport_info.rput_cookies.clear();
+
     for (int i = 0; i < num_rput_cookies; i++)
     {
 	struct optiq_rput_cookie *rput_cookie = (struct optiq_rput_cookie *)calloc(1, sizeof(struct optiq_rput_cookie));
@@ -260,6 +262,7 @@ void optiq_transport_info_init (struct optiq_pami_transport *pami_transport)
 
     /*Allocate memory for message headers*/
     pami_transport->transport_info.message_headers.clear();
+
     for (int i = 0; i < num_message_headers; i++)
     {
 	struct optiq_message_header *message_header = (struct optiq_message_header *)calloc(1, sizeof(struct optiq_message_header));
@@ -1604,16 +1607,21 @@ void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport)
     /*Free memory*/
     free(pami_transport->transport_info.forward_buf);
 
-    for (int i = 0; i < pami_transport->transport_info.rput_cookies.size(); i++)
+    while (!pami_transport->transport_info.rput_cookies.empty())
     {
-	free(pami_transport->transport_info.rput_cookies[i]);
+	struct optiq_rput_cookie *cookie = pami_transport->transport_info.rput_cookies.back();
+	free(cookie);
+	pami_transport->transport_info.rput_cookies.pop_back();
     }
 
-    std::list<struct optiq_message_header *>::const_iterator iter;
-    for (iter = pami_transport->transport_info.message_headers.begin(); iter != pami_transport->transport_info.message_headers.end(); ++iter)
+    while (!pami_transport->transport_info.message_headers.empty() > 0)
     {
-	free(*iter);
+	struct optiq_message_header * header = pami_transport->transport_info.message_headers.back();
+	free(header);
+	pami_transport->transport_info.message_headers.pop_back();
     }
+
+    /*printf("Rank %d done free rput and message headers\n", pami_transport->rank);*/
 }
 
 int optiq_pami_transport_finalize()
@@ -1645,7 +1653,9 @@ int optiq_pami_transport_finalize()
     }
 
     /* Free the pami_transport itself*/
-    free(pami_transport);
+    //free(pami_transport);
+
+    delete pami_transport;
 
     return 0;
 }
