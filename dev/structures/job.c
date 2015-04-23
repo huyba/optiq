@@ -261,16 +261,14 @@ void optiq_job_read_and_select (std::vector<struct job> &jobs, std::vector<struc
 void optiq_job_read_from_file (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath)
 {
     char fullfilename[256];
-    int i = 0;
 
     bool exist = true;
 
     while (exist)
     {
-	sprintf(fullfilename, "%s_%d", filepath, i);
+	sprintf(fullfilename, "%s", filepath);
 	exist = optiq_jobs_read_from_file(jobs, paths, fullfilename);
         printf("Tried to open file %s: %s\n", fullfilename, exist ? "Successful" : "Failed");
-	i++;
     }
 }
 
