@@ -522,3 +522,32 @@ void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int max
 	iters++;
     }
 }
+
+void optiq_jobs_convert_ids_to_ranks (std::vector<struct job> &jobs, std::vector<struct path *> &path_ids, int num_ranks_per_node)
+{
+    path_ids.clear();
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    struct path *p = (struct path *) calloc (1, sizeof (struct path));
+	    (*p) = (*jobs[i].paths[j]);
+
+	    if (num_ranks_per_node > 1)
+	    {
+		for (int k = 0; k < p->arcs.size(); k++)
+		{
+		    jobs[i].paths[j]->arcs[k].u = p->arcs[k].u * num_ranks_per_node + jobs[i].source_rank % num_ranks_per_node;
+		    jobs[i].paths[j]->arcs[k].v = p->arcs[k].v * num_ranks_per_node + jobs[i].source_rank % num_ranks_per_node;
+		}
+
+		jobs[i].paths[j]->arcs.front().u = jobs[i].source_rank;
+		jobs[i].paths[j]->arcs.back().v = jobs[i].dest_rank;
+	    }
+
+	    path_ids.push_back(p);
+	}
+    }
+}
+

@@ -43,63 +43,63 @@ int main(int argc, char **argv)
 
     for (int nbytes = demand; nbytes >= demand; nbytes /= 2)
     {
-    for (int i = start; i <= end; i++)
-    {
-	sprintf(filepath, "%s/test%d", path, i);
-
-	if (rank == 0) {
-	    printf("Test No. %d\n", i);
-	}
-
-	for (int chunk = 8 * 1024; chunk <=  nbytes; chunk *= 2)
+	for (int i = start; i <= end; i++)
 	{
-	    schedule->chunk_size = chunk;
-	    schedule->auto_chunksize = false;
+	    sprintf(filepath, "%s/test%d", path, i);
 
-	    //odp.print_done_status = true;
+	    if (rank == 0) {
+		printf("Test No. %d\n", i);
+	    }
 
-	    //odp.print_path_rank = true;
-	    //odp.print_job = true;
-	    //odp.print_mem_reg_msg =  true;
-	    //odp.print_mem_exchange_status = true;
-            //odp.print_mem_adv_exchange_msg = true;
-
-	    //odp.print_local_jobs = true;
-
-	    //odp.print_mem_avail = true;
-
-	    //odp.print_rput_msg = true;
-	    //odp.print_rput_rdone_notify_msg = true;
-            //odp.print_recv_rput_done_msg = true;
-	    //odp.print_pami_transport_status = true;
-
-	    optiq_benchmark_jobs_from_file (filepath, nbytes);
-
-	    opi.iters = 1;
-	    optiq_opi_collect();
-
-	    if (rank == 0) 
+	    for (int chunk = 8 * 1024; chunk <=  nbytes; chunk *= 2)
 	    {
-		printf("chunk size = %d\n", chunk);
-		optiq_opi_print();
+		schedule->chunk_size = chunk;
+		schedule->auto_chunksize = false;
 
-		if (mpi_time > max_opi.transfer_time) 
+		//odp.print_done_status = true;
+
+		//odp.print_path_rank = true;
+		//odp.print_job = true;
+		//odp.print_mem_reg_msg =  true;
+		//odp.print_mem_exchange_status = true;
+		//odp.print_mem_adv_exchange_msg = true;
+
+		//odp.print_local_jobs = true;
+
+		//odp.print_mem_avail = true;
+
+		//odp.print_rput_msg = true;
+		//odp.print_rput_rdone_notify_msg = true;
+		//odp.print_recv_rput_done_msg = true;
+		//odp.print_pami_transport_status = true;
+
+		optiq_benchmark_jobs_from_file (filepath, nbytes);
+
+		opi.iters = 1;
+		optiq_opi_collect();
+
+		if (rank == 0) 
 		{
-		    double mpi_bw = max_opi.recv_len / mpi_time / 1024 / 1024 * 1e6;
-		    double optiq_bw = max_opi.recv_len / max_opi.transfer_time / 1024 / 1024 * 1e6;
+		    printf("chunk size = %d\n", chunk);
+		    optiq_opi_print();
 
-		    printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
+		    if (mpi_time > max_opi.transfer_time) 
+		    {
+			double mpi_bw = max_opi.recv_len / mpi_time / 1024 / 1024 * 1e6;
+			double optiq_bw = max_opi.recv_len / max_opi.transfer_time / 1024 / 1024 * 1e6;
+
+			printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
+		    }
+
+		    optiq_path_print_stat (opi.paths, size, topo->num_edges);
+		    optiq_opi_clear();
 		}
-
-		optiq_path_print_stat (opi.paths, size, topo->num_edges);
-		optiq_opi_clear();
 	    }
 	}
     }
-    }
 
     if (pami_transport->rank == 0) {
-        printf("Finished testing optiq_alltoallv\n");
+	printf("Finished testing optiq_alltoallv\n");
     }
 
     optiq_finalize();
