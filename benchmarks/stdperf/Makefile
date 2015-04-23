@@ -72,8 +72,8 @@ cp:
 	cp perf_bypathlen.x $(BENCHMARKS_DIR)/stdperf/pathlen/
 
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/
-	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multiranks/512/
-	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multisize/512/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multiranks/heuristics/512/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multisize/heuristics/512/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/mxload1/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/mxload3/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/mxload7/
@@ -82,8 +82,8 @@ cp:
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/mxload30/
 
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/1k/
-	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multiranks/1k/
-	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multisize/1k/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multiranks/heuristics/1k/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multisize/heuristics/1k/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/1k/all/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/1k/mxload3/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/1k/mxload7/
