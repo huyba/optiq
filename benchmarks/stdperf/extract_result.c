@@ -20,7 +20,8 @@ int main (int argc, char **argv)
     float mmpitime = DBL_MAX, mmpibw, mopttime = DBL_MAX, moptbw;
     bool newtest = false, newbingo, firsttime = true;
     char s1[256], s2[256], s3[256],s4[256], s5[256],s6[256],s7[256],s8[256],s9[256];
-    int mpi_maxload, mpi_minload, mpi_avgload, optiq_maxload, optiq_minload, optiq_avgload, mpi_maxhops, mpi_avghops, mpi_minhops, optiq_maxhops, optiq_minhops, optiq_avghops;
+    int mpi_maxload, mpi_minload, optiq_maxload, optiq_minload, mpi_maxhops, mpi_minhops, optiq_maxhops, optiq_minhops;
+    float mpi_avgload, optiq_avgload, mpi_avghops, optiq_avghops;
 
     std::ofstream outfile;
     outfile.open (outpath);
@@ -63,17 +64,17 @@ int main (int argc, char **argv)
 	    fgets(line, 256, fp);
 
             fgets(line, 256, fp);
-            sscanf(line, "%s %s %d", s1, s1, mpi_maxhops);
+            sscanf(line, "%s %s %d", s1, s1, &mpi_maxhops);
             fgets(line, 256, fp);
-            sscanf(line, "%s %s %d", s1, s1, mpi_minhops);
+            sscanf(line, "%s %s %d", s1, s1, &mpi_minhops);
             fgets(line, 256, fp);
-            sscanf(line, "%s %s %d", s1, s1, mpi_avghops);
+            sscanf(line, "%s %s %f", s1, s1, &mpi_avghops);
             fgets(line, 256, fp);
-            sscanf(line, "%s %s %d", s1, s1, mpi_maxload);
+            sscanf(line, "%s %s %d", s1, s1, &mpi_maxload);
             fgets(line, 256, fp);
-            sscanf(line, "%s %s %d", s1, s1, mpi_minload);
+            sscanf(line, "%s %s %d", s1, s1, &mpi_minload);
             fgets(line, 256, fp);
-            sscanf(line, "%s %s %d", s1, s1, mpi_avgload);
+            sscanf(line, "%s %s %f", s1, s1, &mpi_avgload);
 	}
 
 	if (line[0] == 'O')
@@ -91,17 +92,17 @@ int main (int argc, char **argv)
 	    fgets(line, 256, fp);
 
 	    fgets(line, 256, fp);
-	    sscanf(line, "%s %s %d", s1, s1, optiq_maxhops);
+	    sscanf(line, "%s %s %d", s1, s1, &optiq_maxhops);
 	    fgets(line, 256, fp);
-	    sscanf(line, "%s %s %d", s1, s1, optiq_minhops);
+	    sscanf(line, "%s %s %d", s1, s1, &optiq_minhops);
 	    fgets(line, 256, fp);
-	    sscanf(line, "%s %s %d", s1, s1, optiq_avghops);
+	    sscanf(line, "%s %s %f", s1, s1, &optiq_avghops);
 	    fgets(line, 256, fp);
-	    sscanf(line, "%s %s %d", s1, s1, optiq_maxload);
+	    sscanf(line, "%s %s %d", s1, s1, &optiq_maxload);
 	    fgets(line, 256, fp);
-	    sscanf(line, "%s %s %d", s1, s1, optiq_minload);
+	    sscanf(line, "%s %s %d", s1, s1, &optiq_minload);
 	    fgets(line, 256, fp);
-	    sscanf(line, "%s %s %d", s1, s1, optiq_avgload);
+	    sscanf(line, "%s %s %f", s1, s1, &optiq_avgload);
 	}
     }
 
