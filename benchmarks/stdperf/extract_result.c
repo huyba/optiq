@@ -61,6 +61,7 @@ int main (int argc, char **argv)
 		mmpitime = mpitime;
 
 		fgets(line, 256, fp);
+		fgets(line, 256, fp);
 		printf(line);
 		sscanf(line, "%s %s %d", s1, s1, &mpi_maxhops);
 		fgets(line, 256, fp);
