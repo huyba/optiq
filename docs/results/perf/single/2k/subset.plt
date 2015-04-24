@@ -4,7 +4,7 @@ set bmarg 0
 set lmarg 5
 set rmarg 2
 set output "subset_2k.ps"
-set title "Transfer bandwidth for MPI_Alltoallv and OPTIQ: Subset pattern 2K" font ",22"
+set title "Transfer bandwidth for MPI_Alltoallv and OPTIQ \n Subset pattern, 2048 nodes, 1 rank/node, message size = 8MB" font ",22"
 set logscale y 10
 set yrange [16384:262144]
 set xrange [64:90]

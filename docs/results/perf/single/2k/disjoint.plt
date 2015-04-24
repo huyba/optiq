@@ -4,7 +4,7 @@ set bmarg 0
 set lmarg 5
 set rmarg 2
 set output "disjoint_2k.ps"
-set title "Transfer bandwidth for MPI_Alltoallv and OPTIQ: Disjoint pattern 2K" font ",22"
+set title "Transfer bandwidth for MPI_Alltoallv and OPTIQ \n Disjoint pattern, 2048 nodes, 1 rank/node, message size = 8MB" font ",22"
 set logscale y 10
 set yrange [16384:2097152]
 set xrange [0:15]
