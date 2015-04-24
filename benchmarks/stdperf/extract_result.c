@@ -36,7 +36,7 @@ int main (int argc, char **argv)
 	if (line[0] == 'T')
 	{
 	    trim(line);
-            sscanf(line, "%s %s %d", temp, temp1, &testid);
+	    sscanf(line, "%s %s %d", temp, temp1, &testid);
 
 	    if (testid != prevtestid) 
 	    {
@@ -59,33 +59,32 @@ int main (int argc, char **argv)
 	    {
 		mmpibw = mpibw;
 		mmpitime = mpitime;
+
+		fgets(line, 256, fp);
+		printf(line);
+		sscanf(line, "%s %s %d", s1, s1, &mpi_maxhops);
+		fgets(line, 256, fp);
+		printf(line);
+		sscanf(line, "%s %s %d", s1, s1, &mpi_minhops);
+		fgets(line, 256, fp);
+		printf(line);
+		sscanf(line, "%s %s %f", s1, s1, &mpi_avghops);
+		fgets(line, 256, fp);
+		printf(line);
+		sscanf(line, "%s %s %d", s1, s1, &mpi_maxload);
+		fgets(line, 256, fp);
+		printf(line);
+		sscanf(line, "%s %s %d", s1, s1, &mpi_minload);
+		fgets(line, 256, fp);
+		printf(line);
+		sscanf(line, "%s %s %f", s1, s1, &mpi_avgload);
 	    }
-
-	    fgets(line, 256, fp);
-
-            fgets(line, 256, fp);
-            printf("%s\n", line);
-            sscanf(line, "%s %s %d", s1, s1, &mpi_maxhops);
-            fgets(line, 256, fp);
-            printf("%s\n", line);
-            sscanf(line, "%s %s %d", s1, s1, &mpi_minhops);
-            fgets(line, 256, fp);
-            printf("%s\n", line);
-            sscanf(line, "%s %s %f", s1, s1, &mpi_avghops);
-            fgets(line, 256, fp);
-            printf("%s\n", line);
-            sscanf(line, "%s %s %d", s1, s1, &mpi_maxload);
-            fgets(line, 256, fp);
-            printf("%s\n", line);
-            sscanf(line, "%s %s %d", s1, s1, &mpi_minload);
-            fgets(line, 256, fp);
-            printf("%s\n", line);
-            sscanf(line, "%s %s %f", s1, s1, &mpi_avgload);
 	}
 
 	if (line[0] == 'O')
 	{
 	    trim(line);
+	    printf("%s\n", line);
 	    sscanf(line, "%s %s %s %d %s %s %s %f, %s %s %f", s1, s2, s3, &len, s4, s5, s6, &opttime, s7, s8, &optbw);
             printf("%s\n", line);
 	    if (opttime < mopttime) 
