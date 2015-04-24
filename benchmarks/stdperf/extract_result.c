@@ -20,7 +20,7 @@ int main (int argc, char **argv)
     float mmpitime = DBL_MAX, mmpibw, mopttime = DBL_MAX, moptbw;
     bool newtest = false, newbingo, firsttime = true;
     char s1[256], s2[256], s3[256],s4[256], s5[256],s6[256],s7[256],s8[256],s9[256];
-    int mpi_maxload, mpi_minload, mpi_avgload, optiq_maxload, optiq_minload, optiq_avgload, mpi_maxhops, mpi_avghops, mpi_minhops, optiq_maxhps, optiq_minhips, optiq_avghops;
+    int mpi_maxload, mpi_minload, mpi_avgload, optiq_maxload, optiq_minload, optiq_avgload, mpi_maxhops, mpi_avghops, mpi_minhops, optiq_maxhops, optiq_minhops, optiq_avghops;
 
     std::ofstream outfile;
     outfile.open (outpath);
@@ -39,7 +39,7 @@ int main (int argc, char **argv)
 
 	    if (testid != prevtestid) 
 	    {
-		outfile << prevtestid << " " << mmpitime << " " << mmpibw << " " << mopttime << " " << moptbw << " " << mpi_maxload << " "  << mpi_minload << " " << mpi_avgload << " " << mpi_maxhops << " " << mpi_minhops << " " << mpi_avghops << " " << optiq_maxload << " " optiq_minload << " " optiq_avgload << " " << optiq_maxhops << " " << optiq_minhops << " " << optiq_avghops << std::endl;
+		outfile << prevtestid << " " << mmpitime << " " << mmpibw << " " << mopttime << " " << moptbw << " " << mpi_maxload << " "  << mpi_minload << " " << mpi_avgload << " " << mpi_maxhops << " " << mpi_minhops << " " << mpi_avghops << " " << optiq_maxload << " " << optiq_minload << " " << optiq_avgload << " " << optiq_maxhops << " " << optiq_minhops << " " << optiq_avghops << std::endl;
 		mmpitime = DBL_MAX;
 		mopttime = DBL_MAX;
 	    }
@@ -105,7 +105,7 @@ int main (int argc, char **argv)
 	}
     }
 
-    outfile << testid << " " << mmpitime << " " << mmpibw << " " << mopttime << " " << moptbw << " " << mpi_maxload << " "  << mpi_minload << " " << mpi_avgload << " " << mpi_maxhops << " " << mpi_minhops << " " << mpi_avghops << " " << optiq_maxload << " " optiq_minload << " " optiq_avgload << " " << optiq_maxhops << " " << optiq_minhops << " " << optiq_avghops  << std::endl;
+    outfile << testid << " " << mmpitime << " " << mmpibw << " " << mopttime << " " << moptbw << " " << mpi_maxload << " "  << mpi_minload << " " << mpi_avgload << " " << mpi_maxhops << " " << mpi_minhops << " " << mpi_avghops << " " << optiq_maxload << " " << optiq_minload << " " << optiq_avgload << " " << optiq_maxhops << " " << optiq_minhops << " " << optiq_avghops  << std::endl;
 
     outfile.close();
     fclose(fp);
