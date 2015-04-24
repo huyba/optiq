@@ -90,7 +90,9 @@ int main (int argc, char **argv)
 
 	    fgets(line, 256, fp);
 	    fgets(line, 256, fp);
-
+            if (line[0] = 'B') {
+                fgets(line, 256, fp);
+            }
 	    fgets(line, 256, fp);
 	    sscanf(line, "%s %s %d", s1, s1, &optiq_maxhops);
 	    fgets(line, 256, fp);

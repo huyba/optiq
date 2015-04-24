@@ -52,6 +52,7 @@ Folders organization:
 ./benchmarks: contains the code for benchmarking performance of the code vs. MPI or other libs, or simply to see the performance of certain features/functions.
    
 ./docs: contains all the docs, papers, slides, results.
+    .docs/
     
 ./apps: contains the kernels, apps that use the libs.
 
