@@ -67,6 +67,9 @@ int main (int argc, char **argv)
 		fgets(line, 256, fp);
 		printf(line);
 		sscanf(line, "%s %s %d", s1, s1, &mpi_minhops);
+		if (mpi_minhops == 0) {
+		    mpi_minhops = 1;
+		}
 		fgets(line, 256, fp);
 		printf(line);
 		sscanf(line, "%s %s %f", s1, s1, &mpi_avghops);
