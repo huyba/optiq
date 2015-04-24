@@ -1,0 +1,81 @@
+\documentclass{acm_proc_article-sp}
+
+\usepackage{algorithm}
+%\usepackage{algorithmic}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\algrenewcommand\textproc{}
+\usepackage{verbatim}
+\usepackage{amssymb}
+
+\begin{document}
+
+\title{Improving Data Movement Throughput by Balancing Network Load on the Blue Gene Q Supercomputer}
+
+\numberofauthors{4}
+\author{
+% 1st. author
+\alignauthor Huy Bui, Andrew Johnson\\
+       \affaddr{Dept. of Computer Science}\\
+       \affaddr{University of Illinois at Chicago}\\
+       %\affaddr{842 W Taylor St}
+       \affaddr{Chicago IL, 60612}\\
+       \email{abui4, ajohnson@uic.edu}
+\and  % use '\and' if you need 'another row' of author names
+% 4th. author
+\alignauthor Preeti Malakar, Eun-Sung Jung, Sebastien Boisvert, Venkatram Vishwanath, Todd S. Munson, Sven Leyffer, Michael E. Papka\\
+       \affaddr{Argonne National Laboratory}\\
+       %\affaddr{9700 South Cass Avenue}\\
+       \affaddr{Lemont, IL 60439}\\
+       \email{pmalakar@anl.gov, esjung@mcs.anl.gov, boisvert, venkat, tmunson, leyffer, papka@anl.gov}
+\and
+% 6th. author
+\alignauthor Jason Leigh\\
+       \affaddr{Dept. of Computer Science}\\
+       \affaddr{University of Hawaii at Manoa}\\
+       %\affaddr{1733 Donaghho Rd}
+       \affaddr{ Honolulu HI 96822}\\
+       \email{leigh@hawaii.edu}
+}
+
+\maketitle
+\begin{abstract}
+input{abstract}
+\end{abstract}
+
+% A category with the (minimum) three required fields
+%\category{H.4}{Information Systems Applications}{Miscellaneous}
+%A category including the fourth, optional field follows...
+%\category{D.2.8}{Software Engineering}{Metrics}[complexity measures, performance measures]
+
+%\terms{Theory}
+
+\keywords{data movement, load balancing, optimization, communication patterns} % NOT required for Proceedings
+
+\input{intro}
+
+\input{relatedwork}
+
+\input{system}
+
+\input{approach}
+
+\input{benchmark}
+
+\input{conclusion}
+
+%ACKNOWLEDGMENTS are optional
+\section{Acknowledgments}
+This section is optional; it is a location for you
+to acknowledge grants, funding, editing assistance and
+what have you.  In the present case, for example, the
+authors would like to thank Gerald Murray of ACM for
+his help in codifying this \textit{Author's Guide}
+and the \textbf{.cls} and \textbf{.tex} files that it describes.
+
+\bibliographystyle{abbrv}
+\bibliography{thesis}  % sigproc.bib is the name of the Bibliography in this case
+
+\balancecolumns
+% That's all folks!
+\end{document}

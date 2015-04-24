@@ -1,0 +1,59 @@
+Folders organization:
+./dev: contains the main code of the project OPTIQ
+    ./dev/structures: contains main structures of the project.
+	path
+	heap_path
+	job
+    ./dev/topology
+	topology
+	pathreconstruct
+    ./dev/algorithms
+	heuristics
+	    alltoall
+	    manytoall
+	    multipaths
+	    multibfs
+	yen
+    ./dev/comm_patterns
+	cesm
+	patterns
+    ./dev/transport
+	pami_transport/
+	    pami_transport
+	    optiq_struct
+    ./dev/schedule
+	    schedule
+	    comm_mem
+./tests: contains the code for testing i.e testing the functions
+    ./dev/structures: contains main structures of the project.
+        path
+        heap_path
+        job
+    ./dev/topology
+        topology
+        pathreconstruct
+    ./dev/algorithms
+        heuristics
+            alltoall
+            manytoall
+            multipaths
+            multibfs
+        yen
+    ./dev/comm_patterns
+        cesm
+        patterns
+    ./dev/transport
+        pami_transport/
+            pami_transport
+            optiq_struct
+    ./dev/schedule
+            schedule
+            comm_mem
+./benchmarks: contains the code for benchmarking performance of the code vs. MPI or other libs, or simply to see the performance of certain features/functions.
+   
+./docs: contains all the docs, papers, slides, results.
+    .docs/
+    
+./apps: contains the kernels, apps that use the libs.
+
+./misc: contains misc codes for various purpose and garbage codes.

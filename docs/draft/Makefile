@@ -1,0 +1,12 @@
+all:
+	pdflatex hipc.tex
+	bibtex hipc
+	pdflatex hipc.tex
+	pdflatex hipc.tex
+
+	rm hipc.aux
+	rm hipc.log
+	rm hipc.bbl
+	rm hipc.blg
+
+	open hipc.pdf
