@@ -120,6 +120,24 @@ int main (int argc, char **argv)
 		printf(line);
 		sscanf(line, "%s %s %f", s1, s1, &optiq_avgload);
 	    }
+
+	    fgets(line, 256, fp);
+	    fgets(line, 256, fp);
+            if (line[0] = 'B') {
+                fgets(line, 256, fp);
+            }
+	    fgets(line, 256, fp);
+	    sscanf(line, "%s %s %d", s1, s1, &optiq_maxhops);
+	    fgets(line, 256, fp);
+	    sscanf(line, "%s %s %d", s1, s1, &optiq_minhops);
+	    fgets(line, 256, fp);
+	    sscanf(line, "%s %s %f", s1, s1, &optiq_avghops);
+	    fgets(line, 256, fp);
+	    sscanf(line, "%s %s %d", s1, s1, &optiq_maxload);
+	    fgets(line, 256, fp);
+	    sscanf(line, "%s %s %d", s1, s1, &optiq_minload);
+	    fgets(line, 256, fp);
+	    sscanf(line, "%s %s %f", s1, s1, &optiq_avgload);
 	}
     }
 
