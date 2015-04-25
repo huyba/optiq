@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 	load[i] = (int *) calloc (1, sizeof(int) * num_nodes);
     }
 
-    int minload, maxload, medload, minhops = 1000, maxhops = 0, medhops = 0;
+    int minload = 1000, maxload = 0, medload = 0, minhops = 1000, maxhops = 0, medhops = 0;
     double avgload, avghops;
 
     for (int fi = start; fi <= end; fi++)
@@ -43,6 +43,8 @@ int main(int argc, char **argv)
 	paths.clear();
 
 	optiq_jobs_read_from_file (jobs, paths, filepath);
+
+	int totalhops = 0, totalload = 0;
 
 	/* Get the jobs stat */
 	for (int i = 0; i < jobs.size(); i++)
@@ -65,6 +67,26 @@ int main(int argc, char **argv)
 		    int v = jobs[i].paths[j]->arcs[k].v;
 		    load[u][v]++;
 		}
+
+		totalhops += jobs[i].paths[j]->arcs.size();
+	    }
+	}
+
+	for (int i = 0; i < num_nodes; i++)
+	{
+	    for (int j = 0; j < num_nodes; j++)
+	    {
+		if (maxload < load[i][j])
+		{
+		    maxload = load[i][j];
+		}
+
+		if (minload > load[i][j])
+		{
+		    minload = load[i][j];
+		}
+
+		totalload += load[i][j];
 	    }
 	}
 
