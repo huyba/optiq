@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o
 
-all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_gather.x yen_model.x yen_collect.x cp
+all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_gather.x yen_model.x yen_collect.x yen_gather_stat.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -67,6 +67,7 @@ M = mira
 BENCHMARKS_DIR = /gpfs/$(M)-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
+	cp yen_gather_stat.x $(BENCHMARKS_DIR)/multipaths/yen/stat/
 	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/512/
 	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/1k/
 	cp yen_gen.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen/2k/
