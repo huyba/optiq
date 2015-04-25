@@ -548,4 +548,3 @@ void optiq_jobs_convert_ids_to_ranks (std::vector<struct job> &jobs, std::vector
 	}
     }
 }
-
