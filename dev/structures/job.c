@@ -39,6 +39,8 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
 	}
     }
 
+    myfile << std::endl;
+
     myfile.close();
 }
 
