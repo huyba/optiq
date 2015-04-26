@@ -23,6 +23,8 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     {
 	if (rank == i % size)
 	{
+	    jobs[i].paths.clear();
+
 	    //printf("Rank %d avail mem before call yen\n", rank);
 	    //optiq_util_print_mem_info(rank);
 
@@ -38,7 +40,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
 	    for (int j = 0; j < jobs[i].paths.size(); j++) 
 	    {
 		jobs[i].paths[j]->arcs.clear();
-		free (jobs[i].paths[j]);
+		delete jobs[i].paths[j];
 	    }
 	    jobs[i].paths.clear();
 	}

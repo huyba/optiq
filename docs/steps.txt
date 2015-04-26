@@ -1,0 +1,22 @@
+1. Step to generate data:
+1.1 Generate 50 paths for each jobs using yen's algorithm:
+- Complile and make sure that the execution is the lastest.
+- Go into multiple/yen/yenpaths/
+- For each configuration, go into the specified dirs such as 512, 1k, 2k...
+- Make sure the parameters are correct.
+- Excute to produce output file. For each test, each rank will find paths for a job and write to a file of test_testid_jobid.
+- Excecute collect.sh to gather all jobs of a test to one file of test_testid.
+- Check to make sure that there are 50 paths for each jobs.
+- Files test_testid_jobid can be saved to use later.
+
+1.2 Execute yen_model.x to generate model data from test data.
+
+1.3 Upload model dat files to MCS machines, solve them.
+
+1.4 After solving them, download back to machines and execute jobs with paths generated.
+
+2. Heuristics:
+2.1 Same to 1.1
+2.2 Execute yen_gather.x to collect paths satisfying max load < 1 (or any specified number)
+
+

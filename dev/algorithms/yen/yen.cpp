@@ -134,7 +134,7 @@ void optiq_alg_yen_k_shortest_paths_2vertices(char *graphfile, int v1, int v2, i
     while (yenAlg.has_next() && k < num_paths)
     {
 	BasePath *p = yenAlg.next();
-	struct path *pa = (struct path *) calloc (1, sizeof(struct path));
+	struct path *pa = new path();
 	pa->arcs.clear();
 	pa->path_id = k;
 
