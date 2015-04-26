@@ -183,7 +183,8 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
     MPI_Comm_size (MPI_COMM_WORLD, &numranks);
 
-    std::vector<struct job> jobs;
+    std::vector<struct job> jobs = std::vector<struct job>();
+    jobs.clear();
     char name[256];
     int testid = 0;
     int start_testid = 0;

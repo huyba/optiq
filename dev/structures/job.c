@@ -314,7 +314,7 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 	    p->flow = rintf(flow);
 	    p->arcs.clear();
 
-	    while(fgets(line,80,fp) != NULL)
+	    while(fgets(line,80,fp) != NULL && line[0] != 'T')
 	    {
 		trim(line);
 		if (strcmp(line, "") == 0)
