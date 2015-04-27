@@ -1,10 +1,12 @@
 \section{Approaches}
 \label{sec:approach}
 
-In the Blue Gene Q supercomputers, data transfers are routed along using default routing algorithm. The default routing algorithm is proved to be well-balanced in many communication patterns \cite{Chen:BGQ}. However, for certain communication patterns, it results in poor performance due to unbalanced networking load on physical links. In this section, we present four approaches aiming for balancing load on physical links. We also give a brief description of a framework called OPTIQ, a realizationf of our approaches.
+In the Blue Gene Q supercomputers, data transfers are routed using default routing algorithm. The default routing algorithm is proved to be well-balanced in many communication patterns \cite{Chen:BGQ}. However, for certain communication patterns, it results in poor performance due to unbalanced networking load on physical links, in which some links serve more amount of data transferred through than other links. Those links become bottleneck in data movement. In order to improve performance, we propose four approaches aiming for balancing load on physical links. We also give a brief description of a framework called OPTIQ, a realization of our approaches.
 
 \subsection{Path searching approaches}
-Four approaches that we present in this section include two heuristic algorithms, one multiple paths data movement taking advantages of existing shortest paths algorithms and one model-based approach. All paths searching algorihtms here are centric algorithms i.e. run at every node in exact order. Hence, every node has the same results. The approaches need some information in advance such as size, topology, torus of the partition, coordinates of all nodes in the partition. The information is collected once at the begining. The algorithms also need to have tuples of data movement requests: source, destination and amount of data to be transferred from the source to the destination.
+Our approaches aim to balance networking load among physical links. To do so, we first model the interconnect network as a graph, in which each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. After we construct the graph, we search for paths to transfer data from source vertices to destination vertices. We apply constraints when searching for paths to balance number of paths that use a certain link. Each pair of source-destination may have more than one path to transfer data. Thus, we need to split the data among those paths to balance the actual amount of data transferred through physical links.
+
+Four approaches that we present in this section include two heuristic algorithms, one multiple paths data movement taking advantages of existing shortest paths algorithms and one model-based approach. All paths searching algorihtms here are centric algorithms. They run at every node in exact order. Hence, every node has the same results. We build the graph with system's information such as size, topology, torus of the partition, coordinates of all nodes in the partition. The information is collected once at the begining. The algorithms also need to have tuples of data movement requests as their input: source, destination and amount of data to be transferred from the source to the destination. We present in detail each approach below.
 
 \subsubsection{Heuristic 1}
 In this approach, we search for paths between each pair of source and destination. From a source, we explore from all the destination in all possible directions. Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. In this algorithm, we do not limit exploring paths by any constraints. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
@@ -69,10 +71,10 @@ The \textbf{Algorithm \ref{alg:h1}} can be divided into 2 parts. In the first pa
 
 In the second part, which is the second \textbf{while} loop of the function Heuristic\_search\_I, we pop an exploring path \textit{p}from the \textit{exploring\_paths}. From the last added vertex \textit{u} of \textit{p}, we exploring all edges from it to it neighbors and add new path \textit{np} = \textit{p} + newly explored edge. If any of its neighbors is final destination of source \textit{s$_i$}, we then add \textit{np} into \textit{complete\_paths}. We continue the work until all the paths are explored.
 
-Time complexity: The graph has V vertices and E edges. We have K pairs of (source, destinatinon), each source has at most D neighborhoods, then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is $O$(K * (|V| + |E|)). The time complexity is breakdown as following:
+Time complexity: The graph has V vertices and E edges. We have K pairs of (source, destinatinon), each source has at most D neighborhoods, then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is $O$(K * ($|$V$|$ + $|$E$|$)). The time complexity is breakdown as following:
 \begin{itemize}
 \item First part: we have K pairs hence K sources, for each source we discover its D neighbors, thus time will be $O$(K*D).
-\item Second part: For this part, we get a path out of \textit{exploring\_paths}, create new paths by exploring its neighbors that are not visited by its source and add the new paths back to \textit{exploring\_paths}. For each sources, every vertex and every edge can be visited in the worst case, the time complexity would be $O$(|V| + |E|) minus to the vertices and edges visited by the first part. As we have K sources, the time complexity is $O$(K * (|V| + |E|)).
+\item Second part: For this part, we get a path out of \textit{exploring\_paths}, create new paths by exploring its neighbors that are not visited by its source and add the new paths back to \textit{exploring\_paths}. For each sources, every vertex and every edge can be visited in the worst case, the time complexity would be $O$($|$V$|$ + $|$E$|$) minus to the vertices and edges visited by the first part. As we have K sources, the time complexity is $O$(K * ($|$V$|$ + $|$E$|$)).
 \end{itemize}
 
 \subsubsection{Heuristic 2}
@@ -237,10 +239,10 @@ So far, we have presented different algorithms/approaches: here is when to use w
     \begin{tabular}{ | p{1.6cm} | l | p{3cm} |}
     \hline
     Approach & Time complexity & When to use \\ \hline
-    Heuristic 1 & $O$(K * (|V| + |E|)) &  Used as first step for Heuristic 2\\ \hline
-    Heuristic 2 & $O$(K * (|V| + |E|)) &  Very dense communication\\ \hline
-    Heuristic 3 & $O$(K * (|V| + |E|)) & Sparse comminication \\ \hline
-    Path-based model & $O$(K * (|V| + |E|)) & Medium dense where proportional throughtput can be gained \\
+    Heuristic 1 & $O$(K * ($|$V$|$ + $|$E$|$)) &  Used as first step for Heuristic 2\\ \hline
+    Heuristic 2 & $O$(K * ($|$V$|$ + $|$E$|$)) &  Very dense communication\\ \hline
+    Heuristic 3 & $O$(K * ($|$V$|$ + $|$E$|$)) & Sparse comminication \\ \hline
+    Path-based model & $O$(K * ($|$V$|$ + $|$E$|$)) & Medium dense where proportional throughtput can be gained \\
     \hline
     \end{tabular}
 

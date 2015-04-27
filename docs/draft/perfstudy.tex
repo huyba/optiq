@@ -1,0 +1,32 @@
+\documentclass[letter]{article}
+
+\usepackage{fullpage}
+\usepackage{url}
+
+\title{Performance investigation}
+
+\begin{document}
+\maketitle
+
+\section{Disjoint set}
+
+Test Id = 3: 512 pairs communication of 64 source nodes [0-63] to 512 destination nodes [512-1023]. Each source node sends data to 4 destination nodes e.g rank 0 sends data to ranks 512, 513, 514, 515. 1 rank per node, message size = 8MB. Total data amount transferred is 4GB = 512 x 8 MB. Chunk size for OPTIQ is 64 KB.
+
+\begin{center}
+    \begin{tabular}{ | l | l | l | l | l | l | l | l| l | l | l | l |}
+    \hline
+     &  \multicolumn{2}{ c| }{Performance} &  & \multicolumn{4}{ c| }{Load} & \multicolumn{4}{ c| }{Num of hops} \\ \hline
+    Type & Time(us) & BW (MB/s) & \#Paths & Max & Min & Avg & Med & Max & Min & Avg & Med \\ \hline
+    MPI & 150003 & 27306 & 512 & 11 & 1 & 6.00 & 6 & 32 & 1 & 4.92 & 2 \\ \hline
+    Opt & 53929 & 75951 & 1169 & 11 & 3 & 6.30 & 6 & 11 & 1 & 2.53 & 2 \\
+    \hline
+    \end{tabular}
+\end{center}
+
+MPI and OPTIQ have most of the indices simlar except for the number of paths. 
+
+Test Id = 5
+5: 128 0 127 128 896 1023
+
+
+\end{document}
