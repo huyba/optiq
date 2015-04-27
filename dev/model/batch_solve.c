@@ -68,6 +68,8 @@ int main(int argc, char **argv)
 	sprintf(outfile, "%s/test%d", outbasepath, i);
     
 	gen_cmd_file(infile, outfile, i);
+
+	printf("Done solve file %s/model%d.dat\n", inbasepath, i);
     }
 
     return 0;
