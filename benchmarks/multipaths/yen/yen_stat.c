@@ -8,6 +8,7 @@
 #include "util.h"
 #include "patterns.h"
 #include <vector>
+#include <algorithm> 
 #include <fstream>
 
 int main(int argc, char **argv)
@@ -44,8 +45,10 @@ int main(int argc, char **argv)
 	load[i] = (int *) calloc (1, sizeof(int) * num_nodes);
     }
 
-    int minload = 1000, maxload = 0, medload = 0, minhops = 1000, maxhops = 0, medhops = 0;
+    int minload = 1000, maxload = 0, minhops = 1000, maxhops = 0;
     double avgload, avghops;
+    std::vector<int> hops;
+    std::vector<int> loads;
 
     for (int fi = start; fi <= end; fi++)
     {
@@ -68,10 +71,10 @@ int main(int argc, char **argv)
 
 	for (int i = 0; i < jobs.size(); i++)
 	{
+	    numpaths += jobs[i].paths.size();
+
 	    for (int j = 0; j < jobs[i].paths.size(); j++)
 	    {
-		numpaths += jobs[i].paths[j]->arcs.size();
-
 		if (maxhops < jobs[i].paths[j]->arcs.size())
 		{
 		    maxhops = jobs[i].paths[j]->arcs.size();
@@ -90,6 +93,7 @@ int main(int argc, char **argv)
 		}
 
 		totalhops += jobs[i].paths[j]->arcs.size();
+		hops.push_back(jobs[i].paths[j]->arcs.size());
 	    }
 	}
 
@@ -113,6 +117,7 @@ int main(int argc, char **argv)
 		if (load[i][j] != 0) 
 		{
 		    numlinkused++;
+		    loads.push_back(load[i][j]);
 		}
 	    }
 	}
@@ -122,9 +127,13 @@ int main(int argc, char **argv)
 	    minhops = 1;
 	}
 
-	if (minload == 0) {
+	if (minload == 0) 
+	{
 	    minload = 1;
 	}
+
+	std::sort (loads.begin(), loads.end());
+	std::sort (hops.begin(), hops.end());
 
 	avghops = (double) totalhops / numpaths;
 
@@ -133,8 +142,8 @@ int main(int argc, char **argv)
 	double avgload1 = (double)totalload / numlinkused;
 
 	outfile << fi;
-	outfile << " " << maxload << " " << minload << " " << avgload << " " << avgload1 << " " << medload;
-	outfile << " " << maxhops << " " << minhops << " " << avghops << " " << medhops;
+	outfile << " " << maxload << " " << minload << " " << avgload << " " << avgload1 << " " << loads[loads.size()/2];
+	outfile << " " << maxhops << " " << minhops << " " << avghops << " " << hops[hops.size()/2];
 	outfile << std::endl;
 
 	for (int i = 0; i < num_nodes; i++)
