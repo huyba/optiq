@@ -20,7 +20,7 @@ void gather_and_print_time (timeval t0, timeval t1, int iters, long int recv_len
 	max_time = max_time / iters;
 	mpi_time = max_time;
 	double bw = (double) total_length / max_time / 1024 / 1024 * 1e6;
-	printf("total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", total_length/1024/1024, max_time, bw);
+	printf(" %ld %8.4f %8.4f ", total_length/1024/1024, max_time, bw);
     }
 }
 
@@ -46,9 +46,9 @@ void optiq_benchmark_mpi_alltoallv(void *sendbuf, int *sendcounts, int *sdispls,
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    if (world_rank == 0) {
+    /*if (world_rank == 0) {
 	printf("MPI_Alltoallv ");
-    }
+    }*/
 
     int recv_len = 0;
     for (int i = 0; i < world_size; i++) {
