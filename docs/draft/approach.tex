@@ -6,7 +6,7 @@ In the Blue Gene Q supercomputers, data transfers are routed using default routi
 \subsection{Path searching approaches}
 Our approaches aim to balance networking load among physical links. To do so, we first model the interconnect network as a graph, in which each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. After we construct the graph, we search for paths to transfer data from source vertices to destination vertices. We apply constraints when searching for paths to balance number of paths that use a certain link. Each pair of source-destination may have more than one path to transfer data. Thus, we need to split the data among those paths to balance the actual amount of data transferred through physical links.
 
-Four approaches that we present in this section include two heuristic algorithms, one multiple paths data movement taking advantages of existing shortest paths algorithms and one model-based approach. All paths searching algorihtms here are centric algorithms. They run at every node in exact order. Hence, every node has the same results. We build the graph with system's information such as size, topology, torus of the partition, coordinates of all nodes in the partition. The information is collected once at the begining. The algorithms also need to have tuples of data movement requests as their input: source, destination and amount of data to be transferred from the source to the destination. We present in detail each approach below.
+Four approaches that we present in this section include two heuristic algorithms, one multiple paths data movement taking advantages of existing shortest paths algorithms and one model-based approach. All paths searching algorihtms here are centric algorithms. They run at every node in exact order. Hence, every node has the same results. We build the graph with system's information such as size, topology, torus of the partition, coordinates of all nodes in the partition. The information is collected once at the begining. The inputs of the algorithms are source and destination vertices and amount of data to be transferred from the sources to the destinations. We present in detail each approach below.
 
 \subsubsection{Heuristic 1}
 In this approach, we search for paths between each pair of source and destination. From a source, we explore from all the destination in all possible directions. Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. In this algorithm, we do not limit exploring paths by any constraints. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
@@ -187,7 +187,13 @@ Model explanation:
 
 \end{comment}
 
+In Agorithm 1, 2 and 3, we aim on balancing the number of paths using physical link. However, we do not consider the actual amount of data transferred on each path. If multiple paths are found, the data is equally split among the paths. To gain better performance, we determine the amount of data to be transferred on each path by using a mathematical model to search for the amount of data to be transferred on each path. The approach takes a number of given paths and amount of data between 2 vertices and use solvers to search for the amount of data on each path. The detail is described as follows.
+
 \subsubsection{Path-based model}
+
+How do we come up with the model?
+
+Here is the model with its description below.
 
 \begingroup
 \fontsize{9pt}{10pt}\selectfont
@@ -232,7 +238,9 @@ Model explanation:
 \item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
 \end{itemize}
 
-So far, we have presented different algorithms/approaches: here is when to use what:
+We feed the model to solvers and get the paths with given proportional bandwidth. Based on that, we can decide how much data we can transfer alogn each path.
+
+So far, we have presented different algorithms/approaches. Each has its own use case scenario. The Table \ref{tbl:approaches} describes the situation when to use each of them. 
 
 \begin{table}[h]
 \begin{center}
@@ -247,12 +255,12 @@ So far, we have presented different algorithms/approaches: here is when to use w
     \end{tabular}
 
     \caption{Approaches: time complexity and usage}
-    \label{tbl:experiment}
+    \label{tbl:approaches}
 
 \end{center}
 \end{table}
 
-We realize algoirthms and other work in a framework named OPTIQ. The framework provides ways to improve data movement performance on the Blue Gene/Q supercomputer. Our framework does so by balancing loads on physical links on the Blue Gene/Q supercomputer.
+We realize algoirthms and other work in a framework named OPTIQ. 
 
 \subsection{Framework}
 
@@ -281,5 +289,6 @@ When there are multiple ranks per node, which one will be choosen to receive dat
 \item Transport: actually transfer an amount of data from one point to another point in the system.
 \item Extra component: To get system specific information such as partition size, topology, coordinates, torus, and to compute neighbors of available nodes given to an application. Topology reading, coord, neighbors, torus, size, routing order, graph generated. Also set of benchmarks, tests.
 
-the framework allow various options that allow to do: forwarding/local message sending order, algorithm selection, chunk size, transport implementations...
+The framework has various options to allow users to tune the framework for optimal performance. For example, the framework allows to select messages from queue to either forward a message from another node first or to send its own message first, to select algorith to search for paths or to set chunk size to transfer a message, to easily add new transport layers on different machine.
+
 \end{itemize}
