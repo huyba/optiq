@@ -134,29 +134,34 @@ void optiq_alg_yen_k_shortest_paths_2vertices(char *graphfile, int v1, int v2, i
     while (yenAlg.has_next() && k < num_paths)
     {
 	BasePath *p = yenAlg.next();
-	struct path *pa = (struct path *) calloc (1, sizeof(struct path));
-	pa->arcs.clear();
-	pa->path_id = k;
 
-	for (int i = 0; i < p->length() - 1; i++)
-        {
-            struct arc a;
+	if (p->length() > 0)
+	{
+	    struct path *pa = new path();
+	    pa->arcs.clear();
+	    pa->path_id = k;
 
-            a.u = p->GetVertex(i)->getID();
-            a.v = p->GetVertex(i + 1)->getID();
+	    for (int i = 0; i < p->length() - 1; i++)
+	    {
+		struct arc a = arc();
 
-            pa->arcs.push_back(a);
-        }
+		a.u = p->GetVertex(i)->getID();
+		a.v = p->GetVertex(i + 1)->getID();
 
-	/*for (int i = 0; i < p->m_vtVertexList.size(); i++)
-        {
-	    delete p->m_vtVertexList[i];
+		pa->arcs.push_back(a);
+	    }
+
+	    /*for (int i = 0; i < p->m_vtVertexList.size(); i++)
+	    {
+		delete p->m_vtVertexList[i];
+	    }
+	    p->m_vtVertexList.clear();*/
+
+	    //delete p;
+
+	    paths.push_back(pa);
 	}
-	p->m_vtVertexList.clear();*/
 
-	//delete p;
-
-	paths.push_back(pa);
 	k++;
     }
 }

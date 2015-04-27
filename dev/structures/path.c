@@ -4,6 +4,7 @@
 #include <math.h>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #include "util.h"
 #include "path.h"
@@ -140,7 +141,10 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     int min_load = 1000;
     float avg_load = 0;
     int med_load = 0;
-    
+    std::vector<int> loads;
+    loads.clear();
+    std::vector<int> hops;
+    hops.clear();
 
     int **load = (int **)malloc(sizeof(int *) * num_nodes);
 
@@ -166,6 +170,8 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
 	}
 
 	total_hops += p->arcs.size();
+
+	hops.push_back(p->arcs.size());
     }
 
     avg_hops = (float)total_hops/paths.size();
@@ -188,9 +194,13 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
                 }
 
 		total_loads += load[i][j];
+		loads.push_back(load[i][j]);
 	    }
 	}
     }
+
+    std::sort(loads.begin(), loads.end());
+    std::sort(hops.begin(), hops.end());
 
     int *load_stat = (int *) calloc (1, sizeof(int) * (max_load+1));
 
@@ -209,15 +219,18 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
 
     avg_load = (float)total_loads/loaded_links;
 
-    printf("#paths = %d, total_hops = %d, total_loads = %d, #loaded_links = %d\n", paths.size(), total_hops, total_loads, loaded_links);
+    /*printf("#paths = %d, total_hops = %d, total_loads = %d, #loaded_links = %d\n", paths.size(), total_hops, total_loads, loaded_links);
 
     printf("max_hop = %d\n", max_hops);
     printf("min_hop = %d\n", min_hops);
     printf("avg_hop = %4.2f\n", avg_hops);
+    printf()
 
     printf("max_load = %d\n", max_load);
     printf("min_load = %d\n", min_load);
-    printf("avg_load = %4.2f\n", avg_load);
+    printf("avg_load = %4.2f\n", avg_load);*/
+
+    printf(" %d %d %d %d %d %d %4.2f %d %d %d %4.2f %d\n", paths.size(), total_hops, total_loads, loaded_links, max_hops, min_hops, avg_hops, hops[hops.size()/2], max_load, min_load, avg_load, loads[loads.size()/2]);
 
     for (int i = 0; i <= max_load; i++) {
 	printf("num of links with load = %d is %d\n", i, load_stat[i]);
