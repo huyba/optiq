@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 		if (rank == 0) 
 		{
 		    //printf("chunk size = %d\n", chunk);
-		    printf("%d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, chunk);
+		    printf(" %d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, chunk);
 
 		    optiq_opi_print();
 

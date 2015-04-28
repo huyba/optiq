@@ -167,7 +167,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     optiq_input_convert_jobs_to_alltoallv (jobs, &sendbuf, &sendcounts, &sdispls, &recvbuf, &recvcounts, &rdispls, size, rank);
 
     if (rank == 0) {
-	printf("%d MPI_Alltoallv msg = %d chunk = %d", sched->test_id, datasize, schedule->chunk_size);
+	printf(" %d MPI_Alltoallv msg = %d chunk = %d", sched->test_id, datasize, schedule->chunk_size);
     }
     
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
