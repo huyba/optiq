@@ -49,6 +49,7 @@ int main(int argc, char **argv)
     {
 	for (int i = start; i <= end; i++)
 	{
+	    schedule->test_id = i;
 	    sprintf(filepath, "%s/test%d", path, i);
 
 	    if (rank == 0) {
@@ -85,7 +86,7 @@ int main(int argc, char **argv)
 		if (rank == 0) 
 		{
 		    //printf("chunk size = %d\n", chunk);
-		    printf("OPTIQ_Alltoallv msg = %d chunk = %d ", nbytes, chunk);
+		    printf("%d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, chunk);
 
 		    optiq_opi_print();
 
