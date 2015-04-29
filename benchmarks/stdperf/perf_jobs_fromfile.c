@@ -45,6 +45,7 @@ int main(int argc, char **argv)
     {
 	for (int i = start; i <= end; i++)
 	{
+            schedule->test_id = i;
 	    sprintf(filepath, "%s/test%d", path, i);
 
 	    if (rank == 0) {
@@ -80,7 +81,7 @@ int main(int argc, char **argv)
 
 		if (rank == 0) 
 		{
-		    printf("chunk size = %d\n", chunk);
+		    /*printf("chunk size = %d\n", chunk);*/
 		    optiq_opi_print();
 
 		    if (mpi_time > max_opi.transfer_time) 
@@ -88,7 +89,7 @@ int main(int argc, char **argv)
 			double mpi_bw = max_opi.recv_len / mpi_time / 1024 / 1024 * 1e6;
 			double optiq_bw = max_opi.recv_len / max_opi.transfer_time / 1024 / 1024 * 1e6;
 
-			printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
+			/*printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);*/
 		    }
 
 		    optiq_path_print_stat (opi.paths, size, topo->num_edges);

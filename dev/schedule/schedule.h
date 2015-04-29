@@ -74,6 +74,7 @@ struct optiq_schedule {
 
     std::vector<struct path *> paths;
     std::vector<struct job> jobs;
+    int test_id;
 };
 
 extern "C" struct optiq_schedule *schedule;
