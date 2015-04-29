@@ -1,7 +1,3 @@
-report:
-	pdflatex perfstudy.tex
-	open perfstudy.pdf
-
 paper:
 	pdflatex hipc.tex
 	bibtex hipc
@@ -14,3 +10,7 @@ paper:
 	rm hipc.blg
 
 	open hipc.pdf
+
+report:
+	pdflatex perfstudy.tex
+	open perfstudy.pdf
