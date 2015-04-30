@@ -38,81 +38,40 @@ We carried a set of experiments to study the system's behavior in various patter
 \subsection{Experimental results}
 
 In the experiments, we collected the throughput and loading related information while varying communication patterns, partition sizes, message sizes, number of MPI ranks per node.
-The results of 96 experiments in the Figure \ref{fig:96tests_512} show the throughput of 512-nodes partition with in 96 experiments of 3 above communication patterns.
-
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.30]{figures/96tests_512.pdf}
-\vspace{-0.1in}
-\caption{Communication patterns}
-\vspace{-0.1in}
-\label{fig:96tests_512}
-\end{figure}
-
-The Table \ref{tbl:experiment} describes the details of the experiments.
-
-\begin{table}[h]
-\begin{center}
-    \begin{tabular}{ | p{1cm} | l | p{5cm} |}
-    \hline
-    Pattern & Test Ids & Sets of source/destination \\ \hline
-    Disjoint & 0-15 & Vary the size of sources and destinations sets from N/16 to N/2 \\ \hline
-    Overlap & 16-63 & Vary the size of sources and destinations sets from N/16 to N/2, overlapped size varies from 1/8 to 1/2 of the source size \\ \hline
-    Subset: Type 1 & 63-90 & Vary the size of source set from N/8 to N/2 and destination set from N/16 to N/4 lying inside source set \\ \hline
-    Subset: Type 2 & 91-95 & Vary the subgroup size from 4, 8, 16, 32 to 64. The destination of each subgroup is in the middle of the group \\
-    \hline
-    \end{tabular}
-
-    \caption{Experiments description}
-    \label{tbl:experiment}
-
-\end{center}
-\end{table}
-
 In the next subsections, we go into each communication and study in details the system's behaviors and performance.
 
-\subsubsection{Disjoint sets of sources and destinations}
+The number of sources: m, number of destination n, ratio between m and n is r, total number of node is p, average distance between sources and destinations is d
 
-In this experiement, we measured the throughput of data movement between 2 disjoint sets of source and destinat = 512ion nodes. The source set has N/16 up to N/2 out of N = 512 total number of nodes. The destination set also has N/16 to N/2 number of nodes. Each node in the source set send data to corresponding nodes in the destination set. Depending on the number of source nodes and destination nodes, it can be paired m nodes in the source set to n nodes in the destination set, with m and n can be any values of 1, 2, 4 or 8. The data size for each pair of communication is 8 MB. We run only 1 rank per node. If more ranks are at a node, data can be aggregated to 1 rank before sending out.
+\subsubsection{Constant ration r, while varying m and n together with the number of nodes p}
 
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.30]{figures/disjoint_512.pdf}
-\vspace{-0.1in}
-\caption{Disjoint sets - 512}
-\vspace{-0.1in}
-\label{fig:disjoint_512}
-\end{figure}
-
-As the Figure \ref{fig:disjoint_512} shows, in most of case our framework gained higher throughput than MPI\_Alltoallv. The throughput improved from 20\% up to 90\%. This because OPTIQ can find more paths with lower load to transfer data from sources to destinations.
-
-\subsubsection{Overlaped sets of sources and destinations}
+In this experiment, we keep the ratio between number of sources and destination constant while varying the number of sources, destinations together with total number of nodes. We keep the ration as 1/8. The first m = p/16 nodes send data to the last p/2 nodes. Each source has 8 destination We tested the framework for 3 patterns: subset, disjoint and overlap with 3 methods of transferring data OPTIQ optimization, OPTIQ heuristics and MPI\_Alltoallv. We use 1 rank/node. The data size is 8 MB per pair. We vary the number of nodes from 512 to 8192.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
-\includegraphics[scale=0.30]{figures/overlap_512.pdf}
+\includegraphics[scale=0.30]{figures/constantr.pdf}
 \vspace{-0.1in}
-\caption{Overlapped sets 512 nodes}
+\caption{Varying the number of sources and destinations while keeping the ratio constant}
 \vspace{-0.1in}
-\label{fig:overlap_512}
+\label{fig:aggbw}
 \end{figure}
 
-\subsubsection{Subset - Type 1}
+\subsubsection{Constant m, n, r vary number of nodes p}
 
-In this experiment, the destination set lies entirely within the source set. We varied the source set size from N/8 to N/2 and the destination set size from 1/8 to 1/4 of source set set size. The experiment was carried in 512-node partition with 1 rank per node and data size is also 8MB for each pair of communicaition.
+In this experiment, we keep the number sources and destinations as 128 to 256 while varying the total number of nodes. The sources are first 128 nodes while destination are last 256. Each source node has 2 destination nodes. We use 1 MPI rank per node. The total number of nodes vary from 512 to 8K. The message size is 8 MB.
 
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.30]{figures/subset_512.pdf}
-\vspace{-0.1in}
-\caption{Subset 512 nodes}
-\vspace{-0.1in}
-\label{fig:subset_512}
-\end{figure}
+\subsubsection{Consant the number of node p and sources m, vary number of destinations n}
+This is to show that with more number of destination, we have less paths to explore
+
+
+\subsubsection{Constant the number of nodes p, sources m and destination n, vary the average distance d between sources and destinations}
+This is to show that with longer distance, we have more paths to explore.
+
+\subsubsection{Benchmark for chunk size}
+
+\subsubsection{Message size scaling}
+
+\subsubsection{Number of ranks scaling}
 
 \subsubsection{Subset - Type 2 (Subgroup Data Aggregation)}
 
