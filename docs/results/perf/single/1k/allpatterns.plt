@@ -25,7 +25,8 @@ set key bottom left spacing 3
 set xtics () font ",23"
 set ytics ("16" 16384, "32" 32768, "64" 65536, "128" 131072, "256" 262144, "512" 524288, "1024" 1048576) font ",23"
 plot "opt64k.dat" using 1:11 ls 1 title "     OPTIQ Optimization Model" with linespoints, \
-"heu64k.dat" using 1:11 ls 2 title "     OPTIQ Heuristics" with linespoints, \
-"mpi64k.dat" using 1:11 ls 6 title "     MPI_Alltoallv" with linespoints
+"old/model30.dat" using 1:5 ls 3 title "     OPTIQ Optimization mxload 30" with linespoints
+#"heu64k.dat" using 1:11 ls 2 title "     OPTIQ Heuristics" with linespoints, \
+#"mpi64k.dat" using 1:11 ls 6 title "     MPI_Alltoallv" with linespoints
 
 

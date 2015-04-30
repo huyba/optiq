@@ -69,6 +69,20 @@ This is to show that with longer distance, we have more paths to explore.
 
 \subsubsection{Benchmark for chunk size}
 
+To transfer dat through intermediate, we split a message into smaller chunks and keep sending the chunks into the network. It is to reduce the waiting time at the intermediate, thus, reduce the total transfer time. We do an experiment to see what is the optimal chunk size for each pattern. In this experiment, we generated 91 patterns (16 disjont patterns[expriment id 0-15], 48 overlap patterns [16-63], 27 subset patterns [64-90]), in which we vary the number of sources, destination and their locaiton in the 2048-node partition. We varied the chunk size from 8 KB to 1 MB to find the most optimal chunk size. However for the sake of simplicity, we only show the results of chunk sizes from 32 KB to 512 KB while not losing the accuracy of the experiment. The results are shown in Figure \ref{fig:chunksize}.
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/chunksize_2k.pdf}
+\vspace{-0.1in}
+\caption{Chunk sizes and their performance in 2048-node partition}
+\vspace{-0.1in}
+\label{fig:chunksize}
+\end{figure}
+
+We can see that, for disjoint and overlap patterns, most of the time the chunk size of 64 KB and/or 128 have dominated performance. For the subset patterns, chunk size 128 KB is clearly optimal choice. In order to be consistent, in the above experiments, we used 64 KB chunk size for disjoint and overlap pattern and 128 KB chunk size for subset patterns.
+
 \subsubsection{Message size scaling}
 
 \subsubsection{Number of ranks scaling}
