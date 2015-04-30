@@ -9,6 +9,8 @@
 #include "patterns.h"
 #include <vector>
 
+int maxpathspertest = 50 * 1024;
+
 int maxtestid, mintestid;
 
 void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths)
@@ -23,8 +25,6 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     {
 	if (rank == i % size)
 	{
-	    jobs[i].paths.clear();
-
 	    //printf("Rank %d avail mem before call yen\n", rank);
 	    //optiq_util_print_mem_info(rank);
 
@@ -40,7 +40,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
 	    for (int j = 0; j < jobs[i].paths.size(); j++) 
 	    {
 		jobs[i].paths[j]->arcs.clear();
-		delete jobs[i].paths[j];
+		free (jobs[i].paths[j]);
 	    }
 	    jobs[i].paths.clear();
 	}
@@ -183,8 +183,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
     MPI_Comm_size (MPI_COMM_WORLD, &numranks);
 
-    std::vector<struct job> jobs = std::vector<struct job>();
-    jobs.clear();
+    std::vector<struct job> jobs;
     char name[256];
     int testid = 0;
     int start_testid = 0;
@@ -199,11 +198,18 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	{
 	    if (mintestid <= testid && testid <=maxtestid) 
 	    {
-		sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
 		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node, false);
 
+                /* Not allow to generate too many paths, leading to */
+                int max = m > n ? m : n;
+                if (maxpathspertest / max < numpaths) {
+                    numpaths = maxpathspertest / max;
+                }
+
+		sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, size-n, size -1);
 		sprintf(jobs[0].name, "%s", name);
-		sprintf(jobfile, "test%d", testid);
+                sprintf(jobfile, "test%d", testid);
+
 		search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
 	    }
 
@@ -221,13 +227,20 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	    {
 		if (mintestid <= testid && testid <=maxtestid) 
 		{
-		    sprintf(name, "Test No. %d: Overlap %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, m-l, n + m -l -1);
 		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, false);
 
 		    //optiq_job_print_jobs (jobs);
 
+                    /* Not allow to generate too many paths, leading to */
+                    int max = m > n ? m : n;
+                    if (maxpathspertest / max < numpaths) {
+                        numpaths = maxpathspertest / max;
+                    }
+
+		    sprintf(name, "Test No. %d: Overlap %d ranks from %d to %d send data to %d ranks from %d to %d, total %d paths", testid, m, 0, m-1, n, m-l, n + m -l -1, numpaths);
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
+
 		    search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
 		}
 		testid++;
@@ -245,13 +258,20 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	    {
 		if (mintestid <= testid && testid <=maxtestid) 
 		{
-		    sprintf(name, "Test No. %d: Subset %d ranks from %d to %d send data to %d ranks from %d to %d", testid, m, 0, m-1, n, p, p+n-1);
 		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, topo->num_ranks_per_node, false);
 
 		    //optiq_job_print_jobs (jobs);
 
+                    /* Not allow to generate too many paths, leading to */
+                    int max = m > n ? m : n;
+                    if (maxpathspertest / max < numpaths) {
+                        numpaths = maxpathspertest / max;
+                    }
+
+                    sprintf(name, "Test No. %d: Subset %d ranks from %d to %d send data to %d ranks from %d to %d, total %d paths", testid, m, 0, m-1, n, p, p+n-1, numpaths);
 		    sprintf(jobs[0].name, "%s", name);
-		    sprintf(jobfile, "test%d", testid);
+                    sprintf(jobfile, "test%d", testid);
+
 		    search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
 		}
 
