@@ -1,7 +1,11 @@
-\section{Benchmarks}
+\section{Exeperiments and Results}
 \label{sec:benchmark}
 
 In this section, we demonstrate the efficacy of our approaches via a set of benchmarks.
+
+\subsection{Experiment setup}
+
+Wne carried our experiments on Mira, a Blue Gene/Q supercomputer. In our experiments, we varied paritition size from 512 nodes up to 8012 nodes. The experiments involved a subset or entire set of nodes for each partition. The number sources and destinations and the distance between them are also varied depending on each experiment. We also varied the number of ranks from 1 rank per node up to 8 ranks per node to show the efficacy of our work if multiple ranks per node are used. Data size to be exchanged is also varied from 512 KB up to 8 MB per pair of communication. Our experiments covered 3 communication patterns: disjoint, overlap and subset. For the commnication patterns, we demonstrated the efficacy of our algorithms in comparions with MPI\_Alltoallv.
 
 \subsection{MPI Paths Reconstruction}
 

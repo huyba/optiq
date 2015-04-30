@@ -249,8 +249,8 @@ So far, we have presented different algorithms/approaches. Each has its own use 
     Approach & Time complexity & When to use \\ \hline
     Heuristic 1 & $O$(K * ($|$V$|$ + $|$E$|$)) &  Used as first step for Heuristic 2\\ \hline
     Heuristic 2 & $O$(K * ($|$V$|$ + $|$E$|$)) &  Very dense communication\\ \hline
-    Heuristic 3 & $O$(K * ($|$V$|$ + $|$E$|$)) & Sparse comminication \\ \hline
-    Path-based model & $O$(K * ($|$V$|$ + $|$E$|$)) & Medium dense where proportional throughtput can be gained \\
+    Heuristic 3 & $O$(K * (Time complexity of the algrithms used to get k shortest paths)) & Sparse comminication \\ \hline
+    Path-based model & $O$(K * (Time complexity of the algrithms used to get k shortest paths) + Solving time) & Medium dense where proportional throughtput can be gained \\
     \hline
     \end{tabular}
 
