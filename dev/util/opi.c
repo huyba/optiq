@@ -39,15 +39,15 @@ void optiq_opi_print()
 {
     double max_time =  max_opi.transfer_time / opi.iters;
     double bw = (double) max_opi.recv_len / max_time / 1024 / 1024 * 1e6;
-    printf("\n");
+
     if (max_opi.recv_len < 1024) {
-	printf("OPTIQ_Alltoallv: total_data = %ld (B) t = %8.4f, bw = %8.4f\n", max_opi.recv_len, max_time, bw);
+	printf(" %ld %8.4f %8.4f ", max_opi.recv_len, max_time, bw);
     }
     else if (max_opi.recv_len < 1024 * 1024) {
-	printf("OPTIQ_Alltoallv: total_data = %ld (KB) t = %8.4f, bw = %8.4f\n", max_opi.recv_len/1024, max_time, bw);
+	printf(" %ld %8.4f %8.4f ", max_opi.recv_len/1024, max_time, bw);
     }
     else {
-	printf("OPTIQ_Alltoallv: total_data = %ld (MB) t = %8.4f, bw = %8.4f\n", max_opi.recv_len/1024/1024, max_time, bw);
+	printf(" %ld %8.4f %8.4f ", max_opi.recv_len/1024/1024, max_time, bw);
     }
 
     if (odp.print_elapsed_time)
@@ -62,7 +62,6 @@ void optiq_opi_print()
 	printf("local mem req time is %8.4f\n", max_opi.local_mem_req_time);
 	printf("total mem req time is %8.4f\n", max_opi.total_mem_req_time);
     }
-    printf("\n");
 }
 
 void optiq_opi_clear()

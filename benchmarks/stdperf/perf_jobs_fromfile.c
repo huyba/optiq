@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 
 		if (rank == 0) 
 		{
-		    /*printf("chunk size = %d\n", chunk);*/
+		    printf(" %d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, schedule->chunk_size);
 		    optiq_opi_print();
 
 		    if (mpi_time > max_opi.transfer_time) 
