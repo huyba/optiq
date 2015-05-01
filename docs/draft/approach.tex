@@ -1,39 +1,55 @@
 \section{Approaches}
 \label{sec:approach}
 
-In the Blue Gene Q supercomputers, data transfers are routed using default routing algorithm. The default routing algorithm is proved to be well-balanced in many communication patterns \cite{Chen:BGQ}. However, for certain communication patterns, it results in poor performance due to unbalanced networking load on physical links, in which some links serve more amount of data transferred through than other links. Those links become bottleneck in data movement. In order to improve performance, we propose four approaches aiming for balancing load on physical links. We also give a brief description of a framework called OPTIQ, a realization of our approaches.
+In the Blue Gene Q supercomputers, data transfers are routed using default routing algorithm. The default routing algorithm is proved to be well-balanced in many communication patterns \cite{Chen:BGQ}. However, for certain communication patterns, it results in poor performance due to unbalanced networking load on physical links, in which some links serve more amount of data transferred through than other links. Those links become bottleneck in data movement. In order to improve performance, we propose three approaches aiming for balancing load on physical links. We also give a brief description of a framework called OPTIQ, a realization of our approaches.
 
 \subsection{Path searching approaches}
-Our approaches aim to balance networking load among physical links. To do so, we first model the interconnect network as a graph, in which each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. After we construct the graph, we search for paths to transfer data from source vertices to destination vertices. We apply constraints when searching for paths to balance number of paths that use a certain link. Each pair of source-destination may have more than one path to transfer data. Thus, we need to split the data among those paths to balance the actual amount of data transferred through physical links.
 
-Four approaches that we present in this section include two heuristic algorithms, one multiple paths data movement taking advantages of existing shortest paths algorithms and one model-based approach. All paths searching algorihtms here are centric algorithms. They run at every node in exact order. Hence, every node has the same results. We build the graph with system's information such as size, topology, torus of the partition, coordinates of all nodes in the partition. The information is collected once at the begining. The inputs of the algorithms are source and destination vertices and amount of data to be transferred from the sources to the destinations. We present in detail each approach below.
+We model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes finding paths to move data from source vertices to destination vertices to minimize tranfer time. The approaches that we present in this section include two heuristic algorithms, and one model-based optimization approach. 
 
-\subsubsection{Heuristic 1 - Breadth first search based}
+Before going into details of the algorithms, we give a brief explanation of data structures that we used in the algorithms.
 
-In this approach, we search for paths between each pair of source and destination. From a source, we explore from all the destination in all possible directions. Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. In this algorithm, we limit exploring paths by constraints of number of hops and maximum load. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
+\begin{algorithm}[!htp]
+Structures:
+    \begin{algorithmic}
+	\State struct arc \{int u, int v\};
+	\State struct path \{set of arcs, int maxload\};
+	\State min\_heap \{set of paths\}
+    \end{algorithmic}
+
+min\_heap's element comparison function:
+    \begin{algorithmic}
+        \Function{heap\_compare} {path p1, path p2, int maxload, int maxhops}
+            \If {both paths has max load greater than maxload}
+                \State choose the one with smaller number of hops.
+            \EndIf
+            \If {One path has max load greater but one path has max load smaller than maxload}
+                \State Choose the one with smaller load.
+            \EndIf
+        \EndFunction
+    \end{algorithmic}
+
+\caption*{\textbf{Structures used in the algorithms}}
+\label{alg:struct1}
+
+\end{algorithm}
+
+We use \textit{struct arc} to present an arc in the graph. A path is set of \textit{arc}s. An arc can be used by zero or many paths. The number of paths uses an arc is called \textit{load} of the arc. Each path has a maxload which is the maximum value of \textit{load}s of arcs of the path. {min\_heap} is a heap of paths. It uses \textit{heap\_compare} function to maintain the order of paths in the heap (heapify). The \textit{heap\_compare} compare two paths based on their number of hops and maxload. It also takes the maxload and maxhops of all paths currently being in the heap. 
+
+The next parts explains our approaches in detail.
+
+\subsubsection{Heuristic 1 - Breadth first search based approach}
+
+Our first heuristic approach is based on breadth first search. In this approach, we search for paths between each pair of source and destination using breadth first search and min heap. From a source, we explore paths to lead to its destination. A path, that start from a source, but has not reach to its destination yet is called an \textit{exploring path}. As we explorer along an \textit{exploring path}, we add the path to a min heap. The min heap keep all the exploring paths and return a path with the minimum values of number of hops and loads. Load of each path is a 
+
+We explain details of the algorithms in the follows.
+
+From a source, we search for its destination by exploring all of its neighbors. For each neighborsain all possible directions.  Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. Thus, the algorithm returns one path for each pair of source and destination. In this algorithm, we limit exploring paths by constraints of number of hops and maximum load. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
 
 \begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
 \textbf{Output:} Set of paths: one path for a pair of source-destination \\
 \\
-Structures:
-\begin{algorithmic}
-\State struct arc \{int u, int v\};
-\State struct path \{set of arcs\};
-\end{algorithmic}
-
-Heap element comparison:
-    \begin{algorithmic}
-	\Function{heap\_compare} {path p1, path p2, int maxload, int maxhops}
-	    \If {both paths has max load greater than maxload} 
-		\State choose the one with smaller number of hops.
-	    \EndIf
-	    \If {One path has max load greater but one path has max load smaller than maxload}
-		\State Choose the one with smaller load.
-	    \EndIf
-        \EndFunction
-    \end{algorithmic}
-
 Init:
     \begin{algorithmic}
 	\State min\_heap$<$struct path$>$ \textit{exploring\_paths} = $\varnothing$;
@@ -129,7 +145,7 @@ How do we come up with the model?
 Here is the model with its description below.
 
 \begingroup
-\fontsize{9pt}{10pt}\selectfont
+\fontsize{9pt}{9pt}\selectfont
 
 \begin{verbatim}
 
@@ -151,12 +167,13 @@ maximize obj: Z;
 
 subject to
 
-demand {job in Jobs}:
-  sum {p in Paths[job]} Flow[job,p] = Demand[job]*Z;
+demand {job in Jobs}: sum {p in Paths[job]} 
+	Flow[job,p] = Demand[job]*Z;
 
 capacity {(i,j) in Arcs}:
-  sum {job in Jobs, p in Paths[job]: (i,j) in 
-    Path_Arcs[job,p]} Flow[job,p] <= Capacity[i,j];
+  sum {job in Jobs, p in Paths[job]: 
+    (i,j) in = Path_Arcs[job,p]} Flow[job,p] 
+		<= Capacity[i,j];
 
 \end{verbatim}
 
@@ -178,7 +195,7 @@ So far, we have presented different algorithms/approaches. Each has its own use 
 \begin{table}[h]
 
 \begin{center}
-    \begin{tabular}{ | p{1cm} | p{2cm} | p{2cm} | p{2cm} |}
+    \begin{tabular}{ | p{0.8cm} | p{2cm} | p{2cm} | p{2cm} |}
     \hline
      & BFS-based &  \multicolumn{2}{ c| }{Path-based} \\ \hline
      & Heuristics 1 & Heuristics 2 & Optimization Model \\ \hline
