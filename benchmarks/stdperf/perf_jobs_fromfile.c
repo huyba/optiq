@@ -32,11 +32,22 @@ int main(int argc, char **argv)
     }
 
     if (argc > 4) {
-	demand = atoi(argv[4]) * 1024;
+	mindemand = atoi(argv[4]) * 1024;
     }
 
     if (argc > 5) {
-	mindemand = atoi (argv[5]) * 1024;
+	demand = atoi (argv[5]) * 1024;
+    }
+
+    int minchunksize = 32 * 1024;
+    int maxchunksize = 1024 * 1024;
+
+    if (argc > 6) {
+        minchunksize = atoi (argv[6]) * 1024;
+    }
+
+    if (argc > 7) {
+        maxchunksize = atoi (argv[7]) * 1024;
     }
 
     char filepath[256];
@@ -52,7 +63,17 @@ int main(int argc, char **argv)
 		printf("Test No. %d\n", i);
 	    }
 
-	    for (int chunk = 8 * 1024; chunk <=  nbytes; chunk *= 2)
+            int minchunk = minchunksize;
+            if (nbytes < minchunk) {
+                minchunk = nbytes;
+            }
+
+            int maxchunk = maxchunksize;
+            if (nbytes < maxchunk) {
+                maxchunk = nbytes;
+            }
+
+	    for (int chunk = minchunk; chunk <=  maxchunk; chunk *= 2)
 	    {
 		schedule->chunk_size = chunk;
 		schedule->auto_chunksize = false;
