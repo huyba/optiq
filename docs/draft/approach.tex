@@ -8,8 +8,9 @@ Our approaches aim to balance networking load among physical links. To do so, we
 
 Four approaches that we present in this section include two heuristic algorithms, one multiple paths data movement taking advantages of existing shortest paths algorithms and one model-based approach. All paths searching algorihtms here are centric algorithms. They run at every node in exact order. Hence, every node has the same results. We build the graph with system's information such as size, topology, torus of the partition, coordinates of all nodes in the partition. The information is collected once at the begining. The inputs of the algorithms are source and destination vertices and amount of data to be transferred from the sources to the destinations. We present in detail each approach below.
 
-\subsubsection{Heuristic 1}
-In this approach, we search for paths between each pair of source and destination. From a source, we explore from all the destination in all possible directions. Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. In this algorithm, we do not limit exploring paths by any constraints. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
+\subsubsection{Heuristic 1 - Breadth first search based}
+
+In this approach, we search for paths between each pair of source and destination. From a source, we explore from all the destination in all possible directions. Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. In this algorithm, we limit exploring paths by constraints of number of hops and maximum load. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
 
 \begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
@@ -20,9 +21,22 @@ Structures:
 \State struct arc \{int u, int v\};
 \State struct path \{set of arcs\};
 \end{algorithmic}
+
+Heap element comparison:
+    \begin{algorithmic}
+	\Function{heap\_compare} {path p1, path p2, int maxload, int maxhops}
+	    \If {both paths has max load greater than maxload} 
+		\State choose the one with smaller number of hops.
+	    \EndIf
+	    \If {One path has max load greater but one path has max load smaller than maxload}
+		\State Choose the one with smaller load.
+	    \EndIf
+        \EndFunction
+    \end{algorithmic}
+
 Init:
     \begin{algorithmic}
-	\State queue$<$struct path$>$ \textit{exploring\_paths} = $\varnothing$;
+	\State min\_heap$<$struct path$>$ \textit{exploring\_paths} = $\varnothing$;
 	\State queue$<$struct path$>$ \textit{complete\_paths} = $\varnothing$;
 	\State bool \textit{visisted}[\textit{n}][\textit{n}];
 	\For {0 $<=$ {\it i}, \textit{j} $<$ \textit{n}} 
@@ -39,8 +53,8 @@ Main:
 	\State Pick next \textit{s$_i$} in the sources
     \EndWhile
 
-    \While {(\textit{exploring\_path} != $\varnothing$)}
-	\State path \textit{p} = \textit{exploring\_paths}.pop();
+    \While {(\textit{exploring\_paths} != $\varnothing$)}
+	\State path \textit{p} = \textit{exploring\_paths}.extract\_min();
 	\State {\it u} = last vertex in the path {\it p};
 	\For {each neighbor \textit{v} of \textit{u}}
 	    \State check\_and\_add\_new\_path({\it u}, \textit{v}, {\it p});
@@ -77,38 +91,7 @@ Time complexity: The graph has V vertices and E edges. We have K pairs of (sourc
 \item Second part: For this part, we get a path out of \textit{exploring\_paths}, create new paths by exploring its neighbors that are not visited by its source and add the new paths back to \textit{exploring\_paths}. For each sources, every vertex and every edge can be visited in the worst case, the time complexity would be $O$($|$V$|$ + $|$E$|$) minus to the vertices and edges visited by the first part. As we have K sources, the time complexity is $O$(K * ($|$V$|$ + $|$E$|$)).
 \end{itemize}
 
-\subsubsection{Heuristic 2}
-In the Algorithm \ref{alg:h1}, we explore all paths without concerning the number of hops that a path would take or maximum number of paths using a physical link. This leads to a long path or many paths sharing a physical link. A longer path results in more intermediate nodes, hence higher total transfer time. Higher maximum number of paths sharing a link leads to less bandwidth for each path. Both of them can lead to degraded performance.
-
-This algorithm is an extension from Heuristic 1, in which we limit the exploring paths by both the number of hops and minimizing the maximum load. We do so by maintaining a min heap of paths. We use the heap to contain all the exploring paths instead of using a queue to manage the exploring paths as in Heuristic 1. This leads to increasing algorithm's time complexity in heap extracting (as taking data from a queue is O(1), from a min heap is O(log(n)) with n entries in the heap), but increasing the quality of explored paths. In this approach, we have finer results as we explore from least congested paths. The comparison function of the heap is based on both the number of hops and maximum load on each path. 
-
-As most of the work in Heuristic 2 is similar to Heuristic 1, we do not repeat them, but only describe the differences between the two. The differences include:
-\begin{itemize}
-\item Use min heap of paths instead of queue of paths.
-\item Need to heapify everytime we insert/delete from the min queue.
-\end{itemize}
-
-In the following, we describe the comparison function, which the core of the min heap for heapification. We also describe how to calculate the max load from the current load when adding a new path. We compare 2 paths based on its current max load and hop length. Among the two, max load has higher priority as max load affects the performance more.
-
-\begin{algorithm}[!htp]
-
-Heap element comparison:
-    \begin{algorithmic}
-	\Function{heap\_compare} {path p1, path p2, int maxload, int maxhops}
-	    \If {both paths has max load greater than maxload} 
-		\State choose the one with smaller number of hops.
-	    \EndIf
-	    \If {One path has max load greater but one path has max load smaller than maxload}
-		\State Choose the one with smaller load.
-	    \EndIf
-        \EndFunction
-    \end{algorithmic}
-
-\caption{Heuristic Alg 2: Exploring all paths with hops length and max load constraints}
-\label{alg:h2}
-\end{algorithm}
-
-\subsubsection{Heuristic 3}
+\subsubsection{Heuristic 2 - Path-based approach}
 
 \begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
@@ -130,66 +113,16 @@ Main:
     \EndFunction
 \end{algorithmic}
 
-\caption{Heuristic Alg 3: k shortest paths}
-\label{alg:h3}
+\caption{Heuristic Alg 2: k shortest paths}
+\label{alg:h2}
 
 \end{algorithm}
 
 In the \textbf{Algorithm \ref{alg:h3}}, we use Yen's algorithm to search for k shortest paths between \textit{s$_i$, d$_i$}.
 
-\begin{comment}
+In Agorithm 1 and 2, we aim on balancing the number of paths using physical link. However, we do not consider the actual amount of data transferred on each path. If multiple paths are found, the data is equally split among the paths. To gain better performance, we determine the amount of data to be transferred on each path by using a mathematical model to search for the amount of data to be transferred on each path. The approach takes a number of given paths and amount of data between 2 vertices and use solvers to search for the amount of data on each path. The detail is described as follows.
 
-\subsubsection{Job-based AMPL model}
-In this section we present a formal model written in A Modeling Language for Mathematical Programming (AMPL). The model captures demands of data movement between a set of sources and a set of destinations. The model also capture the graph of physical links of a partition given for the application. The model is presented in Model 1.
-
-We presented the model in AMPL to solve the problem.
-
-\begin{verbatim}
-set Nodes;
-set Arcs within Nodes cross Nodes;
-set Jobs;
-
-param Delay {Arcs} default 0;
-param Capacity {Arcs} >= 0 default Infinity;
-param Source {Jobs};
-param Destination {Jobs} default 0;
-param Demand {Jobs} default 0;
-
-var Flow {Jobs, Arcs} >= 0;
-var Z >= 0;
-
-var total_flow{(i,j) in Arcs} = 
-sum {job in Jobs} Flow[job,i,j];
-
-maximize obj: Z;
-
-subject to
-
-zero_flow {job in Jobs, i in Nodes}:
-sum{(i,j) in Arcs} Flow[job,i,j] - 
-sum{(j,i) in Arcs} Flow[job,j,i] = 
-if (i == Source[job])  then Demand[job]*Z 
-else if (i == Destination[job]) then -Demand[job]*Z 
-else 0;
-
-capacity {(i,j) in Arcs}:
-total_flow[i,j] <= Capacity[i,j];
-\end{verbatim}
-
-Model explanation:
-\begin{itemize}
-\item sets: we have 3 sets: \textit{Nodes}, \textit{Arcs} and \textit{Jobs}. \textit{JobID}: is the set of transfers from sources to destinations. Each job is represented by a tuple (id, source, destination, demand (total data size to transfer)).
-\item params: {\it Delay}: delay on each arc; {\it Capacity}: capacity of each arc; {\it Source}: set of sources; {\it Destination}: set of destinations; {\it Demand}: amount of data to be transferred in each job.
-\item vars: \textit{Flow}: total flow of each job on each arc; \textit{Z}: is reversed of total time; \textit{total\_flow} total flow of all jobs going through an arc.
-\item objective function: we want to minimize the time or maximize its reversed value i.e. maximize \textit{Z}.
-\item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
-\end{itemize}
-
-\end{comment}
-
-In Agorithm 1, 2 and 3, we aim on balancing the number of paths using physical link. However, we do not consider the actual amount of data transferred on each path. If multiple paths are found, the data is equally split among the paths. To gain better performance, we determine the amount of data to be transferred on each path by using a mathematical model to search for the amount of data to be transferred on each path. The approach takes a number of given paths and amount of data between 2 vertices and use solvers to search for the amount of data on each path. The detail is described as follows.
-
-\subsubsection{Path-based model}
+\subsubsection{Path-based model optimization}
 
 How do we come up with the model?
 
