@@ -4,7 +4,7 @@ set bmarg 0
 set lmarg 4
 set rmarg 2
 set output "allpatterns.ps"
-set title "Total networking throughput of OPTIQ vs. MPI_Alltoallv in the overlap subset" font ",22"
+set title "Total networking throughput of OPTIQ vs. MPI_Alltoallv \n All patterns, 512 nodes, 1 rank/node, message size = 8 MB" font ",22"
 set logscale y 10
 set yrange [4096:524288]
 set xrange [0:90]
@@ -21,12 +21,13 @@ set style line 8 lt rgb "black" lw 7
 set key font ",24"
 set xtics font ",22"
 set ytics font ",22"
-set key bottom right spacing 3
+set key bottom left spacing 3
 set xtics () font ",23"
 set ytics ("16" 16384, "32" 32768, "64" 65536, "128" 131072, "256" 262144, "512" 524288) font ",23"
-plot "model30.dat" using 1:5 ls 1 title "          OPTIQ path-based model" with linespoints, \
-"kpath.dat" using 1:5 ls 2 title "     OPTIQ K paths" with linespoints, \
+plot "opt.dat" using 1:5 ls 1 title "          OPTIQ Optimization Model" with linespoints, \
+"kpath.dat" using 1:5 ls 2 title "     OPTIQ Heuristics" with linespoints, \
 "kpath.dat" using 1:3 ls 6 title "   MPI_Alltoallv" with linespoints
+#"model30.dat" using 1:5 ls 4 title "          OPTIQ Maxload = 30" with linespoints
 #"kpath.dat" using 1:5 ls 2 title "     OPTIQ K paths" with linespoints, \
 #"kpath.dat" using 1:3 ls 6 title "   MPI_Alltoallv" with linespoints
 #"model20.dat" using 1:5 ls 1 title "         OPTIQ Maxload = 20" with linespoints, \

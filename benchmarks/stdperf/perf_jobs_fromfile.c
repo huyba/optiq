@@ -52,11 +52,16 @@ int main(int argc, char **argv)
 
     char filepath[256];
 
+    if (rank == 0) {
+	printf("MPI/OPTIQ msg chunk totalsize time(us) bandwidth(MB/s) #path totalhops totalloads loadlinks maxhops minhops avghops medhops maxload minload avgload medload\n\n");
+    }
+
     for (int nbytes = demand; nbytes >= demand; nbytes /= 2)
     {
 	for (int i = start; i <= end; i++)
 	{
             schedule->test_id = i;
+
 	    sprintf(filepath, "%s/test%d", path, i);
 
 	    if (rank == 0) {
@@ -103,15 +108,15 @@ int main(int argc, char **argv)
 		if (rank == 0) 
 		{
 		    printf(" %d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, schedule->chunk_size);
+
 		    optiq_opi_print();
 
-		    if (mpi_time > max_opi.transfer_time) 
+		    /*if (mpi_time > max_opi.transfer_time) 
 		    {
 			double mpi_bw = max_opi.recv_len / mpi_time / 1024 / 1024 * 1e6;
 			double optiq_bw = max_opi.recv_len / max_opi.transfer_time / 1024 / 1024 * 1e6;
-
-			/*printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);*/
-		    }
+			printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
+		    }*/
 
 		    optiq_path_print_stat (opi.paths, size, topo->num_edges);
 		    optiq_opi_clear();

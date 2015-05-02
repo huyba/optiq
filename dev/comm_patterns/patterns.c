@@ -437,7 +437,7 @@ void optiq_pattern_subgroup_agg (char *filepath, int numranks, int subgroupsize,
 
 void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, int demand, int m, int startm, int n, int startn, int num_ranks_per_node, bool random)
 {
-    std::vector<std::pair<int, int> > source_dests;
+    std::vector<std::pair<int, int> > source_dests = std::vector<std::pair<int, int> >();
 
     source_dests.clear();
 
@@ -447,7 +447,7 @@ void optiq_pattern_m_to_n_to_jobs (std::vector<struct job> &jobs, int numranks, 
 
     for (int i = 0; i < source_dests.size() ; i++)
     {
-	struct job new_job;
+	struct job new_job = job();
 
 	new_job.paths.clear();
 

@@ -1,4 +1,4 @@
-all:
+paper:
 	pdflatex hipc.tex
 	bibtex hipc
 	pdflatex hipc.tex
@@ -10,3 +10,7 @@ all:
 	rm hipc.blg
 
 	open hipc.pdf
+
+report:
+	pdflatex perfstudy.tex
+	open perfstudy.pdf

@@ -22,10 +22,12 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
 	for (int j = 0; j < jobs[i].paths.size(); j++)
 	{
 	    myfile << "J " << jobs[i].job_id << " " << jobs[i].paths[j]->path_id << " " << jobs[i].paths[j]->flow << " " << jobs[i].source_id << " " << jobs[i].dest_id << " " << jobs[i].source_rank << " " << jobs[i].dest_rank << std::endl;
+
 	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
 	    {
 		myfile << jobs[i].paths[j]->arcs[k].u << " " << jobs[i].paths[j]->arcs[k].v << std::endl;
 	    }
+
 	    myfile << std::endl;
 	}
 
@@ -37,6 +39,8 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
 	    }
 	}
     }
+
+    myfile << std::endl;
 
     myfile.close();
 }
@@ -309,7 +313,7 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 	    p->flow = rintf(flow);
 	    p->arcs.clear();
 
-	    while(fgets(line,80,fp) != NULL)
+	    while(fgets(line,80,fp) != NULL && line[0] != 'T')
 	    {
 		trim(line);
 		if (strcmp(line, "") == 0)
@@ -547,4 +551,3 @@ void optiq_jobs_convert_ids_to_ranks (std::vector<struct job> &jobs, std::vector
 	}
     }
 }
-
