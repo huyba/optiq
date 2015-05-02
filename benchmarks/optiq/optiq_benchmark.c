@@ -117,7 +117,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     /* When reading from file, always return jobs with path of node ids, not ranks */   
     optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
 
-    if (jobs.size() != 0 || path_ranks.size() != 0) 
+    if (jobs.size() == 0 || path_ranks.size() == 0) 
     {
         if (rank == 0) {
             printf("No jobs or paths found from file %s\n", jobfile);
@@ -179,10 +179,6 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 	printf(" %d MPI_Alltoallv msg = %d chunk = %d", sched->test_id, datasize, schedule->chunk_size);
     }
     
-    if (rank == 0) {
-        printf(" %d MPI_Alltoallv msg = %d chunk = %d ", schedule->test_id, datasize, schedule->chunk_size);
-    }
-
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
 
     if (odp.print_mem_avail)

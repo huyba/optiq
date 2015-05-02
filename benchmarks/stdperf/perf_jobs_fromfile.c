@@ -39,8 +39,8 @@ int main(int argc, char **argv)
 	demand = atoi (argv[5]) * 1024;
     }
 
-    int minchunksize = 32 * 1024;
-    int maxchunksize = 1024 * 1024;
+    int minchunksize = 64 * 1024;
+    int maxchunksize = 128 * 1024;
 
     if (argc > 6) {
         minchunksize = atoi (argv[6]) * 1024;
