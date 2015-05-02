@@ -207,7 +207,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 		    maxpaths = maxpathspertest / numpairs;
 		}
 
-		sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d, total %d paths", testid, m, 0, m-1, n, size-n, size -1, maxpaths);
+		sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size-n, size -1, maxpaths);
 		sprintf(jobs[0].name, "%s", name);
 		sprintf(jobfile, "test%d", testid);
 
@@ -239,7 +239,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 			maxpaths = maxpathspertest / numpairs;
 		    }
 
-		    sprintf(name, "Test No. %d: Overlap %d ranks from %d to %d send data to %d ranks from %d to %d, total %d paths", testid, m, 0, m-1, n, m-l, n + m -l -1, maxpaths);
+		    sprintf(name, "Test No. %d Overlap %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, m-l, n + m -l -1, maxpaths);
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
 
@@ -270,7 +270,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 			maxpaths = maxpathspertest / numpairs;
 		    }
 
-		    sprintf(name, "Test No. %d: Subset %d ranks from %d to %d send data to %d ranks from %d to %d, total %d paths", testid, m, 0, m-1, n, p, p+n-1, maxpaths);
+		    sprintf(name, "Test No. %d Subset %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, p, p+n-1, maxpaths);
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
 
@@ -298,7 +298,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 		maxpaths = maxpathspertest / numpairs;
 	    }
 
-	    sprintf(name, "Test No. %d: Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d, total %d paths", testid, m, 0, m-1, n, size-n, size-1, maxpaths);
+	    sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size-n, size-1, maxpaths);
 	    sprintf(jobs[0].name, "%s", name);
 	    sprintf(jobfile, "test%d", testid);
 
@@ -316,7 +316,15 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	{
 	    for (int n = size/32; n <= size/2; n *= 2)
 	    {
-		for (int d = m; d < size - n; d *= 2)
+		int min = m < n ? m : n;
+		int t = 0;
+		if (size/min <= 8) {
+		    t = 1;
+		} else {
+		    t = size/min/4;;
+		}
+
+                for (int d = m; d < size - n; d += min * t)
 		{
 		    if (mintestid <= testid && testid <=maxtestid)
 		    {
@@ -329,7 +337,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 			    maxpaths = maxpathspertest / numpairs;
 			}
 
-			sprintf(name, "Test No. %d: Disjoint Increasing distance %d ranks from %d to %d send data to %d ranks from %d to %d, total %d paths", testid, m, 0, m-1, n, size-n, size -1, maxpaths);
+			sprintf(name, "Test No. %d Disjoint Increasing distance %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, d, d + n - 1, maxpaths);
 			sprintf(jobs[0].name, "%s", name);
 			sprintf(jobfile, "test%d", testid);
 
