@@ -22,8 +22,7 @@ void optiq_pami_transport_init()
     pami_configuration_t *configurations = NULL;
 
     /*Init the pami_transport variable*/
-    //pami_transport = (struct optiq_pami_transport *) calloc(1, sizeof(struct optiq_pami_transport));
-    pami_transport = new struct optiq_pami_transport();
+    pami_transport = (struct optiq_pami_transport *) calloc(1, sizeof(struct optiq_pami_transport));
 
     /* Create client */
     result = PAMI_Client_create(client_name, &pami_transport->client, configurations, configuration_count);
@@ -1029,7 +1028,7 @@ void optiq_pami_transport_get_message ()
 
     if (pami_transport->transport_info.local_headers.size() + pami_transport->transport_info.forward_headers.size() > 0)
     {
-	std::list<struct optiq_message_header *> *mh;
+	std::vector<struct optiq_message_header *> *mh;
 	struct optiq_message_header *header = NULL;
 
 	if (schedule->dmode == DQUEUE_LOCAL_MESSAGE_FIRST) 
@@ -1653,9 +1652,7 @@ int optiq_pami_transport_finalize()
     }
 
     /* Free the pami_transport itself*/
-    //free(pami_transport);
-
-    delete pami_transport;
+    free(pami_transport);
 
     return 0;
 }
