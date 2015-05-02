@@ -32,11 +32,22 @@ int main(int argc, char **argv)
     }
 
     if (argc > 4) {
-	demand = atoi(argv[4]) * 1024;
+	mindemand = atoi(argv[4]) * 1024;
     }
 
     if (argc > 5) {
-	mindemand = atoi (argv[5]) * 1024;
+	demand = atoi (argv[5]) * 1024;
+    }
+
+    int minchunksize = 32 * 1024;
+    int maxchunksize = 1024 * 1024;
+
+    if (argc > 6) {
+        minchunksize = atoi (argv[6]) * 1024;
+    }
+
+    if (argc > 7) {
+        maxchunksize = atoi (argv[7]) * 1024;
     }
 
     char filepath[256];
@@ -49,14 +60,25 @@ int main(int argc, char **argv)
     {
 	for (int i = start; i <= end; i++)
 	{
-	    schedule->test_id = i;
+            schedule->test_id = i;
+
 	    sprintf(filepath, "%s/test%d", path, i);
 
 	    if (rank == 0) {
 		printf("Test No. %d\n", i);
 	    }
 
-	    for (int chunk = 8 * 1024; chunk <=  nbytes; chunk *= 2)
+            int minchunk = minchunksize;
+            if (nbytes < minchunk) {
+                minchunk = nbytes;
+            }
+
+            int maxchunk = maxchunksize;
+            if (nbytes < maxchunk) {
+                maxchunk = nbytes;
+            }
+
+	    for (int chunk = minchunk; chunk <=  maxchunk; chunk *= 2)
 	    {
 		schedule->chunk_size = chunk;
 		schedule->auto_chunksize = false;
@@ -85,8 +107,7 @@ int main(int argc, char **argv)
 
 		if (rank == 0) 
 		{
-		    //printf("chunk size = %d\n", chunk);
-		    printf(" %d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, chunk);
+		    printf(" %d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, schedule->chunk_size);
 
 		    optiq_opi_print();
 
@@ -94,7 +115,6 @@ int main(int argc, char **argv)
 		    {
 			double mpi_bw = max_opi.recv_len / mpi_time / 1024 / 1024 * 1e6;
 			double optiq_bw = max_opi.recv_len / max_opi.transfer_time / 1024 / 1024 * 1e6;
-
 			printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
 		    }*/
 

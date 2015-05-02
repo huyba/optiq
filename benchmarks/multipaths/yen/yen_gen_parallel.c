@@ -240,6 +240,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 		    }
 
 		    sprintf(name, "Test No. %d Overlap %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, m-l, n + m -l -1, maxpaths);
+
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
 
@@ -299,6 +300,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	    }
 
 	    sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size-n, size-1, maxpaths);
+
 	    sprintf(jobs[0].name, "%s", name);
 	    sprintf(jobfile, "test%d", testid);
 
@@ -338,6 +340,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 			}
 
 			sprintf(name, "Test No. %d Disjoint Increasing distance %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, d, d + n - 1, maxpaths);
+
 			sprintf(jobs[0].name, "%s", name);
 			sprintf(jobfile, "test%d", testid);
 

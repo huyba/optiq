@@ -41,13 +41,13 @@ void optiq_opi_print()
     double bw = (double) max_opi.recv_len / max_time / 1024 / 1024 * 1e6;
 
     if (max_opi.recv_len < 1024) {
-	printf("%ld %8.4f %8.4f ", max_opi.recv_len, max_time, bw);
+	printf(" %ld %8.4f %8.4f ", max_opi.recv_len, max_time, bw);
     }
     else if (max_opi.recv_len < 1024 * 1024) {
-	printf("%ld %8.4f %8.4f ", max_opi.recv_len/1024, max_time, bw);
+	printf(" %ld %8.4f %8.4f ", max_opi.recv_len/1024, max_time, bw);
     }
     else {
-	printf("%ld %8.4f %8.4f ", max_opi.recv_len/1024/1024, max_time, bw);
+	printf(" %ld %8.4f %8.4f ", max_opi.recv_len/1024/1024, max_time, bw);
     }
 
     if (odp.print_elapsed_time)
