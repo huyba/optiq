@@ -117,6 +117,15 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     /* When reading from file, always return jobs with path of node ids, not ranks */   
     optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
 
+    if (jobs.size() == 0 || path_ranks.size() == 0) 
+    {
+        if (rank == 0) {
+            printf("No jobs or paths found from file %s\n", jobfile);
+        }
+
+        return;
+    }
+
     /* Convert to have paths with node ids and jobs with ranks */
     optiq_jobs_convert_ids_to_ranks (jobs, path_ids, topo->num_ranks_per_node);
 

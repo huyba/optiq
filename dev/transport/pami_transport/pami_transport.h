@@ -2,7 +2,6 @@
 #define OPTIQ_PAMI_TRANSPORT_H
 
 #include <vector>
-#include <list>
 
 #ifdef __bgq__
 
@@ -75,13 +74,12 @@ struct optiq_transport_info {
     char *forward_buf;
     struct optiq_memregion *forward_mr;
 
-    std::list<int> a;
-    std::list<struct optiq_rput_cookie *> rput_cookies;
-    std::list<struct optiq_rput_cookie *> complete_rputs;
+    std::vector<struct optiq_rput_cookie *> rput_cookies;
+    std::vector<struct optiq_rput_cookie *> complete_rputs;
 
-    std::list<struct optiq_message_header *> forward_headers;
-    std::list<struct optiq_message_header *> message_headers;
-    std::list<struct optiq_message_header *> local_headers;
+    std::vector<struct optiq_message_header *> forward_headers;
+    std::vector<struct optiq_message_header *> message_headers;
+    std::vector<struct optiq_message_header *> local_headers;
     std::vector<struct optiq_message_header *> processing_headers;
 
     std::vector<struct optiq_memregion> mr_responses;
