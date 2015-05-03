@@ -27,6 +27,9 @@ int main(int argc, char **argv)
 
     char filepath[256];
 
+    timeval t0, t1;
+    gettimeofday(&t0, NULL);
+
     for (int i = start; i <= end; i++)
     {
         if (rank == i % size)
@@ -44,6 +47,14 @@ int main(int argc, char **argv)
             sprintf(filepath, "test%d", i);
             optiq_job_write_to_file (jobs, filepath);
         }
+    }
+
+    gettimeofday(&t1, NULL);
+    double t = (t1.tv_sec - t0.tv_sec) * 1e6 + (t1.tv_usec - t0.tv_usec);
+
+    if (rank == 0)
+    {
+	printf("Time to build paths with max load = %d is %8.0f\n", maxload, t);
     }
 
     return 0;
