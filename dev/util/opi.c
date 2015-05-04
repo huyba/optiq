@@ -22,6 +22,8 @@ void optiq_opi_init()
         max_opi.all_link_loads = (int *) calloc (1, sizeof(int) * size * 9);
     }
 
+    opi.load_stat = NULL;
+
     optiq_opi_clear();
 }
 
@@ -138,6 +140,22 @@ void optiq_opi_print_perf()
 
 	printf(" %d %d %8.2f %d  %d %d %8.2f %d  %d %d %8.2f %d \n", maxcopies, mincopies, avgcopies, medcopies, maxrputs, minrputs, avgrputs, medrputs, maxlinkloads, minlinkloads, avglinkloads, medlinkloads);
 	
+	/* Print path load stat */
+	int i = 0;
+	printf("num of links with path load = %d is %d\n", 0, opi.load_stat[0]);
+
+	for (int i = 1; opi.load_stat[i] != 0; i++) 
+	{
+	    printf("num of links with path load = %d is %d\n", i, opi.load_stat[i]);
+	}
+
+	/* Print actual link load - data size pass through a link*/
+	for (int i = linkloads.size() - 1; i >= 0 && linkloads[i] > 0; i--)
+	{
+	    printf("link load = %d\n", linkloads[i]);
+	}
+
+	printf("\n");
     }
 }
 
@@ -223,6 +241,12 @@ void optiq_opi_clear()
     opi.numcopies = 0;
     opi.numrputs = 0;
     opi.link_loads.clear();
+
+    if (opi.load_stat != NULL) 
+    {
+	free(opi.load_stat);
+	opi.load_stat = NULL;
+    }
 }
 
 void optiq_opi_timestamp_print(int rank)

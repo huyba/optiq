@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "util.h"
+#include "opi.h"
 #include "path.h"
 
 int max_path_length = 0;
@@ -205,6 +206,7 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     std::sort(loads.begin(), loads.end());
 
     int *load_stat = (int *) calloc (1, sizeof(int) * (max_load+1));
+    opi.load_stat = load_stat;
 
     for (int i = 0; i < num_nodes; i++) {
         for (int j = 0; j < num_nodes; j++) {
@@ -234,16 +236,16 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
 
     printf(" %d %d %d %d %d %d %4.2f %d %d %d %4.2f %d ", paths.size(), total_hops, total_loads, loaded_links, max_hops, min_hops, avg_hops, hops[hops.size()/2], max_load, min_load, avg_load, loads[loads.size()/2]);
 
-    for (int i = 0; i <= max_load; i++) {
+    /*for (int i = 0; i <= max_load; i++) {
 	printf("num of links with load = %d is %d\n", i, load_stat[i]);
     }
-    printf("\n");
+    printf("\n");*/
 
     for (int i = 0; i < num_nodes; i++) {
         free(load[i]);
     }
     free(load);
-    free(load_stat);
+    //free(load_stat);
 }
 
 void optiq_path_write_paths(std::vector<struct path *> &paths, char *filepath)

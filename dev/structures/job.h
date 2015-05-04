@@ -38,7 +38,7 @@ void optiq_job_map_jobs_to_source_dests (std::vector<struct job> &jobs, std::vec
 
 void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int maxload, int size, int num_ranks_per_node);
 
-void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, int demand, char *modeldat);
+void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, int demand, char *modeldat, int max_num_paths);
 
 void optiq_jobs_convert_ids_to_ranks (std::vector<struct job> &jobs, std::vector<struct path *> &path_ids, int num_ranks_per_node);
 

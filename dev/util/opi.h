@@ -59,6 +59,7 @@ struct optiq_performance_index {
     int *all_link_loads;
     int numrputs;
     int *all_numrputs;
+    int *load_stat;
 };
 
 struct optiq_debug_print {

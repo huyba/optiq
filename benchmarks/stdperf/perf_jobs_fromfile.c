@@ -83,6 +83,9 @@ int main(int argc, char **argv)
 		schedule->chunk_size = chunk;
 		schedule->auto_chunksize = false;
 
+		odp.collect_transport_perf = true;
+		odp.print_transport_perf = true;
+
 		//odp.print_done_status = true;
 
 		//odp.print_path_rank = true;
