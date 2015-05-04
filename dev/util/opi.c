@@ -215,6 +215,8 @@ void optiq_opi_clear()
     odp.print_elapsed_time = false;
     odp.print_job = false;
     odp.print_done_status = false;
+    odp.print_transport_perf = false;
+    odp.collect_transport_perf = false;
 
     odp.collect_timestamp = false;
 
