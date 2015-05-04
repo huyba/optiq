@@ -23,7 +23,7 @@ void optiq_init(int argc, char **argv)
     MPI_Init(&argc, &argv);
 
     optiq_print_basic();
-    optiq_opi_clear();
+    optiq_opi_init();
 }
 
 void optiq_print_basic ()

@@ -232,7 +232,7 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     printf("min_load = %d\n", min_load);
     printf("avg_load = %4.2f\n", avg_load);*/
 
-    printf(" %d %d %d %d %d %d %4.2f %d %d %d %4.2f %d\n", paths.size(), total_hops, total_loads, loaded_links, max_hops, min_hops, avg_hops, hops[hops.size()/2], max_load, min_load, avg_load, loads[loads.size()/2]);
+    printf(" %d %d %d %d %d %d %4.2f %d %d %d %4.2f %d ", paths.size(), total_hops, total_loads, loaded_links, max_hops, min_hops, avg_hops, hops[hops.size()/2], max_load, min_load, avg_load, loads[loads.size()/2]);
 
     for (int i = 0; i <= max_load; i++) {
 	printf("num of links with load = %d is %d\n", i, load_stat[i]);

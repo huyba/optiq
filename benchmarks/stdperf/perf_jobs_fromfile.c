@@ -119,6 +119,7 @@ int main(int argc, char **argv)
 		    }*/
 
 		    optiq_path_print_stat (opi.paths, size, topo->num_edges);
+		    optiq_opi_print_perf();
 		    optiq_opi_clear();
 		}
 	    }

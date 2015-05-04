@@ -2,6 +2,7 @@
 #define OPTIQ_PERFORMANCE_INDEX
 
 #include <sys/time.h>
+#include <map>
 
 #include "path.h"
 
@@ -51,6 +52,13 @@ struct optiq_performance_index {
 
     std::vector<struct path *> paths;
     std::vector<struct timestamp> timestamps;
+
+    int numcopies;
+    int *all_numcopies;
+    std::map <int, int> link_loads;
+    int *all_link_loads;
+    int numrputs;
+    int *all_numrputs;
 };
 
 struct optiq_debug_print {
@@ -75,19 +83,25 @@ struct optiq_debug_print {
     bool print_mem_avail;
     bool print_job;
     bool print_done_status;
+    bool print_transport_perf;
 
     bool collect_timestamp;
+    bool collect_transport_perf;
 };
 
 extern "C" struct optiq_performance_index opi, max_opi;
 
 extern "C" struct optiq_debug_print odp;
 
+void optiq_opi_init();
+
 struct optiq_performance_index * optiq_opi_get();
 
 void optiq_opi_collect();
 
 void optiq_opi_print();
+
+void optiq_opi_print_perf();
 
 void optiq_opi_clear();
 
