@@ -263,13 +263,20 @@ void optiq_path_print_load_stat(int *load_stat)
 
 void optiq_path_print_link_load (int *load_stat, int datasize)
 {
-    int minload = load_stat[1] * datasize;
+    int minload = 0;
     int maxload = 0, medload = 0;
     double totalload = 0, avgload;
     int numlinks = 0;
-    int i = 0;
+    int min = 1;
 
-    for (i = 1; load_stat[i] != 0; i++)
+    while (load_stat[min] == 0)
+    {
+	min++;
+    }
+
+    minload = min * datasize;
+    int i = 0;
+    for (i = min; load_stat[i] != 0; i++)
     {
 	totalload += (double) load_stat[i] * datasize;
 	numlinks += load_stat[i];
@@ -279,7 +286,7 @@ void optiq_path_print_link_load (int *load_stat, int datasize)
 
     avgload = totalload / numlinks;
 
-    medload = load_stat[i/2] * datasize;
+    medload = (i / 2) * datasize;
 
     printf(" %d %d %4.2f %d  %d %d %4.2f %d  %d %d %4.2f %d\n", 0, 0, 0.0, 0, 0, 0, 0.0, 0, maxload, minload, avgload, medload);
 
