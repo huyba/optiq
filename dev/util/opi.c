@@ -91,7 +91,7 @@ void optiq_opi_print_perf()
 
     if (rank == 0)
     {
-	int mincopies = 0, maxcopies = 0, medcopies = 0, total_numcopies;
+	int mincopies = 0, maxcopies = 0, medcopies = 0, total_numcopies = 0;
 	int minrputs = 0, maxrputs = 0, medrputs = 0, total_rputs = 0;
 	int minlinkloads = 0, maxlinkloads = 0, medlinkloads = 0;
 	long total_linkloads = 0;
