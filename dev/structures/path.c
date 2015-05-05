@@ -48,7 +48,7 @@ int opitq_path_compare_favor_load (struct path *p1, struct path *p2)
 	return 1;
     } else if (p1->max_load < max_path_load && p2->max_load >= max_path_load) {
 	max_path_load = p2->max_load;
-        return -1;
+	return -1;
     } else {
 	int max = p1->max_load > p2->max_load ? p1->max_load : p2->max_load;
 
@@ -82,10 +82,10 @@ int optiq_path_compare_favor_hop (struct path *p1, struct path *p2)
 
     if (p1->arcs.size() >= radius && p2->arcs.size() >= radius) {
 	if (p1->arcs.size() > p2->arcs.size()) {
-            return 1;
-        } else if (p1->arcs.size() < p2->arcs.size()) {
-            return -1;
-        }
+	    return 1;
+	} else if (p1->arcs.size() < p2->arcs.size()) {
+	    return -1;
+	}
     }
     else if (p1->arcs.size() >= radius && p2->arcs.size() < radius) {
 	return 1;
@@ -93,19 +93,19 @@ int optiq_path_compare_favor_hop (struct path *p1, struct path *p2)
     else if (p1->arcs.size() < radius && p2->arcs.size() >= radius) {
 	return -1;
     }
-    
+
     if (p1->max_load > p2->max_load) {
-        return 1;
+	return 1;
     } else if (p1->max_load < p2->max_load) {
-        return -1;
+	return -1;
     } else {
-        if (p1->arcs.size() > p2->arcs.size()) {
-            return 1;
-        } else if (p1->arcs.size() < p2->arcs.size()) {
-            return -1;
-        } else {
-            return 0;
-        }
+	if (p1->arcs.size() > p2->arcs.size()) {
+	    return 1;
+	} else if (p1->arcs.size() < p2->arcs.size()) {
+	    return -1;
+	} else {
+	    return 0;
+	}
     }
 }
 
@@ -114,7 +114,7 @@ void optiq_path_print_path_coords(struct path *p, int** coords)
     printf("Path: max_load = %d, #hops = %ld. ", p->max_load, p->arcs.size());
 
     for (int j = 0; j < p->arcs.size(); j++) {
-        printf ("%d [%d %d %d %d %d]->", p->arcs[j].u, coords[p->arcs[j].u][0], coords[p->arcs[j].u][1], coords[p->arcs[j].u][2], coords[p->arcs[j].u][3], coords[p->arcs[j].u][4]);
+	printf ("%d [%d %d %d %d %d]->", p->arcs[j].u, coords[p->arcs[j].u][0], coords[p->arcs[j].u][1], coords[p->arcs[j].u][2], coords[p->arcs[j].u][3], coords[p->arcs[j].u][4]);
     }
 
     printf("%d [%d %d %d %d %d]\n", p->arcs[p->arcs.size() - 1].v, coords[p->arcs[p->arcs.size() - 1].v][0], coords[p->arcs[p->arcs.size() - 1].v][1], coords[p->arcs[p->arcs.size() - 1].v][2], coords[p->arcs[p->arcs.size() - 1].v][3], coords[p->arcs[p->arcs.size() - 1].v][4]);
@@ -161,11 +161,11 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
 	struct path *p = paths[i];
 
 	if (max_hops < p->arcs.size()) {
-            max_hops = p->arcs.size();
-        }
+	    max_hops = p->arcs.size();
+	}
 	if (min_hops > p->arcs.size()) {
-            min_hops = p->arcs.size();
-        }
+	    min_hops = p->arcs.size();
+	}
 
 	for (int j = 0; j < p->arcs.size(); j++) {
 	    load[p->arcs[j].u][p->arcs[j].v]++;
@@ -173,7 +173,7 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
 
 	total_hops += p->arcs.size();
 
-        hops.push_back(p->arcs.size());
+	hops.push_back(p->arcs.size());
     }
 
     avg_hops = (float)total_hops/paths.size();
@@ -192,12 +192,12 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
 		}
 
 		if (min_load > load[i][j]) {
-                    min_load = load[i][j];
-                }
+		    min_load = load[i][j];
+		}
 
 		total_loads += load[i][j];
 
-                loads.push_back(load[i][j]);
+		loads.push_back(load[i][j]);
 	    }
 	}
     }
@@ -209,7 +209,7 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     opi.load_stat = load_stat;
 
     for (int i = 0; i < num_nodes; i++) {
-        for (int j = 0; j < num_nodes; j++) {
+	for (int j = 0; j < num_nodes; j++) {
 	    if (load[i][j] != 0) {
 		load_stat[load[i][j]]++;
 	    }
@@ -226,26 +226,39 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     /*printf("#paths = %d, total_hops = %d, total_loads = %d, #loaded_links = %d\n", paths.size(), total_hops, total_loads, loaded_links);*/
 
     /*printf("max_hop = %d\n", max_hops);
-    printf("min_hop = %d\n", min_hops);
-    printf("avg_hop = %4.2f\n", avg_hops);
-    printf()
+      printf("min_hop = %d\n", min_hops);
+      printf("avg_hop = %4.2f\n", avg_hops);
+      printf()
 
-    printf("max_load = %d\n", max_load);
-    printf("min_load = %d\n", min_load);
-    printf("avg_load = %4.2f\n", avg_load);*/
+      printf("max_load = %d\n", max_load);
+      printf("min_load = %d\n", min_load);
+      printf("avg_load = %4.2f\n", avg_load);*/
 
     printf(" %d %d %d %d %d %d %4.2f %d %d %d %4.2f %d ", paths.size(), total_hops, total_loads, loaded_links, max_hops, min_hops, avg_hops, hops[hops.size()/2], max_load, min_load, avg_load, loads[loads.size()/2]);
 
     /*for (int i = 0; i <= max_load; i++) {
-	printf("num of links with load = %d is %d\n", i, load_stat[i]);
-    }
-    printf("\n");*/
+      printf("num of links with load = %d is %d\n", i, load_stat[i]);
+      }
+      printf("\n");*/
 
     for (int i = 0; i < num_nodes; i++) {
-        free(load[i]);
+	free(load[i]);
     }
     free(load);
     //free(load_stat);
+}
+
+void optiq_path_print_load_stat(int *load_stat)
+{
+    printf("\n");
+    /* Print path load stat */
+    int i = 0;
+    printf("num of links with path load = %d is %d\n", 0, load_stat[0]);
+
+    for (int i = 1; load_stat[i] != 0; i++)
+    {
+	printf("num of links with path load = %d is %d\n", i, load_stat[i]);
+    }
 }
 
 void optiq_path_write_paths(std::vector<struct path *> &paths, char *filepath)
@@ -258,13 +271,13 @@ void optiq_path_write_paths(std::vector<struct path *> &paths, char *filepath)
 
     for (int i = 0; i < paths.size(); i++)
     {
-        struct path *p = paths[i];
+	struct path *p = paths[i];
 
-        myfile << "J " << p->job_id << " " << p->path_id << " " << p->flow << std::endl;
+	myfile << "J " << p->job_id << " " << p->path_id << " " << p->flow << std::endl;
 
-        for (int j = 0; j < p->arcs.size(); j++) {
+	for (int j = 0; j < p->arcs.size(); j++) {
 	    myfile << p->arcs[j].u << " " << p->arcs[j].v << std::endl;
-        }
+	}
 	myfile << std::endl;
     }
 
@@ -277,15 +290,15 @@ void optiq_path_print_paths(std::vector<struct path *> &paths)
 
     for (int i = 0; i < paths.size(); i++) 
     {
-        struct path *p = paths[i];
+	struct path *p = paths[i];
 
 	printf("path_id = %d num_hops = %ld, max_load = %d, flow = %d\n", p->path_id, p->arcs.size(), p->max_load, p->flow);
 
 	printf("path_id = %d: ", p->path_id);
-        for (int j = 0; j < p->arcs.size(); j++) {
-            printf("%d->", p->arcs[j].u);
-        }
-        printf("%d\n", p->arcs.back().v);
+	for (int j = 0; j < p->arcs.size(); j++) {
+	    printf("%d->", p->arcs[j].u);
+	}
+	printf("%d\n", p->arcs.back().v);
     }
 }
 
@@ -294,17 +307,17 @@ void optiq_path_print_paths_coords(std::vector<struct path *> &paths, int** coor
     printf("#paths = %ld\n", paths.size());
 
     for (int i = 0; i < paths.size(); i++) {
-        struct path *p = paths[i];
+	struct path *p = paths[i];
 
-        printf("path_id = %d num_hops = %ld, max_load = %d, flow = %d\n", p->path_id, p->arcs.size(), p->max_load, p->flow);
+	printf("path_id = %d num_hops = %ld, max_load = %d, flow = %d\n", p->path_id, p->arcs.size(), p->max_load, p->flow);
 
-        printf("path_id = %d: ", p->path_id);
+	printf("path_id = %d: ", p->path_id);
 
-        for (int j = 0; j < p->arcs.size(); j++) {
-            printf("%d [%d %d %d %d %d]->", p->arcs[j].u, coords[p->arcs[j].u][0], coords[p->arcs[j].u][1], coords[p->arcs[j].u][2], coords[p->arcs[j].u][3], coords[p->arcs[j].u][4]);
-        }
+	for (int j = 0; j < p->arcs.size(); j++) {
+	    printf("%d [%d %d %d %d %d]->", p->arcs[j].u, coords[p->arcs[j].u][0], coords[p->arcs[j].u][1], coords[p->arcs[j].u][2], coords[p->arcs[j].u][3], coords[p->arcs[j].u][4]);
+	}
 
-        printf("%d [%d %d %d %d %d]\n", p->arcs.back().v, coords[p->arcs.back().v][0], coords[p->arcs.back().v][1], coords[p->arcs.back().v][2], coords[p->arcs.back().v][3], coords[p->arcs.back().v][4]);
+	printf("%d [%d %d %d %d %d]\n", p->arcs.back().v, coords[p->arcs.back().v][0], coords[p->arcs.back().v][1], coords[p->arcs.back().v][2], coords[p->arcs.back().v][3], coords[p->arcs.back().v][4]);
     }
 }
 
@@ -315,7 +328,7 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
 
     fp = fopen(filePath, "r");
     if (fp == NULL) {
-        exit(EXIT_FAILURE);
+	exit(EXIT_FAILURE);
     }
 
     int job_id = 0, path_id = 0, u, v;
@@ -324,39 +337,39 @@ void optiq_path_read_from_file(char *filePath, std::vector<struct path *> &compl
 
     while (fgets(line, 80, fp) != NULL)
     {
-        //printf("%s", line);
+	//printf("%s", line);
 
-        if (line[0] == 'J')
-        {
-            trim(line);
-            sscanf(line, "%s %d %d %f", temp, &job_id, &path_id, &flow);
-            //printf("job_id = %d path_id = %d, flow = %f\n", job_id, path_id, flow);
+	if (line[0] == 'J')
+	{
+	    trim(line);
+	    sscanf(line, "%s %d %d %f", temp, &job_id, &path_id, &flow);
+	    //printf("job_id = %d path_id = %d, flow = %f\n", job_id, path_id, flow);
 
-            struct path *p = (struct path *) calloc (1, sizeof(struct path));
-            p->job_id = job_id;
-            p->path_id = path_id;
+	    struct path *p = (struct path *) calloc (1, sizeof(struct path));
+	    p->job_id = job_id;
+	    p->path_id = path_id;
 	    p->flow = rintf(flow);
 
-            while(fgets(line,80,fp) != NULL)
-            {
-                trim(line);
-                if (strcmp(line, "") == 0)
-                {
-                    break;
-                }
-                sscanf(line, "%d %d", &u, &v);
+	    while(fgets(line,80,fp) != NULL)
+	    {
+		trim(line);
+		if (strcmp(line, "") == 0)
+		{
+		    break;
+		}
+		sscanf(line, "%d %d", &u, &v);
 
-                struct arc a;
-                a.u = u;
-                a.v = v;
+		struct arc a;
+		a.u = u;
+		a.v = v;
 
-                p->arcs.push_back(a);
+		p->arcs.push_back(a);
 
-                //printf("u = %d, v = %d\n", u, v);
-            }
+		//printf("u = %d, v = %d\n", u, v);
+	    }
 
-            complete_paths.push_back(p);
-        }
+	    complete_paths.push_back(p);
+	}
     }
 
     fclose(fp);

@@ -40,6 +40,8 @@ void optiq_path_write_paths(std::vector<struct path *> &paths, char *filepath);
 
 void optiq_path_print_path(struct path *p);
 
+void optiq_path_print_load_stat(int *load_stat);
+
 void optiq_path_print_path_coords(struct path *p, int** coords);
 
 void optiq_path_print_paths(std::vector<struct path*> &paths);

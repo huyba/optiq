@@ -45,6 +45,7 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
 
     if (rank == 0) {
         optiq_path_print_stat (mpi_paths, size, topo->num_edges);
+	optiq_path_print_load_stat(opi.load_stat);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
