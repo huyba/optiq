@@ -181,6 +181,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     }
     
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+    optiq_path_print_link_load (opi.load_stat, datasize);
 
     if (odp.print_mem_avail)
     {

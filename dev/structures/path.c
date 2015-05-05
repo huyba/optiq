@@ -205,7 +205,8 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     std::sort(hops.begin(), hops.end());
     std::sort(loads.begin(), loads.end());
 
-    int *load_stat = (int *) calloc (1, sizeof(int) * (max_load+1));
+    int *load_stat = (int *) calloc (1, sizeof(int) * (max_load+2));
+    load_stat[max_load+1] = 0;
     opi.load_stat = load_stat;
 
     for (int i = 0; i < num_nodes; i++) {
@@ -258,6 +259,14 @@ void optiq_path_print_load_stat(int *load_stat)
     for (int i = 1; load_stat[i] != 0; i++)
     {
 	printf("num of links with path load = %d is %d\n", i, load_stat[i]);
+    }
+}
+
+void optiq_path_print_link_load (int *load_stat, int datasize)
+{
+    for (int i = 1; load_stat[i] != 0; i++)
+    {
+        printf("link load = %d\n", load_stat[i] * datasize);
     }
 }
 

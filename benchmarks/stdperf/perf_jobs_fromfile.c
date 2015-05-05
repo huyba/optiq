@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 
 		if (rank == 0) 
 		{
-		    printf(" %d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, schedule->chunk_size);
+		    printf("\n %d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, schedule->chunk_size);
 
 		    optiq_opi_print();
 
@@ -123,8 +123,9 @@ int main(int argc, char **argv)
 
 		    optiq_path_print_stat (opi.paths, size, topo->num_edges);
 		    optiq_opi_print_perf();
-		    optiq_opi_clear();
 		}
+
+		optiq_opi_clear();
 	    }
 	}
     }

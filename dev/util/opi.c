@@ -1,6 +1,7 @@
 #include "opi.h"
 #include <mpi.h>
 #include <stdlib.h>
+#include <string.h>
 #include <limits.h>
 #include <algorithm>
 #include <vector>
@@ -107,7 +108,7 @@ void optiq_opi_print_perf()
 	int ncpy = 0, nrput = 0, nlinks = 0;
 	maxcopies = copies[size - 1];
 	maxrputs = rputs[size - 1];
-	maxlinkloads = linkloads[size - 1];
+	maxlinkloads = linkloads[size * 9 - 1];
 
 	for (int i = size; i >= 0; i--)
 	{
@@ -136,13 +137,13 @@ void optiq_opi_print_perf()
 	    }
 	}
 
-	medcopies = copies[ncpy/2];
+	medcopies = copies[size - 1 - ncpy/2];
 	avgcopies = (double) total_numcopies / ncpy;
 
-	medrputs = rputs[nrput/2];
+	medrputs = rputs[size - 1 - nrput/2];
 	avgrputs = (double) total_rputs / nrput;
 
-	medlinkloads = linkloads[nlinks/2];
+	medlinkloads = linkloads[size * 9 - 1 - nlinks/2];
 	avglinkloads = (double) total_linkloads / nlinks;
 
 	printf(" %d %d %8.2f %d  %d %d %8.2f %d  %d %d %8.2f %d \n", maxcopies, mincopies, avgcopies, medcopies, maxrputs, minrputs, avgrputs, medrputs, maxlinkloads, minlinkloads, avglinkloads, medlinkloads);
@@ -155,8 +156,6 @@ void optiq_opi_print_perf()
 	{
 	    printf("link load = %d\n", linkloads[i]);
 	}
-
-	printf("\n");
     }
 }
 
