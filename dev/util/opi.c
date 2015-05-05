@@ -68,6 +68,13 @@ void optiq_opi_collect()
 	link_loads[in] = it->second;
     }
 
+    if (rank == 0)
+    {
+	memset (max_opi.all_numcopies, 0, sizeof(int) * size);
+	memset (max_opi.all_numrputs, 0, sizeof(int) * size);
+	memset (max_opi.all_link_loads, 0, sizeof(int) * size * 9);
+    }
+
     MPI_Gather (&opi.numcopies, 1, MPI_INT, max_opi.all_numcopies, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     MPI_Gather (&opi.numrputs, 1, MPI_INT, max_opi.all_numrputs, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -141,13 +148,7 @@ void optiq_opi_print_perf()
 	printf(" %d %d %8.2f %d  %d %d %8.2f %d  %d %d %8.2f %d \n", maxcopies, mincopies, avgcopies, medcopies, maxrputs, minrputs, avgrputs, medrputs, maxlinkloads, minlinkloads, avglinkloads, medlinkloads);
 	
 	/* Print path load stat */
-	int i = 0;
-	printf("num of links with path load = %d is %d\n", 0, opi.load_stat[0]);
-
-	for (int i = 1; opi.load_stat[i] != 0; i++) 
-	{
-	    printf("num of links with path load = %d is %d\n", i, opi.load_stat[i]);
-	}
+	optiq_path_print_load_stat(opi.load_stat);
 
 	/* Print actual link load - data size pass through a link*/
 	for (int i = linkloads.size() - 1; i >= 0 && linkloads[i] > 0; i--)
