@@ -143,12 +143,16 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
     float avg_load = 0;
     int med_load = 0;
 
-    int **load = (int **)malloc(sizeof(int *) * num_nodes);
+    int **load = (int **)calloc(1, sizeof(int *) * num_nodes);
 
     for (int i = 0; i < num_nodes; i++)
     {
-	load[i]  = (int *)malloc(sizeof(int) * num_nodes);
-	memset(load[i], 0, num_nodes * sizeof(int));
+	load[i]  = (int *)calloc(1, sizeof(int) * num_nodes);
+
+	for (int j = 0; j < num_nodes; j++)
+	{
+	    load[i][j] = 0;
+	}
     }
 
     std::vector<int> hops;
@@ -189,6 +193,7 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
 
 		if (max_load < load[i][j]) {
 		    max_load = load[i][j];
+		    printf("max_load = %d for [%d %d] arc\n", max_load, i, j);
 		}
 
 		if (min_load > load[i][j]) {

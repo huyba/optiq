@@ -7,8 +7,9 @@
 
 void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct path *> &mpi_paths)
 {
-    int world_size;
+    int world_size, rank;
 
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
     MPI_Comm_size (MPI_COMM_WORLD, &world_size);
 
     std::vector<struct job> jobs;
@@ -26,6 +27,11 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
     }
 
     optiq_topology_path_reconstruct_new (source_dests, mpi_paths);
+
+    if (rank == 0)
+    {
+	optiq_path_print_paths(mpi_paths);
+    }
 }
 
 void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls)
