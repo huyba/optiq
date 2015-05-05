@@ -251,7 +251,6 @@ void optiq_path_print_stat(std::vector<struct path *> &paths, int num_nodes, int
 
 void optiq_path_print_load_stat(int *load_stat)
 {
-    printf("\n");
     /* Print path load stat */
     int i = 0;
     printf("num of links with path load = %d is %d\n", 0, load_stat[0]);
@@ -264,9 +263,31 @@ void optiq_path_print_load_stat(int *load_stat)
 
 void optiq_path_print_link_load (int *load_stat, int datasize)
 {
+    int minload = load_stat[1] * datasize;
+    int maxload = 0, medload = 0;
+    double totalload = 0, avgload;
+    int numlinks = 0;
+    int i = 0;
+
+    for (i = 1; load_stat[i] != 0; i++)
+    {
+	totalload += (double) load_stat[i] * datasize;
+	numlinks += load_stat[i];
+    }
+
+    maxload = (i - 1) * datasize;
+
+    avgload = totalload / numlinks;
+
+    medload = load_stat[i/2] * datasize;
+
+    printf(" %d %d %4.2f %d  %d %d %4.2f %d  %d %d %4.2f %d\n", 0, 0, 0.0, 0, 0, 0, 0.0, 0, maxload, minload, avgload, medload);
+
+    optiq_path_print_load_stat(load_stat);
+
     for (int i = 1; load_stat[i] != 0; i++)
     {
-        printf("link load = %d\n", load_stat[i] * datasize);
+        printf("%d link has load = %ld\n", load_stat[i], i * datasize);
     }
 }
 

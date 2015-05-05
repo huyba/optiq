@@ -45,7 +45,7 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
 
     if (rank == 0) {
         optiq_path_print_stat (mpi_paths, size, topo->num_edges);
-	optiq_path_print_load_stat(opi.load_stat);
+	//optiq_path_print_load_stat(opi.load_stat);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -181,7 +181,9 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     }
     
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
-    optiq_path_print_link_load (opi.load_stat, datasize);
+    if (rank == 0) {
+	optiq_path_print_link_load (opi.load_stat, datasize);
+    }
 
     if (odp.print_mem_avail)
     {

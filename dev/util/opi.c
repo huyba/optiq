@@ -93,7 +93,8 @@ void optiq_opi_print_perf()
     {
 	int mincopies = 0, maxcopies = 0, medcopies = 0, total_numcopies;
 	int minrputs = 0, maxrputs = 0, medrputs = 0, total_rputs = 0;
-	int minlinkloads = 0, maxlinkloads = 0, medlinkloads = 0, total_linkloads = 0;
+	int minlinkloads = 0, maxlinkloads = 0, medlinkloads = 0;
+	long total_linkloads = 0;
 	double avgcopies = 0, avglinkloads = 0, avgrputs = 0;
 
 	std::vector<int> copies (max_opi.all_numcopies, max_opi.all_numcopies + size);
