@@ -154,7 +154,9 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
     {
 	myfile << "set Paths[" << jobs[i].job_id << "] :=" << std::endl;
 
-	for (int j = 0; j < jobs[i].paths.size(); j++)
+	int max = jobs[i].paths.size() > max_num_paths ? max_num_paths : jobs[i].paths.size();
+
+        for (int j = 0; j < max; j++)
 	{
 	    myfile << jobs[i].paths[j]->path_id << std::endl;
 	}
