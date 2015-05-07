@@ -57,6 +57,8 @@ void optiq_opi_collect()
 
     MPI_Reduce (&opi.get_header_time, &max_opi.get_header_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
+    max_opi.iters = opi.iters;
+
     int size, rank;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
     MPI_Comm_size (MPI_COMM_WORLD, &size);
@@ -67,6 +69,7 @@ void optiq_opi_collect()
     for (it  = opi.link_loads.begin(); it != opi.link_loads.end(); it++)
     {
 	link_loads[in] = it->second;
+	in++;
     }
 
     if (rank == 0)
@@ -83,7 +86,7 @@ void optiq_opi_collect()
     MPI_Gather (link_loads, 9, MPI_INT, max_opi.all_link_loads, 9, MPI_INT, 0, MPI_COMM_WORLD);
 }
 
-void optiq_opi_print_perf()
+void optiq_opi_compute_stat()
 {
     int size, rank;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -105,6 +108,7 @@ void optiq_opi_print_perf()
 
 	std::vector<int> linkloads (max_opi.all_link_loads, max_opi.all_link_loads + size * 9);
 	std::sort (linkloads.begin(), linkloads.end());
+	opi.linkloads = linkloads;
 
 	int ncpy = 0, nrput = 0, nlinks = 0;
 	maxcopies = copies[size - 1];
@@ -147,32 +151,93 @@ void optiq_opi_print_perf()
 	medlinkloads = linkloads[size * 9 - 1 - nlinks/2];
 	avglinkloads = (double) total_linkloads / nlinks;
 
-	printf(" %d %d %8.2f %d  %d %d %8.2f %d  %d %d %8.2f %d \n", maxcopies, mincopies, avgcopies, medcopies, maxrputs, minrputs, avgrputs, medrputs, maxlinkloads, minlinkloads, avglinkloads, medlinkloads);
+	opi.copies.max = maxcopies;
+	opi.copies.min = mincopies;
+	opi.copies.avg = avgcopies;
+	opi.copies.med = medcopies;
+	opi.copies.total = total_numcopies;
 	
-	/* Print path load stat */
-	optiq_path_print_load_stat(opi.load_stat);
+	opi.rputs.max = maxrputs;
+	opi.rputs.min = minrputs;
+	opi.rputs.avg = avgrputs;
+	opi.rputs.med = medrputs;
+	opi.rputs.total = total_rputs;
 
-	/* Print actual link load - data size pass through a link*/
-	for (int i = linkloads.size() - 1; i >= 0 && linkloads[i] > 0; i--)
-	{
-	    printf("link load = %d\n", linkloads[i]);
-	}
+	opi.load_link.max = maxlinkloads;
+	opi.load_link.min = minlinkloads;
+	opi.load_link.avg = avglinkloads;
+	opi.load_link.med = medlinkloads;
+	opi.load_link.total = total_linkloads;
     }
 }
 
 void optiq_opi_print()
 {
-    double max_time =  max_opi.transfer_time / opi.iters;
+    printf("%s ", opi.prefix);
+
+    printf(" %d ", opi.test_id);
+
+    printf("%s ", opi.name);
+
+    printf(" msg = %d chunk = %d ", opi.message_size, opi.chunk_size);
+
+    double max_time =  max_opi.transfer_time / max_opi.iters;
     double bw = (double) max_opi.recv_len / max_time / 1024 / 1024 * 1e6;
 
     if (max_opi.recv_len < 1024) {
-	printf(" %ld %8.4f %8.4f ", max_opi.recv_len, max_time, bw);
+	printf(" %ld", max_opi.recv_len);
     }
     else if (max_opi.recv_len < 1024 * 1024) {
-	printf(" %ld %8.4f %8.4f ", max_opi.recv_len/1024, max_time, bw);
+	printf(" %ld", max_opi.recv_len/1024);
     }
     else {
-	printf(" %ld %8.4f %8.4f ", max_opi.recv_len/1024/1024, max_time, bw);
+	printf(" %ld", max_opi.recv_len/1024/1024);
+    }
+
+    printf(" %8.4f %8.4f ", max_time, bw);
+
+    printf(" %4.0f %d %d %4.2f %d ", opi.numpaths.total, opi.numpaths.max, opi.numpaths.min, opi.numpaths.avg, opi.numpaths.med);
+
+    printf(" %4.0f %d %d %4.2f %d ", opi.hops.total, opi.hops.max, opi.hops.min, opi.hops.avg, opi.hops.med);
+
+    printf(" %4.0f %d %d %4.2f %d ", opi.copies.total, opi.copies.max, opi.copies.min, opi.copies.avg, opi.copies.med);
+
+    printf(" %d %d %4.2f %d ", opi.load_path.max, opi.load_path.min, opi.load_path.avg, opi.load_path.med);
+    
+    printf(" %d %d %4.2f %d ", opi.load_link.max, opi.load_link.min, opi.load_link.avg, opi.load_link.med);
+
+    printf(" %4.0f %d %d %4.2f %d  ", opi.rputs.total, opi.rputs.max, opi.rputs.min, opi.rputs.avg, opi.rputs.med);
+
+    printf("\n");
+
+    /* Print link load - num. of paths */
+    for (int i = 0; opi.load_stat[i] != -1; i++)
+    {
+	printf("Path: %d links has %d paths\n", opi.load_stat[i], i);
+    }
+
+    /* Print link load - actual data size */
+    std::map<int, int> linkloadfreq;
+    linkloadfreq.clear();
+    std::map<int, int>::iterator it;
+
+    for (int i = opi.linkloads.size() - 1; i >= 0 && opi.linkloads[i] > 0; i--)
+    {
+	it = linkloadfreq.find(opi.linkloads[i]);
+
+	if (it != linkloadfreq.end())
+	{
+	    it->second++;
+	}
+	else 
+	{
+	    linkloadfreq.insert(std::pair<int, int> (opi.linkloads[i], 1));
+	}
+    }
+
+    for (it = linkloadfreq.begin(); it != linkloadfreq.end(); it++)
+    {
+	printf("Data: %d links has %d data size passed through\n", it->second, it->first);
     }
 
     if (odp.print_elapsed_time)
@@ -187,6 +252,8 @@ void optiq_opi_print()
 	printf("local mem req time is %8.4f\n", max_opi.local_mem_req_time);
 	printf("total mem req time is %8.4f\n", max_opi.total_mem_req_time);
     }
+
+    printf("\n");
 }
 
 void optiq_opi_clear()
@@ -235,13 +302,21 @@ void optiq_opi_clear()
     odp.print_job = false;
     odp.print_done_status = false;
     odp.print_transport_perf = false;
-    odp.collect_transport_perf = false;
+    odp.print_mpi_paths = false;
 
+    odp.collect_transport_perf = false;
     odp.collect_timestamp = false;
 
     opi.numcopies = 0;
     opi.numrputs = 0;
     opi.link_loads.clear();
+
+    opi.load_link = optiq_stat();
+    opi.load_path = optiq_stat();
+    opi.hops = optiq_stat();
+    opi.copies = optiq_stat();
+    opi.numpaths = optiq_stat();
+    opi.rputs = optiq_stat();
 
     if (opi.load_stat != NULL) 
     {

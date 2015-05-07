@@ -2,7 +2,7 @@
 #define OPTIQ_JOB_H
 
 #include <vector>
-
+#include <opi.h>
 #include "path.h"
 
 struct optiq_memregion;
@@ -41,5 +41,7 @@ void optiq_job_remove_paths_over_maxload (std::vector<struct job> &jobs, int max
 void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, int demand, char *modeldat, int max_num_paths);
 
 void optiq_jobs_convert_ids_to_ranks (std::vector<struct job> &jobs, std::vector<struct path *> &path_ids, int num_ranks_per_node);
+
+void optiq_opi_jobs_stat(std::vector<struct job> &jobs);
 
 #endif

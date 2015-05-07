@@ -13,6 +13,8 @@ void optiq_topology_path_reconstruct_new (std::vector<std::pair<int, int> > &sou
 	int dest_rank = source_dests[i].second;
 
         struct path *p = (struct path*) calloc (1, sizeof (struct path));
+	p->path_id = i;
+	p->arcs.clear();
 
         optiq_topolog_reconstruct_path(source_rank, dest_rank, *p);
 

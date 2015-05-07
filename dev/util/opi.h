@@ -3,6 +3,7 @@
 
 #include <sys/time.h>
 #include <map>
+#include <vector>
 
 #include "path.h"
 
@@ -24,6 +25,14 @@ struct timestamp {
     timeval tv;
 };
 
+struct optiq_stat {
+    int max;
+    int min;
+    int med;
+    double avg;
+    double total;
+};
+
 struct optiq_performance_index {
     double transfer_time;
     double build_path_time;
@@ -40,15 +49,12 @@ struct optiq_performance_index {
     int long recv_len;
     int iters;
 
-    int optiq_max_load;
-    int optiq_min_load;
-    int optiq_avg_load;
-    int optiq_total_load;
-
-    int optiq_max_hops;
-    int optiq_min_hops;
-    int optiq_avg_hops;
-    int optiq_total_hops;
+    int test_id;
+    char prefix[5];
+    char name[256];
+    int message_size;
+    int chunk_size;
+    struct optiq_stat load_link, load_path, hops, copies, numpaths, rputs;
 
     std::vector<struct path *> paths;
     std::vector<struct timestamp> timestamps;
@@ -60,6 +66,7 @@ struct optiq_performance_index {
     int numrputs;
     int *all_numrputs;
     int *load_stat;
+    std::vector<int> linkloads;
 };
 
 struct optiq_debug_print {
@@ -85,6 +92,7 @@ struct optiq_debug_print {
     bool print_job;
     bool print_done_status;
     bool print_transport_perf;
+    bool print_mpi_paths;
 
     bool collect_timestamp;
     bool collect_transport_perf;
@@ -102,7 +110,7 @@ void optiq_opi_collect();
 
 void optiq_opi_print();
 
-void optiq_opi_print_perf();
+void optiq_opi_compute_stat();
 
 void optiq_opi_clear();
 

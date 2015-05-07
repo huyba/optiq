@@ -1,6 +1,8 @@
 #include <mpi.h>
 #include <sys/time.h>
 
+#include <opi.h>
+
 double mpi_time = 0;
 
 void gather_and_print_time (timeval t0, timeval t1, int iters, long int recv_len, int world_rank)
@@ -17,10 +19,9 @@ void gather_and_print_time (timeval t0, timeval t1, int iters, long int recv_len
 
     if (world_rank == 0)
     {
-	max_time = max_time / iters;
-	mpi_time = max_time;
-	double bw = (double) total_length / max_time / 1024 / 1024 * 1e6;
-	printf(" %ld %8.4f %8.4f ", total_length/1024/1024, max_time, bw);
+	max_opi.transfer_time = max_time;
+	max_opi.iters = iters;
+	max_opi.recv_len = total_length;
     }
 }
 

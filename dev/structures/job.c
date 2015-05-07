@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string.h>
 #include <math.h>
+#include <algorithm>
 
 #include "util.h"
 #include "job.h"
@@ -554,4 +555,25 @@ void optiq_jobs_convert_ids_to_ranks (std::vector<struct job> &jobs, std::vector
 	    path_ids.push_back(p);
 	}
     }
+}
+
+void optiq_opi_jobs_stat(std::vector<struct job> &jobs)
+{
+    std::vector<int> numpaths;
+    numpaths.clear();
+    int total_numpaths = 0;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        total_numpaths += jobs[i].paths.size();
+        numpaths.push_back(jobs[i].paths.size());
+    }
+
+    std::sort(numpaths.begin(), numpaths.end());
+
+    opi.numpaths.total = total_numpaths;
+    opi.numpaths.max = numpaths[numpaths.size()-1];
+    opi.numpaths.min = numpaths[0];
+    opi.numpaths.avg = total_numpaths/numpaths.size();
+    opi.numpaths.med = numpaths[numpaths.size()/2];
 }
