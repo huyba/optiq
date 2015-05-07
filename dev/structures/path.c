@@ -325,6 +325,8 @@ void optiq_path_compute_link_load (int *load_stat, int datasize)
 
     /*optiq_path_print_load_stat(load_stat);*/
 
+    opi.linkloads.clear();
+
     for (int i = 1; load_stat[i] != -1; i++)
     {
 	if (load_stat[i] != 0)
