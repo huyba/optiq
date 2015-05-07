@@ -840,6 +840,11 @@ void optiq_recv_rput_done_adv_fn(pami_context_t context, void *cookie, const voi
 	}
 
 	pami_transport->transport_info.forward_headers.push_back (message_header);
+
+	if (odp.collect_transport_perf)
+	{
+	    opi.numcopies++;
+	}
     }
 }
 
@@ -1253,7 +1258,21 @@ void optiq_pami_transport_rput_message (struct optiq_message_header *header)
 
     optiq_pami_rput(pami_transport->client, pami_transport->context, &header->mem.mr, header->mem.offset, header->length, pami_transport->endpoints[dest], &far_mr.mr, far_mr.offset, rput_cookie, NULL, optiq_pami_rput_rdone_fn);
 
-    /*Now the header will contain the far memregion instead of local memregion*/
+    if (odp.collect_transport_perf)
+    {
+	std::map<int, int>::iterator it = opi.link_loads.find(dest); 
+
+	if (it != opi.link_loads.end()) 
+	{
+	    it->second += header->length;
+	}
+	else
+	{
+	    opi.link_loads.insert ( std::pair<int, int> (dest, header->length) );
+	}
+    }
+    
+    /* Now the header will contain the far memregion instead of local memregion */
     memcpy(&header->mem, &far_mr, sizeof(struct optiq_memregion));
 }
 
@@ -1391,7 +1410,13 @@ void optiq_pami_transport_execute_new ()
 		pami_transport->transport_info.local_headers.erase (pami_transport->transport_info.local_headers.begin());
 	    }
 
-	    if (header != NULL) {
+	    if (header != NULL) 
+	    {
+		if (odp.collect_transport_perf) 
+		{
+		    opi.numrputs++;
+		}
+
 		optiq_pami_transport_rput_message (header);
 	    }
 	}

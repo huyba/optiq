@@ -7,8 +7,9 @@
 
 void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct path *> &mpi_paths)
 {
-    int world_size;
+    int world_size, rank;
 
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
     MPI_Comm_size (MPI_COMM_WORLD, &world_size);
 
     std::vector<struct job> jobs;
@@ -26,6 +27,22 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
     }
 
     optiq_topology_path_reconstruct_new (source_dests, mpi_paths);
+
+    opi.numpaths.total = mpi_paths.size();
+    opi.numpaths.avg = 1;   
+    opi.numpaths.max = 1;
+    opi.numpaths.min = 1;
+    opi.numpaths.med = 1;
+
+    if (odp.print_mpi_paths)
+    {
+	if (rank == 0)
+	{
+	    optiq_path_print_paths(mpi_paths);
+	}	
+
+	MPI_Barrier(MPI_COMM_WORLD);
+    }
 }
 
 void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls)
@@ -44,7 +61,7 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
     MPI_Comm_size (MPI_COMM_WORLD, &size);
 
     if (rank == 0) {
-        optiq_path_print_stat (mpi_paths, size, topo->num_edges);
+        optiq_path_compute_stat (mpi_paths, size, topo->num_edges);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -85,8 +102,7 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     }
 
     if (rank == 0) {
-	optiq_path_print_stat (opi.paths, size, topo->num_edges);
-	/*optiq_path_print_paths_coords (opi.paths, topo->all_coords);*/
+	optiq_path_compute_stat (opi.paths, size, topo->num_edges);
     }
 
     if (odp.print_timestamp) {
@@ -175,11 +191,21 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     optiq_input_convert_jobs_to_alltoallv (jobs, &sendbuf, &sendcounts, &sdispls, &recvbuf, &recvcounts, &rdispls, size, rank);
 
-    if (rank == 0) {
-	printf(" %d MPI_Alltoallv msg = %d chunk = %d", sched->test_id, datasize, schedule->chunk_size);
+    if (rank == 0) 
+    {
+	sprintf(opi.prefix, "%s", "M");
+	opi.test_id = sched->test_id;
+	sprintf(opi.name, "%s", "MPI_Alltoallv");
+	opi.message_size = datasize;
+	opi.chunk_size = schedule->chunk_size;
     }
     
     optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    if (rank == 0) {
+	optiq_path_compute_link_load (opi.load_stat, datasize);
+	optiq_opi_print();
+    }
 
     if (odp.print_mem_avail)
     {
@@ -189,6 +215,8 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     MPI_Barrier(MPI_COMM_WORLD);
 
     optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, path_ranks);
+
+    optiq_opi_jobs_stat(jobs);
 
     MPI_Barrier(MPI_COMM_WORLD);
     

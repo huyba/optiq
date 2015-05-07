@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	    {
 		//printf("chunk size = %d\n", chunk);
 		optiq_opi_print();
-		optiq_path_print_stat (opi.paths, size, topo->num_edges);
+		optiq_path_compute_stat (opi.paths, size, topo->num_edges);
 	    }
 	//}
     }

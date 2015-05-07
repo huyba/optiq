@@ -83,6 +83,10 @@ int main(int argc, char **argv)
 		schedule->chunk_size = chunk;
 		schedule->auto_chunksize = false;
 
+		odp.collect_transport_perf = true;
+		odp.print_transport_perf = true;
+		//odp.print_mpi_paths = true;
+
 		//odp.print_done_status = true;
 
 		//odp.print_path_rank = true;
@@ -107,20 +111,19 @@ int main(int argc, char **argv)
 
 		if (rank == 0) 
 		{
-		    printf(" %d OPTIQ_Alltoallv msg = %d chunk = %d ", schedule->test_id, nbytes, schedule->chunk_size);
+		    sprintf(opi.prefix, "%s", "O");
+		    opi.test_id = i;
+		    sprintf(opi.name, "%s", "OPTIQ_Alltoallv");
+		    opi.message_size = nbytes;
+		    opi.chunk_size = chunk;
+
+		    optiq_path_compute_stat (opi.paths, size, topo->num_edges);
+		    optiq_opi_compute_stat ();
 
 		    optiq_opi_print();
-
-		    /*if (mpi_time > max_opi.transfer_time) 
-		    {
-			double mpi_bw = max_opi.recv_len / mpi_time / 1024 / 1024 * 1e6;
-			double optiq_bw = max_opi.recv_len / max_opi.transfer_time / 1024 / 1024 * 1e6;
-			printf("Bingo %d %d %8.0f %8.4f %8.0f %8.4f \n", nbytes, chunk, mpi_time, mpi_bw, max_opi.transfer_time, optiq_bw);
-		    }*/
-
-		    optiq_path_print_stat (opi.paths, size, topo->num_edges);
-		    optiq_opi_clear();
 		}
+
+		optiq_opi_clear();
 	    }
 	}
     }

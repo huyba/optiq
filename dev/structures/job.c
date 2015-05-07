@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string.h>
 #include <math.h>
+#include <algorithm>
 
 #include "util.h"
 #include "job.h"
@@ -84,7 +85,7 @@ bool optiq_job_add_one_path_under_load (struct job &ajob, int maxload, int** &lo
     return false;
 }
 
-void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, int demand, char *modeldat)
+void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, int demand, char *modeldat, int max_num_paths)
 {
     std::vector<struct job> jobs;
     std::vector<struct path*> paths;
@@ -154,7 +155,9 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
     {
 	myfile << "set Paths[" << jobs[i].job_id << "] :=" << std::endl;
 
-	for (int j = 0; j < jobs[i].paths.size(); j++)
+	int max = jobs[i].paths.size() > max_num_paths ? max_num_paths : jobs[i].paths.size();
+
+        for (int j = 0; j < max; j++)
 	{
 	    myfile << jobs[i].paths[j]->path_id << std::endl;
 	}
@@ -164,7 +167,9 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 
     for (int i = 0; i < jobs.size(); i++)
     {
-	for (int j = 0; j < jobs[i].paths.size(); j++)
+	int max = jobs[i].paths.size() > max_num_paths ? max_num_paths : jobs[i].paths.size();
+
+	for (int j = 0; j < max; j++)
         {
 	    myfile << "set Path_Arcs[" << jobs[i].job_id << "," << jobs[i].paths[j]->path_id << "] :=" << std::endl;
 
@@ -550,4 +555,25 @@ void optiq_jobs_convert_ids_to_ranks (std::vector<struct job> &jobs, std::vector
 	    path_ids.push_back(p);
 	}
     }
+}
+
+void optiq_opi_jobs_stat(std::vector<struct job> &jobs)
+{
+    std::vector<int> numpaths;
+    numpaths.clear();
+    int total_numpaths = 0;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        total_numpaths += jobs[i].paths.size();
+        numpaths.push_back(jobs[i].paths.size());
+    }
+
+    std::sort(numpaths.begin(), numpaths.end());
+
+    opi.numpaths.total = total_numpaths;
+    opi.numpaths.max = numpaths[numpaths.size()-1];
+    opi.numpaths.min = numpaths[0];
+    opi.numpaths.avg = total_numpaths/numpaths.size();
+    opi.numpaths.med = numpaths[numpaths.size()/2];
 }

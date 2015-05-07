@@ -442,7 +442,7 @@ void optiq_topology_route_along_dimension (int *scoord, int routing_dimension, i
 	/*Through the torus way 3 -> 1 by 2 hops*/
 	else
 	{
-	    /* Route to top*/
+	    /* Route to top */
 	    for (int i = scoord[routing_dimension] + 1; i <= size[routing_dimension] - 1; i++) 
 	    {
 		intermediate_node[routing_dimension] = i;

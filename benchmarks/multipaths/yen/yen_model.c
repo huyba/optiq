@@ -41,6 +41,12 @@ int main(int argc, char **argv)
     int capacity = atoi (argv[12]);
     int demand = atoi (argv[13]);
 
+    int max_num_paths = 50;
+    
+    if (argc > 14) {
+	max_num_paths = atoi (argv[14]);
+    }
+
     for (int i = start; i <= end; i++)
     {
         if (rank == i % numranks)
@@ -55,7 +61,7 @@ int main(int argc, char **argv)
             std::vector<struct path*> paths;
 	    paths.clear();
 
-	    optiq_job_write_jobs_model_format(filepath, maxload, topo->num_nodes, num_ranks_per_node, topo->neighbors, capacity, demand, modeldat);
+	    optiq_job_write_jobs_model_format(filepath, maxload, topo->num_nodes, num_ranks_per_node, topo->neighbors, capacity, demand, modeldat, max_num_paths);
         }
     }
 
