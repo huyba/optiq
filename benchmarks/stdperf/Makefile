@@ -96,6 +96,11 @@ cp:
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/1k/mxload20/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/1k/mxload30/
 
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/all/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/maxpath4/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/maxpath8/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/maxpath16/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/maxpath32/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/extended/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/mxload1/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/mxload3/
@@ -104,6 +109,7 @@ cp:
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/mxload20/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/mxload30/
 
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/4k/all
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/4k/mxload1/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/4k/mxload3/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/4k/mxload7/
