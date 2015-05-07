@@ -87,6 +87,18 @@ We can see that, for disjoint and overlap patterns, most of the time the chunk s
 
 \subsubsection{Number of ranks scaling}
 
+\subsubsection{Number of paths fed into heuristics II}
+
+Quality i.e the performance based on the number of paths
+
+Time to search for paths
+
+\subsubsection{Number of paths fed into model}
+
+Quality
+
+Time to search for paths
+
 \subsubsection{Subset - Type 2 (Subgroup Data Aggregation)}
 
 In the subgroup data aggregation experiment, we aggregated data within a subgroup to one node in the subgroup. In this experiment, we used a 512-nodes partition. The partition was divided into subgroup of size 4, 8, 16, 32, and 64 nodes each. One node in the middle of a subgroup was selected as the destination to aggregate data from all nodes in the subgroup(including itself). The data size is 1MB. We aggregate data using MPI\_Alltoallv and our framework for 20 times, measured and reported the average of the measurements. The aggregation bandwidths are shown in Figure \ref{fig:aggbw}.
