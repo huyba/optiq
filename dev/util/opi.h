@@ -67,6 +67,8 @@ struct optiq_performance_index {
     int *all_numrputs;
     int *load_stat;
     std::vector<int> linkloads;
+    std::map<int, int> hops_dist;
+    std::map<int, int> copies_dist;
 };
 
 struct optiq_debug_print {

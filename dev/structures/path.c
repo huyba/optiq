@@ -162,6 +162,9 @@ void optiq_path_compute_stat(std::vector<struct path *> &paths, int num_nodes, i
     std::vector<int> loads;
     loads.clear();
 
+    std::map<int, int>::iterator it;
+    opi.hops_dist.clear();
+
     for (int i = 0; i < paths.size(); i++) 
     {
 	struct path *p = paths[i];
@@ -180,6 +183,17 @@ void optiq_path_compute_stat(std::vector<struct path *> &paths, int num_nodes, i
 	total_hops += p->arcs.size();
 
 	hops.push_back(p->arcs.size());
+
+	/* Hops distribution */
+	it = opi.hops_dist.find(p->arcs.size());
+	if (it == opi.hops_dist.end())
+	{
+	    opi.hops_dist.insert(std::pair<int, int>(p->arcs.size(), 1));
+	}
+	else
+	{
+	    it->second++;
+	}
     }
 
     avg_hops = (float)total_hops/paths.size();
