@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <iostream>
 #include <fstream>
 #include <string.h>
@@ -11,6 +12,7 @@ int main (int argc, char **argv)
     char *mo = argv[3];
     char *pd = argv[4];
     int testid = atoi (argv[5]);
+    int chunksize = atoi (argv[6]);
 
     FILE * fp;
     char line[256];
@@ -34,24 +36,28 @@ int main (int argc, char **argv)
 	fgets(line, 256, fp);
     }
 
-    int freq = 0, val = 0;
+    int freq = 0, val = 0, msg = 0, chunk = 0, id = 0;
     char s1[256], s2[256], s3[256], s4[256];
 
     while (fgets(line, 80, fp) != NULL)
     {
         if (line[0] == mo[0])
         {
-	    while (line[0] != pd[0])
-	    {
-		fgets(line, 80, fp);
-	    }
+	    sscanf(line, "%s %d %s %s %s %d %s %s %d", s1, &id, s1, s1, s1, &msg, s1, s1, &chunk);
 
-	    while (line[0] == pd[0])
+	    if (testid == id && chunk == chunksize) 
 	    {
-		trim(line);
-		sscanf(line, "%s %d %s %s %d", s1, &freq, s2, s3, &val);
-		myfile << val << " " freq << std::endl;
-		fgets(line, 80, fp);
+		while (line[0] != pd[0])
+		{
+		    fgets(line, 80, fp);
+		}
+
+		while (line[0] == pd[0])
+		{
+		    sscanf(line, "%s %d %s %s %d", s1, &freq, s2, s3, &val);
+		    myfile << val << " " << freq << std::endl;
+		    fgets(line, 80, fp);
+		}
 	    }
 	}
     }
