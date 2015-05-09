@@ -93,6 +93,9 @@ cp:
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/1k/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/2k/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/
+	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/maxload4/
+	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/maxload8/
+	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/maxload16/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/8k/
 
 	 cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/all/
