@@ -1,4 +1,4 @@
-\section{Approaches}
+\section{Paths Searching Approaches}
 \label{sec:approach}
 
 In the Blue Gene Q supercomputers, data transfers are routed using default routing algorithm. The default routing algorithm is proved to be well-balanced in many communication patterns \cite{Chen:BGQ}. However, for certain communication patterns, it results in poor performance due to unbalanced networking load on physical links, in which some links serve more amount of data transferred through than other links. Those links become bottleneck in data movement. In order to improve performance, we propose three approaches aiming for balancing load on physical links. We also give a brief description of a framework called OPTIQ, a realization of our approaches.

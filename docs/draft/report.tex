@@ -19,7 +19,27 @@ Test Id = 3 512 pairs communication of 64 source nodes [0-63] to 512 destination
 
 \section{Subset tests}
 
-Test Id = 87. Partition size 512.
+Subset Test Id = 87. 
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{report_figures/constantr_subset.pdf}
+\vspace{-0.1in}
+\caption{Subset performance}
+\vspace{-0.1in}
+\label{fig:patterns}
+\end{figure}
+
+Total number of nodes 512. Number of sources = 256, number of dest 32 among 256 source nodes.
+
+Optimization performance is a slightly higher than Heuristics, and both are significantly higher than MPI\_Alltoallv. The reason is:
+\begin{itemize}
+\item Optimization and Heuristics used more paths than MPI\_Alltoallv. MPI\_Alltoallv has only 256 paths, Heuristics has 397 and Optimization has 621.
+\item Optimization and Heursitcs has lower maximum load than MPI\_Alltoallv in terms of number of paths as well as data size over physical links.
+\item They all have approximately number of hops (max, min, avg and med).
+\item Heuristics has higher xxx than Optimization.
+\end{itemize}
 
 Number of hops and load - num of paths sharing a physical link.
 
@@ -80,16 +100,6 @@ Number of copies and load - actual amount of data passing through a link.
 \end{figure}
 
 Test Id = 87. Paritition size 2048. 128 sources node sends data to 1024 destination nodes. 8 MB of data for each pair of communication.
-
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.30]{report_figures/constantr_subset.pdf}
-\vspace{-0.1in}
-\caption{Communication patterns}
-\vspace{-0.1in}
-\label{fig:patterns}
-\end{figure}
 
 \begin{center}
     \begin{tabular}{ | l | p{0.75cm} | p{1cm} | p{0.75cm} | p{0.75cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.75cm} | p{0.9cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |}
