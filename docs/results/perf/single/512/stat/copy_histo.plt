@@ -38,7 +38,7 @@ set style line 1 lc rgb "red"
 set style line 2 lc rgb "blue"
 set style line 3 lc rgb "green"
 
-set style fill solid 0.5 #fillstyle
+set style fill solid 1.0 #fillstyle
 set tics out nomirror
 set xlabel "Number of copies" font ",23"
 set ylabel "Number of nodes" font ",23"

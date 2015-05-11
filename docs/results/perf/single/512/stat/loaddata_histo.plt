@@ -36,13 +36,13 @@ set style data histograms
 
 set style line 1 lc rgb "red"
 set style line 2 lc rgb "blue"
-set style line 3 lc rgb "#006400"
+set style line 3 lc rgb "green"
 
-set style fill solid 0.5 #fillstyle
+set style fill solid 1.0 #fillstyle
 set tics out nomirror
 set xlabel "Data size (Bytes) per Link" font ",23"
 set ylabel "Number of Links" font ",23"
 #count and plot
-plot "heu_loaddata_87_64k.dat" u (hist($1,width)):($2) smooth freq w boxes ls 1 title "       Heuristics", \
-"opt_loaddata_87_64k.dat" u (hist($1,width)+width):($2) smooth freq w boxes ls 2 title "Optimization", \
+plot "opt_loaddata_87_64k.dat" u (hist($1,width)+width):($2) smooth freq w boxes ls 1 title "       Optimization", \
+"heu_loaddata_87_64k.dat" u (hist($1,width)):($2) smooth freq w boxes ls 2 title "       Heuristics", \
 "mpi_loaddata_87.dat" u (hist($1,width)+width*2.0):($2) smooth freq w boxes ls 3 title "MPI_Alltoallv"
