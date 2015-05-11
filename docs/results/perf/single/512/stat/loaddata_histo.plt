@@ -11,7 +11,7 @@ set term postscript #output terminal and file
 set tmarg 0
 set bmarg 0
 set lmarg 4
-set rmarg 4
+set rmarg 2
 set output "loaddata_histo.ps"
 set title "Distribution of data sizes over physical links" font ",22"
 

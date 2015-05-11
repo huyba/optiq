@@ -12,5 +12,5 @@ paper:
 	open hipc.pdf
 
 report:
-	pdflatex perfstudy.tex
-	open perfstudy.pdf
+	pdflatex report.tex
+	open report.pdf

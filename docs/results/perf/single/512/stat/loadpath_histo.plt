@@ -2,7 +2,7 @@ set terminal postscript
 
 set tmarg 0
 set bmarg 0
-set lmarg 4
+set lmarg 3
 set rmarg 2
 
 set output "loadpath_histo.ps"
@@ -12,7 +12,7 @@ set logscale y 2
 set yrange []
 set xrange [-1:10]
 set xlabel "Number of paths sharing a link" font ",24" 
-set ylabel "Number of links" font ",24" offset 1 
+set ylabel "Number of links" font ",24" offset 1.5
 
 set boxwidth 0.9 absolute
 set style fill   solid 1.00 border lt -1

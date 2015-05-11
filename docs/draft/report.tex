@@ -7,6 +7,8 @@
 
 \usepackage[pdftex]{graphicx}
 \usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \begin{document}
 \maketitle
@@ -45,6 +47,37 @@ Number of copies and load - actual amount of data passing through a link.
     MPI &  42837 & 47808 & & & & & 16777216 & 8388608 & 8388608 & 8388608 \\ \hline
     \end{tabular}
 \end{center}
+
+\begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.5\textwidth}
+                \includegraphics[width=\textwidth]{report_figures/hop_histo.pdf}
+                \caption{Distribution of number of hops over paths}
+                \label{fig:gull}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.5\textwidth}
+                \includegraphics[width=\textwidth]{report_figures/copy_histo.pdf}
+                \caption{Distribution of number of copies over nodes}
+                \label{fig:tiger}
+        \end{subfigure}
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.5\textwidth}
+                \includegraphics[width=\textwidth]{report_figures/loadpath_histo.pdf}
+                \caption{Distribution of number of paths over physical links}
+                \label{fig:mouse}
+        \end{subfigure}
+	~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+	\begin{subfigure}[b]{0.6\textwidth}
+                \includegraphics[width=\textwidth]{report_figures/loaddata_histo.pdf}
+                \caption{Distribution of data size over physical links}
+                \label{fig:mouse}
+        \end{subfigure}
+        \caption{Historgram of hops, copies, load in terms of data size and number of paths}\label{fig:animals}
+\end{figure}
 
 Test Id = 87. Paritition size 2048. 128 sources node sends data to 1024 destination nodes. 8 MB of data for each pair of communication.
 
