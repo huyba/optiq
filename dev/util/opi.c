@@ -115,6 +115,10 @@ void optiq_opi_compute_stat()
 	maxrputs = rputs[size - 1];
 	maxlinkloads = linkloads[size * 9 - 1];
 
+	std::map<int, int>::iterator it;
+	opi.copies_dist.clear();
+	opi.hops_dist.clear();
+
 	for (int i = size; i >= 0; i--)
 	{
 	    if (copies[i] != 0)
@@ -122,6 +126,17 @@ void optiq_opi_compute_stat()
 		total_numcopies += copies[i];
 		mincopies = copies[i];
 		ncpy++;
+
+		it = opi.copies_dist.find(copies[i]);
+
+		if (it == opi.copies_dist.end())
+		{
+		    opi.copies_dist.insert(std::pair<int, int>(copies[i], 1));
+		}
+		else
+		{
+		    it->second++;
+		}
 	    }
 
 	    if (rputs[i] != 0)
@@ -210,6 +225,20 @@ void optiq_opi_print()
 
     printf("\n");
 
+    std::map<int, int>::iterator it;
+
+    /* Print copies distribution */
+    for (it = opi.copies_dist.begin(); it != opi.copies_dist.end(); it++)
+    {
+	printf("Copy: %d nodes has %d copies\n", it->second, it->first);
+    }
+
+    /* Print hops distribution */
+    for (it = opi.hops_dist.begin(); it != opi.hops_dist.end(); it++)
+    {
+        printf("Hop: %d paths has %d hops\n", it->second, it->first);
+    }
+
     /* Print link load - num. of paths */
     for (int i = 0; opi.load_stat[i] != -1; i++)
     {
@@ -219,7 +248,6 @@ void optiq_opi_print()
     /* Print link load - actual data size */
     std::map<int, int> linkloadfreq;
     linkloadfreq.clear();
-    std::map<int, int>::iterator it;
 
     for (int i = opi.linkloads.size() - 1; i >= 0 && opi.linkloads[i] > 0; i--)
     {
@@ -310,6 +338,8 @@ void optiq_opi_clear()
     opi.numcopies = 0;
     opi.numrputs = 0;
     opi.link_loads.clear();
+    opi.hops_dist.clear();
+    opi.copies_dist.clear();
 
     opi.load_link = optiq_stat();
     opi.load_path = optiq_stat();
