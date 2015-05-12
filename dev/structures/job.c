@@ -561,7 +561,7 @@ void optiq_opi_jobs_stat(std::vector<struct job> &jobs)
 {
     std::vector<int> numpaths;
     numpaths.clear();
-    int total_numpaths = 0;
+    double total_numpaths = 0.0;
 
     for (int i = 0; i < jobs.size(); i++)
     {

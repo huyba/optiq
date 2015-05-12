@@ -117,7 +117,6 @@ void optiq_opi_compute_stat()
 
 	std::map<int, int>::iterator it;
 	opi.copies_dist.clear();
-	opi.hops_dist.clear();
 
 	for (int i = size; i >= 0; i--)
 	{
