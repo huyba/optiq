@@ -49,7 +49,7 @@ Regarding loads over physical links, we consider two types of load on physical l
     & Data (MB) & Time ($\mu$s) & BW (MB/s)& \multirow{2}{1cm}{Total Paths} & \multicolumn{4}{ c| }{Per Job} \\ \cline{6-9}
     & & & & & Max & Min & Avg & Med \\ \hline
     OPT & 2048 & 24524 & 83510    & 621 & 5 & 1 & 2.42 & 2 \\ \hline
-    HEU & 2048 & 28765 & 71197    & 397 & 4 & 1 & 1.55 & 1 \\ \hline
+    HEU & 2048 & 26664 & 76807    & 524 & 6 & 1 & 2.04 & 2 \\ \hline
     MPI & 2048 & 42837 & 47808    & 256 & 1 & 1 & 1.00 & 1 \\ \hline
     \end{tabular}
     \caption{Performance with number of paths in 512 nodes experiments}
@@ -64,7 +64,7 @@ Regarding loads over physical links, we consider two types of load on physical l
     & \multirow{2}{1cm}{Total hops} & \multicolumn{4}{ c| }{Per Path} & \multirow{2}{1cm}{Total copies} & \multicolumn{4}{ c| }{Per Node} \\ \cline{3-6} \cline{8-11}
     & & Max & Min & Avg & Med & & Max & Min & Avg & Med \\ \hline
     OPT &  3099 & 8 & 1 & 4.99 & 5 & 128862 & 1218 & 4  & 397.80 & 301\\ \hline
-    HEU &  1863 & 8 & 1 & 4.69 & 5 & 123478 & 1472 & 32 & 400.90 & 320\\ \hline
+    HEU &  2446 & 8 & 1 & 4.67 & 5 & 124422 & 1600 & 21 & 384.02 & 299\\ \hline
     MPI &  1024 & 8 & 1 & 4.00 & 4 &	    &      &    &        &    \\ \hline
     \end{tabular}
     \caption{Number of hops and copies in 512 nodes experiments}
@@ -78,7 +78,7 @@ Regarding loads over physical links, we consider two types of load on physical l
      &  \multicolumn{5}{ c| }{Load (Num of Paths)} & \multicolumn{4}{ c| }{Actual Load (Data Amount) per Link} \\ \hline
     Type & Total & Max & Min & Avg & Med & Max & Min & Avg & Med \\ \hline
     OPT & 1201 & 9 & 1 & 2.58 & 2 & 15597568 & 65536 & 8376830 & 7929856 \\ \hline
-    HEU & 1030 & 3 & 1 & 1.81 & 2 & 25165824 & 2097152 & 9224144 & 8388608 \\ \hline
+    HEU & 1030 & 4 & 1 & 2.16 & 2 & 29360128 & 1376256 & 9092324 & 8388608 \\ \hline
     MPI & 384 & 6 & 1 & 2.67 & 2 & 16777216 & 8388608 & 8388608 & 8388608 \\ \hline
     \end{tabular}
     \caption{Load: number of paths and actual total amount of data over physical links in 512 nodes experiments}
