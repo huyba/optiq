@@ -1,22 +1,49 @@
 \section{Paths Searching Approaches}
 \label{sec:approach}
 
-In the Blue Gene/Q supercomputer, data is routed throught its interconnect network using default routing algorithms. The default routing algorithms are proved to be well-performed in many communication patterns \cite{Chen:BGQ}. However, for certain communication patterns (shown later in this paper), they results in poor performance due to unbalanced networking load on physical links, in which some links serve significant larger amount of data transferred through than other links. This is because the default algorithms use a single path to transfer data between any two nodes in the supercomputer. In addition, the data traverses along the path on certain links regardless of the load on other links. Thus, some links are overloaded while other links have less data or may even be idle. The overloaded links become bottleneck in data movement. Balancing the load on the physical links removes the bottleneck and thus improves the data transfer throughtput. In order to balance the load, we need to involve more physical links in data transfer, search for more paths between sources and destinations and assign load appropriately for each path.
+In the Blue Gene/Q supercomputer, data is routed throught its interconnect network using default routing algorithms. The default routing algorithms are proved to be well-performed in many communication patterns \cite{Chen:BGQ}. However, for certain communication patterns (shown later in this paper), they results in poor performance due to unbalanced networking load on physical links, in which some links serve significant larger amount of data transferred through than other links. This is because the default algorithms use a single path to transfer data between any two nodes in the supercomputer. In addition, the data traverses along the path on certain links regardless of the load on other links. Thus, some links are overloaded while other links have less data or may even be idle. The overloaded links become bottleneck in data movement. Balancing the load on the physical links removes the bottleneck and thus improves the data transfer throughtput. In order to balance the load, we need to involve more physical links in data transfer, search for more paths between source and destination nodes and assign load appropriately for each path.
 
-Searching for paths while bal
+Given a set of source nodes and another set of destination nodes together with data sizes to be transferred from sources to destinations, searching for paths that result in high throughput is challenging due to a very large number of paths available in search space. This leads to significant amount of time spending on searching for paths, calculating and balancing load in involving links.
 
-We model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes finding paths to move data from source vertices to destination vertices to minimize tranfer time. we propose three approaches aiming for balancing load on physical links. We also give a brief description of a framework called OPTIQ, a realization of our approaches. 
+We reduce the search time while maintaining good quality of chosen paths by doing the follows:
+\begin{itemize}
+\item We simplify the load on link by substituting the actual load i.e the amount of data passing throught link by path load i.e. number paths that use a link. This is acceptable when the data amounts assigned on paths are similar. 
+\item We prune the search space by:
+\end{itemize}
 
-We propose three approaches aiming for balancing load on physical links. We also give a brief description of a framework called OPTIQ, a realization of our approaches. The approaches that we present in this section include two heuristic algorithms, and one model-based optimization approach. 
+load: number of paths, actual amount of data.
 
-Before going into details of the algorithms, we give a brief explanation of data structures that we used in the algorithms.
+We propose three approaches aiming for balancing load on physical links. The approaches that we present in this section include two heuristic algorithms, and one model-based optimization approach.
+
+
+alg 1: search for path, consider the load as number of paths, while searching we do prunning to reducing the number of path to be explored.
+
+alg 2 + 3: search for paths first, select from the set of paths, choose by load, or feed the path into the model to actually taken care the data amount.
+
+
+We model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes finding paths to move data from source vertices to destination vertices to minimize tranfer time. we propose three approaches aiming for balancing load on physical links.
+
+The next subsections explain our approaches in detail.
+
+\subsection{Heuristic 1 - Breadth first search based approach}
+
+Our first heuristic approach is based on breadth first search. In this approach, we search for paths between each pair of source and destination using breadth first search and min heap. From a source, we explore paths to lead to its destination. A path, that start from a source, but has not reach to its destination yet is called an \textit{exploring path}. As we explorer along an \textit{exploring path}, we add the path to a min heap. The min heap keep all the exploring paths and return a path with the minimum values of number of hops and loads. Load of each path is a 
+
+We use \textit{struct arc} to present an arc in the graph. A path is set of \textit{arc}s. An arc can be used by zero or many paths. The number of paths uses an arc is called \textit{load} of the arc. Each path has a maxload which is the maximum value of \textit{load}s of arcs of the path. {min\_heap} is a heap of paths. It uses \textit{heap\_compare} function to maintain the order of paths in the heap (heapify). The \textit{heap\_compare} compare two paths based on their number of hops and maxload. It also takes the maxload and maxhops of all paths currently being in the heap.
+
+We explain details of the algorithms in the follows.
+
+From a source, we search for its destination by exploring all of its neighbors. For each neighborsain all possible directions.  Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. Thus, the algorithm returns one path for each pair of source and destination. In this algorithm, we limit exploring paths by constraints of number of hops and maximum load. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
 
 \begin{algorithm}[!htp]
+\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
+\textbf{Output:} Set of paths: one path for a pair of source-destination \\
+
 Structures:
     \begin{algorithmic}
-	\State struct arc \{int u, int v\};
-	\State struct path \{set of arcs, int maxload\};
-	\State min\_heap \{set of paths\}
+        \State struct arc \{int u, int v\};
+        \State struct path \{set of arcs, int maxload\};
+        \State min\_heap \{set of paths\}
     \end{algorithmic}
 
 min\_heap's element comparison function:
@@ -31,27 +58,6 @@ min\_heap's element comparison function:
         \EndFunction
     \end{algorithmic}
 
-\caption*{\textbf{Structures used in the algorithms}}
-\label{alg:struct1}
-
-\end{algorithm}
-
-We use \textit{struct arc} to present an arc in the graph. A path is set of \textit{arc}s. An arc can be used by zero or many paths. The number of paths uses an arc is called \textit{load} of the arc. Each path has a maxload which is the maximum value of \textit{load}s of arcs of the path. {min\_heap} is a heap of paths. It uses \textit{heap\_compare} function to maintain the order of paths in the heap (heapify). The \textit{heap\_compare} compare two paths based on their number of hops and maxload. It also takes the maxload and maxhops of all paths currently being in the heap. 
-
-The next parts explains our approaches in detail.
-
-\subsection{Heuristic 1 - Breadth first search based approach}
-
-Our first heuristic approach is based on breadth first search. In this approach, we search for paths between each pair of source and destination using breadth first search and min heap. From a source, we explore paths to lead to its destination. A path, that start from a source, but has not reach to its destination yet is called an \textit{exploring path}. As we explorer along an \textit{exploring path}, we add the path to a min heap. The min heap keep all the exploring paths and return a path with the minimum values of number of hops and loads. Load of each path is a 
-
-We explain details of the algorithms in the follows.
-
-From a source, we search for its destination by exploring all of its neighbors. For each neighborsain all possible directions.  Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. Thus, the algorithm returns one path for each pair of source and destination. In this algorithm, we limit exploring paths by constraints of number of hops and maximum load. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
-
-\begin{algorithm}[!htp]
-\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
-\textbf{Output:} Set of paths: one path for a pair of source-destination \\
-\\
 Init:
     \begin{algorithmic}
 	\State min\_heap$<$struct path$>$ \textit{exploring\_paths} = $\varnothing$;
@@ -114,6 +120,12 @@ Time complexity: The graph has V vertices and E edges. We have K pairs of (sourc
 \begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
 \textbf{Output:} Set of paths: \textit{k} paths for a pair of source-destination\\
+Structures:
+    \begin{algorithmic}
+        \State struct arc \{int u, int v\};
+        \State struct path \{set of arcs, int maxload\};
+    \end{algorithmic}
+
 Init:
     \begin{algorithmic}
         \State queue$<$struct path$>$ \textit{complete\_paths};

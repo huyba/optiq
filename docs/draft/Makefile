@@ -1,4 +1,4 @@
-all: report
+all: paper
 
 paper:
 	pdflatex hipc.tex
