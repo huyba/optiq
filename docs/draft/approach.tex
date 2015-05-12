@@ -3,37 +3,25 @@
 
 In the Blue Gene/Q supercomputer, data is routed throught its interconnect network using default routing algorithms. The default routing algorithms are proved to be well-performed in many communication patterns \cite{Chen:BGQ}. However, for certain communication patterns (shown later in this paper), they results in poor performance due to unbalanced networking load on physical links, in which some links serve significant larger amount of data transferred through than other links. This is because the default algorithms use a single path to transfer data between any two nodes in the supercomputer. In addition, the data traverses along the path on certain links regardless of the load on other links. Thus, some links are overloaded while other links have less data or may even be idle. The overloaded links become bottleneck in data movement. Balancing the load on the physical links removes the bottleneck and thus improves the data transfer throughtput. In order to balance the load, we need to involve more physical links in data transfer, search for more paths between source and destination nodes and assign load appropriately for each path.
 
-Given a set of source nodes and another set of destination nodes together with data sizes to be transferred from sources to destinations, searching for paths that result in high throughput is challenging due to a very large number of paths available in search space. This leads to significant amount of time spending on searching for paths, calculating and balancing load in involving links.
-
-We reduce the search time while maintaining good quality of chosen paths by doing the follows:
+Given a set of source nodes and another set of destination nodes together with data sizes to be transferred from sources to destinations, searching for paths that result in high throughput is challenging due to a very large number of paths available in search space. This leads to significant amount of time spending on searching for paths, calculating and balancing load in involving links. We reduce the search time while maintaining good quality of chosen paths by doing the follows:
 \begin{itemize}
-\item We simplify the load on link by substituting the actual load i.e the amount of data passing throught link by path load i.e. number paths that use a link. This is acceptable when the data amounts assigned on paths are similar. 
+\item We simplify the load on a link by substituting the actual load i.e the amount of data passing throught the link by path load i.e. number paths that share the link. This is acceptable when the data amounts assigned on paths are similar. 
 \item We prune the search space by:
+\begin{itemize}
+\item Appling load path constrant and number of hops constraint while searching for paths.
+\item Performing 2-step search. In the first step, we search for a number of shortest paths without any constraints. From the set of shortest paths, we apply constraints or use optimization methods to search for final set of paths in the second step. 
+\end{itemize}
 \end{itemize}
 
-load: number of paths, actual amount of data.
+In this paper, we propose three approaches aiming for balancing load on physical links: two heuristic algorithms and one model-based optimization approach. In the first approach, we use the path load instead of actual data load and apply maximum load and maximum hop constraints while searching for paths. In the second and third approaches, we use 2-step search. At the first step, we use Yen's algorithm \cite{Yen:Kpath} to search for a set of shortest paths. For the second step, in the second approach, we use maximum load path constraint to prune the search space, while in the third approach, we use an optimization model with solvers to search for final paths. In this paper, we use Yen's algorithm, but any algorithms searches for K shortest paths should work as well.
 
-We propose three approaches aiming for balancing load on physical links. The approaches that we present in this section include two heuristic algorithms, and one model-based optimization approach.
+In order to search for paths, we model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes searching for paths to move data from source vertices to destination vertices to minimize tranfer time. The next subsections explain our approaches in detail.
 
+\subsection{Heuristic I - Breadth First Search Based Approach}
 
-alg 1: search for path, consider the load as number of paths, while searching we do prunning to reducing the number of path to be explored.
+Our first heuristic approach is based on breadth first search. In this approach, we search for paths between each pair of source and destination using breadth first search and min heap. While we use breadth first search to explore paths, we use the min heap to keep all exploring paths and extract the min path (the order of paths in the min heap is decided by its heapify function). The exploration starts from the sources. From each source, we add 1-hop paths to its neighbors to the min heap. A path in the min heap which starts from a source but has not yet reached to its destination is called an \textit{exploring path}. As we explore we extract the min path, form and add more \textit{exploring paths} to the min heap. Any paths that reaches to its destination is saved for later use. Any paths that is longer than maximum allowed number of hops is removed. The algorithm finishes when the min heap is empty. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}. We explain details of the algorithms in the follows.
 
-alg 2 + 3: search for paths first, select from the set of paths, choose by load, or feed the path into the model to actually taken care the data amount.
-
-
-We model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes finding paths to move data from source vertices to destination vertices to minimize tranfer time. we propose three approaches aiming for balancing load on physical links.
-
-The next subsections explain our approaches in detail.
-
-\subsection{Heuristic 1 - Breadth first search based approach}
-
-Our first heuristic approach is based on breadth first search. In this approach, we search for paths between each pair of source and destination using breadth first search and min heap. From a source, we explore paths to lead to its destination. A path, that start from a source, but has not reach to its destination yet is called an \textit{exploring path}. As we explorer along an \textit{exploring path}, we add the path to a min heap. The min heap keep all the exploring paths and return a path with the minimum values of number of hops and loads. Load of each path is a 
-
-We use \textit{struct arc} to present an arc in the graph. A path is set of \textit{arc}s. An arc can be used by zero or many paths. The number of paths uses an arc is called \textit{load} of the arc. Each path has a maxload which is the maximum value of \textit{load}s of arcs of the path. {min\_heap} is a heap of paths. It uses \textit{heap\_compare} function to maintain the order of paths in the heap (heapify). The \textit{heap\_compare} compare two paths based on their number of hops and maxload. It also takes the maxload and maxhops of all paths currently being in the heap.
-
-We explain details of the algorithms in the follows.
-
-From a source, we search for its destination by exploring all of its neighbors. For each neighborsain all possible directions.  Whenever we reach a destination, we mark the destination as found to no longer search for it on other explorering paths from the same source. Thus, the algorithm returns one path for each pair of source and destination. In this algorithm, we limit exploring paths by constraints of number of hops and maximum load. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}.
+We use \textit{struct arc} to present an arc in the graph. A path is set of \textit{arc}s. An arc can be used by zero or many paths. The number of paths uses an arc is called \textit{load} of the arc. Each path has a \textit{maxload} which is the maximum value of \textit{load}s of arcs of the path. The \textit{min\_heap} is a heap of paths. It uses \textit{heap\_compare} function to maintain the order of paths in the heap (heapify). The \textit{heap\_compare} compare two paths based on their number of hops and \textit{maxload}.
 
 \begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
@@ -48,12 +36,11 @@ Structures:
 
 min\_heap's element comparison function:
     \begin{algorithmic}
-        \Function{heap\_compare} {path p1, path p2, int maxload, int maxhops}
-            \If {both paths has max load greater than maxload}
-                \State choose the one with smaller number of hops.
-            \EndIf
-            \If {One path has max load greater but one path has max load smaller than maxload}
-                \State Choose the one with smaller load.
+        \Function{heap\_compare} {path p1, path p2}
+            \If {one path has lower load}
+                \State choose the one with lower load.
+            \ElsIf {Two paths have equal loads}
+                \State Choose the one with smaller number of hops.
             \EndIf
         \EndFunction
     \end{algorithmic}
@@ -94,6 +81,7 @@ Main:
 	    \State enqueue \textit{np} to \textit{exploring\_paths}
 	    \If {{\it v} is one of the destinations of \textit{s$_i$} of \textit{np}}
 	        \State enqueue \textit{np} to \textit{complete\_paths}
+		\State {Update load of all edges and \textit{maxload} of paths in \textit{exploring paths} as \textit{np} is used}
             \EndIf
 	    \State {\it visited}[\textit{u}][\textit{v}] = true;
 	\EndIf
@@ -105,17 +93,17 @@ Main:
 
 \end{algorithm}
 
-The \textbf{Algorithm \ref{alg:h1}} can be divided into 2 parts. In the first part, which is in the first \textbf{while} loop of the function Heuristic\_search\_I, we start at every source and add 1-hop paths to \textit{exploring\_paths} queue. Those paths are the paths from sources to their neighbors. We need a \textit{break} statement after each adding to make sure that every source can a path before they can all start again. This is to help ...
+The \textbf{Algorithm \ref{alg:h1}} can be divided into 2 parts. In the first part, which is in the first \textbf{while} loop of the function Heuristic\_search\_I, we start at every source and add 1-hop paths to \textit{exploring\_paths} queue. Those paths are the paths from sources to their neighbors. 
 
-In the second part, which is the second \textbf{while} loop of the function Heuristic\_search\_I, we pop an exploring path \textit{p}from the \textit{exploring\_paths}. From the last added vertex \textit{u} of \textit{p}, we exploring all edges from it to it neighbors and add new path \textit{np} = \textit{p} + newly explored edge. If any of its neighbors is final destination of source \textit{s$_i$}, we then add \textit{np} into \textit{complete\_paths}. We continue the work until all the paths are explored.
+In the second part, which is the second \textbf{while} loop of the function Heuristic\_search\_I, we extract the min path \textit{p} from the min heap \textit{exploring\_paths}. From the last added vertex \textit{u} of \textit{p}, we exploring all edges from it to it neighbors and add a new path \textit{np} = \textit{p} + \textit{edge} for each newly explored edge. If any of its neighbors is final destination of source \textit{s$_i$}, we then add \textit{np} into \textit{complete\_paths}. When we add a new path to min heap \textit{exploring\_paths} we also update an table that keeps the loads of all physical links. The load table is used by heapify function to compare \textit{maxload} of paths. We continue the work until all the paths are explored.
 
-Time complexity: The graph has V vertices and E edges. We have K pairs of (source, destinatinon), each source has at most D neighborhoods, then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is $O$(K * ($|$V$|$ + $|$E$|$)). The time complexity is breakdown as following:
+Time complexity: The graph has V vertices and E edges. We have K pairs of (source, destinatinon), each source has at most D neighborhoods, then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is $O$(K * D + K * ($|$V$|$ + $|$E$|$) * log($|$V$|$ + $|$E$|$)). The time complexity is breakdown as following:
 \begin{itemize}
 \item First part: we have K pairs hence K sources, for each source we discover its D neighbors, thus time will be $O$(K*D).
-\item Second part: For this part, we get a path out of \textit{exploring\_paths}, create new paths by exploring its neighbors that are not visited by its source and add the new paths back to \textit{exploring\_paths}. For each sources, every vertex and every edge can be visited in the worst case, the time complexity would be $O$($|$V$|$ + $|$E$|$) minus to the vertices and edges visited by the first part. As we have K sources, the time complexity is $O$(K * ($|$V$|$ + $|$E$|$)).
+\item Second part: For this part, we get a path out of \textit{exploring\_paths}, create new paths by exploring its neighbors that are not visited by its source and add the new paths back to \textit{exploring\_paths}. For each sources, every vertex and every edge can be visited in the worst case, the time complexity would be $O$($|$V$|$ + $|$E$|$) minus to the vertices and edges visited by the first part. At each source, we also need heapify as we add new paths. The time complexity for heapifying is log($|$V$|$ + $|$E$|$)) as we have $O$($|$V$|$ + $|$E$|$) paths in the heap. Since we have K sources, the time complexity is $O$(K * ($|$V$|$ + $|$E$|$) * log($|$V$|$ + $|$E$|$))).
 \end{itemize}
 
-\subsection{Heuristic 2 - Path-based approach}
+\subsection{Heuristic II - Path-based Approach}
 
 \begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
@@ -136,7 +124,7 @@ Main:
 	\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
 	    \While{less than k paths discovered || still have paths to discover}
 		\State Use Yen's algorithm to search for the shortest path \textit{p}.
-		\State Check if adding \textit{p} make the current load over max load.
+		\State Check if adding \textit{p} make the current load over \textit{maxload}.
 		\State If not, add \textit{p} into \textit{complete\_paths}
 	    \EndWhile
 	\EndFor
@@ -152,7 +140,7 @@ In the \textbf{Algorithm \ref{alg:h3}}, we use Yen's algorithm to search for k s
 
 In Agorithm 1 and 2, we aim on balancing the number of paths using physical link. However, we do not consider the actual amount of data transferred on each path. If multiple paths are found, the data is equally split among the paths. To gain better performance, we determine the amount of data to be transferred on each path by using a mathematical model to search for the amount of data to be transferred on each path. The approach takes a number of given paths and amount of data between 2 vertices and use solvers to search for the amount of data on each path. The detail is described as follows.
 
-\subsection{Path-based model optimization}
+\subsection{Path-based Model Optimization}
 
 How do we come up with the model?
 
