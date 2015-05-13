@@ -532,7 +532,7 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
 
     if (odp.collect_transport_perf)
     {
-	//optiq_schedule_compute_path_hopbyte_copy_stat(schedule->local_jobs);
+	optiq_schedule_compute_path_hopbyte_copy_stat(schedule->local_jobs);
     }
 
     /*Reset a few parameters*/
