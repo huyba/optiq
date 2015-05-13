@@ -123,17 +123,6 @@ int main(int argc, char **argv)
 		    optiq_opi_print();
 		}
 
-		MPI_Barrier(MPI_COMM_WORLD);
-
-		optiq_opi_print_path_hopbyte_copy_stat();
-
-		MPI_Barrier(MPI_COMM_WORLD);
-
-		if (rank == 0)
-		{
-		    printf("\n");
-		}
-
 		optiq_opi_clear();
 	    }
 	}

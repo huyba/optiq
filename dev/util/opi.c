@@ -33,6 +33,75 @@ struct optiq_performance_index * optiq_opi_get()
     return &opi;
 }
 
+void optiq_opi_collect_map(std::map<int, int> &input, std::map<int, int> &output)
+{
+    int size, rank;
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &size);
+
+    int *counts = (int *) calloc (1, sizeof(int) * size);
+    int *displs = (int *) calloc (1, sizeof(int) * size);
+
+    int inputsize = input.size() * 2;
+    MPI_Gather (&inputsize, 1, MPI_INT, counts, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    int totalcounts = 0;
+    for (int i = 0; i < size; i++)
+    {
+	displs[i] = totalcounts;
+        totalcounts += counts[i];
+    }   
+
+    int *allinput = NULL;
+    if (rank == 0)
+    {
+        allinput = (int *) calloc (1, sizeof(int) * totalcounts);
+    }
+
+    int *inputfreq;
+ 
+    if (inputsize > 0) 
+    {    
+	inputfreq  = (int*) calloc (1, sizeof(int) * inputsize);
+    }
+
+    std::map<int, int>::iterator it;
+
+    int i = 0;
+    for (it = input.begin(); it != input.end(); it++)
+    {
+        inputfreq[i] = it->first;
+	inputfreq[i+1] = it->second;
+	i += 2;
+    }
+
+    MPI_Gatherv(inputfreq, inputsize, MPI_INT, allinput, counts, displs, MPI_INT, 0, MPI_COMM_WORLD);
+
+    if (rank == 0)
+    {
+	output.clear();
+
+	for (int i = 0; i < totalcounts/2; i++)
+	{
+	    it = output.find(allinput[i*2]);
+
+	    if (it == output.end())
+	    {
+		output.insert(std::pair<int, int> (allinput[i*2], allinput[i*2+1]));
+	    }
+	    else
+	    {
+		it->second += allinput[i*2+1];
+	    }
+	}
+    }
+
+    free(inputfreq);
+    free(allinput);
+    free(counts);
+    free(displs);
+}
+
 void optiq_opi_collect()
 {
     MPI_Reduce (&opi.transfer_time, &max_opi.transfer_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
@@ -84,6 +153,9 @@ void optiq_opi_collect()
     MPI_Gather (&opi.numrputs, 1, MPI_INT, max_opi.all_numrputs, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     MPI_Gather (link_loads, 9, MPI_INT, max_opi.all_link_loads, 9, MPI_INT, 0, MPI_COMM_WORLD);
+
+    optiq_opi_collect_map(opi.path_copy, opi.path_copy);
+    optiq_opi_collect_map(opi.path_hopbyte, opi.path_hopbyte);
 }
 
 void optiq_opi_compute_stat()
@@ -267,6 +339,8 @@ void optiq_opi_print()
 	printf("Data: %d links has %d data size passed through\n", it->second, it->first);
     }
 
+    optiq_opi_print_path_hopbyte_copy_stat();
+
     if (odp.print_elapsed_time)
     {
 	printf("context_advance_time time is %8.4f\n", max_opi.context_advance_time);
@@ -279,6 +353,8 @@ void optiq_opi_print()
 	printf("local mem req time is %8.4f\n", max_opi.local_mem_req_time);
 	printf("total mem req time is %8.4f\n", max_opi.total_mem_req_time);
     }
+
+    printf("\n");
 }
 
 void optiq_opi_print_path_hopbyte_copy_stat()
