@@ -174,6 +174,9 @@ void optiq_schedule_compute_assinged_len_for_path (std::vector<struct optiq_job>
             {
 		jobs[i].paths[j]->assigned_len = jobs[i].buf_length * ((double)(jobs[i].paths[j]->flow) / total_flow);
 	    }
+
+	    jobs[i].paths[j]->nbytes = jobs[i].paths[j]->assigned_len;
+
 	    /*printf("Rank %d path_id = %d flow = %d, total_flow = %d buf_len = %d, assigned_len = %d\n", jobs[i].paths[j]->arcs.front().u, jobs[i].paths[j]->path_id, jobs[i].paths[j]->flow, total_flow, jobs[i].buf_length, jobs[i].paths[j]->assigned_len); */
 	}
     }
@@ -219,6 +222,8 @@ void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_tra
 			jobs[i].paths[jobs[i].current_path_index]->assigned_len -= nbytes;
 			header->path_id = jobs[i].paths[jobs[i].current_path_index]->path_id;
 			found = true;
+
+			jobs[i].paths[jobs[i].current_path_index]->copies++;
 		    }
 
 		    jobs[i].current_path_index = (jobs[i].current_path_index + 1) % jobs[i].paths.size();
@@ -525,11 +530,56 @@ void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispl
     /* Split a message into chunk-size messages */
     optiq_schedule_split_jobs_multipaths (pami_transport, schedule->local_jobs, schedule->chunk_size);
 
+    if (odp.collect_transport_perf)
+    {
+	//optiq_schedule_compute_path_hopbyte_copy_stat(schedule->local_jobs);
+    }
+
     /*Reset a few parameters*/
     optiq_schedule_set (schedule, pami_transport->size);
 
     if (rank == 0 && odp.print_done_status) {
 	printf("Rank %d done scheduling\n", rank);
+    }
+}
+
+void optiq_schedule_compute_path_hopbyte_copy_stat(std::vector<struct optiq_job> &jobs)
+{
+    opi.path_hopbyte.clear();
+    opi.path_copy.clear();
+
+    std::map<int, int>::iterator it;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	for (int j = 0; j < jobs[i].paths.size(); j++)
+	{
+	    int hopbytes = jobs[i].paths[j]->nbytes * jobs[i].paths[j]->arcs.size();
+
+	    it = opi.path_hopbyte.find(hopbytes);
+
+	    if (it != opi.path_hopbyte.end())
+	    {
+		it->second++;
+	    }
+	    else
+	    {
+		opi.path_hopbyte.insert(std::pair<int, int> (hopbytes, 1) );
+	    }
+
+	    int copy = jobs[i].paths[j]->copies * (jobs[i].paths[j]->arcs.size() - 1);
+
+	    it = opi.path_copy.find (copy);
+
+	    if (it != opi.path_copy.end())
+	    {
+		it->second++;
+	    }
+	    else
+	    {
+		opi.path_copy.insert(std::pair<int, int> (copy, 1));
+	    }
+	}
     }
 }
 

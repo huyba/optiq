@@ -23,6 +23,8 @@ struct path {
     int source_rank;
     int dest_rank;
     int assigned_len;
+    int nbytes;
+    int copies;
 };
 
 extern int max_path_length;

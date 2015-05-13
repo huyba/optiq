@@ -115,6 +115,8 @@ void optiq_opi_collect();
 
 void optiq_opi_print();
 
+void optiq_opi_print_path_hopbyte_copy_stat();
+
 void optiq_opi_compute_stat();
 
 void optiq_opi_clear();

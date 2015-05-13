@@ -205,6 +205,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     if (rank == 0) {
 	optiq_path_compute_link_load (opi.load_stat, datasize);
 	optiq_opi_print();
+	printf("\n");
     }
 
     if (odp.print_mem_avail)
