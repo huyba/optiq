@@ -279,8 +279,21 @@ void optiq_opi_print()
 	printf("local mem req time is %8.4f\n", max_opi.local_mem_req_time);
 	printf("total mem req time is %8.4f\n", max_opi.total_mem_req_time);
     }
+}
 
-    printf("\n");
+void optiq_opi_print_path_hopbyte_copy_stat()
+{
+    std::map<int, int>::iterator it;
+
+    for (it = opi.path_hopbyte.begin(); it != opi.path_hopbyte.end(); it++)
+    {
+	printf("B_hopbyte: %d paths has %d hopbytes\n", it->second, it->first);
+    }
+
+    for (it = opi.path_copy.begin(); it!= opi.path_copy.end(); it++)
+    {
+	printf("Y_path_copy: %d paths has %d copies\n", it->second, it->first);
+    }
 }
 
 void optiq_opi_clear()
@@ -339,6 +352,8 @@ void optiq_opi_clear()
     opi.link_loads.clear();
     opi.hops_dist.clear();
     opi.copies_dist.clear();
+    opi.path_copy.clear();
+    opi.path_hopbyte.clear();
 
     opi.load_link = optiq_stat();
     opi.load_path = optiq_stat();
