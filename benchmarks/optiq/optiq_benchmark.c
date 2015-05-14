@@ -1,3 +1,5 @@
+#include <limits.h>
+
 #include "optiq.h"
 #include "opi.h"
 #include "optiq_benchmark.h"
@@ -80,6 +82,36 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
 		it->second++;
 	    }
 	}
+
+	opi.hopbyte.max = 0;
+	opi.hopbyte.min = INT_MAX;
+	opi.hopbyte.avg = 0;
+	opi.hopbyte.total = 0;
+	opi.hopbyte.med = 0;
+	int medindex = 0;
+
+	for (it = opi.path_hopbyte.begin(); it != opi.path_hopbyte.end(); it++)
+	{
+	    opi.hopbyte.total += it->first * it->second;
+
+	    if (opi.hopbyte.min > it->first && it->first > 0)
+	    {
+		opi.hopbyte.min = it->first;
+	    }
+
+	    if (opi.hopbyte.max < it->first)
+	    {
+		opi.hopbyte.max = it->first;
+	    }
+
+	    medindex += it->second;
+	    if (medindex > mpi_paths.size()/2 && opi.hopbyte.med == 0)
+	    {
+		opi.hopbyte.med = it->first;
+	    }
+	}
+
+	opi.hopbyte.avg = opi.hopbyte.total/mpi_paths.size();   
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
