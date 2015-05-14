@@ -303,37 +303,14 @@ void optiq_path_print_load_stat(int *load_stat)
 
 void optiq_path_compute_link_load (int *load_stat, int datasize)
 {
-    int minload = 0;
-    int maxload = 0, medload = 0;
-    double totalload = 0, avgload;
+    double totalload = 0;
     int numlinks = 0;
-    int min = 1;
 
-    while (load_stat[min] == 0)
-    {
-	min++;
-    }
-
-    minload = min * datasize;
-    int i = 0;
-
-    for (i = min; load_stat[i] != -1; i++)
-    {
-	totalload += (double) load_stat[i] * datasize;
-	numlinks += load_stat[i];
-    }
-
-    maxload = (i - 1) * datasize;
-
-    avgload = totalload / numlinks;
-
-    medload = (i / 2) * datasize;
-
-    opi.load_link.total = totalload;
-    opi.load_link.max = maxload;
-    opi.load_link.min = minload;
-    opi.load_link.avg = avgload;
-    opi.load_link.med = medload;
+    opi.load_link.total = 0;
+    opi.load_link.max = 0;
+    opi.load_link.min = 0;
+    opi.load_link.avg = 0;
+    opi.load_link.med = 0;
 
     /*printf(" %d %d %4.2f %d  %d %d %4.2f %d  %d %d %4.2f %d\n", 0, 0, 0.0, 0, 0, 0, 0.0, 0, maxload, minload, avgload, medload);*/
 
@@ -345,13 +322,23 @@ void optiq_path_compute_link_load (int *load_stat, int datasize)
     {
 	if (load_stat[i] != 0)
 	{
+            numlinks+= load_stat[i];
+
 	    for (int j = 0; j < load_stat[i]; j++)
 	    {
+                totalload += i * datasize;
+
 		opi.linkloads.push_back(i * datasize);
 	    }
 	    /*printf("%d link has load = %ld\n", load_stat[i], i * datasize);*/
 	}
     }
+
+    opi.load_link.total = totalload;
+    opi.load_link.min = opi.linkloads[0];
+    opi.load_link.max = opi.linkloads[opi.linkloads.size()-1];
+    opi.load_link.med = opi.linkloads[opi.linkloads.size()/2];
+    opi.load_link.avg = totalload/numlinks;
 }
 
 void optiq_path_write_paths(std::vector<struct path *> &paths, char *filepath)

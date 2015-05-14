@@ -1,3 +1,5 @@
+#include <limits.h>
+
 #include "optiq.h"
 #include "opi.h"
 #include "optiq_benchmark.h"
@@ -39,7 +41,7 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
 	if (rank == 0)
 	{
 	    optiq_path_print_paths(mpi_paths);
-	}	
+	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
     }
@@ -60,8 +62,56 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
     MPI_Comm_size (MPI_COMM_WORLD, &size);
 
-    if (rank == 0) {
+    if (rank == 0) 
+    {
+	std::map<int, int>::iterator it;
+
         optiq_path_compute_stat (mpi_paths, size, topo->num_edges);
+
+	for (int i = 0; i < mpi_paths.size(); i++)
+	{
+	    int hopbytes = mpi_paths[i]->arcs.size() * opi.message_size;
+	    it = opi.path_hopbyte.find(hopbytes);
+
+	    if (it == opi.path_hopbyte.end())
+	    {
+		opi.path_hopbyte.insert(std::pair<int, int>(hopbytes, 1));
+	    }
+	    else
+	    {
+		it->second++;
+	    }
+	}
+
+	opi.hopbyte.max = 0;
+	opi.hopbyte.min = INT_MAX;
+	opi.hopbyte.avg = 0;
+	opi.hopbyte.total = 0;
+	opi.hopbyte.med = 0;
+	int medindex = 0;
+
+	for (it = opi.path_hopbyte.begin(); it != opi.path_hopbyte.end(); it++)
+	{
+	    opi.hopbyte.total += (double)it->first * (double)it->second;
+
+	    if (opi.hopbyte.min > it->first && it->first > 0)
+	    {
+		opi.hopbyte.min = it->first;
+	    }
+
+	    if (opi.hopbyte.max < it->first)
+	    {
+		opi.hopbyte.max = it->first;
+	    }
+
+	    medindex += it->second;
+	    if (medindex > mpi_paths.size()/2 && opi.hopbyte.med == 0)
+	    {
+		opi.hopbyte.med = it->first;
+	    }
+	}
+
+	opi.hopbyte.avg = opi.hopbyte.total/mpi_paths.size();   
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
