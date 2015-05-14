@@ -60,8 +60,26 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
     MPI_Comm_size (MPI_COMM_WORLD, &size);
 
-    if (rank == 0) {
+    if (rank == 0) 
+    {
+	std::map<int, int>::iterator it;
+
         optiq_path_compute_stat (mpi_paths, size, topo->num_edges);
+
+	for (int i = 0; i < mpi_paths.size(); i++)
+	{
+	    int hopbytes = mpi_paths[i]->arcs.size() * opi.message_size;
+	    it = opi.path_hopbyte.find(hopbytes);
+
+	    if (it == opi.path_hopbyte.end())
+	    {
+		opi.path_hopbyte.insert(std::pair<int, int>(hopbytes, 1));
+	    }
+	    else
+	    {
+		it->second++;
+	    }
+	}
     }
 
     MPI_Barrier(MPI_COMM_WORLD);

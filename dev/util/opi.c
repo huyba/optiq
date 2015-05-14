@@ -33,7 +33,7 @@ struct optiq_performance_index * optiq_opi_get()
     return &opi;
 }
 
-void optiq_opi_collect_map(std::map<int, int> &input, std::map<int, int> &output)
+void optiq_opi_collect_map(std::map<int, int> &input, std::map<int, int> &output, struct optiq_stat &stat)
 {
     int size, rank;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -50,7 +50,7 @@ void optiq_opi_collect_map(std::map<int, int> &input, std::map<int, int> &output
     {
 	displs[i] = totalcounts;
         totalcounts += counts[i];
-    }   
+    }
 
     int *allinput = NULL;
     if (rank == 0)
@@ -95,6 +95,36 @@ void optiq_opi_collect_map(std::map<int, int> &input, std::map<int, int> &output
 	    }
 	}
     }
+
+    stat.max = 0;
+    stat.min = INT_MAX;
+    stat.avg = 0;
+    stat.total = 0;
+    stat.med = 0;
+    int medindex = 0;
+
+    for (it = output.begin(); it != output.end(); it++)
+    {
+	stat.total += it->first * it->second;
+
+	if (stat.min > it->first && it->first > 0)
+	{
+	    stat.min = it->first;
+	}
+
+	if (stat.max < it->first)
+	{
+	    stat.max = it->first;
+	}
+
+	medindex += it->second;
+	if (medindex > opi.paths.size()/2 && stat.med == 0)
+	{
+	    stat.med = it->first;
+	}
+    }
+
+    stat.avg = stat.total/opi.numpaths.total;
 
     free(inputfreq);
     free(allinput);
@@ -154,8 +184,10 @@ void optiq_opi_collect()
 
     MPI_Gather (link_loads, 9, MPI_INT, max_opi.all_link_loads, 9, MPI_INT, 0, MPI_COMM_WORLD);
 
-    optiq_opi_collect_map(opi.path_copy, opi.path_copy);
-    optiq_opi_collect_map(opi.path_hopbyte, opi.path_hopbyte);
+    optiq_opi_collect_map(opi.path_copy, opi.path_copy, opi.hopcopy);
+    optiq_opi_collect_map(opi.path_hopbyte, opi.path_hopbyte, opi.hopbyte);
+
+    
 }
 
 void optiq_opi_compute_stat()
@@ -283,6 +315,10 @@ void optiq_opi_print()
     printf(" %8.4f %8.4f ", max_time, bw);
 
     printf(" %4.0f %d %d %4.2f %d ", opi.numpaths.total, opi.numpaths.max, opi.numpaths.min, opi.numpaths.avg, opi.numpaths.med);
+
+    printf(" %4.0f %d %d %4.2f %d ", opi.hopbyte.total, opi.hopbyte.max, opi.hopbyte.min, opi.hopbyte.avg, opi.hopbyte.med);
+
+    printf(" %4.0f %d %d %4.2f %d ", opi.hopcopy.total, opi.hopcopy.max, opi.hopcopy.min, opi.hopcopy.avg, opi.hopcopy.med);
 
     printf(" %4.0f %d %d %4.2f %d ", opi.hops.total, opi.hops.max, opi.hops.min, opi.hops.avg, opi.hops.med);
 
@@ -437,6 +473,8 @@ void optiq_opi_clear()
     opi.copies = optiq_stat();
     opi.numpaths = optiq_stat();
     opi.rputs = optiq_stat();
+    opi.hopbyte = optiq_stat();
+    opi.hopcopy = optiq_stat();
 
     if (opi.load_stat != NULL) 
     {

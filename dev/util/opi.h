@@ -54,7 +54,7 @@ struct optiq_performance_index {
     char name[256];
     int message_size;
     int chunk_size;
-    struct optiq_stat load_link, load_path, hops, copies, numpaths, rputs;
+    struct optiq_stat load_link, load_path, hops, copies, numpaths, rputs, hopbyte, hopcopy;
 
     std::vector<struct path *> paths;
     std::vector<struct timestamp> timestamps;
