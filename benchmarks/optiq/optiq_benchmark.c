@@ -92,7 +92,7 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
 
 	for (it = opi.path_hopbyte.begin(); it != opi.path_hopbyte.end(); it++)
 	{
-	    opi.hopbyte.total += it->first * it->second;
+	    opi.hopbyte.total += (double)it->first * (double)it->second;
 
 	    if (opi.hopbyte.min > it->first && it->first > 0)
 	    {

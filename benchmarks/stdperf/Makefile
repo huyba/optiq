@@ -71,7 +71,12 @@ cp:
 	cp extract_result.x $(BENCHMARKS_DIR)/stdperf/extract/
 	cp perf_bypathlen.x $(BENCHMARKS_DIR)/stdperf/pathlen/
 
-	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/maxload1
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/maxload2
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/maxload4
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/maxload8
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/maxload16
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/maxload32
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multiranks/heuristics/512/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multisize/heuristics/512/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/all/
