@@ -126,8 +126,14 @@ void optiq_opi_collect_map(std::map<int, int> &input, std::map<int, int> &output
 
     stat.avg = stat.total/opi.numpaths.total;
 
-    free(inputfreq);
-    free(allinput);
+    if (inputsize > 0)
+    {
+	free(inputfreq);
+    }
+    if (rank == 0)
+    {
+	free(allinput);
+    }
     free(counts);
     free(displs);
 }
