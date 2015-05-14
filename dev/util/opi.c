@@ -207,7 +207,7 @@ void optiq_opi_compute_stat()
 	int mincopies = 0, maxcopies = 0, medcopies = 0, total_numcopies = 0;
 	int minrputs = 0, maxrputs = 0, medrputs = 0, total_rputs = 0;
 	int minlinkloads = 0, maxlinkloads = 0, medlinkloads = 0;
-	long total_linkloads = 0;
+        double total_linkloads = 0;
 	double avgcopies = 0, avglinkloads = 0, avgrputs = 0;
 
 	std::vector<int> copies (max_opi.all_numcopies, max_opi.all_numcopies + size);
@@ -273,7 +273,7 @@ void optiq_opi_compute_stat()
 	avgrputs = (double) total_rputs / nrput;
 
 	medlinkloads = linkloads[size * 9 - 1 - nlinks/2];
-	avglinkloads = (double) total_linkloads / nlinks;
+	avglinkloads = total_linkloads / nlinks;
 
 	opi.copies.max = maxcopies;
 	opi.copies.min = mincopies;

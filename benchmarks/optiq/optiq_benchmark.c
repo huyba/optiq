@@ -41,7 +41,7 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
 	if (rank == 0)
 	{
 	    optiq_path_print_paths(mpi_paths);
-	}	
+	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
     }
