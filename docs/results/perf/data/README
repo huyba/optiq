@@ -1,0 +1,38 @@
+
+1. Files contains all data:
+
+numberOfNodes_TYPE_MaxLoadOrMaxPath.dat
+
+Eg: 2k_opt_mp50.dat: contains experiment data for 2k test, optimization, number of paths is at most 50 for a job.
+    2k_heu_ml4.dat: contains experiments data for 2k test, heuristics, max load is 4.
+
+MPI test can be find in any files with heuristics or optimization test.
+
+2. Files contains only part of the data
+
+numberOfNodes_TYPE_MaxloadORMaxPath_chunksize.dat 
+
+Eg: 2k_opt_mp50_64k: contains experiment data for 2k test, optimization, number of paths at most is 50 and chunk size is 64KB.
+
+3. For performance results each file:
+
+O  0 OPTIQ_Alltoallv  msg = 8388608 chunk = 32768  1024 4550.0000 225054.9451   630 9 3 4.92 5  3704484872 14624778 19660 5880134.72 5360844  80368 375 1 127.57 100  2266 6 2 3.60 4  80368 281 1 109.34 102  6 1 1.42 1  3440640 32768 2333065.10 2949120  113161 464 3 149.49 107
+
+Field 1: O or M: O is OPTIQ either heuristics or optimization, M is MPI
+Field 2: Test ID, see the meaning in testid_numbersOfNodes such as testid_2k
+Field 3: Type of test: MPI_Alltoallv or OPTIQ_Alltoallv
+Field: 4-9: message size and chunk size
+Field 10: Total data size in MB
+Field 11: Time
+Field 12: Data size
+Field 13-17: Paths info: total, max, min, avg and med per job.
+Field 18-22: Hopbytes info: total, max, min, avg, med per path.
+Field 23-27: Number of copy per path: total, max, min, avg, med.
+Filed: 28-32: Hops per path: total, max, min, avg and med.
+Field: 33-37: Copies per node: total max, min, avg, med.
+Field: 38-41: Number of paths per link: max, min, avg, med
+Field: 42-45: Data size per link: max, min, avg, med.
+Field: 46-49: Number of rputs: total, max, min, avg, med.
+
+
+O  0 OPTIQ_Alltoallv  msg = 8388608 chunk = 32768  1024 4550.0000 225054.9451   630 9 3 4.92 5  3704484872 14624778 19660 5880134.72 5360844  80368 375 1 127.57 100  2266 6 2 3.60 4  80368 281 1 109.34 102  6 1 1.42 1  3440640 32768 2333065.10 2949120  113161 464 3 149.49 107
