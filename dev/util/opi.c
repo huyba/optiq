@@ -105,7 +105,7 @@ void optiq_opi_collect_map(std::map<int, int> &input, std::map<int, int> &output
 
     for (it = output.begin(); it != output.end(); it++)
     {
-	stat.total += it->first * it->second;
+	stat.total += (double)it->first * (double)it->second;
 
 	if (stat.min > it->first && it->first > 0)
 	{
