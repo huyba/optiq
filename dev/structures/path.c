@@ -172,7 +172,7 @@ void optiq_path_compute_stat(std::vector<struct path *> &paths, int num_nodes, i
 	if (max_hops < p->arcs.size()) {
 	    max_hops = p->arcs.size();
 	}
-	if (min_hops > p->arcs.size()) {
+	if (min_hops > p->arcs.size() && p->arcs.size() > 0) {
 	    min_hops = p->arcs.size();
 	}
 
