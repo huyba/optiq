@@ -1,0 +1,59 @@
+\begin{table}[!htbp]
+   \centering
+    \begin{tabular}{ | l | p{0.75cm} | p{1.0cm} | p{1.0cm} | p{0.75cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |}
+    \hline
+    \multirow{3}{*}{Type} & \multicolumn{3}{ c| }{Performance} & \multicolumn{5}{ c| }{Num. of Paths} \\ \cline{2-9}
+    & Data (MB) & Time ($\mu$s) & BW (MB/s)& \multirow{2}{1cm}{Total Paths} & \multicolumn{4}{ c| }{Per Job} \\ \cline{6-9}
+    & & & & & Max & Min & Avg & Med \\ \hline
+    OPT & 16384  & 56639 & 289270 & 4177 & 6 & 1 & 2.04 & 2 \\ \hline
+    HEU & 16384  & 79024 & 207329 & 5481 & 15 & 1 & 2.68 & 2 \\ \hline
+    MPI & 16384  & 54970 & 298051 & 2048 & 1 & 1 & 1.00 & 1 \\ \hline
+    \end{tabular}
+    \caption{Performance with number of paths in 4096 nodes experiments}
+    \label{table:}
+\end{table}
+
+
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{ | l | p{0.75cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{1.0cm} | p{0.75cm} | p{0.5cm} | p{1.0cm} | p{0.5cm} |}
+    \hline
+    \multirow{3}{*}{Type} & \multicolumn{5}{ c| }{Num. of Hops} & \multicolumn{5}{ c| }{Num. of Copies} \\ \cline{2-11}
+    & \multirow{2}{1cm}{Total hops} & \multicolumn{4}{ c| }{Per Path} & \multirow{2}{1cm}{Total copies} & \multicolumn{4}{ c| }{Per Node} \\ \cline{3-6}     & & Max & Min & Avg & Med & & Max & Min & Avg & Med \\ \hline
+    OPT &  35731 & 16 & 1 & 8.55 & 8 & 1941132 & 3054 & 1 & 898.67 & 798 \\ \hline
+    HEU &  42623 & 16 & 1 & 7.78 & 7 & 1925866 & 3127 & 9 & 839.52 & 665 \\ \hline
+    MPI &  16384 & 16 & 1 & 8.00 & 8 &  &  &  &  &  \\ \hline
+    \end{tabular}
+    \caption{Number of hops and copies in 4096 nodes experiments}
+    \label{table:}
+\end{table}
+
+
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{ | l | p{2cm} | p{1.5cm} | p{1.5cm} | p{1.5cm} | p{1.5cm} | p{1.0cm} | p{0.75cm} | p{0.5cm} | p{1cm} | p{0.75cm} |}
+    \hline
+    \multirow{3}{*}{Type} & \multicolumn{5}{ c| }{Hopbytes} & \multicolumn{5}{ c| }{Num. of Copies} \\ \cline{2-11}
+    & \multirow{2}{1cm}{Total hopbytes} & \multicolumn{4}{ c| }{Per Path} & \multirow{2}{1cm}{Total copies} & \multicolumn{4}{ c| }{Per Path} \\ \cline{3-6}     & & Max & Min & Avg & Med & & Max & Min & Avg & Med \\ \hline
+    OPT &  144394499926 & 129526608 & 81440 & 34568948 & 30101256 & 1941132 & 1845 & 4 & 464.72 & 396 \\ \hline
+    HEU &  143394560134 & 125829120 & 559240 & 26162116 & 15578836 & 1925866 & 1792 & 11 & 351.37 & 210 \\ \hline
+    MPI &  137438953472 & 134217728 & 8388608 & 67108864 & 67108864 &  &  &  &  &  \\ \hline
+    \end{tabular}
+    \caption{Number of hopbytes and copies per path in 4096 nodes experiments}
+    \label{table:}
+\end{table}
+
+
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{ | l | p{0.75cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{1.5cm} | p{1.5cm} | p{1.25cm} | p{1.5cm} |}
+    \hline
+    \multirow{2}{*}{Type} & \multicolumn{5}{ c| }{Load (Num of Paths) per Link} & \multicolumn{4}{ c| }{Actual Load (Data Amount) per Link} \\ \cline{2-10}
+    & Total & Max & Min & Avg & Med & Max & Min & Avg & Med \\ \hline
+    OPT &  4177 & 19 & 1 & 4.00 & 3 & 33816576 & 65536 & 16179460 & 12255232 \\ \hline
+    HEUT &  5481 & 9 & 1 & 4.37 & 4 & 75497472 & 524288 & 14687434 & 9895936 \\ \hline
+    MPI &  2048 & 8 & 1 & 5.15 & 5 & 67108864 & 8388608 & 43165500 & 41943040 \\ \hline
+    \end{tabular}
+    \caption{Load: number of paths and actual total amount of data over physical links in 4096 nodes experiments}
+    \label{table:}
+\end{table}
