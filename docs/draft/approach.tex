@@ -10,8 +10,7 @@ The above problem can be formulated as a multicommodity integral flow problem, w
 %here, first describe briefly the approaches (which you have below), then talk about path search.
 %PM-END
 
-%Present-day supercomputers have thousands of nodes and hundreds of thousands of edges due to complex interconnect topology. This implies a huge search space. 
-This leads to significant amount of time spending on searching for paths, calculating and balancing load in involving links. We reduce the search time while maintaining good quality of chosen paths by doing the follows:
+Present-day supercomputers have thousands of nodes and hundreds of thousands of edges due to complex interconnect topology. This implies a huge search space, thus leads to significant amount of time spending on searching for paths, calculating and balancing load in involving links. We reduce the search time while maintaining good quality of chosen paths by doing the follows:
 
 \begin{itemize}
 \item We simplify the load on a link by substituting the actual load i.e. the amount of data passing through the link by path load i.e. number paths that share the link. This is acceptable when the data amounts assigned on paths are similar.
@@ -22,36 +21,52 @@ This leads to significant amount of time spending on searching for paths, calcul
 \end{itemize}
 \end{itemize}
 
-In this paper, we propose three approaches aiming for balancing load on physical links: two heuristic algorithms and one model-based optimization approach. In the first approach, we use the path load instead of actual data load and apply maximum load and maximum hop constraints while searching for paths. In the second and third approaches, we use 2-step search. At the first step, we use Yen's algorithm \cite{Yen:Kpath} to search for a set of shortest paths. For the second step, in the second approach, we use maximum load path constraint to prune the search space, while in the third approach, we use an optimization model with solvers to search for final paths. In this paper, we use Yen's algorithm, but any algorithms searches for K shortest paths should work as well.
+In this paper, we propose two approaches aiming for balancing load on physical links: one heuristic algorithms and one model-based optimization approach. In both approaches, we use Yen's algorithm \cite{Yen:Kpath} to search for a set of shortest paths. After that, in the first approach, we use maximum load path constraint to prune the search space, while in the second approach, we use an optimization model with solvers to search for final paths. In this paper, we use Yen's algorithm, but any algorithms searches for K shortest paths should work as well.
 
-In order to search for paths, we model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes searching for paths to move data from source vertices to destination vertices to minimize tranfer time. The next subsections explain our approaches in detail.
+In order to search for paths, we model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes searching for paths to move data from source vertices to destination vertices to minimize tranfer time. The next subsection, we briefly describe the K shortest paths generation based on Yen's algorithm.
 
-subsection {K Shortest Path Generation}
+\subsection {K Shortest Path Generation}
 
-\subsection{Heuristic Path-based Approach}
-
-\begin{algorithm}[!htp]
-\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
+\begin{algorithm}[!htbp]
+\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Graph of nodes. Number of shortest path \textit{k}\\
 \textbf{Output:} Set of paths: \textit{k} paths for a pair of source-destination\\
-Structures:
-    \begin{algorithmic}
-        \State struct arc \{int u, int v\};
-        \State struct path \{set of arcs, int maxload\};
-    \end{algorithmic}
+\begin{algorithmic}
+\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
+    \While{(less than k paths discovered $||$ still have paths to discover)}
+	\State Use Yen's algorithm to search for the shortest path \textit{p}.
+        \State Add \textit{p} into \textit{k\_paths} for later use.
+    \EndWhile
+\EndFor
+\end{algorithmic}
 
+\caption{K shortest paths generation}
+\label{alg:h1}
+
+\end{algorithm}
+
+In this algorithm, we go throught all pairs of sources and destinations and generate k shortest paths for each pair. We do stop when either there is no more path to generate or we have enough k paths.
+
+\subsection{Heuristic Approach}
+
+In the Heurisic Approache, we use the k shortest paths for each pair of source and destination as a input. 
+
+\begin{algorithm}[!htbp]
+\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}) and their \textit{k\_paths}. \textit{maxload}\\
+\textbf{Output:} Set of paths: \textit{selected\_paths} for data movement\\
 Init:
     \begin{algorithmic}
-        \State queue$<$struct path$>$ \textit{complete\_paths};
+        \State queue$<$struct path$>$ \textit{complete\_paths};\\
+	int[][] loads: loads of all physical links, init to 0s.\\
     \end{algorithmic}
 Main:
 \begin{algorithmic}
-    \Function {Heuristic\_search\_II}{}
+    \Function {Heuristic\_search}{}
 	\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
-	    \While{less than k paths discovered || still have paths to discover}
-		\State Use Yen's algorithm to search for the shortest path \textit{p}.
-		\State Check if adding \textit{p} make the current load over \textit{maxload}.
-		\State If not, add \textit{p} into \textit{complete\_paths}
-	    \EndWhile
+	    \State Get the first path \textit{p} out of set \textit{k\_paths}.
+	    \State Check if adding \textit{p} make the current load over \textit{maxload}.
+	    \State If Not, add \textit{p} into \textit{complete\_paths}
+	    \State If Yes, check if there is at the current pair has at least one path.
+	    \State If Not, increase the \textit{maxload} by 1
 	\EndFor
     \EndFunction
 \end{algorithmic}
@@ -65,7 +80,7 @@ In the \textbf{Algorithm \ref{alg:h3}}, we use Yen's algorithm to search for k s
 
 In Agorithm 1 and 2, we aim on balancing the number of paths using physical link. However, we do not consider the actual amount of data transferred on each path. If multiple paths are found, the data is equally split among the paths. To gain better performance, we determine the amount of data to be transferred on each path by using a mathematical model to search for the amount of data to be transferred on each path. The approach takes a number of given paths and amount of data between 2 vertices and use solvers to search for the amount of data on each path. The detail is described as follows.
 
-\subsection{Path-based Model Optimization}
+\subsection{Model Optimization Approach}
 
 How do we come up with the model?
 
