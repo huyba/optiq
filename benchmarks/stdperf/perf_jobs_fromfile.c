@@ -104,7 +104,11 @@ int main(int argc, char **argv)
 		//odp.print_recv_rput_done_msg = true;
 		//odp.print_pami_transport_status = true;
 
-		optiq_benchmark_jobs_from_file (filepath, nbytes);
+		bool ret = optiq_benchmark_jobs_from_file (filepath, nbytes);
+
+                if (!ret) {
+                    break;
+                }
 
 		opi.iters = 1;
 		optiq_opi_collect();

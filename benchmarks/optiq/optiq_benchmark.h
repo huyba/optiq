@@ -7,6 +7,6 @@ void optiq_benchmark_mpi_perf(void *sendbuf, int *sendcounts, int *sdispls, void
 
 void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct path *> &mpi_paths);
 
-void optiq_benchmark_jobs_from_file (char *jobfile, int datasize);
+bool optiq_benchmark_jobs_from_file (char *jobfile, int datasize);
 
 #endif

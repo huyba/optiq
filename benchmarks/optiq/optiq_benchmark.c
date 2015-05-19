@@ -162,7 +162,7 @@ void optiq_benchmark_pattern_from_file (char *filepath, int rank, int size)
     optiq_opi_clear();
 }
 
-void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
+bool optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 {
     struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
     int rank = pami_transport->rank;
@@ -189,7 +189,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
             printf("No jobs or paths found from file %s\n", jobfile);
         }
 
-        return;
+        return false;
     }
 
     /* Convert to have paths with node ids and jobs with ranks */
@@ -227,7 +227,7 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 		printf("Not enought paths\n");
 	    }
 
-	    return;
+	    return false;
 	}
     }
 
@@ -323,4 +323,6 @@ void optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
     {
 	optiq_util_print_mem_info(rank);
     }
+
+    return true;
 }

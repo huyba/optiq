@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(MOD)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o
 
-all: bdev mpibm perf_bypathlen.x perf_jobs_fromfile.x extract_result.x cp
+all: bdev mpibm perf_bypathlen.x perf_jobs_fromfile.x extract_result.x groupdist.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -68,6 +68,7 @@ M = mira
 BENCHMARKS_DIR = /gpfs/$(M)-fs0/projects/Performance/abui/optiq/benchmarks
 
 cp:
+	cp groupdist.x $(BENCHMARKS_DIR)/stdperf/groupdist/
 	cp extract_result.x $(BENCHMARKS_DIR)/stdperf/extract/
 	cp perf_bypathlen.x $(BENCHMARKS_DIR)/stdperf/pathlen/
 
@@ -137,4 +138,10 @@ cp:
 
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/2k/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/4k/
-	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/8k/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/8k/maxload4/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/8k/maxload8/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/8k/maxload16/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/8k/maxload1/
+
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/8k/all/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/8k/limited/
