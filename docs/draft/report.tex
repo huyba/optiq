@@ -66,6 +66,14 @@ Among N nodes, N/2 source nodes send data to N/16 destination nodes. The destina
 
 \newpage
 
+%\subsubsection{Number of nodes 8192}
+
+%\input{tables/tables_3_8192.dat}
+
+%\input{report_figures/constantr/3_8192/histo.tex}
+
+%\newpage
+
 \subsection{Overlap set - Test Id = 27}
 
 Among N nodes, N/2 source nodes send data to N/16 destination nodes. The destination nodes are among the source nodes. There are N/2 pairs of communication, 8 MB of data per pair. There is 1 MPI/PAMI rank per node. Experiments are done for N=512, 1024, 2048, 4096 and 8192 nodes.
@@ -113,6 +121,14 @@ Among N nodes, N/2 source nodes send data to N/16 destination nodes. The destina
 \input{report_figures/constantr/27_4096/histo.tex}
 
 \newpage
+
+%\subsubsection{Number of nodes 8192}
+
+%\input{tables/tables_27_8192.dat}
+
+%\input{report_figures/constantr/27_8192/histo.tex}
+
+%\newpage
 
 \subsection{Subset tests - Test Id = 87}
 
@@ -182,6 +198,8 @@ In conclusion, Optimization throughput (83 GB/s) is a slightly higher than Heuri
 \clearpage
 \newpage
 
+%\subsubsection{Number of nodes 8192}
+
 \section{First 128 to 256}
 
 \section {Increasing distance between sources and destinations}
@@ -210,6 +228,30 @@ Number of sources is 256. Sources are [0-256]. Number of destinations is 512. As
 \clearpage
 \newpage
 
+\subsection{Total nodes of 4096}
+
+Number of sources is 512. Sources are [0-511]. Number of destinations is 2048. As the destinations move further from the sources, the performance increases.
+
+\begin{figure}[h]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.40]{report_figures/incrdist/incrdist_4k.pdf}
+\vspace{-0.1in}
+\caption{Increasing distance}
+\vspace{-0.1in}
+\label{fig:incrdist_4k}
+\end{figure}
+
+\clearpage
+\newpage
+
+\input{tables/tables_incrdist_4096.dat}
+
+\input{report_figures/incrdist/4k/histo.tex}
+
+\clearpage
+\newpage
+
 \section {Increasing destination sizes}
 
 \subsection{Total nodes of 2048}
@@ -225,6 +267,40 @@ Number of sources is 64. Number of destinations increases from 128, 256, 512, 10
 \vspace{-0.1in}
 \label{fig:incrsize_2k}
 \end{figure}
+
+\clearpage
+\newpage
+
+\input{tables/tables_incrsize_2k.dat}
+
+\input{report_figures/incrsize/2k/histo.tex}
+
+\clearpage
+\newpage
+
+\subsection{Total nodes of 4096}
+
+Number of sources is 256. Number of destinations increases from 256, 512, 1024, 2048.
+
+\begin{figure}[h]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.40]{report_figures/incrsize/incrsize_4k.pdf}
+\vspace{-0.1in}
+\caption{Increasing Destination Sizes}
+\vspace{-0.1in}
+\label{fig:incrsize_4k}
+\end{figure}
+
+\clearpage
+\newpage
+
+\input{tables/tables_incrsize_4k.dat}
+
+\input{report_figures/incrsize/4k/histo.tex}
+
+\clearpage
+\newpage
 
 \section{Multiple ranks}
 
