@@ -59,18 +59,3 @@
     \caption{Load: number of paths and actual total amount of data over physical links in 2048 nodes experiments}
     \label{table:2048_incrsize_load}
 \end{table}
-
-\begin{table}[!htbp]
-    \centering
-    \begin{tabular}{ | l | p{0.75cm} | p{0.5cm} | p{0.5cm} | p{0.75cm} | p{0.5cm} | }
-    \hline
-    \multirow{2}{*}{Destinations} & \multicolumn{5}{ c| }{Number of hops} \\ \cline{2-6}
-    & Total & Max & Min & Avg & Med \\ \hline
-    1600 1727 & 1216 & 15 & 4 & 9.50 & 10  \\ \hline
-    1600 1855 & 2672 & 18 & 4 & 10.44 & 10  \\ \hline
-    1088 1599 & 5344 & 20 & 3 & 10.44 & 10  \\ \hline
-    576 1599  & 10432 & 21 & 2 & 10.19 & 10 \\ \hline
-    \end{tabular}
-    \caption{Physical distance (number of hops) between sources and destinations}
-    \label{table:2048_incrsize_groupdist}
-\end{table}

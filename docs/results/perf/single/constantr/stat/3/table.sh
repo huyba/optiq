@@ -4,7 +4,11 @@ id=$1
 outfile=../../../../../../draft/tables/tables_$id\_$2.dat
 nodes=$2
 opt=../../../$3/data/opt_mp50.dat
-heu=../../../$3/data/heu_ml4.dat
+heu1=../../../$3/data/heu_ml1.dat
+heu2=../../../$3/data/heu_ml2.dat
+heu4=../../../$3/data/heu_ml4.dat
+heu8=../../../$3/data/heu_ml8.dat
+heu16=../../../$3/data/heu_ml16.dat
 
 > $outfile
 
@@ -77,7 +81,7 @@ echo "    \multirow{2}{*}{Type} & \multicolumn{5}{ c| }{Load (Num of Paths) per 
 echo "    & Total & Max & Min & Avg & Med & Max & Min & Avg & Med \\\\\\\\ \hline" >> $outfile
 
 grep "O  $id OPTIQ_Alltoallv  msg = 8388608 chunk = 65536" $opt | awk '{print "    OPT &  "  $13 " & " $38 " & " $39 " & " $40 " & " $41 " & " $42 " & " $43 " & " int($44) " & " $45 " \\\\ \\hline"}'  >> $outfile
-grep "O  $id OPTIQ_Alltoallv  msg = 8388608 chunk = 65536" $heu | awk '{print "    HEUT &  " $13 " & " $38 " & " $39 " & " $40 " & " $41 " & " $42 " & " $43 " & " int($44) " & " $45 " \\\\ \\hline"}'  >> $outfile
+grep "O  $id OPTIQ_Alltoallv  msg = 8388608 chunk = 65536" $heu | awk '{print "    HEU &  " $13 " & " $38 " & " $39 " & " $40 " & " $41 " & " $42 " & " $43 " & " int($44) " & " $45 " \\\\ \\hline"}'  >> $outfile
 grep "M  $id MPI_Alltoallv  msg = 8388608 chunk = 65536" $opt | awk '{print "    MPI &  " $13 " & " $38 " & " $39 " & " $40 " & " $41 " & " $42 " & " $43 " & " int($44) " & " $45 " \\\\ \\hline"}'  >> $outfile
 
 echo "    \end{tabular}" >> $outfile

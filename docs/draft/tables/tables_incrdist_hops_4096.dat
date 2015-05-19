@@ -1,0 +1,13 @@
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{ | l | p{0.75cm} | p{0.5cm} | p{0.5cm} | p{0.75cm} | p{0.5cm} | }
+    \hline
+    \multirow{2}{*}{Destinations} & \multicolumn{5}{ c| }{Number of hops} \\ \cline{2-6}
+    & Total & Max & Min & Avg & Med \\ \hline
+    512 2559 & 20096 & 21 & 1 & 9.81 & 9  \\ \hline
+    1024 3071 & 21120 & 23 & 1 & 10.31 & 10  \\ \hline
+    1536 3583 & 22144 & 22 & 2 & 10.81 & 10  \\ \hline
+    \end{tabular}
+    \caption{Physical distance (number of hops) between sources and destinations}
+    \label{table:4096_groupdist}
+\end{table}

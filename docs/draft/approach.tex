@@ -1,7 +1,4 @@
-\section{Paths Searching Approaches}
-%PM-BEGIN
-%Since you not only search paths but also move data through them and also do some routing at user level, shall we change this title to \section{Multi-path Data Movement/Routing} or something else.
-%PM-END
+\section{Multi-path Data Movement/Routing}
 \label{sec:approach}
 
 %TODO %Some introduction to this section may be required.
@@ -15,6 +12,7 @@ The above problem can be formulated as a multicommodity integral flow problem, w
 
 %Present-day supercomputers have thousands of nodes and hundreds of thousands of edges due to complex interconnect topology. This implies a huge search space. 
 This leads to significant amount of time spending on searching for paths, calculating and balancing load in involving links. We reduce the search time while maintaining good quality of chosen paths by doing the follows:
+
 \begin{itemize}
 \item We simplify the load on a link by substituting the actual load i.e. the amount of data passing through the link by path load i.e. number paths that share the link. This is acceptable when the data amounts assigned on paths are similar.
 \item We prune the search space by:
@@ -28,93 +26,9 @@ In this paper, we propose three approaches aiming for balancing load on physical
 
 In order to search for paths, we model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes searching for paths to move data from source vertices to destination vertices to minimize tranfer time. The next subsections explain our approaches in detail.
 
-\subsection{Heuristic I - Breadth First Search Based Approach}
+subsection {K Shortest Path Generation}
 
-Our first heuristic approach is based on breadth first search. In this approach, we search for paths between each pair of source and destination using breadth first search and min heap. While we use breadth first search to explore paths, we use the min heap to keep all exploring paths and extract the min path (the order of paths in the min heap is decided by its heapify function). The exploration starts from the sources. From each source, we add 1-hop paths to its neighbors to the min heap. A path in the min heap which starts from a source but has not yet reached to its destination is called an \textit{exploring path}. As we explore we extract the min path, form and add more \textit{exploring paths} to the min heap. Any paths that reaches to its destination is saved for later use. Any paths that is longer than maximum allowed number of hops is removed. The algorithm finishes when the min heap is empty. The algorithm is described in \textbf{Algorithm \ref{alg:h1}}. We explain details of the algorithms in the follows.
-
-We use \textit{struct arc} to present an arc in the graph. A path is set of \textit{arc}s. An arc can be used by zero or many paths. The number of paths uses an arc is called \textit{load} of the arc. Each path has a \textit{maxload} which is the maximum value of \textit{load}s of arcs of the path. The \textit{min\_heap} is a heap of paths. It uses \textit{heap\_compare} function to maintain the order of paths in the heap (heapify). The \textit{heap\_compare} compare two paths based on their number of hops and \textit{maxload}.
-
-\begin{algorithm}[!htp]
-\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. \\
-\textbf{Output:} Set of paths: one path for a pair of source-destination \\
-
-Structures:
-    \begin{algorithmic}
-        \State struct arc \{int u, int v\};
-        \State struct path \{set of arcs, int maxload\};
-        \State min\_heap \{set of paths\}
-    \end{algorithmic}
-
-min\_heap's element comparison function:
-    \begin{algorithmic}
-        \Function{heap\_compare} {path p1, path p2}
-            \If {one path has lower load}
-                \State choose the one with lower load.
-            \ElsIf {Two paths have equal loads}
-                \State Choose the one with smaller number of hops.
-            \EndIf
-        \EndFunction
-    \end{algorithmic}
-
-Init:
-    \begin{algorithmic}
-	\State min\_heap$<$struct path$>$ \textit{exploring\_paths} = $\varnothing$;
-	\State queue$<$struct path$>$ \textit{complete\_paths} = $\varnothing$;
-	\State bool \textit{visisted}[\textit{n}][\textit{n}];
-	\For {0 $<=$ {\it i}, \textit{j} $<$ \textit{n}} 
-	    \State \textit{visited}[{\it i}][{\it j}] = false;
-	\EndFor
-    \end{algorithmic}
-Main:
-
-\begin{algorithmic}
-    \Function {Heuristic\_search\_I}{}
-
-    \While {exist a source \textit{s$_i$} with unvisted neighbor \textit{u}}
-	\State check\_and\_add\_new\_path({\it s}$_i$, \textit{u}, null);
-	\State Pick next \textit{s$_i$} in the sources
-    \EndWhile
-
-    \While {(\textit{exploring\_paths} != $\varnothing$)}
-	\State path \textit{p} = \textit{exploring\_paths}.extract\_min();
-	\State {\it u} = last vertex in the path {\it p};
-	\For {each neighbor \textit{v} of \textit{u}}
-	    \State check\_and\_add\_new\_path({\it u}, \textit{v}, {\it p});
-	\EndFor
-    \EndWhile
-
-    \EndFunction
-\\
-    \Function{check\_and\_add\_new\_path}{int \textit{u}, int \textit{v}, path {\it op}}
-	\If {(!{\it visited}[{\it u}][{\it v}])}
-	    \State create a path \textit{np} = {\it op}
-	    \State add arc $<$\textit{u}, \textit{v}$>$ to \textit{np}
-	    \State enqueue \textit{np} to \textit{exploring\_paths}
-	    \If {{\it v} is one of the destinations of \textit{s$_i$} of \textit{np}}
-	        \State enqueue \textit{np} to \textit{complete\_paths}
-		\State {Update load of all edges and \textit{maxload} of paths in \textit{exploring paths} as \textit{np} is used}
-            \EndIf
-	    \State {\it visited}[\textit{u}][\textit{v}] = true;
-	\EndIf
-    \EndFunction
-\end{algorithmic}
-
-\caption{Heuristic Alg 1: Exploring all paths without constraints}
-\label{alg:h1}
-
-\end{algorithm}
-
-The \textbf{Algorithm \ref{alg:h1}} can be divided into 2 parts. In the first part, which is in the first \textbf{while} loop of the function Heuristic\_search\_I, we start at every source and add 1-hop paths to \textit{exploring\_paths} queue. Those paths are the paths from sources to their neighbors. 
-
-In the second part, which is the second \textbf{while} loop of the function Heuristic\_search\_I, we extract the min path \textit{p} from the min heap \textit{exploring\_paths}. From the last added vertex \textit{u} of \textit{p}, we exploring all edges from it to it neighbors and add a new path \textit{np} = \textit{p} + \textit{edge} for each newly explored edge. If any of its neighbors is final destination of source \textit{s$_i$}, we then add \textit{np} into \textit{complete\_paths}. When we add a new path to min heap \textit{exploring\_paths} we also update an table that keeps the loads of all physical links. The load table is used by heapify function to compare \textit{maxload} of paths. We continue the work until all the paths are explored.
-
-Time complexity: The graph has V vertices and E edges. We have K pairs of (source, destinatinon), each source has at most D neighborhoods, then the time complexity of the \textbf{Algorithm \ref{alg:h1}} is $O$(K * D + K * ($|$V$|$ + $|$E$|$) * log($|$V$|$ + $|$E$|$)). The time complexity is breakdown as following:
-\begin{itemize}
-\item First part: we have K pairs hence K sources, for each source we discover its D neighbors, thus time will be $O$(K*D).
-\item Second part: For this part, we get a path out of \textit{exploring\_paths}, create new paths by exploring its neighbors that are not visited by its source and add the new paths back to \textit{exploring\_paths}. For each sources, every vertex and every edge can be visited in the worst case, the time complexity would be $O$($|$V$|$ + $|$E$|$) minus to the vertices and edges visited by the first part. At each source, we also need heapify as we add new paths. The time complexity for heapifying is log($|$V$|$ + $|$E$|$)) as we have $O$($|$V$|$ + $|$E$|$) paths in the heap. Since we have K sources, the time complexity is $O$(K * ($|$V$|$ + $|$E$|$) * log($|$V$|$ + $|$E$|$))).
-\end{itemize}
-
-\subsection{Heuristic II - Path-based Approach}
+\subsection{Heuristic Path-based Approach}
 
 \begin{algorithm}[!htp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Number of nodes \textit{n}. Graph of nodes. Number of shortest path \textit{k}\\
@@ -142,7 +56,7 @@ Main:
     \EndFunction
 \end{algorithmic}
 
-\caption{Heuristic Alg 2: k shortest paths}
+\caption{Heuristic Alg: k shortest paths}
 \label{alg:h2}
 
 \end{algorithm}
