@@ -30,6 +30,7 @@ int main(int argc, char **argv)
     optiq_pattern_m_to_n_to_jobs (jobs, topo->num_nodes, demand, e1-s1+1, s1, e2-s2+1, s2, topo->num_ranks_per_node, false);
 
     std::vector<int> hops;
+    hops.clear();
 
     double total = 0;
     for (int i = 0; i < jobs.size(); i++)
