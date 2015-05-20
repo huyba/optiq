@@ -51,7 +51,9 @@ In the \textbf{Agorithm} \ref{alg:heu} we aim on balancing the number of paths u
 
 Given a set of pairs of source and destination, for each pair we have an amount of data needed to transfer from the source to the destination and k shortest paths between the source and destination, we need to search for an assignment of data amount for each path that result in highest performance of data movement.
 
-We model the problem as minimizing transfer time for multiple commodities using pre-determined multiple flows in a network given the amount of comodities and the capacities in links of the network. The model is descrbied as follows:
+We model the problem as minimizing transfer time for multiple commodities using pre-determined multiple flows in a network given the amount of comodities and the capacities in links of the network. The model is written in AMPL (A Mathematical Programming Language). The model is descrbied in \textbf{Model} 1.
+
+\begin{algorithm}[!htbp]
 
 \begingroup
 \fontsize{9pt}{9pt}\selectfont
@@ -76,10 +78,10 @@ maximize obj: Z;
 
 subject to
 
-demand {job in Jobs}: sum {p in Paths[job]} 
+demand_con {job in Jobs}: sum {p in Paths[job]} 
 	Flow[job,p] = Demand[job]*Z;
 
-capacity {(i,j) in Arcs}:
+capacity_con {(i,j) in Arcs}:
   sum {job in Jobs, p in Paths[job]: 
     (i,j) in = Path_Arcs[job,p]} Flow[job,p] 
 		<= Capacity[i,j];
@@ -88,20 +90,42 @@ capacity {(i,j) in Arcs}:
 
 \endgroup
 
-Model explanation: we model a supercomputer as a network.
+\caption*{\textbf{Model 1} Data movement optimization}
+\label{mod:opt}
+
+\end{algorithm}
+
+The notions used in \textbf{Model} 1 are explained as follows:
 
 \begin{itemize}
-    \item sets: we have 5 sets: \textit{Nodes}, \textit{Arcs}, \textit{OD}, \textit{Paths} and \textit{Path\_Arcs}. 
+    \item sets: 
 	\begin{itemize}
-	    \item \textit{Nodes}: Is set of nodes in the network, each node represent a compute node in the supercomputer.
-	    \item \textit{Arcs}: Is set of arcs in the network. Each arc represent a physical link in the supercomputer.
+	    \item \textit{Nodes}: set of nodes in the network, each node represent a compute node in the supercomputer.
+	    \item \textit{Arcs}: set of arcs in the network. Each arc represent a physical link in the supercomputer.
+	    \item \textit{Jobs}: set of jobs. Each jobs has a source and a destination.
+	    \item  \textit{Paths}: set of paths for a job.
+	    \item \textit{Path\_Arcs}: set of arcs on a path for a job.
 	\end{itemize}
-    \item params: {\it Capacity}: capacity of each arc; {\it Demand}: amount of data to be transferred in each job between a pair of orgin and destination.
-    \item vars: \textit{Flow}: total flow of each job on each arc; \textit{Z}: is reversed of total time; \textit{total\_flow} total flow of all jobs going through an arc.
+    \item params: 
+	\begin{itemize}
+	    \item {\it Capacity}: capacity of each arc i.e. bandwidth of the physical link.
+	    \item {\it Demand}: amount of data to be transferred in each job between a pair of source and destination.
+	\end{itemize}
+    \item vars:
+	 \begin{itemize}
+	    \item \textit{Flow}: flow of each job on a path. It can be seen as the proprotional bandwidth assigned for the job on that path.
+	    \item \textit{Z}: is reversed of total time.
+	\end{itemize}
     \item objective function: we want to minimize the time or maximize its reversed value i.e. maximize \textit{Z}.
-    \item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
+    \item constraints(subject to): 
+	\begin{itemize}
+	    \item \textit{demand\_con}: flow of a job on equals to the demand of the job divided by the transfer time.
+	    \item \textit{capacity\_con}: total flow on an arc is less than its capacity.
+	\end{itemize}
 \end{itemize}
 
-We feed the model to solvers and get the paths with given proportional bandwidth. Based on that, we can decide how much data we can transfer along each path.
+The model takes a set of nodes, a set of arcs and their corresponding capacity, a set of jobs (source/destination pairs), a demand for each job, a set of path for each job, and a set of arcs for each path as inputs. It searches for an assignment of flow values (proportional capacity) for paths of all the jobs such that the transfer time of all jobs is minimum.
 
-We realize algoirthms and other work in a framework named OPTIQ.
+We feed the model into solvers together with data of nodes, arcs, capacity, paths for jobs and get the paths with given proportional bandwidth. Based on that, we can decide how much data we can transfer along each path.
+
+We realize algoirthms and other implementation in a framework named OPTIQ.
