@@ -6,7 +6,9 @@
     & Data (MB) & Time ($\mu$s) & BW (MB/s)& \multirow{2}{1cm}{Total Paths} & \multicolumn{4}{ c| }{Per Job} \\ \cline{6-9}
     & & & & & Max & Min & Avg & Med \\ \hline
     OPT & 32768  & 187141 & 175097 & 4443 & 3 & 1 & 1.08 & 1 \\ \hline
-    HEU & 32768  & 192102 & 170576 & 18192 & 28 & 1 & 4.00 & 2 \\ \hline
+    HEU 4 & 32768  & 192102 & 170576 & 18192 & 28 & 1 & 4.00 & 2 \\ \hline
+    HEU 8 & 32768  & 191695 & 170938 & 18192 & 28 & 1 & 4.00 & 2 \\ \hline
+    HEU 16 & 32768  & 193735 & 169138 & 18192 & 28 & 1 & 4.00 & 2 \\ \hline
     MPI & 32768  & 270430 & 121169 & 4096 & 1 & 1 & 1.00 & 1 \\ \hline
     \end{tabular}
     \caption{Performance with number of paths in 8192 nodes experiments}
@@ -21,7 +23,9 @@
     \multirow{3}{*}{Type} & \multicolumn{5}{ c| }{Num. of Hops} & \multicolumn{5}{ c| }{Num. of Copies} \\ \cline{2-11}
     & \multirow{2}{1cm}{Total hops} & \multicolumn{4}{ c| }{Per Path} & \multirow{2}{1cm}{Total copies} & \multicolumn{4}{ c| }{Per Node} \\ \cline{3-6}     & & Max & Min & Avg & Med & & Max & Min & Avg & Med \\ \hline
     OPT &  48993 & 21 & 1 & 11.03 & 11 & 5248288 & 7361 & 2 & 936.86 & 512 \\ \hline
-    HEU &  18 & 1 & 6.29 & 4 & 150994944 & 262144 & 13206372.71 & 8126464 & 5784438 & 6790 \\ \hline
+    HEU 4 &  18 & 1 & 6.29 & 4 & 150994944 & 262144 & 13206372.71 & 8126464 & 5784438 & 6790 \\ \hline
+    HEU 8 &  18 & 1 & 6.29 & 4 & 150994944 & 262144 & 13206372.71 & 8126464 & 5784438 & 6790 \\ \hline
+    HEU 16 &  18 & 1 & 6.29 & 4 & 150994944 & 262144 & 13206372.71 & 8126464 & 5784438 & 6790 \\ \hline
     MPI &  45056 & 21 & 1 & 11.00 & 11 &  &  &  &  &  \\ \hline
     \end{tabular}
     \caption{Number of hops and copies in 8192 nodes experiments}
@@ -36,7 +40,9 @@
     \multirow{3}{*}{Type} & \multicolumn{5}{ c| }{Hopbytes} & \multicolumn{5}{ c| }{Num. of Copies} \\ \cline{2-11}
     & \multirow{2}{1cm}{Total hopbytes} & \multicolumn{4}{ c| }{Per Path} & \multirow{2}{1cm}{Total copies} & \multicolumn{4}{ c| }{Per Path} \\ \cline{3-6}     & & Max & Min & Avg & Med & & Max & Min & Avg & Med \\ \hline
     OPT &  378311559081 & 176160768 & 404964 & 85147773 & 83886080 & 5248288 & 2560 & 6 & 1181.25 & 1152 \\ \hline
-    HEU &  180614 & 21 & 2 & 9 & 10 & 5260150 & 5766 & 6 & 686.26 & 355 \\ \hline
+    HEU 4 &  180614 & 21 & 2 & 9 & 10 & 5260150 & 5766 & 6 & 686.26 & 355 \\ \hline
+    HEU 8 &  180614 & 21 & 2 & 9 & 10 & 5260150 & 5766 & 6 & 686.26 & 355 \\ \hline
+    HEU 16 &  180614 & 21 & 2 & 9 & 10 & 5260150 & 5766 & 6 & 686.26 & 355 \\ \hline
     MPI &  377957122048 & 176160768 & 8388608 & 92274688 & 92274688 &  &  &  &  &  \\ \hline
     \end{tabular}
     \caption{Number of hopbytes and copies per path in 8192 nodes experiments}
@@ -51,7 +57,9 @@
     \multirow{2}{*}{Type} & \multicolumn{5}{ c| }{Load (Num of Paths) per Link} & \multicolumn{4}{ c| }{Actual Load (Data Amount) per Link} \\ \cline{2-10}
     & Total & Max & Min & Avg & Med & Max & Min & Avg & Med \\ \hline
     OPT &  4443 & 22 & 1 & 3.22 & 2 & 119275520 & 65536 & 24903662 & 16777216 \\ \hline
-    HEUT &  18192 & 6 & 754.66 & 355 &  &  &  & 0 &  \\ \hline
+    HEU 4 &  18192 & 6 & 754.66 & 355 &  &  &  & 0 &  \\ \hline
+    HEU 8 &  18192 & 6 & 754.66 & 355 &  &  &  & 0 &  \\ \hline
+    HEU 16 &  18192 & 6 & 754.66 & 355 &  &  &  & 0 &  \\ \hline
     MPI &  4096 & 64 & 1 & 7.96 & 2 & 536870912 & 8388608 & 66776876 & 16777216 \\ \hline
     \end{tabular}
     \caption{Load: number of paths and actual total amount of data over physical links in 8192 nodes experiments}
