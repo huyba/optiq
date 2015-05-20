@@ -39,7 +39,7 @@ Main:
 
 \end{algorithm}
 
-In the heuristic algorithm, inputs of the algorithm include pairs of sources and destination together with their k shortest paths, allowed \textit{maxload}. Outputs of the approach include set of selected paths used for data movement. We maintain a table \textit{load[][]} of loads on all physical links, whenever a link (u,v) is used by a selected path its entry in the load table i.e. load[u][v] is increased by 1. We save selected path in the queue \textit{selected\_paths}.
+In the heuristic algorithm, inputs of the algorithm include pairs of sources and destination together with their k shortest paths, allowed \textit{maxload}. Outputs of the approach include set of selected paths used for data movement. We maintain a table \textit{load[][]} of loads on all physical links, whenever a link (u,v) is used by a selected path its entry in the load table i.e. \textit{load}[u][v] is increased by 1. We save selected path in the queue \textit{selected\_paths}.
 
 For each pair of source/destination, we get the first path out of its set of \textit{k\_paths}. We check if adding the path to its \textit{selected\_paths} would make the maximum load in the load table over \textit{maxload}. We check the load by going through all links used by the path and examine their current loads in the load table in comparison with \textit{maxload}. If their current load adding 1 is not over \textit{maxload} we then add the path \textit{p} into \textit{selected\_paths}, update the load table and remove the path from \textit{k\_paths}. We iterate through all pairs and add at most one path per pair at a time. The algorithm completes when we either running out of paths to add or the maximum load is over \textit{maxload}.
 
@@ -49,9 +49,9 @@ In the \textbf{Agorithm} \ref{alg:heu} we aim on balancing the number of paths u
 
 \subsection{Model Optimization Approach}
 
-How do we come up with the model?
+Given a set of pairs of source and destination, for each pair we have an amount of data needed to transfer from the source to the destination and k shortest paths between the source and destination, we need to search for an assignment of data amount for each path that result in highest performance of data movement.
 
-Here is the model with its description below.
+We model the problem as minimizing transfer time for multiple commodities using pre-determined multiple flows in a network given the amount of comodities and the capacities in links of the network. The model is descrbied as follows:
 
 \begingroup
 \fontsize{9pt}{9pt}\selectfont
@@ -88,38 +88,20 @@ capacity {(i,j) in Arcs}:
 
 \endgroup
 
-Model explanation:
+Model explanation: we model a supercomputer as a network.
+
 \begin{itemize}
-\item sets: we have 5 sets: \textit{Nodes}, \textit{Arcs}, \textit{OD}, \textit{Paths} and \textit{Path\_Arcs}. \textit{JobID}: is the set of transfers from sources to destinations. Each job is represented by a tuple (id, source, destination, demand (total data size to transfer)).
-\item params: {\it Capacity}: capacity of each arc; {\it Demand}: amount of data to be transferred in each job between a pair of orgin and destination.
-\item vars: \textit{Flow}: total flow of each job on each arc; \textit{Z}: is reversed of total time; \textit{total\_flow} total flow of all jobs going through an arc.
-\item objective function: we want to minimize the time or maximize its reversed value i.e. maximize \textit{Z}.
-\item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
+    \item sets: we have 5 sets: \textit{Nodes}, \textit{Arcs}, \textit{OD}, \textit{Paths} and \textit{Path\_Arcs}. 
+	\begin{itemize}
+	    \item \textit{Nodes}: Is set of nodes in the network, each node represent a compute node in the supercomputer.
+	    \item \textit{Arcs}: Is set of arcs in the network. Each arc represent a physical link in the supercomputer.
+	\end{itemize}
+    \item params: {\it Capacity}: capacity of each arc; {\it Demand}: amount of data to be transferred in each job between a pair of orgin and destination.
+    \item vars: \textit{Flow}: total flow of each job on each arc; \textit{Z}: is reversed of total time; \textit{total\_flow} total flow of all jobs going through an arc.
+    \item objective function: we want to minimize the time or maximize its reversed value i.e. maximize \textit{Z}.
+    \item constraints(subject to): \textit{zero\_flow}: total flow through a source is total going out of that source, total flow going through a destination is total flow going in that destination, for other nodes that total is 0; \textit{capacity}: total flow on an arc is less than its capacity.
 \end{itemize}
 
-We feed the model to solvers and get the paths with given proportional bandwidth. Based on that, we can decide how much data we can transfer alogn each path.
-
-\begin{comment}
-So far, we have presented different algorithms/approaches. Each has its own use case scenario. The Table \ref{tbl:approaches} describes the situation when to use each of them. 
-
-\begin{table}[h]
-
-\begin{center}
-    \begin{tabular}{ | p{0.8cm} | p{2cm} | p{2cm} | p{2cm} |}
-    \hline
-     & BFS-based &  \multicolumn{2}{ c| }{Path-based} \\ \hline
-     & Heuristics 1 & Heuristics 2 & Optimization Model \\ \hline
-    Time Complexity & $O$(K * ($|$V$|$ + $|$E$|$)) & $O$(K * (Time complexity of the algrithms used to get k shortest paths)) & $O$(K * (Time complexity of the algrithms used to get k shortest paths) + Solving time) \\ \hline
-    When to use & Very dense communication & Sparse comminication &  Medium dense where proportional throughtput can be gained \\
-    \hline
-    \end{tabular}
-
-    \caption{Approaches: time complexity and usage}
-    \label{tbl:approaches}
-
-\end{center}
-\end{table}
-
-\end{comment}
+We feed the model to solvers and get the paths with given proportional bandwidth. Based on that, we can decide how much data we can transfer along each path.
 
 We realize algoirthms and other work in a framework named OPTIQ.
