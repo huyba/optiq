@@ -1,6 +1,10 @@
 \subsection{Heuristic Approach}
 
-In the Heurisic Approache, we use the k shortest paths for each pair of source and destination as a input. 
+Given the set of k shortest paths \textit{k\_paths} for each pair of communication, we need to select paths to be used for data movement. 
+
+In this subsection, we present an heuristic approach that ..
+
+In the heuristic algorithm, inputs of the algorithm include pairs of sources and destination together with their k shortest paths, allowed maxload. Outputs of the approach include set of selected paths used for data movement. The algorithm is presented in \textbf{Algorithm} \ref{alg:h2}.
 
 \begin{algorithm}[!htbp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}) and their \textit{k\_paths}. \textit{maxload}\\
