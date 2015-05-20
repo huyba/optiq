@@ -1,6 +1,6 @@
 \subsection{Heuristic Approach}
 
-Given the set of k shortest paths \textit{k\_paths} for each pair of communication, we need to select paths to be used for data movement to result in high performance. In this approach, we assume that each path carries similar amount of data. Thus, number of paths using a link can represent load of the link. In order to avoid overloading on physical links and achieve high performance, we select paths in such a way that satisfies 2 conditions: (1) we can employ as many paths for any pair of source/destination as possible and (2) the maximum number of paths using any physical link is less than a given \textit{maxload} value. While the first condition gives us as many as possible paths hence potentially high performance, the second condition gives us control over max load on physical links. Going through all combinations of paths for all pairs to examine the 2 conditions is time consuming. We propose a heuristic algorithm that can get us close to satisfying the 2 conditions while examining much less combinations. Our approach keeps iterating through all pairs of source/destination to search for more paths to use until the maximum of loads on links reach to the \textit{maxload} value. The approach is presented in \textbf{Algorithm} \ref{alg:heu}. The detail of the algorithm is explained as follows.
+Given the set of k shortest paths \textit{k\_paths} for each pair of communication, we need to select paths to be used for data movement to result in high performance. In this approach, we assume that each path carries similar amount of data. Thus, number of paths using a link can represent data load of the link. In order to avoid overloading on physical links and achieve high performance, we select paths in such a way that satisfies 2 conditions: (1) the number of paths for any pair of source/destination is as many as possible and (2) the maximum number of paths using any physical link is less than a given \textit{maxload} value. While the first condition gives us more choices of paths, the second condition gives us control over max load on physical links. One exhaustive approach is to go through all combinations of paths for all pairs to examine the 2 conditions to find the best combination. However, its time complexity is exponential. We propose a heuristic algorithm that can produce the set of paths while examining much less combinations. Our approach keeps iterating through all pairs of source/destination to search for more paths to use until the maximum of loads on links reach to the \textit{maxload} value. The approach is presented in \textbf{Algorithm} \ref{alg:heu}. The detail of the algorithm is explained as follows.
 
 \begin{algorithm}[!htbp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}) and their \textit{k\_paths}. \textit{maxload}\\
@@ -39,19 +39,19 @@ Main:
 
 \end{algorithm}
 
-In the heuristic algorithm, inputs of the algorithm include pairs of sources and destination together with their k shortest paths, allowed \textit{maxload}. Outputs of the approach include set of selected paths used for data movement. We maintain a table \textit{load[][]} of loads on all physical links, whenever a link (u,v) is used by a selected path its entry in the load table i.e. \textit{load}[u][v] is increased by 1. We save selected path in the queue \textit{selected\_paths}.
+In the heuristic algorithm, inputs of the algorithm include pairs of source and destination together with their k shortest paths \textit{k\_paths} and an allowed \textit{maxload}. Output of the approach is a set of selected paths used for data movement. We maintain a table \textit{load}[][] of loads on all physical links, whenever a link (u,v) is used by a selected path its entry in the load table i.e. \textit{load}[u][v] is increased by 1. We save selected path in a queue \textit{selected\_paths}.
 
-For each pair of source/destination, we get the first path out of its set of \textit{k\_paths}. We check if adding the path to its \textit{selected\_paths} would make the maximum load in the load table over \textit{maxload}. We check the load by going through all links used by the path and examine their current loads in the load table in comparison with \textit{maxload}. If their current load adding 1 is not over \textit{maxload} we then add the path \textit{p} into \textit{selected\_paths}, update the load table and remove the path from \textit{k\_paths}. We iterate through all pairs and add at most one path per pair at a time. The algorithm completes when we either running out of paths to add or the maximum load is over \textit{maxload}.
+We iterate through all pairs of source/destination. For each pair of source/destination, we get the first path out of its set of \textit{k\_paths}. We check if adding the path to its \textit{selected\_paths} would make the maximum load in the \textit{load} table over \textit{maxload}. We check the load by going through all links used by the path and examine their current loads in the \textit{load} table in comparison with \textit{maxload}. If their current load adding by 1 is not over \textit{maxload} we then add the path \textit{p} into \textit{selected\_paths}, update the \textit{load} table and remove the path from \textit{k\_paths}. We iterate through all pairs and add at most one path per pair at a time. The algorithm completes when we either running out of paths to add or the maximum load of physical links in \textit{load} table is over \textit{maxload}.
 
-In the algorithm, we also check if a pair of source/destination does not have any paths to transfer data. If so, we increase the \textit{maxload} by 1 until we can add a path to the pair. We do so to make sure that we have at least 1 path to transfer data from its source to its destination.
+In the algorithm, we also check if under the current \textit{maxload} a pair of source/destination is not able to add any paths for transferring data. If so, we increase the \textit{maxload} by 1 until we can add a path to the pair. We do so to make sure that we have at least 1 path to transfer data from its source to its destination.
 
-In the \textbf{Agorithm} \ref{alg:heu} we aim on balancing the number of paths using physical link. We identify number of paths on a link to actual amount of data transferred on the link.  Thus, the data movement performs well if each path carries similar amount of data. In real applications, it is not always the case. Due to different data sizes and different number of paths, data size per path can vary. In order to gain better performance, we need a better way to determine the amount of data to be transferred on each path. In the next section, we propose another approach that employ mathematical model and solvers to search for the amount of data to be transferred on each path. 
+In the \textbf{Agorithm} \ref{alg:heu} we aim on balancing the number of paths using physical link. We identify number of paths on a link to actual amount of data transferred on the link.  Thus, the data movement performs well if each path carries similar amount of data. In real applications, it is not always the situation. Due to different data sizes and different number of paths, data size per path can vary. In order to gain better performance, we need a better way to determine the amount of data to be transferred on each path. In the next section, we propose another approach that employs a mathematical model and solvers to in determining  amount of data to be transferred on each path. 
 
 \subsection{Model Optimization Approach}
 
-Given a set of pairs of source and destination, for each pair we have an amount of data needed to transfer from the source to the destination and k shortest paths between the source and destination, we need to search for an assignment of data amount for each path that result in highest performance of data movement.
+In this approach, we need to search for an assignment of data amount for each path that result in highest performance of data movement. Inputs are a set of pairs of source and destination, for each pair we have an amount of data needed to transfer from the source to the destination and k shortest paths between the source and destination.
 
-We model the problem as minimizing transfer time for multiple commodities using pre-determined multiple flows in a network given the amount of comodities and the capacities in links of the network. The model is written in AMPL (A Mathematical Programming Language). The model is descrbied in \textbf{Model} 1.
+We model the problem as searching for flow values in order to  minimize transfer time for multiple commodities using pre-determined multiple flows in a network given the amount of comodities and the capacities in links of the network. The model is written in AMPL (A Mathematical Programming Language). The model is descrbied in \textbf{Model} 1.
 
 \begin{algorithm}[!htbp]
 
@@ -103,13 +103,13 @@ The notions used in \textbf{Model} 1 are explained as follows:
 	    \item \textit{Nodes}: set of nodes in the network, each node represent a compute node in the supercomputer.
 	    \item \textit{Arcs}: set of arcs in the network. Each arc represent a physical link in the supercomputer.
 	    \item \textit{Jobs}: set of jobs. Each jobs has a source and a destination.
-	    \item  \textit{Paths}: set of paths for a job.
-	    \item \textit{Path\_Arcs}: set of arcs on a path for a job.
+	    \item  \textit{Paths}: set of paths for each job.
+	    \item \textit{Path\_Arcs}: set of arcs on each path of each job.
 	\end{itemize}
     \item params: 
 	\begin{itemize}
 	    \item {\it Capacity}: capacity of each arc i.e. bandwidth of the physical link.
-	    \item {\it Demand}: amount of data to be transferred in each job between a pair of source and destination.
+	    \item {\it Demand}: amount of data to be transferred of each job between a pair of source and destination.
 	\end{itemize}
     \item vars:
 	 \begin{itemize}
@@ -124,8 +124,8 @@ The notions used in \textbf{Model} 1 are explained as follows:
 	\end{itemize}
 \end{itemize}
 
-The model takes a set of nodes, a set of arcs and their corresponding capacity, a set of jobs (source/destination pairs), a demand for each job, a set of path for each job, and a set of arcs for each path as inputs. It searches for an assignment of flow values (proportional capacity) for paths of all the jobs such that the transfer time of all jobs is minimum.
+The model takes a set of nodes, a set of arcs and their corresponding capacity, a set of jobs (source/destination pairs), a demand for each job, a set of paths for each job, and a set of arcs for each path as inputs. It searches for an assignment of flow values (proportional capacity) for paths of all the jobs such that the transfer time for demands of all jobs is minimum.
 
-We feed the model into solvers together with data of nodes, arcs, capacity, paths for jobs and get the paths with given proportional bandwidth. Based on that, we can decide how much data we can transfer along each path.
+We feed the model into solvers together with data of nodes, arcs, capacity, paths for jobs and get the paths with given proportional bandwidth. Based on proportional bandwidth, each path can take proportional demand of a job.
 
 We realize algoirthms and other implementation in a framework named OPTIQ.
