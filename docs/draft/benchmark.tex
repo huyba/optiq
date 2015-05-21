@@ -46,17 +46,30 @@ The number of sources: m, number of destination n, ratio between m and n is r, t
 
 In this experiment, we keep the ratio between number of sources and destination constant while varying the number of sources, destinations together with total number of nodes. We keep the ration as 1/8. The first m = p/16 nodes send data to the last p/2 nodes. Each source has 8 destination We tested the framework for 3 patterns: subset, disjoint and overlap with 3 methods of transferring data OPTIQ optimization, OPTIQ heuristics and MPI\_Alltoallv. We use 1 rank/node. The data size is 8 MB per pair. We vary the number of nodes from 512 to 8192.
 
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.30]{figures/constantr.pdf}
-\vspace{-0.1in}
-\caption{Varying the number of sources and destinations while keeping the ratio constant}
-\vspace{-0.1in}
-\label{fig:aggbw}
-\end{figure}
-
-\subsubsection{Constant m, n, r vary number of nodes p}
+\begin{figure*}[!htbp]
+        \centering
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{report_figures/constantr_3.pdf}
+                \caption{Disjoint}
+                \label{fig:3_1024_hop}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{report_figures/constantr_27}
+                \caption{Overlap}
+                \label{fig:3_1024_hopbyte}
+        \end{subfigure}
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{report_figures/constantr_87}
+                \caption{Subset}
+                \label{fig:3_1024_hopcopy}
+        \end{subfigure}
+        \caption{Varying the number of sources and destinations while keeping the ratio constant}
+        \label{fig:3_1024_histo}
+\end{figure*}
 
 In this experiment, we keep the number sources and destinations as 128 to 256 while varying the total number of nodes. The sources are first 128 nodes while destination are last 256. Each source node has 2 destination nodes. We use 1 MPI rank per node. The total number of nodes vary from 512 to 8K. The message size is 8 MB.
 
@@ -99,6 +112,7 @@ Quality
 
 Time to search for paths
 
+\begin{comment}
 \subsubsection{Subset - Type 2 (Subgroup Data Aggregation)}
 
 In the subgroup data aggregation experiment, we aggregated data within a subgroup to one node in the subgroup. In this experiment, we used a 512-nodes partition. The partition was divided into subgroup of size 4, 8, 16, 32, and 64 nodes each. One node in the middle of a subgroup was selected as the destination to aggregate data from all nodes in the subgroup(including itself). The data size is 1MB. We aggregate data using MPI\_Alltoallv and our framework for 20 times, measured and reported the average of the measurements. The aggregation bandwidths are shown in Figure \ref{fig:aggbw}.
@@ -153,3 +167,5 @@ In the Figure \ref{fig:agghop} we can see that compare to MPI\_Alltoallv, OPTIQ 
 
 \subsection{Scalability}
 Show scalability by partition size, number of ranks per node and message sizes
+
+\end{comment}
