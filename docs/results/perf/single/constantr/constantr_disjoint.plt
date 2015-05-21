@@ -4,12 +4,12 @@ set bmarg 0
 set lmarg 4
 set rmarg 2
 set output "constantr_disjoint.ps"
-set title "Transfer bandwidth from the first N/16 nodes to the last N/2 nodes" font ",22"
+set title "Transfer bandwidth from the first P/16 nodes to the last P/2 nodes" font ",22"
 set logscale y 10
 set logscale x 2
 set yrange [4096:1048576]
-set xlabel "Partition size (N)" font ",24"
-set ylabel "Total throughput(GB/s)" font ",24" offset -2
+set xlabel "Partition size (P)" font ",26"
+set ylabel "Total throughput(GB/s)" font ",26" offset -2
 set style line 1 lt rgb "blue" lw 7
 set style line 2 lt rgb "green" lw 7
 set style line 3 lt rgb "skyblue" lw 7

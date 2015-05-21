@@ -9,3 +9,7 @@ plot:
 	gnuplot constantr_disjoint.plt
 	gnuplot constantr_overlap.plt
 	gnuplot constantr_subset.plt
+pp:
+	gnuplot constantr_disjoint_paper.plt
+	gnuplot constantr_overlap_paper.plt
+	gnuplot constantr_subset_paper.plt
