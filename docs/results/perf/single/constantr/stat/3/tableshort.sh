@@ -68,7 +68,7 @@ echo "    \\\centering" >> $outfile
 echo "    \\\begin{tabular}{ | l | p{1.5cm} | p{1.5cm} | p{1.5cm} | p{1.5cm} | p{0.75cm} |  p{0.5cm} | p{1cm} | p{0.75cm} |}" >> $outfile
 echo "    \hline" >> $outfile
 echo "    \multirow{3}{*}{Type} & \multicolumn{4}{ c| }{Hopbytes} & \multicolumn{4}{ c| }{Num. of Copies} \\\\\\\\ \\\cline{2-9}" >> $outfile
-echo "    & \multicolumn{4}{ c| }{Per Path}  & \multicolumn{4}{ c| }{Per Path} \\\\\\\\ \\\cline{3-9}" >> $outfile
+echo "    & \multicolumn{4}{ c| }{Per Path}  & \multicolumn{4}{ c| }{Per Path} \\\\\\\\ \\\cline{2-9}" >> $outfile
 echo "    & Max & Min & Avg & Med & Max & Min & Avg & Med \\\\\\\\ \hline" >> $outfile
 
 grep "O  $id OPTIQ_Alltoallv  msg = 8388608 chunk = 65536" $opt | awk '{print "    OPT &  " $19 " & " $20 " & " int($21) " & " $22 " & " $24 " & " $25 " & " $26 " & " $27 " \\\\ \\hline"}'  >> $outfile
