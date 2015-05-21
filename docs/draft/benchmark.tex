@@ -16,7 +16,7 @@ We reconstruct MPI's paths based on our understanding of default routing algorit
 \subsection{Communication Patterns}
 In this paper we demostrate data movement performance of our OPTIQ framework and existing MPI's routines on the following communication patters:
 
-\begin{figure}[!htb]
+\begin{figure}[ht]
 \vspace{-0.1in}
 \centering
 \includegraphics[scale=0.55]{figures/patterns.pdf}
@@ -42,34 +42,55 @@ In the next subsections, we go into each communication and study in details the 
 
 The number of sources: m, number of destination n, ratio between m and n is r, total number of node is p, average distance between sources and destinations is d
 
-\subsubsection{Constant ration r, while varying m and n together with the number of nodes p}
-
-In this experiment, we keep the ratio between number of sources and destination constant while varying the number of sources, destinations together with total number of nodes. We keep the ration as 1/8. The first m = p/16 nodes send data to the last p/2 nodes. Each source has 8 destination We tested the framework for 3 patterns: subset, disjoint and overlap with 3 methods of transferring data OPTIQ optimization, OPTIQ heuristics and MPI\_Alltoallv. We use 1 rank/node. The data size is 8 MB per pair. We vary the number of nodes from 512 to 8192.
-
 \begin{figure*}[!htbp]
         \centering
         \begin{subfigure}[b]{0.32\textwidth}
-                \includegraphics[width=\textwidth]{report_figures/constantr_3.pdf}
+                \includegraphics[width=\textwidth]{figures/constantr_3.pdf}
                 \caption{Disjoint}
                 \label{fig:3_1024_hop}
         \end{subfigure}%
         ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
           %(or a blank line to force the subfigure onto a new line)
         \begin{subfigure}[b]{0.32\textwidth}
-                \includegraphics[width=\textwidth]{report_figures/constantr_27}
+                \includegraphics[width=\textwidth]{figures/constantr_27}
                 \caption{Overlap}
                 \label{fig:3_1024_hopbyte}
         \end{subfigure}
         ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
           %(or a blank line to force the subfigure onto a new line)
         \begin{subfigure}[b]{0.32\textwidth}
-                \includegraphics[width=\textwidth]{report_figures/constantr_87}
+                \includegraphics[width=\textwidth]{figures/constantr_87}
                 \caption{Subset}
                 \label{fig:3_1024_hopcopy}
         \end{subfigure}
-        \caption{Varying the number of sources and destinations while keeping the ratio constant}
+        \caption{Varying the number of sources and destinations and total number of nodes while keeping the ratio constant (1:8) }
         \label{fig:3_1024_histo}
 \end{figure*}
+
+\begin{table*}[!htbp]
+   \centering
+    \begin{tabular}{| l | l | r | r | p{0.5cm} | p{0.5cm} | p{0.75cm} | p{0.75cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.75cm} | p{0.75cm} |}
+    \hline
+    \multirow{3}{*}{Pattern} & \multirow{3}{*}{Type} & \multirow{3}{1cm}{BW (MB/s)} & \multicolumn{3}{ c| }{Num. of Paths} & \multicolumn{2}{ c| }{Hopbytes} & \multicolumn{2}{ c| }{Num of copies}& \multicolumn{2}{ c| }{Num of paths} & \multicolumn{2}{ c| }{Total data} \\ \cline{4-6}
+    & & & \multirow{2}{0.5cm}{Total Paths} & \multicolumn{2}{ c| }{Per Job} & \multicolumn{2}{ c| }{Per Path (x1000)} & \multicolumn{2}{ c| }{Per Path}& \multicolumn{2}{ c| }{Per Link}& \multicolumn{2}{ c| }{Per Link (MB)} \\ \cline{5-14}
+    & & & & {Max} & Avg & Max & Avg & Max & Avg & Max & Avg & Max & Avg\\ \hline
+    \multirow{3}{*}{Disjont} & OPT    & 188,625 & 1,169 & 6 & 2.28 & 83,886 & 23,021 & 1152 & 295.22 & 11 & 2.53 & 18,284 & 9,264 \\ \cline{2-14}
+    & HEU 16 & 74,882  & 3,146 & 23 & 6.14 & 83,886 & 8,459 & 1152 & 108.24 & 16 & 4.94 & 63,045 & 6,928 \\ \cline{2-14}
+    & MPI    & 45,184  & 512  & 1 & 1.00 & 92,274 & 50,331 & & & 16 & 3.07 & 134,217 & 25,769\\ \hline
+    \multirow{3}{*}{Overlap} & OPT    &  &  &  &  & & & & & & & & \\ \cline{2-14}
+    & HEU 16 &   & &  &  & & & & & & & & \\ \cline{2-14}
+    & MPI    &  &  & &  & & & & & & & & \\ \hline
+    \multirow{3}{*}{Subset} & OPT    &  &  &  &  & & & & & & & & \\ \cline{2-14}
+    & HEU 16 &   & &  &  & & & & & & & & \\ \cline{2-14}
+    & MPI    &  &  & &  & & & & & & & & \\ \hline
+    \end{tabular}
+    \caption{Performance and other data for 3 patterns in 1024 nodes experiments}
+    \label{table:constantr}
+\end{table*}
+
+\subsubsection{Constant ration r, while varying m and n together with the number of nodes p}
+
+In this experiment, we keep the ratio between number of sources and destination constant while varying the number of sources, destinations together with total number of nodes. We keep the ration as 1/8. The first m = p/16 nodes send data to the last p/2 nodes. Each source has 8 destination We tested the framework for 3 patterns: subset, disjoint and overlap with 3 methods of transferring data OPTIQ optimization, OPTIQ heuristics and MPI\_Alltoallv. We use 1 rank/node. The data size is 8 MB per pair. We vary the number of nodes from 512 to 8192.
 
 In this experiment, we keep the number sources and destinations as 128 to 256 while varying the total number of nodes. The sources are first 128 nodes while destination are last 256. Each source node has 2 destination nodes. We use 1 MPI rank per node. The total number of nodes vary from 512 to 8K. The message size is 8 MB.
 
