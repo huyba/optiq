@@ -18,22 +18,22 @@ plothisto:
 	gnuplot hopcopy_histo.plt
 
 table:
-	. table1.sh 3 512 512
-	. table1.sh 3 1024 1k
-	. table2.sh 3 2048 2k
-	. table2.sh 3 4096 4k
-	. table3.sh 3 8192 8k
+	. tableshort.sh 3 512 512
+	. tableshort.sh 3 1024 1k
+	. tableshort.sh 3 2048 2k
+	. tableshort.sh 3 4096 4k
+	. tableshort.sh 3 8192 8k
 
-	. table1.sh 27 512 512
-	. table1.sh 27 1024 1k
-	. table2.sh 27 2048 2k
-	. table2.sh 27 4096 4k
-	. table3.sh 27 8192 8k
+	. tableshort.sh 27 512 512
+	. tableshort.sh 27 1024 1k
+	. tableshort.sh 27 2048 2k
+	. tableshort.sh 27 4096 4k
+	. tableshort.sh 27 8192 8k
 
-	. table1.sh 87 512 512
-	. table1.sh 87 1024 1k
-	. table2.sh 87 2048 2k
-	. table2.sh 87 4096 4k
+	. tableshort.sh 87 512 512
+	. tableshort.sh 87 1024 1k
+	. tableshort.sh 87 2048 2k
+	. tableshort.sh 87 4096 4k
 
 csv:
 	. csv.sh 512

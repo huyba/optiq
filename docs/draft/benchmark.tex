@@ -94,12 +94,31 @@ In this experiment, we keep the ratio between number of sources and destination 
 
 In this experiment, we keep the number sources and destinations as 128 to 256 while varying the total number of nodes. The sources are first 128 nodes while destination are last 256. Each source node has 2 destination nodes. We use 1 MPI rank per node. The total number of nodes vary from 512 to 8K. The message size is 8 MB.
 
+\subsubsection{Constant the number of nodes p, sources m and destination n, vary the average distance d between sources and destinations}
+This is to show that with longer distance, we have more paths to explore.
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/incrdist.pdf}
+\vspace{-0.1in}
+\caption{Total data movement throughput when increasing distance between sources and destinations}
+\vspace{-0.1in}
+\label{fig:chunksize}
+\end{figure}
+
 \subsubsection{Consant the number of node p and sources m, vary number of destinations n}
 This is to show that with more number of destination, we have less paths to explore
 
-
-\subsubsection{Constant the number of nodes p, sources m and destination n, vary the average distance d between sources and destinations}
-This is to show that with longer distance, we have more paths to explore.
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/incrsize.pdf}
+\vspace{-0.1in}
+\caption{Total data movement throughput when increasing size of destinations}
+\vspace{-0.1in}
+\label{fig:chunksize}
+\end{figure}
 
 \subsubsection{Benchmark for chunk size}
 
@@ -125,11 +144,41 @@ We can see that, for disjoint and overlap patterns, most of the time the chunk s
 
 Quality i.e the performance based on the number of paths
 
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/heu_paths.pdf}
+\vspace{-0.1in}
+\caption{Different number of maxload}
+\vspace{-0.1in}
+\label{fig:heu_paths}
+\end{figure}
+
 Time to search for paths
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/heu_time.pdf}
+\vspace{-0.1in}
+\caption{Total time with different max load}
+\vspace{-0.1in}
+\label{fig:heu_time}
+\end{figure}
 
 \subsubsection{Number of paths fed into model}
 
 Quality
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/opt_paths.pdf}
+\vspace{-0.1in}
+\caption{Total time with different max load}
+\vspace{-0.1in}
+\label{fig:opt_paths}
+\end{figure}
 
 Time to search for paths
 
