@@ -1,43 +1,40 @@
 \section{Multi-path Data Movement/Routing}
 \label{sec:approach}
 
-%TODO %Some introduction to this section may be required.
+In large-scale systems like Blue Gene/Q, data is routed through its interconnect using the default routing algorithms. They perform well for some communication patterns \cite{Chen:BGQ}. However, for certain communication patterns (shown later in this paper), the default routing algorithms result in poor performance due to unbalanced load on the physical network links. This results in significantly larger amount of data being transferred over few links. This is because the default algorithms use a single path to transfer data between any two nodes in the system. In addition, data traverses along fixed paths on certain links using static routing regardless of the overall load of the system. Thus, some links are overloaded while other links have less data or may even be idle. This overloading is a major bottleneck for data transfer throughput. Balancing the load on the physical network links can improve the throughput. 
 
-In Blue Gene/Q, data is routed through its interconnect using the default routing algorithms. The default routing algorithms perform well for some communication patterns \cite{Chen:BGQ}. However, for certain communication patterns (shown later in this paper), they result in poor performance due to unbalanced load on the physical network links. This results in significantly larger amount of data being transferred over few links. This is because the default algorithms use a single path to transfer data between any two nodes in the system. In addition, data traverses along fixed paths on certain links using static routing regardless of the overall load of the system. Thus, some links are overloaded while other links have less data or may even be idle. This overloading is a major bottleneck to the data movement throughput. Balancing the load on the physical network links can improve the data transfer throughput. 
+The above problem can be formulated as a multicommodity integral flow problem, which is shown to be NP-complete \cite{even1975}. Given a set of source and destination nodes, and the amount of data to be transferred from the sources to destinations, the problem is to find a set of paths from the source nodes to the destination nodes that results in high throughput. Additionally, the objective is to balance the overall system load in order to avoid congestion in the interconnect and to avoid overloading physical network links. In this paper (Sections \ref{sec:heuristic} and \ref{sec:optimization}), we propose two approaches to solve this problem, taking into consideration the system topology. The first approach is a greedy heuristic that selects paths so that the load is balanced on the links. The second approach is an optimization based model that selects globally optimal paths for source-destination pairs. 
+%After that, in the first approach, we use maximum load path constraint to prune the search space, while in the second approach, we use an optimization model with solvers to search for final paths. In this paper, we use Yen's algorithm, but any algorithms searches for K shortest paths should work as well.
 
-The above problem can be formulated as a multicommodity integral flow problem, which is shown to be NP-complete \cite{even1975}. Given a set of source and destination nodes, and the amount of data to be transferred from the sources to destinations, the problem is to find a set of paths from the source nodes to the destination nodes that results in high throughput. Additionally, the objective is to balance the overall system load in order to avoid congestion in the interconnect and to avoid overloading physical network links. In this paper (Sections \ref{sec:heuristic} and \ref{sec:optimization}), we propose two approaches to solve this problem taking into consideration the system topology.  
+We leverage the idle or lightly-loaded links for data transfer in order to balance the load. For this, we need to search for multiple paths between source and destination nodes and assign appropriate load on each path. Present-day supercomputers have thousands of nodes and hundreds of thousands of edges due to complex interconnect topology. This implies a huge search space for multiple paths. Brute-force approach of searching for paths can lead to significant amount of time being spent for searching load-balanced paths. We use Yen's algorithm \cite{Yen:Kpath} to search for a set of shortest paths. To reduce the search time, we prune the search space by constraining the number of hops on each path. 
 
-We use the idle or lightly-loaded links for data transfer in order to balance the load. For this, we need to search for multiple paths between source and destination nodes and assign appropriate load on each path. Present-day supercomputers have thousands of nodes and hundreds of thousands of edges due to complex interconnect topology. This implies a huge search space for multiple paths. Brute-force approach of searching for paths can lead to significant amount of time being spent on searching for paths, calculating and balancing load on the links. We prune the search space to reduce the search time by constraining the number of hops on each path.  
-
-% while maintaining good quality of chosen paths by doing the following:
-%\begin{itemize}
-%\item Applying load path constraint and number of hops constraint while searching for paths.
-%\item Performing 2-step search. In the first step, we search for a number of shortest paths without any constraints. From the set of shortest paths, we apply constraints or use optimization methods to search for final set of paths in the second step.
-%\end{itemize}
-%We simplify the load on a link by substituting the actual load i.e. the amount of data passing through the link by path load i.e. number paths that share the link. This is acceptable when the data amounts assigned on paths are similar.
-
-In this paper, we propose two approaches aiming for balancing load on physical links: one heuristic algorithms and one model-based optimization approach. In both approaches, we use Yen's algorithm \cite{Yen:Kpath} to search for a set of shortest paths. After that, in the first approach, we use maximum load path constraint to prune the search space, while in the second approach, we use an optimization model with solvers to search for final paths. In this paper, we use Yen's algorithm, but any algorithms searches for K shortest paths should work as well.
-
-In order to search for paths, we model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes searching for paths to move data from source vertices to destination vertices to minimize transfer time. The next subsection, we briefly describe the K shortest paths generation based on Yen's algorithm.
-
-\subsection*{K Shortest Path Generation}
-
+In order to search for paths, we model the interconnect network as a graph. Each compute node is modeled as a vertex and each physical link is modeled as an edge. Algorithm \ref{alg:h1} depicts the algorithm to generate $k$ shortest paths from a source to its destination, where $k$ is an input to the algorithm.
 \begin{algorithm}[!htbp]
-\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Graph of nodes. Number of shortest path \textit{k}\\
-\textbf{Output:} Set of paths: \textit{k} paths for a pair of source-destination\\
+\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Graph of nodes. Desired number of shortest paths $k$.\\
+\textbf{Output:} Set of paths: \textit{k} paths for each source-destination pair.\\
 \begin{algorithmic}
-\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
-    \While{(less than k paths discovered $||$ still have paths to discover)}
-	\State Use Yen's algorithm to search for the shortest path \textit{p}.
-        \State Add \textit{p} into \textit{k\_paths} for later use.
+\For {each pair of ($s_i$, $d_i$)}
+    \While{(Less than $k$ paths have been discovered and there are more paths available)}
+	\State Use Yen's algorithm to search for the shortest path $p$.
+        \State Add $p$ into $k\_paths$.
     \EndWhile
 \EndFor
 \end{algorithmic}
-
-\caption{K shortest paths generation}
+\caption{$k$ shortest paths generation.}
 \label{alg:h1}
-
 \end{algorithm}
 
-In this algorithm, we go through all pairs of sources and destinations and generate k shortest paths for each pair. We do stop when either there is no more path to generate or we have enough k paths.
+%PM_BEGIN
+%Describe the algorithm alg:h1
+%What is $k_paths$ - define. Is it a set of paths for each pair? then it should have a subscript i
+%PM_END
 
+%PM_BEGIN
+%The following line should go somewhere else where it is required.
+%PM_END
+%The bandwidth of a physical link is modeled as its corresponding edge's capacity. The need of data movement from source nodes to destination nodes is modeled as data movement from source vertices to destination vertices. The problem now becomes searching for paths to move data from source vertices to destination vertices to minimize transfer time. The next subsection, we briefly describe the K shortest paths generation based on Yen's algorithm.
+
+%PM_BEGIN
+%Huy, the following line needs to go in the heuristic description.
+%PM_END
+%We simplify the load on a link by substituting the actual load i.e. the amount of data passing through the link by path load i.e. number paths that share the link. This is acceptable when the data amounts assigned on paths are similar.
