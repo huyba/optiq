@@ -42,6 +42,8 @@ In the next subsections, we go into each communication and study in details the 
 
 The number of sources: m, number of destination n, ratio between m and n is r, total number of node is p, average distance between sources and destinations is d
 
+Explain about what were being measured: hopbytes. Explain about the 90 tests we did and the avereage improvements.
+
 \begin{figure*}[!htbp]
         \centering
         \begin{subfigure}[b]{0.32\textwidth}
@@ -92,7 +94,22 @@ The number of sources: m, number of destination n, ratio between m and n is r, t
 
 In this experiment, we keep the ratio between number of sources and destination constant while varying the number of sources, destinations together with total number of nodes. We keep the ration as 1/8. The first m = p/16 nodes send data to the last p/2 nodes. Each source has 8 destination We tested the framework for 3 patterns: subset, disjoint and overlap with 3 methods of transferring data OPTIQ optimization, OPTIQ heuristics and MPI\_Alltoallv. We use 1 rank/node. The data size is 8 MB per pair. We vary the number of nodes from 512 to 8192.
 
+Explain exactly how each communication is.
+
 In this experiment, we keep the number sources and destinations as 128 to 256 while varying the total number of nodes. The sources are first 128 nodes while destination are last 256. Each source node has 2 destination nodes. We use 1 MPI rank per node. The total number of nodes vary from 512 to 8K. The message size is 8 MB.
+
+\subsubsection{Randomize the sources and destinations}
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/rand_opt_mpi.pdf}
+\vspace{-0.1in}
+\caption{Randomized sources and destination while keeping the same set of nodes}
+\vspace{-0.1in}
+\label{fig:random}
+\end{figure}
+
 
 \subsubsection{Constant the number of nodes p, sources m and destination n, vary the average distance d between sources and destinations}
 This is to show that with longer distance, we have more paths to explore.
