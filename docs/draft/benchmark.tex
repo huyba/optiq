@@ -121,7 +121,7 @@ This is to show that with longer distance, we have more paths to explore.
 \vspace{-0.1in}
 \caption{Total data movement throughput when increasing distance between sources and destinations}
 \vspace{-0.1in}
-\label{fig:chunksize}
+\label{fig:incrdist}
 \end{figure}
 
 \subsubsection{Consant the number of node p and sources m, vary number of destinations n}
@@ -134,7 +134,7 @@ This is to show that with more number of destination, we have less paths to expl
 \vspace{-0.1in}
 \caption{Total data movement throughput when increasing size of destinations}
 \vspace{-0.1in}
-\label{fig:chunksize}
+\label{fig:incrsize}
 \end{figure}
 
 \subsubsection{Benchmark for chunk size}
@@ -144,9 +144,9 @@ To transfer dat through intermediate, we split a message into smaller chunks and
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
-\includegraphics[scale=0.30]{figures/chunksize_2k.pdf}
+\includegraphics[scale=0.30]{figures/87_chunksize.pdf}
 \vspace{-0.1in}
-\caption{Chunk sizes and their performance in 2048-node partition}
+\caption{Chunk sizes and their performance in 512-node partition, subset pattern}
 \vspace{-0.1in}
 \label{fig:chunksize}
 \end{figure}
@@ -155,7 +155,15 @@ We can see that, for disjoint and overlap patterns, most of the time the chunk s
 
 \subsubsection{Message size scaling}
 
-\subsubsection{Number of ranks scaling}
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/messagesize.pdf}
+\vspace{-0.1in}
+\caption{Total throughtput with different message sizes in 3 patterns}
+\vspace{-0.1in}
+\label{fig:messagesize}
+\end{figure}
 
 \subsubsection{Number of paths fed into heuristics II}
 
