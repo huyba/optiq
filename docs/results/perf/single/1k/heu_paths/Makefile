@@ -1,5 +1,5 @@
 all:
-data:
+dat:
 	. collect.sh 1
 	. collect.sh 2
 	. collect.sh 4
@@ -8,6 +8,7 @@ data:
 	. collect.sh 32
 
 plot:
+	gnuplot heu_paths_3p.plt
 	gnuplot disjoint.plt
 	gnuplot overlap.plt
 	gnuplot subset.plt
