@@ -36,36 +36,32 @@ We carried a set of experiments to study the system's behavior in various patter
 
 \subsection{Experimental results}
 
-In the experiments, we collected the throughput and loading related information while varying communication patterns, partition sizes, message sizes, number of MPI ranks per node.
+In the experiments, we collected the throughput, total number fo paths, maximum and average values for number of paths per job, hopbytes (total bytes x number of hops) per path, number of copies per paths, number of paths per link and total amount of data per link while varying communication patterns, source destination pairing, distance and sizes of sources and destinations, partition sizes, message sizes, chunk size.
 In the next subsections, we go into each communication and study in details the system's behaviors and performance.
-
-The number of sources: m, number of destination n, ratio between m and n is r, total number of node is p, average distance between sources and destinations is d
-
-Explain about what were being measured: hopbytes. Explain about the 90 tests we did and the avereage improvements.
 
 \begin{figure*}[!htbp]
         \centering
         \begin{subfigure}[b]{0.32\textwidth}
                 \includegraphics[width=\textwidth]{figures/constantr_3.pdf}
                 \caption{Disjoint}
-                \label{fig:3_1024_hop}
+                \label{fig:constantr_3}
         \end{subfigure}%
         ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
           %(or a blank line to force the subfigure onto a new line)
         \begin{subfigure}[b]{0.32\textwidth}
                 \includegraphics[width=\textwidth]{figures/constantr_27}
                 \caption{Overlap}
-                \label{fig:3_1024_hopbyte}
+                \label{fig:constantr_27}
         \end{subfigure}
         ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
           %(or a blank line to force the subfigure onto a new line)
         \begin{subfigure}[b]{0.32\textwidth}
                 \includegraphics[width=\textwidth]{figures/constantr_87}
                 \caption{Subset}
-                \label{fig:3_1024_hopcopy}
+                \label{fig:constantr_87}
         \end{subfigure}
         \caption{Varying the number of sources and destinations and total number of nodes while keeping the ratio constant (1:8) }
-        \label{fig:3_1024_histo}
+        \label{fig:constantr}
 \end{figure*}
 
 \begin{table*}[!htbp]
@@ -79,25 +75,25 @@ Explain about what were being measured: hopbytes. Explain about the 90 tests we 
     & HEU 16 & 74.88  & 3,146 & 23 & 6.14 & 83.88 & 8.45 & 1152 & 108.24 & 16 & 4.94 & 63.04 & 6.92 \\ \cline{2-14}
     & MPI    & 45.18  & 512  & 1 & 1.00 & 92.27 & 50.33 & & & 16 & 3.07 & 134.21 & 25.76\\ \hline
     \multirow{3}{*}{Overlap} & OPT    & 200.03 & 1303 & 6 & 2.54 & 83.88 & 19.28  & 1152 & 243.96 & 13 & 2.74 & 16.97 & 9.04\\ \cline{2-14}
-    & HEU 16 & 113.17  & 3273 & 26 & 6.39 & 75.49 & 74.13 & 1024 & 93.07 & 16 & 5.17 & 38.66 & 7.04 \\ \cline{2-14}
+    & HEU 16 & 113.17  & 3273 & 26 & 6.39 & 75.49 & 7.41 & 1024 & 93.07 & 16 & 5.17 & 38.66 & 7.04 \\ \cline{2-14}
     & MPI    & 42.84 & 512 & 1 & 1 & 83.88 & 42.99 &  & & 16 & 3.38 & 134.21 & 28.36 \\ \hline
     \multirow{3}{*}{Subset} & OPT    & 140.94 & 1384 & 6 & 2.70 & 75.49 & 18.04 & 1024 & 227.96 & 12 & 3.09 & 16.71 & 9.49\\ \cline{2-14}
     & HEU 16 & 108.94  & 3531 & 23 & 6.09 & 75.49 & 6.99 & 1024 & 88.17 & 32 & 10.50 & 45.15 & 6.93 \\ \cline{2-14}
     & MPI    & 74.58 & 512 & 1 & 1 & 83.88 & 41.94 & & & 16 & 3.86 & 134.21 & 32.34 \\ \hline
     \end{tabular}
-    \caption{Performance and other data for 3 patterns in 1024 nodes experiments}
+    \caption{Performance, total num of paths, number of paths per job, maximum and average values of hopbytes, number of copies, number of paths per link and amount of data per link for 3 patterns in 1024 nodes experiments}
     \label{table:constantr}
 \end{table*}
 
-\subsubsection{Constant ration r, while varying m and n together with the number of nodes p}
+\subsubsection{Varying partition, source and destination sizes, same sources/destination ratio}
 
-In this experiment, we keep the ratio between number of sources and destination constant while varying the number of sources, destinations together with total number of nodes. We keep the ration as 1/8. The first m = p/16 nodes send data to the last p/2 nodes. Each source has 8 destination We tested the framework for 3 patterns: subset, disjoint and overlap with 3 methods of transferring data OPTIQ optimization, OPTIQ heuristics and MPI\_Alltoallv. We use 1 rank/node. The data size is 8 MB per pair. We vary the number of nodes from 512 to 8192.
+In this experiment, we vary the number of sources, destinations together with total number of nodes while keeping the ratio between number of sources and destination 1/8. With the total number of nodes P  increases from 512 to 8192, the first P/16 nodes send data to the last P/2 nodes. Each source has 8 destinations e.g node 0 sends data to nodes P/2, P/2+1, ...P/2+7. We tested the framework for 3 patterns: subset, disjoint and overlap with 3 approaches of transferring data OPTIQ Optimization, OPTIQ Heuristics and MPI\_Alltoallv. We use 1 MPI/PAMI rank/node. The data size is 8 MB per pair. We set the max load equal 16 for the Heuristic approach.
 
-Explain exactly how each communication is.
+As shown in Figure \ref{fig:constantr}, the Optimization approach has the highest throughput, the Heuristics approach is next and MPI\_Alltoall achieved the lowest throughput. The Table \ref{table:constantr} shows that in all 3 patterns the Heuristic with max load set to 16 was able to find highest number of paths. The Heurisc approach also has the highest maximum and average number paths for a job. As data is divided equally among paths, this led to lowest maximum and average values for hopbytes, number of copies per path. However, this led to higher number of paths per physical link higher amount of data per physical link of the Heuristic approach in comparison to the Optimization approach. In Optimization, the data is plit among paths to balance the amount of data between physical links, thus it has the lowest maximum amount of data per physical link. This led to its highest throughput. MPI\_Alltoall approach has the lowest number of paths. With 1 path per pair of communication, data is not split. Thus, it has the the highest hopbytes and data per physical link. Both factors led to its lowest throughput.
 
-In this experiment, we keep the number sources and destinations as 128 to 256 while varying the total number of nodes. The sources are first 128 nodes while destination are last 256. Each source node has 2 destination nodes. We use 1 MPI rank per node. The total number of nodes vary from 512 to 8K. The message size is 8 MB.
+\subsubsection{Randomize the pairing between sources and destinations}
 
-\subsubsection{Randomize the sources and destinations}
+In this experiment, we randomized the pairing between sources and destination to shuffle the well-aligned pairing that we have in the previous experiment. To demonstrate the sustained performance, we did experiment for all 3 patterns at 512 nodes, with 1 MPI/PAMI rank per node, 8 MB of data per communication. We used the same ratio 1/8 i.e 32 first nodes communicates with last 256 nodes. However, we randomized the pair of sources and destinations for 5 times to see the performance. The resuls are presented in Figure \ref{fig:random}.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -108,6 +104,8 @@ In this experiment, we keep the number sources and destinations as 128 to 256 wh
 \vspace{-0.1in}
 \label{fig:random}
 \end{figure}
+
+As we see in the Figure \ref{fig:random}, 
 
 
 \subsubsection{Constant the number of nodes p, sources m and destination n, vary the average distance d between sources and destinations}
