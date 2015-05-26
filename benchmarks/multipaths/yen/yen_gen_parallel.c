@@ -198,7 +198,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	{
 	    if (mintestid <= testid && testid <=maxtestid) 
 	    {
-		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node, false);
+		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node, true);
 
 		/* Not allow to generate too many paths, leading to */
 		int numpairs = m > n ? m : n;
@@ -228,7 +228,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	    {
 		if (mintestid <= testid && testid <=maxtestid) 
 		{
-		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, false);
+		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, true);
 
 		    //optiq_job_print_jobs (jobs);
 
@@ -261,7 +261,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	    {
 		if (mintestid <= testid && testid <=maxtestid) 
 		{
-		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, topo->num_ranks_per_node, false);
+		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, p, topo->num_ranks_per_node, true);
 
 		    //optiq_job_print_jobs (jobs);
 
