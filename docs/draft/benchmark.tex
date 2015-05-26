@@ -107,11 +107,11 @@ In this experiment, we randomized the pairing between sources and destination to
 \label{fig:random}
 \end{figure}
 
-As we see in the Figure \ref{fig:random}, the performance of MPI\_Alltoallv and Optimization approach both varies when randomizing pairs of sources and destination. However, the Optimization is significantly higher thatn MPI\_Alltoallv.
+As we see in the Figure \ref{fig:random}, the performance of MPI\_Alltoallv and Optimization approach both varies when randomizing pairs of sources and destination. However, the Optimization is significantly higher thatn MPI\_Alltoallv. This is because Optimization was able to find more paths to transfer data (530-630 paths) than MPI\_Alltoallv (256 paths). The Optimization approach also had lower average and median values of hopbytes and amount of data per physical link. The experiment shows that even we randomize pairing of sources and destination, we still are able to achieve better performance.
 
+\subsubsection{Increasing sources-destinations distance}
 
-\subsubsection{Constant the number of nodes p, sources m and destination n, vary the average distance d between sources and destinations}
-This is to show that with longer distance, we have more paths to explore.
+In this experiment, we show that when distance between sources and destination increases, we are able to find more path while not increasing maximum load on physical links, thus improve performance.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -123,7 +123,8 @@ This is to show that with longer distance, we have more paths to explore.
 \label{fig:incrdist}
 \end{figure}
 
-\subsubsection{Consant the number of node p and sources m, vary number of destinations n}
+\subsubsection{Increasing destination size}
+
 This is to show that with more number of destination, we have less paths to explore
 
 \begin{figure}[!htb]

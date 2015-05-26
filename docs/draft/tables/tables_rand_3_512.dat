@@ -1,0 +1,89 @@
+\begin{table}[!htbp]
+   \centering
+    \begin{tabular}{ | l | p{0.75cm} | p{1.0cm} | p{1.0cm} | p{0.75cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |}
+    \hline
+    \multirow{3}{*}{Type} & \multicolumn{3}{ c| }{Performance} & \multicolumn{5}{ c| }{Num. of Paths} \\ \cline{2-9}
+    & Data (MB) & Time ($\mu$s) & BW (MB/s)& \multirow{2}{1cm}{Total Paths} & \multicolumn{4}{ c| }{Per Job} \\ \cline{6-9}
+    & & & & & Max & Min & Avg & Med \\ \hline
+    OPT RAND 1 & 2048  & 22290 & 91879 & 536 & 5 & 1 & 2.09 & 2 \\ \hline
+    MPI RAND 1 & 2048  & 32558 & 62902 & 256 & 1 & 1 & 1.00 & 1 \\ \hline
+    OPT RAND 2 & 2048  & 19270 & 106279 & 550 & 6 & 1 & 2.15 & 2 \\ \hline
+    MPI RAND 2 & 2048  & 23851 & 85866 & 256 & 1 & 1 & 1.00 & 1 \\ \hline
+    OPT RAND 3& 2040  & 20950 & 97374 & 553 & 5 & 1 & 2.16 & 2 \\ \hline
+    MPI RAND 3 & 2040  & 27321 & 74667 & 255 & 1 & 1 & 1.00 & 1 \\ \hline
+    OPT RAND 4& 2032  & 22073 & 92058 & 554 & 5 & 1 & 2.16 & 2 \\ \hline
+    MPI RAND 4 & 2032  & 25818 & 78702 & 254 & 1 & 1 & 1.00 & 1 \\ \hline
+    OPT RAND 5 & 2048  & 19346 & 105861 & 550 & 6 & 1 & 2.15 & 2 \\ \hline
+    MPI RAND 5 & 2048  & 23852 & 85862 & 256 & 1 & 1 & 1.00 & 1 \\ \hline
+    \end{tabular}
+    \caption{Performance with number of paths in 512 nodes experiments}
+    \label{table:}
+\end{table}
+
+
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{ | l | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.75cm} | p{0.5cm} | p{1.0cm} | p{0.5cm} |}
+    \hline
+    \multirow{3}{*}{Type} & \multicolumn{4}{ c| }{Num. of Hops} & \multicolumn{4}{ c| }{Num. of Copies} \\ \cline{2-9}
+    & \multicolumn{4}{ c| }{Per Path} & \multicolumn{4}{ c| }{Per Node} \\ \cline{2-9}
+    & Max & Min & Avg & Med &Max & Min & Avg & Med \\ \hline
+   OPT RAND 1 &  8 & 2 & 5.17 & 5 & 1285 & 2 & 322.80 & 256 \\ \hline
+    MPI RAND 1 &  8 & 1 & 4.79 & 5 & 0 & 0 & 0.00 & 0 \\ \hline
+    OPT RAND 2 &  9 & 2 & 5.31 & 5 & 1287 & 2 & 335.38 & 256 \\ \hline
+    MPI RAND 2 &  9 & 2 & 4.91 & 5 & 0 & 0 & 0.00 & 0 \\ \hline
+    OPT RAND 3 &  9 & 1 & 5.41 & 5 & 1292 & 3 & 321.48 & 256 \\ \hline
+    MPI RAND 3 &  9 & 1 & 5.10 & 5 & 0 & 0 & 0.00 & 0 \\ \hline
+    OPT RAND 4 &  8 & 2 & 5.32 & 5 & 1287 & 1 & 325.31 & 255 \\ \hline
+    MPI RAND 4 &  8 & 2 & 4.99 & 5 & 0 & 0 & 0.00 & 0 \\ \hline
+    OPT RAND 5 &  9 & 2 & 5.31 & 5 & 1287 & 2 & 335.38 & 256 \\ \hline
+    MPI RAND 5 &  9 & 2 & 4.91 & 5 & 0 & 0 & 0.00 & 0 \\ \hline
+    \end{tabular}
+    \caption{Number of hops and copies in 512 nodes experiments}
+    \label{table:}
+\end{table}
+
+
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{ | l | p{1.5cm} | p{1.5cm} | p{1.5cm} | p{1.5cm} | p{0.75cm} |  p{0.5cm} | p{1cm} | p{0.75cm} |}
+    \hline
+    \multirow{3}{*}{Type} & \multicolumn{4}{ c| }{Hopbytes} & \multicolumn{4}{ c| }{Num. of Copies} \\ \cline{2-9}
+    & \multicolumn{4}{ c| }{Per Path}  & \multicolumn{4}{ c| }{Per Path} \\ \cline{2-9}
+    & Max & Min & Avg & Med & Max & Min & Avg & Med \\ \hline
+    OPT RAND 1 &  67108864 & 32768 & 20343792 & 18251776 & 896 & 3 & 249.33 & 212 \\ \hline
+    MPI RAND 1 &  67108864 & 8388608 & 40206336 & 41943040 & 0 & 0 & 0.00 & 0 \\ \hline
+    OPT RAND 2 &  67108864 & 40960 & 20322310 & 17743872 & 896 & 4 & 250.57 & 215 \\ \hline
+    MPI RAND 2 &  75497472 & 16777216 & 41222144 & 41943040 & 0 & 0 & 0.00 & 0 \\ \hline
+    OPT RAND 3 &  75497472 & 40960 & 20476357 & 17548015 & 1024 & 3 & 253.46 & 215 \\ \hline
+    MPI RAND 3 &  75497472 & 8388608 & 42765452 & 41943040 & 0 & 0 & 0.00 & 0 \\ \hline
+    OPT RAND 4 &  67108864 & 65536 & 20428990 & 17301504 & 896 & 3 & 253.04 & 208 \\ \hline
+    MPI RAND 4 &  67108864 & 16777216 & 41876987 & 41943040 & 0 & 0 & 0.00 & 0 \\ \hline
+    OPT RAND 5 &  67108864 & 40960 & 20322310 & 17743872 & 896 & 4 & 250.57 & 215 \\ \hline
+    MPI RAND 5 &  75497472 & 16777216 & 41222144 & 41943040 & 0 & 0 & 0.00 & 0 \\ \hline
+    \end{tabular}
+    \caption{Number of hopbytes and copies per path in 512 nodes experiments}
+    \label{table:}
+\end{table}
+
+
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{ | l | p{0.75cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{1.5cm} | p{1.5cm} | p{1.25cm} | p{1.5cm} |}
+    \hline
+    \multirow{2}{*}{Type} & \multicolumn{5}{ c| }{Load (Num of Paths) per Link} & \multicolumn{4}{ c| }{Actual Load (Data Amount) per Link} \\ \cline{2-10}
+    & Total & Max & Min & Avg & Med & Max & Min & Avg & Med \\ \hline
+    OPT RAND 1 &  536 & 8 & 1 & 2.15 & 1 & 17039360 & 65536 & 8473748 & 7733248 \\ \hline
+    MPI RAND 1 &  256 & 8 & 1 & 1.70 & 1 & 67108864 & 8388608 & 14295586 & 8388608 \\ \hline
+    OPT RAND 2 &  550 & 10 & 1 & 2.27 & 1 & 17039360 & 65536 & 8699916 & 7798784 \\ \hline
+    MPI RAND 2 &  256 & 7 & 1 & 1.68 & 1 & 58720256 & 8388608 & 14126999 & 8388608 \\ \hline
+    OPT RAND 3 &  553 & 12 & 1 & 2.23 & 1 & 17104896 & 65536 & 8445102 & 7995392 \\ \hline
+    MPI RAND 3 &  255 & 8 & 1 & 1.72 & 1 & 67108864 & 8388608 & 14463117 & 8388608 \\ \hline
+    OPT RAND 4 &  554 & 11 & 1 & 2.19 & 1 & 17039360 & 65536 & 8420985 & 7340032 \\ \hline
+    MPI RAND 4 &  254 & 7 & 1 & 1.72 & 1 & 58720256 & 8388608 & 14412947 & 8388608 \\ \hline
+    OPT RAND 5 &  550 & 10 & 1 & 2.27 & 1 & 17039360 & 65536 & 8699916 & 7798784 \\ \hline
+    MPI RAND 5 &  256 & 7 & 1 & 1.68 & 1 & 58720256 & 8388608 & 14126999 & 8388608 \\ \hline
+    \end{tabular}
+    \caption{Load: number of paths and actual total amount of data over physical links in 512 nodes experiments}
+    \label{table:}
+\end{table}
