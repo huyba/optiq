@@ -93,7 +93,7 @@ In this experiment, we vary the number of sources, destinations together with to
 
 As shown in Figure \ref{fig:constantr}, the Optimization approach has the highest throughput, the Heuristics approach is next and MPI\_Alltoall achieved the lowest throughput. The Table \ref{table:constantr} shows that in all 3 patterns the Heuristic with max load set to 16 was able to find highest number of paths. The Heurisc approach also has the highest maximum and average number paths for a job. As data is divided equally among paths, this led to lowest maximum and average values for hopbytes, number of copies per path. However, this led to higher number of paths per physical link higher amount of data per physical link of the Heuristic approach in comparison to the Optimization approach. In Optimization, the data is plit among paths to balance the amount of data between physical links, thus it has the lowest maximum amount of data per physical link. This led to its highest throughput. MPI\_Alltoall approach has the lowest number of paths. With 1 path per pair of communication, data is not split. Thus, it has the the highest hopbytes and data per physical link. Both factors led to its lowest throughput.
 
-\subsubsection{Randomize the pairing between sources and destinations}
+\subsubsection{Random pairing between sources and destinations}
 
 In this experiment, we randomized the pairing between sources and destination to shuffle the well-aligned pairing that we have in the previous experiment. To demonstrate the sustained performance, we did experiment for all 3 patterns at 512 nodes, with 1 MPI/PAMI rank per node, 8 MB of data per communication. We used the same ratio 1/8 i.e 32 first nodes communicates with last 256 nodes. However, we randomized the pair of sources and destinations for 5 times to see the performance. The resuls are presented in Figure \ref{fig:random}.
 
@@ -102,12 +102,12 @@ In this experiment, we randomized the pairing between sources and destination to
 \centering
 \includegraphics[scale=0.30]{figures/rand_opt_mpi.pdf}
 \vspace{-0.1in}
-\caption{Randomized sources and destination while keeping the same set of nodes}
+\caption{Randomized pairing of sources and destinations while keeping the same set of nodes}
 \vspace{-0.1in}
 \label{fig:random}
 \end{figure}
 
-As we see in the Figure \ref{fig:random}, 
+As we see in the Figure \ref{fig:random}, the performance of MPI\_Alltoallv and Optimization approach both varies when randomizing pairs of sources and destination. However, the Optimization is significantly higher thatn MPI\_Alltoallv.
 
 
 \subsubsection{Constant the number of nodes p, sources m and destination n, vary the average distance d between sources and destinations}
