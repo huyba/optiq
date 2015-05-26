@@ -111,7 +111,7 @@ As we see in the Figure \ref{fig:random}, the performance of MPI\_Alltoallv and 
 
 \subsubsection{Increasing sources-destinations distance}
 
-In this experiment, we show that when distance between sources and destination increases, we are able to find more path while not increasing maximum load on physical links, thus improve performance.
+In this experiment, we show that when distance between sources and destination increases, we are able to find more path while not increasing maximum load on physical links, thus improve performance. The experiment is done in 2048-node partition with the first 256 nodes (0-255) fixed as sources communicating with 512 destination nodes. The destination nodes location is moving to increase the number of hops between sources and destination from [256-767] to [512-1023], [768-1279] and [1024-1535]. 
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -123,9 +123,11 @@ In this experiment, we show that when distance between sources and destination i
 \label{fig:incrdist}
 \end{figure}
 
+The number of paths produced by Optimization approach are 1105 to 1372, 1547 and 1672 respectively. With increasing number of paths, the hopbytes, number of copies per paths and data load per physical link decrease, thus increasing in performance as shown in Figure \ref{fig:incrdist}. The same trend is observed in the Heuristics approach.
+
 \subsubsection{Increasing destination size}
 
-This is to show that with more number of destination, we have less paths to explore
+In this experiment, we also use a partition of 2014 nodes. In which, we keep the number of source nodes constant (64 nodes) and increase the number of destination nodes starting from 128 (node ids from 1600 to 1727) to 256 (node ids from 600 to 1855), 512 (node ids from 1088 to 1599) and 1024 (node id from 576 to 1599) nodes. The performance is shown in Figure \ref{fig:incrsize}.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -139,7 +141,7 @@ This is to show that with more number of destination, we have less paths to expl
 
 \subsubsection{Benchmark for chunk size}
 
-To transfer dat through intermediate, we split a message into smaller chunks and keep sending the chunks into the network. It is to reduce the waiting time at the intermediate, thus, reduce the total transfer time. We do an experiment to see what is the optimal chunk size for each pattern. In this experiment, we generated 91 patterns (16 disjont patterns[expriment id 0-15], 48 overlap patterns [16-63], 27 subset patterns [64-90]), in which we vary the number of sources, destination and their locaiton in the 2048-node partition. We varied the chunk size from 8 KB to 1 MB to find the most optimal chunk size. However for the sake of simplicity, we only show the results of chunk sizes from 32 KB to 512 KB while not losing the accuracy of the experiment. The results are shown in Figure \ref{fig:chunksize}.
+To transfer dat through intermediate, we split a message into smaller chunks and keep sending the chunks into the network. It is to reduce the waiting time at the intermediate, thus, reduce the total transfer time. We carried out an experiment to show optimal chunk sizes for different message sizes. In this experiment, we varied the message sizes from 8 KB up to 8 MB. The chunk sizes also varied from 4KB up to 1MB. The experiment is done in 512-node partition using subset pattern in which first 32 nodes send data to last 256 nodes. The results are shown in Figure \ref{fig:chunksize}.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
