@@ -41,7 +41,7 @@
     \begin{tabular}{ | l | p{1.5cm} | p{1.5cm} | p{1.5cm} | p{1.5cm} | p{0.75cm} |  p{0.5cm} | p{1cm} | p{0.75cm} |}
     \hline
     \multirow{3}{*}{Type} & \multicolumn{4}{ c| }{Hopbytes} & \multicolumn{4}{ c| }{Num. of Copies} \\ \cline{2-9}
-    & \multicolumn{4}{ c| }{Per Path}  & \multicolumn{4}{ c| }{Per Path} \\ \cline{3-9}
+    & \multicolumn{4}{ c| }{Per Path}  & \multicolumn{4}{ c| }{Per Path} \\ \cline{2-9}
     & Max & Min & Avg & Med & Max & Min & Avg & Med \\ \hline
     OPT &  159383552 & 109510 & 50680311 & 45929268 & 2304 & 4 & 697.77 & 630 \\ \hline
     HEU &  159383552 & 599186 & 38782325 & 25165818 & 2304 & 7 & 534.13 & 325 \\ \hline

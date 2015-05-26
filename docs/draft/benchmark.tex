@@ -5,7 +5,9 @@ In this section, we demonstrate the efficacy of our approaches via a set of benc
 
 \subsection{Experiment setup}
 
-Wne carried our experiments on Mira, a Blue Gene/Q supercomputer. In our experiments, we varied paritition size from 512 nodes up to 8012 nodes. The experiments involved a subset or entire set of nodes for each partition. The number sources and destinations and the distance between them are also varied depending on each experiment. We also varied the number of ranks from 1 rank per node up to 8 ranks per node to show the efficacy of our work if multiple ranks per node are used. Data size to be exchanged is also varied from 512 KB up to 8 MB per pair of communication. Our experiments covered 3 communication patterns: disjoint, overlap and subset. For the commnication patterns, we demonstrated the efficacy of our algorithms in comparions with MPI\_Alltoallv.
+We carried our experiments on Mira, a Blue Gene/Q supercomputer. In our experiments, we varied paritition size from 512 nodes up to 8012 nodes. The experiments involved a subset or entire set of nodes for each partition. The number sources and destinations and distance between them are also varied depending on each experiment. We also varied the data sizes to be exchanged to find the effective data size. Pairs of sources and destinations are randomized to show the efficacy of our works. We varied the number of paths fed into solvers to measure the effectiveness of number of paths to throughput. A similar benchmark with various max load is done for heuristic approach. Our experiments covered 3 communication patterns: disjoint, overlap and subset. For the commnication patterns, we demonstrated the efficacy of our algorithms in comparions with MPI\_Alltoallv.
+
+For searching optimal paths, we AMPL and its solvers \cite{AMPL} for modleing our problem and to find solutions for optimal data movement.
 
 \subsection{MPI Paths Reconstruction}
 
@@ -27,75 +29,89 @@ In this paper we demostrate data movement performance of our OPTIQ framework and
 \end{figure}
 
 \begin{itemize}
-\item Subgroup Data Aggregation: a special case of All to many (or many to many.)
-\item Many to many: disjoint sets.
-\item Many to many: overlapped sets.
-\item Many to many: subsets. In this category, there are 2 sub types: (Type 1) concetrated subset of destinations and (Type 2) distributed destination nodes as in I/O data aggregation.
+\item Disjoint sets: is many-to-many communication pattern where the sources and destinations are separated. It is a typical pattern in many applications.
+\item Overlap: is a many-to-many pattern that sources and destinations are overlapped sets. CESM uses this communication patterns for its coupling communications.
+\item Subset: is a many-to-many pattern that sources or destinations are subset of the other. The patterns can be found CESM or in I/O aggregation.
 \end{itemize}
 
 We carried a set of experiments to study the system's behavior in various patterns and demontrate throughput improvement.
 
 \subsection{Experimental results}
 
-In the experiments, we collected the throughput and loading related information while varying communication patterns, partition sizes, message sizes, number of MPI ranks per node.
+In the experiments, we collected the throughput, total number fo paths, maximum and average values for number of paths per job, hopbytes (total bytes x number of hops) per path, number of copies per paths, number of paths per link and total amount of data per link while varying communication patterns, source destination pairing, distance and sizes of sources and destinations, partition sizes, message sizes, chunk size.
 In the next subsections, we go into each communication and study in details the system's behaviors and performance.
-
-The number of sources: m, number of destination n, ratio between m and n is r, total number of node is p, average distance between sources and destinations is d
 
 \begin{figure*}[!htbp]
         \centering
         \begin{subfigure}[b]{0.32\textwidth}
                 \includegraphics[width=\textwidth]{figures/constantr_3.pdf}
                 \caption{Disjoint}
-                \label{fig:3_1024_hop}
+                \label{fig:constantr_3}
         \end{subfigure}%
         ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
           %(or a blank line to force the subfigure onto a new line)
         \begin{subfigure}[b]{0.32\textwidth}
                 \includegraphics[width=\textwidth]{figures/constantr_27}
                 \caption{Overlap}
-                \label{fig:3_1024_hopbyte}
+                \label{fig:constantr_27}
         \end{subfigure}
         ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
           %(or a blank line to force the subfigure onto a new line)
         \begin{subfigure}[b]{0.32\textwidth}
                 \includegraphics[width=\textwidth]{figures/constantr_87}
                 \caption{Subset}
-                \label{fig:3_1024_hopcopy}
+                \label{fig:constantr_87}
         \end{subfigure}
         \caption{Varying the number of sources and destinations and total number of nodes while keeping the ratio constant (1:8) }
-        \label{fig:3_1024_histo}
+        \label{fig:constantr}
 \end{figure*}
 
 \begin{table*}[!htbp]
    \centering
     \begin{tabular}{| l | l | r | r | p{0.5cm} | p{0.5cm} | p{0.75cm} | p{0.75cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.75cm} | p{0.75cm} |}
     \hline
-    \multirow{3}{*}{Pattern} & \multirow{3}{*}{Type} & \multirow{3}{1cm}{BW (MB/s)} & \multicolumn{3}{ c| }{Num. of Paths} & \multicolumn{2}{ c| }{Hopbytes} & \multicolumn{2}{ c| }{Num of copies}& \multicolumn{2}{ c| }{Num of paths} & \multicolumn{2}{ c| }{Total data} \\ \cline{4-6}
-    & & & \multirow{2}{0.5cm}{Total Paths} & \multicolumn{2}{ c| }{Per Job} & \multicolumn{2}{ c| }{Per Path (x1000)} & \multicolumn{2}{ c| }{Per Path}& \multicolumn{2}{ c| }{Per Link}& \multicolumn{2}{ c| }{Per Link (MB)} \\ \cline{5-14}
+    \multirow{3}{*}{Pattern} & \multirow{3}{*}{Type} & \multirow{3}{1cm}{BW (GB/s)} & \multicolumn{3}{ c| }{Num. of Paths} & \multicolumn{2}{ c| }{Hopbytes} & \multicolumn{2}{ c| }{Num of copies}& \multicolumn{2}{ c| }{Num of paths} & \multicolumn{2}{ c| }{Total data} \\ \cline{4-6}
+    & & & \multirow{2}{0.5cm}{Total Paths} & \multicolumn{2}{ c| }{Per Job} & \multicolumn{2}{ c| }{Per Path (MB)} & \multicolumn{2}{ c| }{Per Path}& \multicolumn{2}{ c| }{Per Link}& \multicolumn{2}{ c| }{Per Link (MB)} \\ \cline{5-14}
     & & & & {Max} & Avg & Max & Avg & Max & Avg & Max & Avg & Max & Avg\\ \hline
-    \multirow{3}{*}{Disjont} & OPT    & 188,625 & 1,169 & 6 & 2.28 & 83,886 & 23,021 & 1152 & 295.22 & 11 & 2.53 & 18,284 & 9,264 \\ \cline{2-14}
-    & HEU 16 & 74,882  & 3,146 & 23 & 6.14 & 83,886 & 8,459 & 1152 & 108.24 & 16 & 4.94 & 63,045 & 6,928 \\ \cline{2-14}
-    & MPI    & 45,184  & 512  & 1 & 1.00 & 92,274 & 50,331 & & & 16 & 3.07 & 134,217 & 25,769\\ \hline
-    \multirow{3}{*}{Overlap} & OPT    &  &  &  &  & & & & & & & & \\ \cline{2-14}
-    & HEU 16 &   & &  &  & & & & & & & & \\ \cline{2-14}
-    & MPI    &  &  & &  & & & & & & & & \\ \hline
-    \multirow{3}{*}{Subset} & OPT    &  &  &  &  & & & & & & & & \\ \cline{2-14}
-    & HEU 16 &   & &  &  & & & & & & & & \\ \cline{2-14}
-    & MPI    &  &  & &  & & & & & & & & \\ \hline
+    \multirow{3}{*}{Disjont} & OPT    & 188.62 & 1,169 & 6 & 2.28 & 83.88 & 23.02 & 1152 & 295.22 & 11 & 2.53 & 18.28 & 9.26 \\ \cline{2-14}
+    & HEU 16 & 74.88  & 3,146 & 23 & 6.14 & 83.88 & 8.45 & 1152 & 108.24 & 16 & 4.94 & 63.04 & 6.92 \\ \cline{2-14}
+    & MPI    & 45.18  & 512  & 1 & 1.00 & 92.27 & 50.33 & & & 16 & 3.07 & 134.21 & 25.76\\ \hline
+    \multirow{3}{*}{Overlap} & OPT    & 200.03 & 1303 & 6 & 2.54 & 83.88 & 19.28  & 1152 & 243.96 & 13 & 2.74 & 16.97 & 9.04\\ \cline{2-14}
+    & HEU 16 & 113.17  & 3273 & 26 & 6.39 & 75.49 & 7.41 & 1024 & 93.07 & 16 & 5.17 & 38.66 & 7.04 \\ \cline{2-14}
+    & MPI    & 42.84 & 512 & 1 & 1 & 83.88 & 42.99 &  & & 16 & 3.38 & 134.21 & 28.36 \\ \hline
+    \multirow{3}{*}{Subset} & OPT    & 140.94 & 1384 & 6 & 2.70 & 75.49 & 18.04 & 1024 & 227.96 & 12 & 3.09 & 16.71 & 9.49\\ \cline{2-14}
+    & HEU 16 & 108.94  & 3531 & 23 & 6.09 & 75.49 & 6.99 & 1024 & 88.17 & 32 & 10.50 & 45.15 & 6.93 \\ \cline{2-14}
+    & MPI    & 74.58 & 512 & 1 & 1 & 83.88 & 41.94 & & & 16 & 3.86 & 134.21 & 32.34 \\ \hline
     \end{tabular}
-    \caption{Performance and other data for 3 patterns in 1024 nodes experiments}
+    \caption{Performance, total num of paths, number of paths per job, maximum and average values of hopbytes, number of copies, number of paths per link and amount of data per link for 3 patterns in 1024 nodes experiments}
     \label{table:constantr}
 \end{table*}
 
-\subsubsection{Constant ration r, while varying m and n together with the number of nodes p}
+\subsubsection{Varying partition, source and destination sizes, same sources/destination ratio}
 
-In this experiment, we keep the ratio between number of sources and destination constant while varying the number of sources, destinations together with total number of nodes. We keep the ration as 1/8. The first m = p/16 nodes send data to the last p/2 nodes. Each source has 8 destination We tested the framework for 3 patterns: subset, disjoint and overlap with 3 methods of transferring data OPTIQ optimization, OPTIQ heuristics and MPI\_Alltoallv. We use 1 rank/node. The data size is 8 MB per pair. We vary the number of nodes from 512 to 8192.
+In this experiment, we vary the number of sources, destinations together with total number of nodes while keeping the ratio between number of sources and destination 1/8. With the total number of nodes P  increases from 512 to 8192, the first P/16 nodes send data to the last P/2 nodes. Each source has 8 destinations e.g node 0 sends data to nodes P/2, P/2+1, ...P/2+7. We tested the framework for 3 patterns: subset, disjoint and overlap with 3 approaches of transferring data OPTIQ Optimization, OPTIQ Heuristics and MPI\_Alltoallv. We use 1 MPI/PAMI rank/node. The data size is 8 MB per pair. We set the max load equal 16 for the Heuristic approach.
 
-In this experiment, we keep the number sources and destinations as 128 to 256 while varying the total number of nodes. The sources are first 128 nodes while destination are last 256. Each source node has 2 destination nodes. We use 1 MPI rank per node. The total number of nodes vary from 512 to 8K. The message size is 8 MB.
+As shown in Figure \ref{fig:constantr}, the Optimization approach has the highest throughput, the Heuristics approach is next and MPI\_Alltoall achieved the lowest throughput. The Table \ref{table:constantr} shows that in all 3 patterns the Heuristic with max load set to 16 was able to find highest number of paths. The Heurisc approach also has the highest maximum and average number paths for a job. As data is divided equally among paths, this led to lowest maximum and average values for hopbytes, number of copies per path. However, this led to higher number of paths per physical link higher amount of data per physical link of the Heuristic approach in comparison to the Optimization approach. In Optimization, the data is plit among paths to balance the amount of data between physical links, thus it has the lowest maximum amount of data per physical link. This led to its highest throughput. MPI\_Alltoall approach has the lowest number of paths. With 1 path per pair of communication, data is not split. Thus, it has the the highest hopbytes and data per physical link. Both factors led to its lowest throughput.
 
-\subsubsection{Constant the number of nodes p, sources m and destination n, vary the average distance d between sources and destinations}
-This is to show that with longer distance, we have more paths to explore.
+\subsubsection{Random pairing between sources and destinations}
+
+In this experiment, we randomized the pairing between sources and destination to shuffle the well-aligned pairing that we have in the previous experiment. To demonstrate the sustained performance, we did experiment for all 3 patterns at 512 nodes, with 1 MPI/PAMI rank per node, 8 MB of data per communication. We used the same ratio 1/8 i.e 32 first nodes communicates with last 256 nodes. However, we randomized the pair of sources and destinations for 5 times to see the performance. The resuls are presented in Figure \ref{fig:random}.
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/rand_opt_mpi.pdf}
+\vspace{-0.1in}
+\caption{Randomized pairing of sources and destinations while keeping the same set of nodes}
+\vspace{-0.1in}
+\label{fig:random}
+\end{figure}
+
+As we see in the Figure \ref{fig:random}, the performance of MPI\_Alltoallv and Optimization approach both varies when randomizing pairs of sources and destination. However, the Optimization is significantly higher thatn MPI\_Alltoallv. This is because Optimization was able to find more paths to transfer data (530-630 paths) than MPI\_Alltoallv (256 paths). The Optimization approach also had lower average and median values of hopbytes and amount of data per physical link. The experiment shows that even we randomize pairing of sources and destination, we still are able to achieve better performance.
+
+\subsubsection{Increasing sources-destinations distance}
+
+In this experiment, we show that when distance between sources and destination increases, we are able to find more path while not increasing maximum load on physical links, thus improve performance. The experiment is done in 2048-node partition with the first 256 nodes (0-255) fixed as sources communicating with 512 destination nodes. The destination nodes location is moving to increase the number of hops between sources and destination from [256-767] to [512-1023], [768-1279] and [1024-1535]. 
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -104,11 +120,14 @@ This is to show that with longer distance, we have more paths to explore.
 \vspace{-0.1in}
 \caption{Total data movement throughput when increasing distance between sources and destinations}
 \vspace{-0.1in}
-\label{fig:chunksize}
+\label{fig:incrdist}
 \end{figure}
 
-\subsubsection{Consant the number of node p and sources m, vary number of destinations n}
-This is to show that with more number of destination, we have less paths to explore
+The number of paths produced by Optimization approach are 1105 to 1372, 1547 and 1672 respectively. With increasing number of paths, the hopbytes, number of copies per paths and data load per physical link decrease, thus increasing in performance as shown in Figure \ref{fig:incrdist}. The same trend is observed in the Heuristics approach.
+
+\subsubsection{Increasing destination size}
+
+In this experiment, we also use a partition of 2014 nodes. In which, we keep the number of source nodes constant (64 nodes) and increase the number of destination nodes starting from 128 (node ids from 1600 to 1727) to 256 (node ids from 600 to 1855), 512 (node ids from 1088 to 1599) and 1024 (node id from 576 to 1599) nodes. The performance is shown in Figure \ref{fig:incrsize}.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -117,70 +136,104 @@ This is to show that with more number of destination, we have less paths to expl
 \vspace{-0.1in}
 \caption{Total data movement throughput when increasing size of destinations}
 \vspace{-0.1in}
-\label{fig:chunksize}
+\label{fig:incrsize}
 \end{figure}
 
 \subsubsection{Benchmark for chunk size}
 
-To transfer dat through intermediate, we split a message into smaller chunks and keep sending the chunks into the network. It is to reduce the waiting time at the intermediate, thus, reduce the total transfer time. We do an experiment to see what is the optimal chunk size for each pattern. In this experiment, we generated 91 patterns (16 disjont patterns[expriment id 0-15], 48 overlap patterns [16-63], 27 subset patterns [64-90]), in which we vary the number of sources, destination and their locaiton in the 2048-node partition. We varied the chunk size from 8 KB to 1 MB to find the most optimal chunk size. However for the sake of simplicity, we only show the results of chunk sizes from 32 KB to 512 KB while not losing the accuracy of the experiment. The results are shown in Figure \ref{fig:chunksize}.
+To transfer dat through intermediate, we split a message into smaller chunks and keep sending the chunks into the network. It is to reduce the waiting time at the intermediate, thus, reduce the total transfer time. We carried out an experiment to show optimal chunk sizes for different message sizes. In this experiment, we varied the message sizes from 8 KB up to 8 MB. The chunk sizes also varied from 4KB up to 1MB. The experiment is done in 512-node partition using subset pattern in which first 32 nodes send data to last 256 nodes. The results are shown in Figure \ref{fig:chunksize}.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
-\includegraphics[scale=0.30]{figures/chunksize_2k.pdf}
+\includegraphics[scale=0.30]{figures/87_chunksize.pdf}
 \vspace{-0.1in}
-\caption{Chunk sizes and their performance in 2048-node partition}
+\caption{Chunk sizes and their performance in 512-node partition, subset pattern}
 \vspace{-0.1in}
 \label{fig:chunksize}
 \end{figure}
 
-We can see that, for disjoint and overlap patterns, most of the time the chunk size of 64 KB and/or 128 have dominated performance. For the subset patterns, chunk size 128 KB is clearly optimal choice. In order to be consistent, in the above experiments, we used 64 KB chunk size for disjoint and overlap pattern and 128 KB chunk size for subset patterns.
+As shown in the Figure \ref{fig:chunksize}, for messages with sizes less than 16 KB, we should transfer the entire mesasges. With message size 32 KB, we can use chunksize 16 KB. With message sizes 64 KB or 128 KB, we can use 32 KB chunksize. With larger message sizes, we can use 64 KB chunk size. Similar trends are found in disjoint and overlap patterns. For the expriments in this paper, we use 64 KB chunk size. 
 
-\subsubsection{Message size scaling}
+\subsubsection{Performance in different message sizes}
 
-\subsubsection{Number of ranks scaling}
-
-\subsubsection{Number of paths fed into heuristics II}
-
-Quality i.e the performance based on the number of paths
+Due to overheads in data transfer by OPTIQ, throughput of tranferring small messages might be degraded and lower than default MPI\_Alltoallv. In this experiment, we show effective message sizes for OPTIQ. The expriment is carried in 512-node partition with 1 MPI/PAMI rank per node, 8 MB message size for all 3 patterns. The results are shown in Figure \ref{fig:messagesize}.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
-\includegraphics[scale=0.30]{figures/heu_paths.pdf}
+\includegraphics[scale=0.30]{figures/messagesize.pdf}
+\vspace{-0.1in}
+\caption{Total throughtput with different message sizes in 3 patterns}
+\vspace{-0.1in}
+\label{fig:messagesize}
+\end{figure}
+
+As shown in the Figure \ref{fig:messagesize}, data transfer throughput flips at the size in between 256 KB and 512 KB. If the message size is less than 256 KB, MPI\_Alltoallv has better performance. When the message size is over 512 KB, OPTIQ has better performance. This is due to overheads caused by extra headers in each message, the time to copy and inject at each intermediate nodes.
+
+\subsubsection{Number of paths fed into heuristic approach}
+
+For the heuristic approach, we need to feed k shortest paths and a \textit{maxload} value to select a number of path used for data transfer. Depending on the number of \textit{maxload} value, we have different set of paths which can affect to the performance.  In this experiment, we show effectiveness of choosing the \textit{maxload} value and time to select paths based on the \textit{maxload} value. The expriment is carried out in 1024-node partition, with 1 MPI/PAMI rank per node, 8 MB message size, ratio 1/8 for all 3 patterns. The \textit{maxload} value varied from 1, 2, 4, 8, 16 to 32. The results are shown in Figure \ref{fig:heu_paths_3p}. 
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.30]{figures/heu_paths_3p.pdf}
 \vspace{-0.1in}
 \caption{Different number of maxload}
 \vspace{-0.1in}
-\label{fig:heu_paths}
+\label{fig:heu_paths_3p}
 \end{figure}
 
-Time to search for paths
+As shown in the Figure \ref{fig:heu_paths_3p}, when the \textit{maxload} value is set to 1, 2 or 4, the performance is very much similar. They have the performance lower than MPI\_Alltoallv in Disjoint and Subset pattern. We gain the best performance with \textit{maxload} value set to 8 or 16. When the \textit{maxload} value is set to 32, the performance start to degrade. This is because when the \textit{maxload} value is set to low values (1,2,4), the heuristic algorithm is not able to find enought paths to transfer data leading to fewer number of physical links being used, thus higher load on physical links. When the \textit{maxload} value set to high value (32), the heuristic algorihtm find too many paths leading to many paths sharing a physical link, thus higher load on physical links too. The performance is optimal with the \textit{maxload} value set to 8 or 16. With the values, we have appropriate number of links and the load is ditributed better on the physical links. For expriments in this paper, we set \textit{maxload} value to 16.
 
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.30]{figures/heu_time.pdf}
-\vspace{-0.1in}
-\caption{Total time with different max load}
-\vspace{-0.1in}
-\label{fig:heu_time}
-\end{figure}
+When we increase the \textit{maxload} value, it also takes more time to select paths from k shortest paths. The Table \ref{table:solvetime} shows the time for differnt \textit{maxload} values in deffernt patterns. 
+
+\begin{table}[!htbp]
+   \centering
+   \begin{tabular}{| p {0.75cm}| r | r | r | r | r | r |}
+    \hline
+    \multirow{2}{*}{Pattern} & \multicolumn{6}{ c| }{Time for Different Max Load (s)} \\ \cline{2-7}
+    & 1 & 2 & 4 & 8 & 16 & 32 \\ \hline
+    Disjoint & 1.958 & 1.961 & 1.917 & 1.956 & 2.002 &  2.164 \\ \hline
+    Overlap & 1.923 & 1.890 & 1.801 & 1.929 & 1.993 & 2.082 \\ \hline
+    Subset & 1.907 & 1.870 & 1.891 & 1.955 & 2.024 &  2.223 \\ \hline
+    \end{tabular}
+    \caption{Search time with diffent max load in 1024 nodes partition}
+    \label{table:solvetime}
+\end{table}
+
+The search time is short and thus, can be amortized over time when being used repeatedly.
 
 \subsubsection{Number of paths fed into model}
 
-Quality
+In the similar sense, we also
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
-\includegraphics[scale=0.30]{figures/opt_paths.pdf}
+\includegraphics[scale=0.30]{figures/opt_paths_3p.pdf}
 \vspace{-0.1in}
-\caption{Total time with different max load}
+\caption{Total throughput with different number of paths fed into solvers}
 \vspace{-0.1in}
-\label{fig:opt_paths}
+\label{fig:opt_paths_3p}
 \end{figure}
 
 Time to search for paths
+
+\begin{table}[!htbp]
+   \centering
+   \begin{tabular}{| p {0.75cm}| p{0.5cm} | r | p{0.5cm} | p{0.5cm} | r | r | r | r |}
+    \hline
+    \multirow{2}{*}{Pattern} & \multicolumn{4}{ c| }{AMLP time (s)} & \multicolumn{4}{ c| }{Solve time (s)} \\ \cline{2-9}
+    & 4 & 16 & 32 & 50 & 4 & 16 & 32 & 50 \\ \hline
+    Disjoint & 13.9 & 187.7 & 123.0 & 224.0 & 0.06 & 6.6 & 4.4 & 84.0 \\ \hline
+    Overlap & 13.6 & 51.9 & 134.6 & 198.7 & 0.09 & 16.6 & 179.4 & 530.3 \\ \hline
+    Subset & 14.4 & 50.6 & 134.9 & 217.3 & 0.85 & 111.3 & 173.2 & 939.6 \\ \hline
+    \end{tabular}
+    \caption{AMPL and solving time}
+    \label{table:solvetime}
+\end{table}
 
 \begin{comment}
 \subsubsection{Subset - Type 2 (Subgroup Data Aggregation)}

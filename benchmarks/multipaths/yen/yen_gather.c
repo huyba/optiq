@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 
     char filepath[256];
 
-    timeval t0, t1;
+    timeval t0, t1, t2, t3;
     gettimeofday(&t0, NULL);
 
     for (int i = start; i <= end; i++)
@@ -43,7 +43,15 @@ int main(int argc, char **argv)
             std::vector<struct path*> paths;
 	    paths.clear();
 
+            gettimeofday(&t2, NULL);
+
             optiq_job_read_and_select(jobs, paths, filepath, maxload, num_nodes, num_ranks_per_node);
+
+            gettimeofday(&t3, NULL);
+
+            double t = (t3.tv_sec - t2.tv_sec) * 1e6 + (t3.tv_usec - t2.tv_usec);
+            printf("testid = %d, time = %8.0f\n", i, t);
+
             sprintf(filepath, "test%d", i);
             optiq_job_write_to_file (jobs, filepath);
         }

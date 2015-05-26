@@ -66,13 +66,13 @@ Among N nodes, N/2 source nodes send data to N/16 destination nodes. The destina
 
 \newpage
 
-%\subsubsection{Number of nodes 8192}
+\subsubsection{Number of nodes 8192}
 
-%\input{tables/tables_3_8192.dat}
+\input{tables/tables_3_8192.dat}
 
 %\input{report_figures/constantr/3_8192/histo.tex}
 
-%\newpage
+\newpage
 
 \subsection{Overlap set - Test Id = 27}
 
@@ -122,13 +122,13 @@ Among N nodes, N/2 source nodes send data to N/16 destination nodes. The destina
 
 \newpage
 
-%\subsubsection{Number of nodes 8192}
+\subsubsection{Number of nodes 8192}
 
-%\input{tables/tables_27_8192.dat}
+\input{tables/tables_27_8192.dat}
 
 %\input{report_figures/constantr/27_8192/histo.tex}
 
-%\newpage
+\newpage
 
 \subsection{Subset tests - Test Id = 87}
 
@@ -305,6 +305,36 @@ Number of sources is 256. Number of destinations increases from 256, 512, 1024, 
 \input{tables/tables_incrsize_hops_4k.dat}
 
 \input{report_figures/incrsize/4k/histo.tex}
+
+\clearpage
+\newpage
+
+\section{Randomization}
+
+\begin{figure}[h]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.40]{report_figures/rand_opt_mpi.pdf}
+\vspace{-0.1in}
+\caption{Randomizing sources and destinations}
+\vspace{-0.1in}
+\label{fig:random}
+\end{figure}
+
+\clearpage
+\newpage
+
+\subsection{Disjoint}
+
+\input{tables/tables_rand_3_512.dat}
+
+\subsection{Overlap}
+
+\input{tables/tables_rand_27_512.dat}
+
+\subsection{Subset}
+
+\input{tables/tables_rand_87_512.dat}
 
 \clearpage
 \newpage
