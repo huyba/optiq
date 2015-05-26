@@ -153,9 +153,11 @@ To transfer dat through intermediate, we split a message into smaller chunks and
 \label{fig:chunksize}
 \end{figure}
 
-We can see that, for disjoint and overlap patterns, most of the time the chunk size of 64 KB and/or 128 have dominated performance. For the subset patterns, chunk size 128 KB is clearly optimal choice. In order to be consistent, in the above experiments, we used 64 KB chunk size for disjoint and overlap pattern and 128 KB chunk size for subset patterns.
+As shown in the Figure \ref{fig:chunksize}, for messages with sizes less than 16 KB, we should transfer the entire mesasges. With message size 32 KB, we can use chunksize 16 KB. With message sizes 64 KB or 128 KB, we can use 32 KB chunksize. With larger message sizes, we can use 64 KB chunk size. Similar trends are found in disjoint and overlap patterns. For the expriments in this paper, we use 64 KB chunk size. 
 
-\subsubsection{Message size scaling}
+\subsubsection{Performance in different message sizes}
+
+Due to overheads in data transfer by OPTIQ, throughput of tranferring small messages might be degraded and lower than default MPI\_Alltoallv. In this experiment, we show effective message sizes for OPTIQ. The expriment is carried in 512-node partition with 1 MPI/PAMI rank per node, 8 MB message size for all 3 patterns. The results are shown in Figure \ref{fig:messagesize}.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -167,9 +169,11 @@ We can see that, for disjoint and overlap patterns, most of the time the chunk s
 \label{fig:messagesize}
 \end{figure}
 
-\subsubsection{Number of paths fed into heuristics II}
+As shown in the Figure \ref{fig:messagesize}, data transfer throughput flips at the size in between 256 KB and 512 KB. If the message size is less than 256 KB, MPI\_Alltoallv has better performance. When the message size is over 512 KB, OPTIQ has better performance. This is due to overheads caused by extra headers in each message, the time to copy and inject at each intermediate nodes.
 
-Quality i.e the performance based on the number of paths
+\subsubsection{Number of paths fed into heuristic approach}
+
+For the heuristic approach, we need to feed k shortest paths and a \textit{maxload} value to select a number of path used for data transfer. Depending on the number of \textit{maxload} value, we have different set of paths which can affect to the performance.  In this experiment, we show effectiveness of choosing the \textit{maxload} value and time to select paths based on the \textit{maxload} value. The expriment is carried out in 1024-node partition, with 1 MPI/PAMI rank per node, 8 MB message size, ratio 1/8 for all 3 patterns. The \textit{maxload} value varied from 1, 2, 4, 8, 16 to 32. The results are shown in Figure \ref{fig:heu_paths_3p}. 
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
@@ -181,7 +185,9 @@ Quality i.e the performance based on the number of paths
 \label{fig:heu_paths_3p}
 \end{figure}
 
-Time to search for paths
+As shown in the Figure \ref{fig:heu_paths_3p}, when the \textit{maxload} value is set to 1, 2 or 4, the performance is very much similar. They have the performance lower than MPI\_Alltoallv in Disjoint and Subset pattern. We gain the best performance with \textit{maxload} value set to 8 or 16. When the \textit{maxload} value is set to 32, the performance start to degrade. This is because when the \textit{maxload} value is set to low values (1,2,4), the heuristic algorithm is not able to find enought paths to transfer data leading to fewer number of physical links being used, thus higher load on physical links. When the \textit{maxload} value set to high value (32), the heuristic algorihtm find too many paths leading to many paths sharing a physical link, thus higher load on physical links too. The performance is optimal with the \textit{maxload} value set to 8 or 16. With the values, we have appropriate number of links and the load is ditributed better on the physical links. For expriments in this paper, we set \textit{maxload} value to 16.
+
+When we increase the \textit{maxload} value, it also takes more time to select paths from k shortest paths. The Table \ref{table:solvetime} shows the time for differnt \textit{maxload} values in deffernt patterns. 
 
 \begin{table}[!htbp]
    \centering
@@ -197,9 +203,11 @@ Time to search for paths
     \label{table:solvetime}
 \end{table}
 
+The search time is short and thus, can be amortized over time when being used repeatedly.
+
 \subsubsection{Number of paths fed into model}
 
-Quality
+In the similar sense, we also
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
