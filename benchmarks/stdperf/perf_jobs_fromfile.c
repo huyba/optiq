@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	printf("MPI/OPTIQ msg chunk totalsize time(us) bandwidth(MB/s) #path totalhops totalloads loadlinks maxhops minhops avghops medhops maxload minload avgload medload\n\n");
     }
 
-    for (int nbytes = demand; nbytes >= demand; nbytes /= 2)
+    for (int nbytes = demand; nbytes >= mindemand; nbytes /= 2)
     {
 	for (int i = start; i <= end; i++)
 	{

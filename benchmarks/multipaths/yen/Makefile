@@ -107,10 +107,6 @@ cp:
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/mxload20/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512_c8/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/all/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/maxpath4/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/maxpath8/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/maxpath16/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/maxpath32/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/mxload1/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/mxload3/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/mxload7/
