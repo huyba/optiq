@@ -1,5 +1,5 @@
 %!PS-Adobe-2.0
-%%Title: constantr_subset.ps
+%%Title: constantr_disjoint.ps
 %%Creator: gnuplot 4.6 patchlevel 5
 %%CreationDate: Wed May 27 12:28:11 2015
 %%DocumentFonts: (atend)
@@ -429,7 +429,7 @@ systemdict /pdfmark known not {
   userdict /pdfmark systemdict /cleartomark get put
 } if
 SDict begin [
-  /Title (constantr_subset.ps)
+  /Title (constantr_disjoint.ps)
   /Subject (gnuplot plot)
   /Creator (gnuplot 4.6 patchlevel 5)
   /Author (huybui)
@@ -608,8 +608,8 @@ LTb
 -6695 0 V
 Z stroke
 LCb setrgbcolor
-/Helvetica findfont 240 scalefont setfont
-/vshift -80 def
+/Helvetica findfont 260 scalefont setfont
+/vshift -86 def
 -406 2519 M
 currentpoint gsave translate -270 rotate 0 0 M
 (Total throughput\(GB/s\)) Cshow
@@ -618,17 +618,17 @@ grestore
 /vshift -46 def
 LTb
 LCb setrgbcolor
-/Helvetica findfont 240 scalefont setfont
-/vshift -80 def
+/Helvetica findfont 260 scalefont setfont
+/vshift -86 def
 3683 -350 M
-(Partition size \(N\)) Cshow
+(Partition size \(P\)) Cshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LTb
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 3683 5249 M
-(Transfer bandwidth from the first N/16 nodes to the last N/2 nodes) Cshow
+(Transfer bandwidth from the first P/16 nodes to the last P/2 nodes) Cshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 1.000 UP
@@ -642,22 +642,22 @@ LT3
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 6380 1833 M
-(          Subset - OPTIQ Optimization) Rshow
+(          Disjoint - OPTIQ Optimization) Rshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LT3
 1.00 0.00 0.00 C 6464 1833 M
 399 0 V
-336 2759 M
-1674 456 V
-1674 183 V
-1673 471 V
-1674 112 V
-336 2759 Box
-2010 3215 Box
-3684 3398 Box
-5357 3869 Box
-7031 3981 Box
+336 2842 M
+1674 638 V
+1674 40 V
+1671 86 V
+7031 3413 L
+336 2842 Box
+2010 3480 Box
+3684 3520 Box
+5355 3606 Box
+7031 3413 Box
 6663 1833 Box
 % End plot #1
 % Begin plot #2
@@ -668,20 +668,22 @@ LT0
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 6380 1597 M
-(     Subset - OPTIQ Heuristics Maxload = 1) Rshow
+(     Disjoint - OPTIQ Heuristics Maxload = 1) Rshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LT0
 0.00 0.00 1.00 C 6464 1597 M
 399 0 V
-336 2624 M
-1674 -53 V
-1674 518 V
-7031 4165 L
-336 2624 Pls
-2010 2571 Pls
-3684 3089 Pls
-7031 4165 Pls
+336 2577 M
+2010 1899 L
+1674 931 V
+1673 228 V
+1674 337 V
+336 2577 Pls
+2010 1899 Pls
+3684 2830 Pls
+5357 3058 Pls
+7031 3395 Pls
 6663 1597 Pls
 % End plot #2
 % Begin plot #3
@@ -692,20 +694,20 @@ LT2
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 6380 1361 M
-(     Subset - OPTIQ Heuristics Maxload = 2) Rshow
+(     Disjoint - OPTIQ Heuristics Maxload = 2) Rshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LT2
 0.53 0.81 0.92 C 6464 1361 M
 399 0 V
-336 2615 M
-1674 -31 V
-1674 500 V
-1673 483 V
-336 2615 Star
-2010 2584 Star
-3684 3084 Star
-5357 3567 Star
+336 2577 M
+2010 1893 L
+1674 941 V
+1673 268 V
+336 2577 Star
+2010 1893 Star
+3684 2834 Star
+5357 3102 Star
 6663 1361 Star
 % End plot #3
 % Begin plot #4
@@ -716,22 +718,22 @@ LT4
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 6380 1125 M
-(     Subset - OPTIQ Heuristics Maxload = 4) Rshow
+(     Disjoint - OPTIQ Heuristics Maxload = 4) Rshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LT4
 1.00 0.65 0.00 C 6464 1125 M
 399 0 V
-336 2679 M
-2010 2578 L
-1674 504 V
-1673 484 V
-1674 589 V
-336 2679 BoxF
-2010 2578 BoxF
-3684 3082 BoxF
-5357 3566 BoxF
-7031 4155 BoxF
+336 2575 M
+2010 1893 L
+1674 935 V
+1673 269 V
+1674 295 V
+336 2575 BoxF
+2010 1893 BoxF
+3684 2828 BoxF
+5357 3097 BoxF
+7031 3392 BoxF
 6663 1125 BoxF
 % End plot #4
 % Begin plot #5
@@ -742,22 +744,22 @@ LT5
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 6380 889 M
-(     Subset - OPTIQ Heuristics Maxload = 8) Rshow
+(     Disjoint - OPTIQ Heuristics Maxload = 8) Rshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LT5
 1.00 0.75 0.75 C 6464 889 M
 399 0 V
-336 2675 M
-1674 355 V
-1674 37 V
-1673 504 V
-1674 591 V
-336 2675 Circle
-2010 3030 Circle
-3684 3067 Circle
-5357 3571 Circle
-7031 4162 Circle
+336 2498 M
+1674 -14 V
+1674 346 V
+1673 228 V
+1674 339 V
+336 2498 Circle
+2010 2484 Circle
+3684 2830 Circle
+5357 3058 Circle
+7031 3397 Circle
 6663 889 Circle
 % End plot #5
 % Begin plot #6
@@ -768,22 +770,22 @@ LT6
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 6380 653 M
-(     Subset - OPTIQ Heuristics Maxload = 16) Rshow
+(     Disjoint - OPTIQ Heuristics Maxload = 16) Rshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LT6
 0.65 0.16 0.16 C 6464 653 M
 399 0 V
-336 2564 M
-1674 429 V
-1674 128 V
-1673 496 V
-1674 528 V
-336 2564 CircleF
-2010 2993 CircleF
-3684 3121 CircleF
-5357 3617 CircleF
-7031 4145 CircleF
+336 2332 M
+1674 317 V
+1674 86 V
+1673 257 V
+1674 400 V
+336 2332 CircleF
+2010 2649 CircleF
+3684 2735 CircleF
+5357 2992 CircleF
+7031 3392 CircleF
 6663 653 CircleF
 % End plot #6
 % Begin plot #7
@@ -794,20 +796,20 @@ LT7
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 6380 417 M
-(     Subset - OPTIQ Heuristics Maxload = 32) Rshow
+(     Disjoint - OPTIQ Heuristics Maxload = 32) Rshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LT7
 0.75 0.50 1.00 C 6464 417 M
 399 0 V
-336 2632 M
-1674 238 V
-1674 253 V
-1673 483 V
-336 2632 TriU
-2010 2870 TriU
-3684 3123 TriU
-5357 3606 TriU
+336 2580 M
+1674 102 V
+1674 55 V
+1673 131 V
+336 2580 TriU
+2010 2682 TriU
+3684 2737 TriU
+5357 2868 TriU
 6663 417 TriU
 % End plot #7
 % Begin plot #8
@@ -818,22 +820,22 @@ LT1
 /Helvetica findfont 220 scalefont setfont
 /vshift -73 def
 6380 181 M
-(     Subset - MPI_Alltoallv) Rshow
+(     Disjoint - MPI_Alltoallv) Rshow
 /Helvetica findfont 140 scalefont setfont
 /vshift -46 def
 LT1
 0.00 1.00 0.00 C 6464 181 M
 399 0 V
-336 2228 M
-1674 409 V
-1674 363 V
-1673 896 V
-7031 3472 L
-336 2228 Crs
-2010 2637 Crs
-3684 3000 Crs
-5357 3896 Crs
-7031 3472 Crs
+336 2267 M
+1674 -85 V
+1674 281 V
+1673 -20 V
+1674 644 V
+336 2267 Crs
+2010 2182 Crs
+3684 2463 Crs
+5357 2443 Crs
+7031 3087 Crs
 6663 181 Crs
 % End plot #8
 1.000 UL

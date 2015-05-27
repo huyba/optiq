@@ -7,14 +7,14 @@ Our framework has 4 main components: Path generation, Path searching algorithms,
 \centering
 \includegraphics[scale=0.7]{figures/framework.pdf}
 \vspace{-0.1in}
-\caption{Three components of OPTIQ framework}
+\caption{Four components of OPTIQ framework}
 \vspace{-0.1in}
 \label{fig:framework}
 \end{figure}
 
 The functionarity of each component is as following:
 \begin{itemize}
-\item Path generation: generate k shortest paths that can be used as candidates for data tranfser.
+\item Path generation: generate k shortest paths that can be used as candidates for data tranfser. We need to generate paths to reduce the search space.
 \item Path searching: search for path to transfer data from a set of sources to a set of destination. Multiple or single paths can be found using a set of algorithm. User can decide what algorithm to be used or let the framework use a default algorithm.
 \item Schedule: Split a buffer data that needed to tranfer into smaller messages and put those messages into a queue of transport layer to be transferred. It also handles incoming messages for itself and for forwardig them to its neighbors on a way to a message final destination.
 As we route data in our own ways, we search for the paths, and we also need to schedule messages transfer. It includes sending local messages, forwarding messages form other sources, receiving data as the intermediate node or the destination node.
