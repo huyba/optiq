@@ -93,6 +93,66 @@ In this experiment, we vary the number of sources, destinations together with to
 
 As shown in Figure \ref{fig:constantr}, the Optimization approach has the highest throughput, the Heuristics approach is next and MPI\_Alltoall achieved the lowest throughput. The Table \ref{table:constantr} shows that in all 3 patterns the Heuristic with max load set to 16 was able to find highest number of paths. The Heurisc approach also has the highest maximum and average number paths for a job. As data is divided equally among paths, this led to lowest maximum and average values for hopbytes, number of copies per path. However, this led to higher number of paths per physical link higher amount of data per physical link of the Heuristic approach in comparison to the Optimization approach. In Optimization, the data is plit among paths to balance the amount of data between physical links, thus it has the lowest maximum amount of data per physical link. This led to its highest throughput. MPI\_Alltoall approach has the lowest number of paths. With 1 path per pair of communication, data is not split. Thus, it has the the highest hopbytes and data per physical link. Both factors led to its lowest throughput.
 
+\subsubsection{Increasing sources-destinations distance}
+
+In this experiment, we show that when distance between sources and destination increases, we are able to find more path while not increasing maximum load on physical links, thus improve performance. The experiment is done in 2048-node partition with the first 256 nodes (0-255) fixed as sources communicating with 512 destination nodes. The destination nodes location is moving to increase the number of hops between sources and destination from [256-767] to [512-1023], [768-1279] and [1024-1535]. 
+
+\begin{figure*}[!htbp]
+        \centering
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/incrdist_disjoint.pdf}
+                \caption{Disjoint}
+                \label{fig:incrdist_disjoint}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/incrdist_overlap}
+                \caption{Overlap}
+                \label{fig:incrdist_overlap}
+        \end{subfigure}
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/incrdist_subset}
+                \caption{Subset}
+                \label{fig:incrdist_subset}
+        \end{subfigure}
+        \caption{Total data movement throughput when increasing distance between sources and destinations}
+        \label{fig:incrdist}
+\end{figure*}
+
+The number of paths produced by Optimization approach are 1105 to 1372, 1547 and 1672 respectively. With increasing number of paths, the hopbytes, number of copies per paths and data load per physical link decrease, thus increasing in performance as shown in Figure \ref{fig:incrdist}. The same trend is observed in the Heuristics approach.
+
+\subsubsection{Increasing destination size}
+
+In this experiment, we also use a partition of 2014 nodes. In which, we keep the number of source nodes constant (64 nodes) and increase the number of destination nodes starting from 128 (node ids from 1600 to 1727) to 256 (node ids from 600 to 1855), 512 (node ids from 1088 to 1599) and 1024 (node id from 576 to 1599) nodes. The performance is shown in Figure \ref{fig:incrsize}.
+
+\begin{figure*}[!htbp]
+        \centering
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/incrsize_disjoint.pdf}
+                \caption{Disjoint}
+                \label{fig:incrsize_disjoint}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/incrsize_overlap}
+                \caption{Overlap}
+                \label{fig:incrsize_overlap}
+        \end{subfigure}
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/incrsize_subset}
+                \caption{Subset}
+                \label{fig:incrsize_subset}
+        \end{subfigure}
+        \caption{Total data movement throughput when increasing destination size}
+        \label{fig:incrsize}
+\end{figure*}
+
 \subsubsection{Random pairing between sources and destinations}
 
 In this experiment, we randomized the pairing between sources and destination to shuffle the well-aligned pairing that we have in the previous experiment. To demonstrate the sustained performance, we did experiment for all 3 patterns at 512 nodes, with 1 MPI/PAMI rank per node, 8 MB of data per communication. We used the same ratio 1/8 i.e 32 first nodes communicates with last 256 nodes. However, we randomized the pair of sources and destinations for 5 times to see the performance. The resuls are presented in Figure \ref{fig:random}.
@@ -108,36 +168,6 @@ In this experiment, we randomized the pairing between sources and destination to
 \end{figure}
 
 As we see in the Figure \ref{fig:random}, the performance of MPI\_Alltoallv and Optimization approach both varies when randomizing pairs of sources and destination. However, the Optimization is significantly higher thatn MPI\_Alltoallv. This is because Optimization was able to find more paths to transfer data (530-630 paths) than MPI\_Alltoallv (256 paths). The Optimization approach also had lower average and median values of hopbytes and amount of data per physical link. The experiment shows that even we randomize pairing of sources and destination, we still are able to achieve better performance.
-
-\subsubsection{Increasing sources-destinations distance}
-
-In this experiment, we show that when distance between sources and destination increases, we are able to find more path while not increasing maximum load on physical links, thus improve performance. The experiment is done in 2048-node partition with the first 256 nodes (0-255) fixed as sources communicating with 512 destination nodes. The destination nodes location is moving to increase the number of hops between sources and destination from [256-767] to [512-1023], [768-1279] and [1024-1535]. 
-
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.30]{figures/incrdist.pdf}
-\vspace{-0.1in}
-\caption{Total data movement throughput when increasing distance between sources and destinations}
-\vspace{-0.1in}
-\label{fig:incrdist}
-\end{figure}
-
-The number of paths produced by Optimization approach are 1105 to 1372, 1547 and 1672 respectively. With increasing number of paths, the hopbytes, number of copies per paths and data load per physical link decrease, thus increasing in performance as shown in Figure \ref{fig:incrdist}. The same trend is observed in the Heuristics approach.
-
-\subsubsection{Increasing destination size}
-
-In this experiment, we also use a partition of 2014 nodes. In which, we keep the number of source nodes constant (64 nodes) and increase the number of destination nodes starting from 128 (node ids from 1600 to 1727) to 256 (node ids from 600 to 1855), 512 (node ids from 1088 to 1599) and 1024 (node id from 576 to 1599) nodes. The performance is shown in Figure \ref{fig:incrsize}.
-
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.30]{figures/incrsize.pdf}
-\vspace{-0.1in}
-\caption{Total data movement throughput when increasing size of destinations}
-\vspace{-0.1in}
-\label{fig:incrsize}
-\end{figure}
 
 \subsubsection{Benchmark for chunk size}
 
