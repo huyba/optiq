@@ -7,7 +7,7 @@ set output "allpatterns.ps"
 set title "Transfer bandwidth for MPI_Alltoallv and OPTIQ in 3 patterns 2K" font ",22"
 set logscale y 10
 set yrange [4096:2097152]
-set xrange [116:190]
+set xrange [0:70]
 set xlabel "Test Id" font ",24"
 set ylabel "Total throughput(GB/s)" font ",24"
 set style line 1 lt rgb "blue" lw 7
