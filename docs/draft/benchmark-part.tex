@@ -1,0 +1,51 @@
+\subsubsection{Varying partition, source and destination sizes, same sources/destination ratio}
+
+\begin{figure*}[!htbp]
+        \centering
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/constantr_3.pdf}
+                \caption{Disjoint}
+                \label{fig:constantr_3}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/constantr_27}
+                \caption{Overlap}
+                \label{fig:constantr_27}
+        \end{subfigure}
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[b]{0.32\textwidth}
+                \includegraphics[width=\textwidth]{figures/constantr_87}
+                \caption{Subset}
+                \label{fig:constantr_87}
+        \end{subfigure}
+        \caption{Varying the number of sources and destinations and total number of nodes while keeping the ratio constant (1:8).}
+        \label{fig:constantr}
+\end{figure*}
+
+\begin{table*}[!htbp]
+   \centering
+    \begin{tabular}{| l | l | r | r | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |}
+    \hline
+    \multirow{3}{*}{Pattern} & \multirow{3}{*}{Type} & \multirow{3}{1cm}{BW (GB/s)} & \multicolumn{3}{ c| }{Num. of Paths} & \multicolumn{2}{ c| }{Hopbytes} & \multicolumn{2}{ c| }{Num of copies}& \multicolumn{2}{ c| }{Num of paths} & \multicolumn{2}{ c| }{Total data} \\ \cline{4-6}
+    & & & \multirow{2}{0.5cm}{Total Paths} & \multicolumn{2}{ c| }{Per Job} & \multicolumn{2}{ c| }{Per Path (MB)} & \multicolumn{2}{ c| }{Per Path}& \multicolumn{2}{ c| }{Per Link}& \multicolumn{2}{ c| }{Per Link (MB)} \\ \cline{5-14}
+    & & & & {Max} & Avg & Max & Avg & Max & Avg & Max & Avg & Max & Avg\\ \hline
+    \multirow{3}{*}{Disjont} & OPT    & 188.62 & 1,169 & 6 & 2.28 & 83.88 & 23.02 & 1152 & 295.22 & 11 & 2.53 & 18.28 & 9.26 \\ \cline{2-14}
+    & HEU 16 & 74.88  & 3,146 & 23 & 6.14 & 83.88 & 8.45 & 1152 & 108.24 & 16 & 4.94 & 63.04 & 6.92 \\ \cline{2-14}
+    & MPI    & 45.18  & 512  & 1 & 1.00 & 92.27 & 50.33 & & & 16 & 3.07 & 134.21 & 25.76\\ \hline
+    \multirow{3}{*}{Overlap} & OPT    & 200.03 & 1303 & 6 & 2.54 & 83.88 & 19.28  & 1152 & 243.96 & 13 & 2.74 & 16.97 & 9.04\\ \cline{2-14}
+    & HEU 16 & 113.17  & 3273 & 26 & 6.39 & 75.49 & 7.41 & 1024 & 93.07 & 16 & 5.17 & 38.66 & 7.04 \\ \cline{2-14}
+    & MPI    & 42.84 & 512 & 1 & 1 & 83.88 & 42.99 &  & & 16 & 3.38 & 134.21 & 28.36 \\ \hline
+    \multirow{3}{*}{Subset} & OPT    & 140.94 & 1384 & 6 & 2.70 & 75.49 & 18.04 & 1024 & 227.96 & 12 & 3.09 & 16.71 & 9.49\\ \cline{2-14}
+    & HEU 16 & 108.94  & 3531 & 23 & 6.09 & 75.49 & 6.99 & 1024 & 88.17 & 32 & 10.50 & 45.15 & 6.93 \\ \cline{2-14}
+    & MPI    & 74.58 & 512 & 1 & 1 & 83.88 & 41.94 & & & 16 & 3.86 & 134.21 & 32.34 \\ \hline
+    \end{tabular}
+    \caption{Throughput, total num of paths, number of paths per job, maximum and average values of hopbytes, number of copies, number of paths per link and amount of data per link for 3 patterns in 1024 nodes experiments.}
+    \label{table:constantr}
+\end{table*}
+
+In this experiment, we vary the number of sources, destinations together with total number of nodes while keeping the ratio between number of sources and destination 1/8. With the total number of nodes P  increases from 512 to 8192, the first P/16 nodes send data to the last P/2 nodes. Each source has 8 destinations e.g node 0 sends data to nodes P/2, P/2+1, ...P/2+7. We tested the framework for 3 patterns: subset, disjoint and overlap with 3 approaches of transferring data OPTIQ Optimization, OPTIQ Heuristics and MPI\_Alltoallv. We use 1 MPI/PAMI rank/node. The data size is 8 MB per pair. We set the max load equal 16 for the Heuristic approach.
+
+As shown in Figure \ref{fig:constantr}, the Optimization approach has the highest throughput, the Heuristics approach is next and MPI\_Alltoall achieved the lowest throughput. The Table \ref{table:constantr} shows that in all 3 patterns the Heuristic with max load set to 16 was able to find highest number of paths. The Heurisc approach also has the highest maximum and average number paths for a job. As data is divided equally among paths, this led to lowest maximum and average values for hopbytes, number of copies per path. However, this led to higher number of paths per physical link higher amount of data per physical link of the Heuristic approach in comparison to the Optimization approach. In Optimization, the data is plit among paths to balance the amount of data between physical links, thus it has the lowest maximum amount of data per physical link. This led to its highest throughput. MPI\_Alltoall approach has the lowest number of paths. With 1 path per pair of communication, data is not split. Thus, it has the the highest hopbytes and data per physical link. Both factors led to its lowest throughput.
