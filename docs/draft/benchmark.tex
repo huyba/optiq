@@ -126,13 +126,13 @@ In this experiment, we show that when distance between sources and destination i
 
 \begin{table*}[!htbp]
    \centering
-    \begin{tabular}{| l | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.75cm} | p{0.75cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.75cm} | p{0.75cm} |}
+    \begin{tabular}{| l | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |}
     \hline
-     Positions & \multicolumn{3}{ c | }{1} & \multicolumn{3}{ c| }{2} & \multicolumn{3}{ c| }{3} & \multicolumn{3}{ c| }{4} \\ \hline
-     Patterns & {Max} & Avg & Paths & Max & Avg & Paths & Max & Avg & Paths & Max & Avg & Paths \\ \hline
-     Disjoint & 14 & 7.50 &  & 14  & 7.50 &  & 15 & 8.50 &  & 15 & 8.50 & \\ \hline
-     Overlap & 13 & 7.25 &  & 14  & 7.69 &  & 15 & 7.88 &  & 18 & 9.59 & \\ \hline
-     Subset &  23 & 9.06 &  & 22  & 9.06 &  & 21 & 8.56 &  & 20 & 8.56 & \\ \hline
+     Positions & \multicolumn{4}{ c | }{1} & \multicolumn{4}{ c| }{2} & \multicolumn{4}{ c| }{3} & \multicolumn{4}{ c| }{4} \\ \hline
+     Patterns & {Max} & Avg & Opt Paths & Heu Paths & Max & Avg & Opt Paths & Heu Paths & Max & Avg & Opt Paths & Heu Paths & Max & Avg & Opt Paths & Heu Paths \\ \hline
+     Disjoint & 14 & 7.50 & 1105 & 2822 & 14  & 7.50 & 1372 & 2887 & 15 & 8.50 & 1547 & 3668 & 15 & 8.50 & 1672 & 3834 \\ \hline
+     Overlap & 13 & 7.25 & 2085 & 6460 & 14  & 7.69 & 2152 & 3671 & 15 & 7.88 & 2337 & 6548 & 18 & 9.59 & 2399 & 7010 \\ \hline
+     Subset &  20 & 8.56 & 1840 & 3422 & 21  & 8.56 & 1639 & 3364 & 22 & 9.06 & 1594 & 3119 & 23 & 9.06 & 1477 & 3087 \\ \hline
     \end{tabular}
     \caption{Maximum (Max) and average (Avg) distance (number of hops) and number of paths (Paths) between souces and destinations at each position}
     \label{table:incrdist}
