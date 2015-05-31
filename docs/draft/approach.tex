@@ -8,7 +8,7 @@ In this section, we describe our heuristic to select paths for each source-desti
 \end{enumerate}
 The above conditions ensure that we have multiple paths for each pair, and the load is balanced and it is within the upper limit of maximum load on the physical links. The brute force algorithm is to explore all combinations of paths for all source-destination pairs and examine the above two conditions in order to find the best set of paths. However, its time complexity is exponential. We propose a heuristic that outputs a set of paths without exhaustively searching the entire search space. Our heuristic iterates through all pairs of source/destination nodes to search for more paths until the $maxload$ value is reached. The pseudocode of our approach is presented in Algorithm~\ref{alg:heu}. %The detail of the algorithm is explained as follows.
 \begin{algorithm}[!htbp]
-\textbf{Input}: Set of source-destination pairs {(S, D)} and their $k$ shortest paths {$k\_paths_i$}. Maximum allowed load on a link $maxload$.\\
+\textbf{Input}: Set of source-destination pairs \{(S, D)\} and their $k$ shortest paths {$k\_paths$}. Maximum allowed load on a link $maxload$.\\
 \textbf{Output}: Set of selected paths for data movement: {$paths$}.\\
 %Init:
 %    \begin{algorithmic}
@@ -18,8 +18,8 @@ The above conditions ensure that we have multiple paths for each pair, and the l
 %Main:
 \begin{algorithmic}
 \Function {Heuristic\_search}{}
-	\While {({(S,D)} != $\phi$)} 
-		\State Select (s,d) from {(S,D)} 
+	\While {(\{(S,D)\} != $\phi$)} 
+		\State Select (s,d) from \{(S,D)\} 
 		\State Let i be the index of (s,d) 
 		\State $p~\leftarrow$ Select a path from $k\_paths_i$ 
 		\State $k\_paths_i$ = $k\_paths_i$ - {$p$} 
@@ -55,7 +55,7 @@ The above conditions ensure that we have multiple paths for each pair, and the l
 %	    \EndIf
 %	\EndFor
 
-In the heuristic algorithm, inputs of the algorithm include pairs of source and destination together with their k shortest paths \textit{k\_paths} and an allowed \textit{maxload}. Output of the approach is a set of selected paths used for data movement. We maintain a table \textit{load}[][] of loads on all physical links, whenever a link (u,v) is used by a selected path its entry in the load table i.e. \textit{load}[u][v] is increased by 1. We save selected path in a queue \textit{selected\_paths}.
+In the heuristic algorithm, inputs of the algorithm include pairs of source and destination, their k shortest paths \textit{k\_paths} and an allowed \textit{maxload}. Output of the approach is a set of selected paths used for data movement. We maintain a table \textit{load}[][] of loads on all physical links, whenever a link (u,v) is used by a selected path its entry in the load table i.e. \textit{load}[u][v] is increased by 1. We save selected path in a queue \textit{selected\_paths}.
 
 We iterate through all pairs of source/destination. For each pair of source/destination, we get the first path out of its set of \textit{k\_paths}. We check if adding the path to its \textit{selected\_paths} would make the maximum load in the \textit{load} table over \textit{maxload}. We check the load by going through all links used by the path and examine their current loads in the \textit{load} table in comparison with \textit{maxload}. If their current load adding by 1 is not over \textit{maxload} we then add the path \textit{p} into \textit{selected\_paths}, update the \textit{load} table and remove the path from \textit{k\_paths}. We iterate through all pairs and add at most one path per pair at a time. The algorithm completes when we either running out of paths to add or the maximum load of physical links in \textit{load} table is over \textit{maxload}.
 
