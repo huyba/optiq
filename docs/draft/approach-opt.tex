@@ -3,78 +3,9 @@
 
 In this approach, we need to search for an assignment of data amount for each path that result in highest performance of data movement. Inputs are a set of pairs of source and destination, for each pair we have an amount of data needed to transfer from the source to the destination and k shortest paths between the source and destination.
 
-We model the problem as searching for flow values in order to  minimize transfer time for multiple commodities using pre-determined multiple flows in a network given the amount of comodities and the capacities in links of the network. The model is written in AMPL (A Mathematical Programming Language). The model is descrbied in \textbf{Model} 1.
+We model the problem as searching for flow values in order to  minimize transfer time for multiple commodities using pre-determined multiple flows in a network given the amount of comodities and the capacities in links of the network. 
 
-\begin{algorithm}[!htbp]
-
-\begingroup
-\fontsize{9pt}{9pt}\selectfont
-
-\begin{verbatim}
-
-set Nodes;
-set Arcs within Nodes cross Nodes;
-
-set Jobs;
-set Paths{Jobs};
-set Path_Arcs{job in Jobs, p in Paths[job]} 
-    within Arcs;
-
-param Capacity{Arcs} >= 0 default Infinity;
-param Demand {Jobs} default 0;
-
-var Flow {job in Jobs, Paths[job]} >= 0;
-var Z >= 0;
-
-maximize obj: Z;
-
-subject to
-
-demand_con {job in Jobs}: sum {p in Paths[job]} 
-	Flow[job,p] = Demand[job]*Z;
-
-capacity_con {(i,j) in Arcs}:
-  sum {job in Jobs, p in Paths[job]: 
-    (i,j) in = Path_Arcs[job,p]} Flow[job,p] 
-		<= Capacity[i,j];
-
-\end{verbatim}
-
-\endgroup
-
-\caption*{\textbf{Model 1} Data movement optimization}
-\label{mod:opt}
-
-\end{algorithm}
-
-The notions used in \textbf{Model} 1 are explained as follows:
-
-\begin{itemize}
-    \item sets: 
-	\begin{itemize}
-	    \item \textit{Nodes}: set of nodes in the network, each node represent a compute node in the supercomputer.
-	    \item \textit{Arcs}: set of arcs in the network. Each arc represent a physical link in the supercomputer.
-	    \item \textit{Jobs}: set of jobs. Each jobs has a source and a destination.
-	    \item  \textit{Paths}: set of paths for each job.
-	    \item \textit{Path\_Arcs}: set of arcs on each path of each job.
-	\end{itemize}
-    \item params: 
-	\begin{itemize}
-	    \item {\it Capacity}: capacity of each arc i.e. bandwidth of the physical link.
-	    \item {\it Demand}: amount of data to be transferred of each job between a pair of source and destination.
-	\end{itemize}
-    \item vars:
-	 \begin{itemize}
-	    \item \textit{Flow}: flow of each job on a path. It can be seen as the proprotional bandwidth assigned for the job on that path.
-	    \item \textit{Z}: is reversed of total time.
-	\end{itemize}
-    \item objective function: we want to minimize the time or maximize its reversed value i.e. maximize \textit{Z}.
-    \item constraints(subject to): 
-	\begin{itemize}
-	    \item \textit{demand\_con}: flow of a job on equals to the demand of the job divided by the transfer time.
-	    \item \textit{capacity\_con}: total flow on an arc is less than its capacity.
-	\end{itemize}
-\end{itemize}
+\input{approach-ampl}
 
 The model takes a set of nodes, a set of arcs and their corresponding capacity, a set of jobs (source/destination pairs), a demand for each job, a set of paths for each job, and a set of arcs for each path as inputs. It searches for an assignment of flow values (proportional capacity) for paths of all the jobs such that the transfer time for demands of all jobs is minimum.
 
