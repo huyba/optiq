@@ -71,3 +71,7 @@ The notions used in \textbf{Model} 1 are explained as follows:
 	    \item \textit{capacity\_con}: total flow on an arc is less than its capacity.
 	\end{itemize}
 \end{itemize}
+
+The model takes a set of nodes, a set of arcs and their corresponding capacity, a set of jobs (source/destination pairs), a demand for each job, a set of paths for each job, and a set of arcs for each path as inputs. It searches for an assignment of flow values (proportional capacity) for paths of all the jobs such that the transfer time for demands of all jobs is minimum.
+
+We feed the model into solvers together with data of nodes, arcs, capacity, paths for jobs and get the paths with given proportional bandwidth. Based on proportional bandwidth, each path can take proportional demand of a job.
