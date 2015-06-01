@@ -1,6 +1,6 @@
 \subsubsection{Benchmark for chunk size}
 
-To transfer dat through intermediate, we split a message into smaller chunks and keep sending the chunks into the network. It is to reduce the waiting time at the intermediate, thus, reduce the total transfer time. We carried out an experiment to show optimal chunk sizes for different message sizes. In this experiment, we varied the message sizes from 8 KB up to 8 MB. The chunk sizes also varied from 4KB up to 1MB. The experiment is done in 512-node partition using subset pattern in which first 32 nodes send data to last 256 nodes. The results are shown in Figure \ref{fig:chunksize}.
+To transfer a message from a source to a destination through intermediate nodes, we split the message into smaller chunks and keep sending the chunks into the network. This is to reduce the waiting time at the intermediate nodes, thus, reduce total transfer time. We carried out an experiment to show optimal chunk sizes for different message sizes. In this experiment, we varied the message sizes from 8 KB up to 8 MB. The chunk sizes also varied from 4KB up to 1MB. The experiment is carried out in 512-node partition using subset pattern in which first 32 nodes send data to last 256 nodes. The results are shown in Figure \ref{fig:chunksize}.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}

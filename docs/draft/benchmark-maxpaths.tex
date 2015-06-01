@@ -1,6 +1,6 @@
 \subsubsection{Number of paths fed into model}
 
-In the similar sense, we also
+For Optimization approach, we need to feed k shortest paths into solvers to search for an assigment of flow values for the k paths. In this experiment, we show the relationship between the number of paths fed into the solvers and corresponding data transfer throughput and the elapsed time for AMPL model and solvers. We carried out the experiment in 2048-node partition for all 3 patterns at the ratio of 1:8 where 128 nodes communicates with 1024 nodes with the same pairing as previous cases. We used 1 MPI/PAMI rank per node and 8 MB per communication.  We varied the number of paths fed into the solvers from 4 to 16, 32 and 50. The performance is shown in Table \ref{table:pathsintomodel}.
 
 \begin{table}[!htbp]
    \centering
@@ -16,7 +16,7 @@ In the similar sense, we also
     \label{table:pathsintomodel}
 \end{table}
 
-Time to search for paths
+As shown in the Figure \ref{table:pathsintomodel}, as we increase the number of paths fed into the solvers, the performance increases. This is because with more paths the solvers have a larger search space, thus can produced more optimal results to be used for data transfer. However, when increasing the number of paths, we also increase the time for AMPL model to prepare and sovlers to search for flow values for paths. The time spent by AMPL model and sovlers are shown in Table \ref{table:solvetime}.
 
 \begin{table}[!htbp]
    \centering
@@ -31,4 +31,3 @@ Time to search for paths
     \caption{AMPL and solving time.}
     \label{table:solvetime}
 \end{table}
-
