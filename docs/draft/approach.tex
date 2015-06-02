@@ -6,38 +6,44 @@ In this section, we describe our heuristic to select paths for each source-desti
 \item Select as many paths as possible for any pair of source/destination. 
 \item The maximum number of paths on any physical link is less than a given \textit{maxload} value.
 \end{enumerate}
-The above conditions ensure that we have multiple paths for each pair, and the load is balanced and it is within the upper limit of maximum load on the physical links. The brute force algorithm is to explore all combinations of paths for all source-destination pairs and examine the above two conditions in order to find the best set of paths. However, its time complexity is exponential. We propose a heuristic that outputs a set of paths without exhaustively searching the entire search space. Our heuristic iterates through all pairs of source/destination nodes to search for more paths until the $maxload$ value is reached. The pseudocode of our approach is presented in Algorithm~\ref{alg:heu}. %The detail of the algorithm is explained as follows.
+The above conditions ensure that we have multiple paths for each pair, and the load is balanced and it is within the upper limit of maximum load on the physical links. The brute force algorithm is to explore all combinations of paths for all source-destination pairs and examine the above two conditions in order to find the best set of paths. However, its time complexity is exponential. We propose a heuristic that outputs a set of paths without exhaustively searching the entire search space. Our heuristic iterates through all pairs of source/destination nodes to search for more paths until the $maxload$ value is reached. The pseudocode of our approach is presented in Algorithm~\ref{alg:heu}. 
 \begin{algorithm}[!htbp]
-\textbf{Input}: Set of source-destination pairs \{(S, D)\} and their $k$ shortest paths {$k\_paths$}. Maximum allowed load on a link $maxload$.\\
+\textbf{Input}: Set of source-destination pairs $\mathcal{P}$ = \{(S, D) $|$ S, D $\in~N$\} and their $k$ shortest paths {$k\_paths$}. Maximum allowed load on a link $maxload$. $N\times N$ physical link load matrix $Load$.\\
 \textbf{Output}: Set of selected paths for data movement: {$paths$}.\\
+\begin{algorithmic}
+\Function {find\_paths}{}
+	\While {($\mathcal{P}$ != $\phi$)} 
+		\State Select (s,d) from $\mathcal{P}$ 
+		\State Let i be the index of (s,d) 
+		\State $p~\leftarrow$ Select a path from $k\_paths_i$ 
+		\State $k\_paths_i$ = $k\_paths_i$ - {$p$} 
+		\State {$links$} $\leftarrow$ set of links in path $p$ 
+		\If {($l+1 \le maxload$ $\forall l\in$ $links$)} 
+			\State $paths_i$ = $paths_i~\cup~{p}$ 
+			\State Update $Load~\forall l\in~links$ 
+		\EndIf
+		\If {( $k\_paths_i$ != $\phi~\forall i$ )} 
+			\State break 
+		\EndIf
+	\EndWhile
+ \EndFunction
+~\\
+ \Function {heuristic\_search}{}
+	\While {($~$)} 
+		\State call find\_paths() 
+	\EndWhile
+ \EndFunction
+\end{algorithmic}
+
+\caption{Heuristic to search paths for each source-destination pair from $k$ shortest paths.}
+\label{alg:heu}
+\end{algorithm}
 %Init:
 %    \begin{algorithmic}
 %        \State queue$<$struct path$>$ \textit{selected\_paths};\\
 %	int[][] loads: loads of all physical links, init to 0s.\\
 %    \end{algorithmic}
 %Main:
-\begin{algorithmic}
-\Function {Heuristic\_search}{}
-	\While {(\{(S,D)\} != $\phi$)} 
-		\State Select (s,d) from \{(S,D)\} 
-		\State Let i be the index of (s,d) 
-		\State $p~\leftarrow$ Select a path from $k\_paths_i$ 
-		\State $k\_paths_i$ = $k\_paths_i$ - {$p$} 
-		\State {$links$} $\leftarrow$ set of links in path $p$ 
-		\If {($l+1 \le maxload$) $\forall$ $l$ $\in$ $links$} 
-			\State $paths_i$ = $paths_i~\cup~{p}$ 
-			\State Update Load $\forall$ $l$ $\in$ $links$ 
-		\EndIf
-		\If {( $k\_paths_i$ != $\phi$ $\forall i$ )} 
-			\State break 
-		\EndIf
-	\EndWhile
- \EndFunction
-\end{algorithmic}
-\caption{Heuristic to search paths for each source-destination pair from $k$ shortest paths.}
-\label{alg:heu}
-\end{algorithm}
-
 %	\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
 %	    \State Get the first path \textit{p} out of set \textit{k\_paths}.
 %	    \State Check if adding \textit{p} make the current load over \textit{maxload}.
@@ -55,7 +61,7 @@ The above conditions ensure that we have multiple paths for each pair, and the l
 %	    \EndIf
 %	\EndFor
 
-In the heuristic algorithm, inputs of the algorithm include pairs of source and destination, their k shortest paths \textit{k\_paths} and an allowed \textit{maxload}. Output of the approach is a set of selected paths used for data movement. We maintain a table \textit{load}[][] of loads on all physical links, whenever a link (u,v) is used by a selected path its entry in the load table i.e. \textit{load}[u][v] is increased by 1. We save selected path in a queue \textit{selected\_paths}.
+The input to the heuristic algorithm include the set of source-destination pairs $\mathcal{P}$ = \{(S, D) $|$ S, D $\in~N$\}, their $k$ shortest paths {$k\_paths$}, the maximum allowed load on a link $maxload$ and the link load matrix $Load$. $Load$ is a table of loads on all physical links. Whenever a link $(u,v)$ is selected by the heuristic, the corresponding entry $Load[u][v]$ increased by 1. The heuristic outputs a set of selected paths $paths$ for data movement for each source-destination pair. 
 
 We iterate through all pairs of source/destination. For each pair of source/destination, we get the first path out of its set of \textit{k\_paths}. We check if adding the path to its \textit{selected\_paths} would make the maximum load in the \textit{load} table over \textit{maxload}. We check the load by going through all links used by the path and examine their current loads in the \textit{load} table in comparison with \textit{maxload}. If their current load adding by 1 is not over \textit{maxload} we then add the path \textit{p} into \textit{selected\_paths}, update the \textit{load} table and remove the path from \textit{k\_paths}. We iterate through all pairs and add at most one path per pair at a time. The algorithm completes when we either running out of paths to add or the maximum load of physical links in \textit{load} table is over \textit{maxload}.
 
