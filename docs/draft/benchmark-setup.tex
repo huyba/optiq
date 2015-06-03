@@ -1,0 +1,6 @@
+\subsection{Experiment setup}
+
+We carried our experiments on Mira, a Blue Gene/Q supercomputer. In our experiments, we varied paritition size from 512 nodes up to 8012 nodes. The experiments involved a subset or entire set of nodes for each partition. The number sources and destinations and distance between them are also varied depending on each experiment. We also varied the data sizes to be exchanged to find the effective data size. Pairs of sources and destinations are randomized to show the efficacy of our works. We varied the number of paths fed into solvers to measure the effectiveness of number of paths to throughput. A similar benchmark with various max load is done for heuristic approach. Our experiments covered 3 communication patterns: Disjoint, Overlap and Subset. For the commnication patterns, we demonstrated the efficacy of our algorithms in comparions with MPI\_Alltoallv.
+
+For searching optimal paths, we used AMPL (A Modeling Language for Mathematical Programming) and its solvers \cite{AMPL} for modeling our problem and to find solutions for
+ optimal data movement.

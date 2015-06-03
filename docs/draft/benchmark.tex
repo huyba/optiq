@@ -5,38 +5,11 @@ In this section, we demonstrate the efficacy of our approaches via a set of benc
 
 \input{system}
 
-\subsection{Experiment setup}
+\input{benchmark-setup}
 
-We carried our experiments on Mira, a Blue Gene/Q supercomputer. In our experiments, we varied paritition size from 512 nodes up to 8012 nodes. The experiments involved a subset or entire set of nodes for each partition. The number sources and destinations and distance between them are also varied depending on each experiment. We also varied the data sizes to be exchanged to find the effective data size. Pairs of sources and destinations are randomized to show the efficacy of our works. We varied the number of paths fed into solvers to measure the effectiveness of number of paths to throughput. A similar benchmark with various max load is done for heuristic approach. Our experiments covered 3 communication patterns: Disjoint, Overlap and Subset. For the commnication patterns, we demonstrated the efficacy of our algorithms in comparions with MPI\_Alltoallv.
+\input{benchmark-mpipath}
 
-For searching optimal paths, we used AMPL (A Modeling Language for Mathematical Programming) and its solvers \cite{AMPL} for modeling our problem and to find solutions for optimal data movement.
-
-\subsection{MPI Paths Reconstruction}
-
-In our experiment, we need to measure not only the performance of MPI routines but also loads on physical links and number of hops of path that MPI takes to move data from a set of sources to a set of destination. The load and hops informaiton can reveal insight of performance difference between MPI and our framework OPTIQ. Thus reconstructing MPI's paths is necessary to get load and hops information.
-
-We reconstruct MPI's paths based on our understanding of default routing algorithms described in \cite{Chen:BGQ}. For each pair of source and destination, we start at a source node and follow the rules of the routing algorithm to move data from the source node to its destination. We then record paths for all the pairs and use them to calculate load and number of hops. 
-
-\subsection{Communication Patterns}
-In this paper we demostrate data movement performance of our OPTIQ framework and existing MPI's routines on the following communication patters:
-
-\begin{figure}[ht]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.55]{figures/patterns.pdf}
-\vspace{-0.1in}
-\caption{Communication patterns}
-\vspace{-0.1in}
-\label{fig:patterns}
-\end{figure}
-
-\begin{itemize}
-\item Disjoint sets: is many-to-many communication pattern where the sources and destinations are separated. It is a typical pattern in many applications.
-\item Overlap: is a many-to-many pattern that sources and destinations are overlapped sets. CESM uses this communication patterns for its coupling communications.
-\item Subset: is a many-to-many pattern that sources or destinations are subset of the other. The patterns can be found CESM or in I/O aggregation.
-\end{itemize}
-
-We carried a set of experiments to study the system's behavior in various patterns and demontrate throughput improvement.
+\input{benchmark-patterns}
 
 \subsection{Experimental results}
 
