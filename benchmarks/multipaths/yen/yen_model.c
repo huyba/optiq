@@ -61,7 +61,7 @@ int main(int argc, char **argv)
             std::vector<struct path*> paths;
 	    paths.clear();
 
-	    optiq_job_write_jobs_model_format(filepath, maxload, topo->num_nodes, num_ranks_per_node, topo->neighbors, capacity, demand, modeldat, max_num_paths);
+	    optiq_job_write_jobs_model_format(filepath, maxload, topo->num_nodes, num_ranks_per_node, topo->neighbors, capacity, modeldat, max_num_paths);
         }
     }
 

@@ -191,27 +191,43 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 
     int size = topo->num_nodes * topo->num_ranks_per_node;
 
-    /* Generate disjoint First m send data to last n */
-    for (int m = size/16; m <= size/2; m *= 2)
+    jobs.clear();
+
+    /* 5 random cases */
+    int m = 64, n= 512, p = 0, q;
+    char pattern[256];
+    for (int i = 0; i < 3; i++)
     {
-	for (int n = size/16; n <= size/2; n *= 2) 
+	if (i == 0)
 	{
-	    if (mintestid <= testid && testid <=maxtestid) 
+	    q = 512;
+	    sprintf(pattern, "%s", "Disjoint");
+
+	}
+	if (i == 1)
+	{
+	    q = 32;
+	    sprintf(pattern, "%s", "Overlap");
+	}
+	if (i == 2)
+	{
+	    q = 0;
+	    sprintf(pattern, "%s", "Subset");
+	}
+
+	for (int j = 0; j < 5; j++)
+	{
+	    if (mintestid <= testid && testid <=maxtestid)
 	    {
-		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node, true);
+		optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, p, n, q, topo->num_ranks_per_node, true);
 
-		/* Not allow to generate too many paths, leading to */
-		int numpairs = m > n ? m : n;
 		int maxpaths = numpaths;
-		if (maxpathspertest / numpairs < maxpaths) {
-		    maxpaths = maxpathspertest / numpairs;
-		}
 
-		sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size-n, size -1, maxpaths);
+		sprintf(name, "Test No. %d %s %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, pattern, m, p, m+p-1, n, q,n+q-1, maxpaths);
 		sprintf(jobs[0].name, "%s", name);
 		sprintf(jobfile, "test%d", testid);
 
-		search_and_write_to_file (jobs, jobfile, graphFilePath, maxpaths);
+		search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
 	    }
 
 	    testid++;
@@ -219,74 +235,126 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	}
     }
 
+    return;
+
+    /*for (int p = 0; p < size; p += 128)
+      {
+      for (int q = 0; q <= 64; q+= 16)
+      {
+      if (mintestid <= testid && testid <=maxtestid)
+      {
+      optiq_pattern_m_to_n_to_jobs (jobs, size, demand, 64, p+q, 128, p, topo->num_ranks_per_node, true);
+
+      int maxpaths = numpaths;
+
+      sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, 64, p+q, p+q+64-1, 128, p, p+128-1, maxpaths);
+      sprintf(jobs[0].name, "%s", name);
+      sprintf(jobfile, "test%d", testid);
+
+      search_and_write_to_file (jobs, jobfile, graphFilePath, maxpaths);
+
+      testid++;
+      jobs.clear();
+      }
+      }
+      }
+
+      return;
+      */
+
+    /* Generate disjoint First m send data to last n */
+    /*for (int m = size/16; m <= size/2; m *= 2)
+      {
+      for (int n = size/16; n <= size/2; n *= 2) 
+      {
+      if (mintestid <= testid && testid <=maxtestid) 
+      {
+      optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node, true);
+
+
+      int numpairs = m > n ? m : n;
+      int maxpaths = numpaths;
+      if (maxpathspertest / numpairs < maxpaths) {
+      maxpaths = maxpathspertest / numpairs;
+      }
+
+      sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size-n, size -1, maxpaths);
+      sprintf(jobs[0].name, "%s", name);
+      sprintf(jobfile, "test%d", testid);
+
+      search_and_write_to_file (jobs, jobfile, graphFilePath, maxpaths);
+      }
+
+      testid++;
+      jobs.clear();
+      }
+      }*/
+
     /* Overlap Generate paths */
-    for (int m = size/32; m <= size/2; m *= 2)
+    /*for (int m = size/32; m <= size/2; m *= 2)
+      {
+      for (int n = size/32; n <= size/2; n *= 2) 
+      {
+      for (int l = m/16; l <= m/2; l *= 2)
+      {
+      if (mintestid <= testid && testid <=maxtestid) 
+      {
+      optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, true);
+
+      int numpairs = m > n ? m : n;
+      int maxpaths = numpaths;
+      if (maxpathspertest / numpairs < maxpaths) {
+      maxpaths = maxpathspertest / numpairs;
+      }
+
+      sprintf(name, "Test No. %d Overlap %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, m-l, n + m -l -1, maxpaths);
+
+      sprintf(jobs[0].name, "%s", name);
+      sprintf(jobfile, "test%d", testid);
+
+      search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
+      }
+      testid++;
+      jobs.clear();
+      }
+      }
+      }*/
+
+    /* Subset Generate paths*/
+    for (int m = size/8; m <= size; m *= 2)
     {
-	for (int n = size/32; n <= size/2; n *= 2) 
+	for (int n = m/16; n <= m/2; n *= 2) 
 	{
-	    for (int l = m/16; l <= m/2; l *= 2)
+	    for (int p = 0; p <= m*3/4 && p+n <= m; p += m/8)
 	    {
 		if (mintestid <= testid && testid <=maxtestid) 
 		{
-		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, true);
+		    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, n, p, m, 0, topo->num_ranks_per_node, false);
 
-		    //optiq_job_print_jobs (jobs);
-
-		    /* Not allow to generate too many paths, leading to */
 		    int numpairs = m > n ? m : n;
 		    int maxpaths = numpaths;
 		    if (maxpathspertest / numpairs < maxpaths) {
 			maxpaths = maxpathspertest / numpairs;
 		    }
 
-		    sprintf(name, "Test No. %d Overlap %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, m-l, n + m -l -1, maxpaths);
-
+		    sprintf(name, "Test No. %d Subset1 %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, n, p, n+p-1, m, 0, m-1, maxpaths);
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
 
 		    search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
 		}
+
 		testid++;
 		jobs.clear();
-	    }
+	    }       
 	}
     }
 
-    /* Subset Generate paths*/
     for (int m = size/8; m <= size; m *= 2)
     {
-        for (int n = m/16; n <= m/2; n *= 2) 
-        {
-            for (int p = 0; p <= m*3/4; p += m/8)
-            {
-                if (mintestid <= testid && testid <=maxtestid) 
-                {
-                    optiq_pattern_m_to_n_to_jobs (jobs, size, demand, n, p, m, 0, topo->num_ranks_per_node, false);
-                    
-                    int numpairs = m > n ? m : n;
-                    int maxpaths = numpaths;
-                    if (maxpathspertest / numpairs < maxpaths) {
-                        maxpaths = maxpathspertest / numpairs;
-                    }
-
-                    sprintf(name, "Test No. %d Subset %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, p, p+n-1, maxpaths);
-                    sprintf(jobs[0].name, "%s", name);
-                    sprintf(jobfile, "test%d", testid);
-                    
-                    search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
-                }
-                    
-                testid++;
-                jobs.clear();
-            }       
-        }
-    }
-
-    for (int m = size/8; m <= size/2; m *= 2)
-    {
-	for (int n = m/16; n <= m/4; n *= 2) 
+	for (int n = m/16; n <= m/2; n *= 2) 
 	{
-	    for (int p = 0; p <= m/2; p += m/4)
+	    for (int p = 0; p <= m*3/4 && p+n <= m; p += m/8)
 	    {
 		if (mintestid <= testid && testid <=maxtestid) 
 		{
@@ -298,7 +366,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 			maxpaths = maxpathspertest / numpairs;
 		    }
 
-		    sprintf(name, "Test No. %d Subset %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, p, p+n-1, maxpaths);
+		    sprintf(name, "Test No. %d Subset2 %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, p, p+n-1, maxpaths);
 		    sprintf(jobs[0].name, "%s", name);
 		    sprintf(jobfile, "test%d", testid);
 
@@ -310,6 +378,8 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 	    }
 	}
     }
+
+    return;
 
     /* First 128 to last 256*/
     if (size >= 4096) 
@@ -353,7 +423,7 @@ void gen_patterns_new (struct optiq_topology *topo, int demand, char *graphFileP
 		    t = size/min/4;;
 		}
 
-                for (int d = m; d < size - n; d += min * t)
+		for (int d = m; d < size - n; d += min * t)
 		{
 		    if (mintestid <= testid && testid <=maxtestid)
 		    {
