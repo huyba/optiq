@@ -347,9 +347,11 @@
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
 
-\usepackage{algorithm}
+\usepackage[boxed,linesnumbered]{algorithm2e}
+\setlength{\algomargin}{1.5em}
+%\usepackage{algorithm}
 %\usepackage{algorithmic}
-\usepackage{algorithmicx}
+%\usepackage{algorithmicx}
 \usepackage{algpseudocode}
 \algrenewcommand\textproc{}
 \usepackage{verbatim}
@@ -360,10 +362,13 @@
 \usepackage{float}
 \usepackage[hidelinks]{hyperref}
 \usepackage{hypernat}
+\usepackage{amsmath}
+
 
 \begin{document}
 
-\title{Improving Data Movement Throughput by Balancing Network Load on the Blue Gene/Q Supercomputer}
+\title{Improving Group Communication by Multipath Load Balancing on the Blue Gene/Q Supercomputer}
+%Improving Data Movement Throughput by Balancing Network Load on the Blue Gene/Q Supercomputer}
 
 
 % author names and affiliations
@@ -392,18 +397,18 @@
 % 
 \author{\IEEEauthorblockN{Huy Bui\IEEEauthorrefmark{1},
 Preeti Malakar\IEEEauthorrefmark{2},
-Eun-Sung Jung\IEEEauthorrefmark{2}, 
-Venkatram Vishwanath\IEEEauthorrefmark{2},\\
-Todd S. Munson\IEEEauthorrefmark{2},
+Venkatram Vishwanath\IEEEauthorrefmark{2},
+Todd S. Munson\IEEEauthorrefmark{2}, \\
 Sven Leyffer\IEEEauthorrefmark{2},
+Eun-Sung Jung\IEEEauthorrefmark{2},
 Andrew Johnson\IEEEauthorrefmark{1}, 
-Jason Leigh\IEEEauthorrefmark{3}, and
-Michael E. Papka\IEEEauthorrefmark{2}}
+Michael E. Papka\IEEEauthorrefmark{2},
+Jason Leigh\IEEEauthorrefmark{3}}
 \IEEEauthorblockA{\IEEEauthorrefmark{1}Dept. of Computer Sciennce\\
 University of Illinois at Chicago,
 Chicago, IL\\ Emails: abui4, ajohnson@uic.edu}
 \IEEEauthorblockA{\IEEEauthorrefmark{2} Argonne National Laboratory, Lemont, IL\\
-Emails: pmalakar@anl.gov, esjung@mcs.anl.gov, venkat, tmunson, leyffer, papka@anl.gov}
+Emails: pmalakar, venkat, tmunson, leyffer, papka@anl.gov, esjung@mcs.anl.gov}
 \IEEEauthorblockA{\IEEEauthorrefmark{3}Dept. of Computer Science\\
 University of Hawaii at Manoa, Honolulu, HI\\
 Email: leigh@hawaii.edu}
@@ -445,13 +450,11 @@ Email: leigh@hawaii.edu}
 
 \input{relatedwork}
 
-\input{system}
+\input{framework}
 
 \input{approach-intro}
 \input{approach}
 \input{approach-opt}
-
-\input{framework}
 
 \input{benchmark}
 
@@ -460,9 +463,8 @@ Email: leigh@hawaii.edu}
 % use section* for acknowledgement
 \section*{Acknowledgment}
 
+This research used resources of the Argonne Leadership Computing Facility (ALCF) at Argonne National Laboratory, and is supported by the Office of Science of the U.S. Department of Energy under contract DE-AC02-06CH11357. We thank the ALCF team and scientists/researchers/postdocs at Argonne National Laboratory for discussions and help related to this paper.
 
-The authors would like to thank...
-more thanks here
 
 
 % trigger a \newpage just before the given reference

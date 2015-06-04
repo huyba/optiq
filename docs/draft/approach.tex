@@ -4,50 +4,82 @@
 In this section, we describe our heuristic to select paths for each source-destination pair, given the set of $k$ shortest paths $k\_paths$. In this approach, we assume that same amount of data is transmitted over each path. Thus, the total load on a link can be represented by the number of paths using the link. In order to avoid overloading of the physical links and to achieve high performance, we select paths in such a way that satisfies the following two conditions:
 \begin{enumerate}
 \item Select as many paths as possible for any pair of source/destination. 
-\item The maximum number of paths on any physical link is less than a given \textit{maxload} value.
+\item The maximum number of paths on any physical link is less than a given $maxload$ value.
 \end{enumerate}
-The above conditions ensure that we have multiple paths for each pair, and the load is balanced and it is within the upper limit of maximum load on the physical links. The brute force algorithm is to explore all combinations of paths for all source-destination pairs and examine the above two conditions in order to find the best set of paths. However, its time complexity is exponential. We propose a heuristic that outputs a set of paths without exhaustively searching the entire search space. Our heuristic iterates through all pairs of source/destination nodes to search for more paths until the \textit{maxload} value is reached. The pseudocode of our approach is presented in Algorithm~\ref{alg:heu}. %The detail of the algorithm is explained as follows.
-\begin{algorithm}[!htbp]
-\textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}) and their \textit{k\_paths}. \textit{maxload}\\
-\textbf{Output:} Set of paths: \textit{selected\_paths} for data movement\\
-Init:
-    \begin{algorithmic}
-        \State queue$<$struct path$>$ \textit{selected\_paths};\\
-	int[][] loads: loads of all physical links, init to 0s.\\
-    \end{algorithmic}
-Main:
-\begin{algorithmic}
-    \Function {Heuristic\_search}{}
-	\While{!(run out of paths || go over \textit{maxload})}
-	\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
-	    \State Get the first path \textit{p} out of set \textit{k\_paths}.
-	    \State Check if adding \textit{p} make the current load over \textit{maxload}.
-	    \If {(Not over \textit{maxload})} 
-		\State remove \textit{p} from \textit{k\_paths}.
-		\State add \textit{p} into \textit{selected\_paths}.
-		\State update load[][] with links used by \textit{p}.
-	    \Else 
-		\State check if there is at the current pair has at least one path.
-		\If {(Not having any path)}
-		    \State increase the \textit{maxload} by 1
-		\Else
-		    \State remove \textit{p} from \textit{k\_paths}.
-		\EndIf
-	    \EndIf
-	\EndFor
-	\EndWhile
-    \EndFunction
-\end{algorithmic}
-
-\caption{Heuristic Algorithm based on k shortest paths}
+The above conditions ensure that we have multiple paths for each pair, and the load is balanced and it is within the upper limit of maximum load on the physical links. The brute force algorithm is to explore all combinations of paths for all source-destination pairs and examine the above two conditions in order to find the best set of paths. However, its time complexity is exponential. We propose a heuristic that outputs a set of paths without exhaustively searching the entire search space. Our heuristic iterates through all pairs of source/destination nodes to search for more paths until the $maxload$ value is reached. The pseudocode of our approach is presented in Algorithm~\ref{alg:heu}. The function \texttt{HeuristicSearch} invokes \texttt{FindPaths} until paths for all source-destination pairs are found. 
+ 
+\begin{algorithm}%[!htbp]
+\SetAlgoLined\DontPrintSemicolon
+\SetKwFunction{FindPaths}{FindPaths}
+\SetKwFunction{HeuristicSearch}{HeuristicSearch}
+\KwIn{Set of source-destination pairs $\mathcal{P}$ = \{(S, D) $|$ S, D $\in~N$\} and their $k$ shortest paths {$k\_paths$}. Maximum allowed load on a link $maxload$. $N\times N$ physical link load matrix $load$.}
+\KwOut{Set of selected paths for data movement: $s\_paths$.}
+\SetKwProg{myproc}{Procedure}{}{}
+\myproc{\FindPaths{}}{
+	\While {($\mathcal{P}~!=~\phi$)} 
+	{
+		Select (s,d) from $\mathcal{P}$\; 
+		Let i be the index of (s,d) \;
+		$p~\leftarrow$ Select a path from $k\_paths_i$ \;
+		$k\_paths_i$ = $k\_paths_i$ - {$p$} \;
+		{$links$} $\leftarrow$ set of links in path $p$ \;
+		\uIf {($load(l)+1 \le maxload$ $\forall l\in$ $links$)} 
+		{
+			$s\_paths_i$ = $s\_paths_i~\cup~{p}$ \;
+			Update $load~\forall l\in~links$ \;
+		} %\EndIf
+		\uIf {($k\_paths_i~!=~\phi~\forall i$)} 
+		{
+			break \;
+		} 
+	} 
+  \nl \KwRet\;
+} 
+\BlankLine
+ % \setcounter{AlgoLine}{0}
+  \SetKwProg{myproc}{Procedure}{}{}
+  \myproc{\HeuristicSearch{}}{
+	 \While {($s\_paths_i~!=~\phi~\forall i \in \mathcal{P}$)} 
+	 {
+		call FindPaths() \; 
+		$maxload ++$ \;
+	 } 
+  \nl \KwRet\;
+	}
+\caption{Heuristic to search paths for each source-destination pair from $k$ shortest paths.}
 \label{alg:heu}
-
 \end{algorithm}
 
-In the heuristic algorithm, inputs of the algorithm include pairs of source and destination together with their k shortest paths \textit{k\_paths} and an allowed \textit{maxload}. Output of the approach is a set of selected paths used for data movement. We maintain a table \textit{load}[][] of loads on all physical links, whenever a link (u,v) is used by a selected path its entry in the load table i.e. \textit{load}[u][v] is increased by 1. We save selected path in a queue \textit{selected\_paths}.
+%Init:
+%    \begin{algorithmic}
+%        \State queue$<$struct path$>$ \textit{selected\_paths};\\
+%	int[][] loads: loads of all physical links, init to 0s.\\
+%    \end{algorithmic}
+%Main:
+%	\For {each pair of source-dest (\textit{s$_i$}, \textit{s$_i$})}
+%	    \State Get the first path \textit{p} out of set \textit{k\_paths}.
+%	    \State Check if adding \textit{p} make the current load over \textit{maxload}.
+%	    \If {(Not over \textit{maxload})} 
+%		\State remove \textit{p} from \textit{k\_paths}.
+%		\State add \textit{p} into \textit{selected\_paths}.
+%		\State update load[][] with links used by \textit{p}.
+%	    \Else 
+%		\State check if there is at the current pair has at least one path.
+%		\If {(Not having any path)}
+%		    \State increase the \textit{maxload} by 1
+%		\Else
+%		    \State remove \textit{p} from \textit{k\_paths}.
+%		\EndIf
+%	    \EndIf
+%	\EndFor
 
-We iterate through all pairs of source/destination. For each pair of source/destination, we get the first path out of its set of \textit{k\_paths}. We check if adding the path to its \textit{selected\_paths} would make the maximum load in the \textit{load} table over \textit{maxload}. We check the load by going through all links used by the path and examine their current loads in the \textit{load} table in comparison with \textit{maxload}. If their current load adding by 1 is not over \textit{maxload} we then add the path \textit{p} into \textit{selected\_paths}, update the \textit{load} table and remove the path from \textit{k\_paths}. We iterate through all pairs and add at most one path per pair at a time. The algorithm completes when we either running out of paths to add or the maximum load of physical links in \textit{load} table is over \textit{maxload}.
+The input to the algorithm include the set of source-destination pairs $\mathcal{P}$ = \{(S, D) $|$ S, D $\in~N$\}, their $k$ shortest paths {$k\_paths$}, the maximum allowed load on a link $maxload$ and the link load matrix $load$. $load$ is a table of loads on all physical links. Whenever a link $l=(u,v)$ is selected by the heuristic, the corresponding entry $load(l) (= load[u][v])$ is incremented by 1. The heuristic outputs a set of selected paths $s\_paths$ for data movement for each source-destination pair. 
 
-In the algorithm, we also check if under the current \textit{maxload} a pair of source/destination is not able to add any paths for transferring data. If so, we increase the \textit{maxload} by 1 until we can add a path to the pair. We do so to make sure that we have at least 1 path to transfer data from its source to its destination.
+\texttt{HeuristicSearch} finds paths for all source-destination pairs in $\mathcal{P}$. \texttt{FindPaths} is invoked until there exist some paths between all source-destination pairs. In \texttt{FindPaths}, we iterate through all pairs of source-destination in $\mathcal{P}$. For each source-destination pair, we select a path $p$ from $k\_paths$ (lines 3--5). The selected path is removed from the set $k\_paths_i$ (line 6), where $i$ is the index of the selected source-destination pair. A path from the source node to the destination node is a set of links through intermediate nodes. Let this set of physical links be denoted as $links$ (line 6). We check if adding $p$ to $s\_paths$ violates the load condition for links in $p$ (lines 8--10). If current load $load(l)$ on all links $l \in links$ is below $maxload$, the path $p$ is added to $s\_paths_i$ (line 9). Also, the $load$ table is updated for all links $l \in links$ (line 10). 
 
-In the \textbf{Agorithm} \ref{alg:heu} we aim on balancing the number of paths using physical link. We identify number of paths on a link to actual amount of data transferred on the link.  Thus, the data movement performs well if each path carries similar amount of data. In real applications, it is not always the situation. Due to different data sizes and different number of paths, data size per path can vary. In order to gain better performance, we need a better way to determine the amount of data to be transferred on each path. In the next section, we propose another approach that employs a mathematical model and solvers to in determining  amount of data to be transferred on each path.
+We iterate through all pairs and add at most one path per pair at a time. The function \texttt{FindPaths} returns when $k\_paths$ is empty for all source-destination pairs. At this point, we increase the maximum load limit $maxload$ by 1 and re-invoke \texttt{FindPaths} from \texttt{HeuristicSearch} (line 18). 
+
+%The algorithm completes when either running out of paths to add or the maximum load of physical links in $load$ table is over $maxload$.
+%In the algorithm, we also check if under the current $maxload$ a pair of source/destination is not able to add any paths for transferring data. If so, we increase the $maxload$ by 1 until we can add a path to the pair. We do so to make sure that we have at least 1 path to transfer data from its source to its destination.
+
+%In Algorithm \ref{alg:heu} we aim on balancing the number of paths using physical link. We identify number of paths on a link to actual amount of data transferred on the link.  Thus, the data movement performs well if each path carries similar amount of data. In real applications, it is not always the situation. Due to different data sizes and different number of paths, data size per path can vary. In order to gain better performance, we need a better way to determine the amount of data to be transferred on each path. In the next section, we propose another approach that employs a mathematical model and solvers to in determining  amount of data to be transferred on each path.

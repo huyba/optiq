@@ -1,0 +1,33 @@
+\subsubsection{Number of paths fed into model}
+
+For Optimization approach, we need to feed k shortest paths into solvers to search for an assigment of flow values for the k paths. In this experiment, we show the relationship between the number of paths fed into the solvers and corresponding data transfer throughput and the elapsed time for AMPL model and solvers. We carried out the experiment in 2048-node partition for all 3 patterns at the ratio of 1:8 where 128 nodes communicates with 1024 nodes with the same pairing as previous cases. We used 1 MPI/PAMI rank per node and 8 MB per communication.  We varied the number of paths fed into the solvers from 4 to 16, 32 and 50. The performance is shown in Table \ref{table:pathsintomodel}.
+
+\begin{table}[!htbp]
+   \centering
+    \begin{tabular}{| l | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.75cm} |}
+    \hline
+     \multirow{2}{*}{Patterns} & \multirow{2}{*}{MPI} & \multicolumn{4}{ c| }{Number of paths} \\ \cline{3-6}
+     & & 4 & 16 & 32 & 50 \\ \hline
+     Disjoint & 61 & 29 & 84 & 104 & 197 \\ \hline
+     Overlap & 59 & 82 & 192 & 224 & 308 \\ \hline
+     Subset & 111 & 99 & 163 & 168 & 172 \\ \hline
+    \end{tabular}
+    \caption{Throughput (GB/s) with different number of paths fed into solvers.}
+    \label{table:pathsintomodel}
+\end{table}
+
+As shown in the Figure \ref{table:pathsintomodel}, as we increase the number of paths fed into the solvers, the performance increases. This is because with more paths the solvers have a larger search space, thus can produced more optimal results to be used for data transfer. However, when increasing the number of paths, we also increase the time for AMPL model to prepare and sovlers to search for flow values for paths. The time spent by AMPL model and sovlers are shown in Table \ref{table:solvetime}.
+
+\begin{table}[!htbp]
+   \centering
+   \begin{tabular}{| p {0.75cm}| p{0.5cm} | r | p{0.5cm} | p{0.5cm} | r | r | r | r |}
+    \hline
+    \multirow{2}{*}{Pattern} & \multicolumn{4}{ c| }{AMLP time (s)} & \multicolumn{4}{ c| }{Solve time (s)} \\ \cline{2-9}
+    & 4 & 16 & 32 & 50 & 4 & 16 & 32 & 50 \\ \hline
+    Disjoint & 13.9 & 187.7 & 123.0 & 224.0 & 0.06 & 6.6 & 4.4 & 84.0 \\ \hline
+    Overlap & 13.6 & 51.9 & 134.6 & 198.7 & 0.09 & 16.6 & 179.4 & 530.3 \\ \hline
+    Subset & 14.4 & 50.6 & 134.9 & 217.3 & 0.85 & 111.3 & 173.2 & 939.6 \\ \hline
+    \end{tabular}
+    \caption{AMPL and solving time.}
+    \label{table:solvetime}
+\end{table}

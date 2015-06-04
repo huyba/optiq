@@ -1,0 +1,63 @@
+\subsubsection{Random pairing between sources and destinations}
+
+In this experiment, we randomized the pairing between sources and destination to shuffle the well-aligned pairing that we have in the previous experiment. To demonstrate the sustained performance, we did experiment for all 3 patterns at 1024 nodes, with 1 MPI/PAMI rank per node, 8 MB of data per communication. We used the same ratio 1/8 i.e 64 first nodes communicates with last 512 nodes. However, we randomized the pair of sources and destinations for 5 times to see the performance. The resuls are presented in Table \ref{table:random_1024}.
+
+\begin{table*}[!htbp]
+   \centering
+    \begin{tabular}{| p{0.75cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.5cm} |p{0.3cm} |}
+    \hline
+     Configs & \multicolumn{4}{ c | }{Config 1} & \multicolumn{4}{ c| }{Config 2} & \multicolumn{4}{ c| }{Config 3} & \multicolumn{4}{ c| } {Config 4} & \multicolumn{4}{ c| }{Config 5} & \multicolumn{3}{ c| }{Average}\\ \hline
+     Patterns & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu \\ \hline
+     Disjoint & 50 &  83  & 71 &  8.41 & 54  & 81 & 75  & 8.35 & 55 &  85  & 77 &  8.32 & 62 &  89  & 88 &  8.50 & 59 &  84 & 71 & 8.45 & 56.0 & 84.4 & 76.4 \\ \hline
+     Overlap  & 52 &  89  & 72 &  6.54 & 60  & 86 & 67  & 6.53 & 64 &  94 & 71 &  6.55 & 57 &  98 & 68 &  6.50 & 59 &  88 & 78 & 6.43 & 58.4 & 91.0  & 71.2 \\ \hline
+     Subset   & 55 &  92  & 72 &  6.40 & 60  & 91 & 68  & 6.26 & 52 &  89  & 63 &  6.27 & 51 &  94  & 80 &  6.33 & 57 &  96  & 68 & 6.39 & 55.0 & 92.4 & 70.2 \\ \hline
+    \end{tabular}
+    \caption{Throughtput (GB/s) for MPI\_Alltoallv (MPI), Optimization (Opt), Heuristic (Heu) and average number of hops (Dist) between sources and destinations for 5 different random pairings (Config) of sources and destinations in 1024-node partition.}
+    \label{table:random_1024}
+\end{table*}
+
+\begin{comment}
+\begin{table*}[!htbp]
+   \centering
+    \begin{tabular}{| p{0.75cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.5cm} |p{0.3cm} |}
+    \hline
+     Configs & \multicolumn{4}{ c | }{Config 1} & \multicolumn{4}{ c| }{Config 2} & \multicolumn{4}{ c| }{Config 3} & \multicolumn{4}{ c| } {Config 4} & \multicolumn{4}{ c| }{Config 5} & \multicolumn{3}{ c| }{Average}\\ \hline
+     Patterns & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu \\ \hline
+     Disjoint & 63 &  91  & 83 &  6.95 & 85  & 106 & 66  & 6.74 & 73 &  97  & 69 &  7.08 & 78 &  92  & 80 &  7.05 & 75 &  105 & 73 & 6.90 & 74.8 & 98.2  & 74.2 \\ \hline
+     Overlap  & 78 &  108 & 98 &  5.05 & 86  & 106 & 91  & 5.06 & 74 &  107 & 90 &  5.07 & 83 &  114 & 85 &  5.08 & 87 &  107 & 71 & 5.08 & 81.6 & 108.4 & 87.0\\ \hline
+     Subset   & 44 &  90  & 76 &  5.04 & 41  & 83  & 85  & 4.95 & 46 &  93  & 86 &  5.10 & 40 &  95  & 81 &  4.90 & 40 &  85  & 74 & 5.12 & 42.2 & 89.2  & 80.4 \\ \hline
+    \end{tabular}
+    \caption{Throughtput (GB/s) for MPI\_Alltoallv (MPI), Optimization (Opt), Heuristic (Heu) and average number of hops (Dist) between sources and destinations for 5 different random pairings (Config) of sources and destinations in 512-node partition.}
+    \label{table:random_512}
+\end{table*}
+
+\end{comment}
+
+%\begin{table}[!htbp]
+%   \centering
+%    \begin{tabular}{| l |p{0.80cm} | p{0.80cm} | p{0.80cm} | p{0.80cm} |p{0.80cm} |}
+%    \hline
+%     & Config 1 & Config 2 & Config 3 & Config 4 & Config 5 \\ \hline
+%     Disjoint & 6.95 & 6.74 & 7.08 & 7.05 & 6.90 \\ \hline
+%     Overlap  & 5.05 & 5.06 & 5.07 & 5.08 & 5.08 \\ \hline
+%     Subset   & 5.04 & 4.95 & 5.10 & 4.90 & 5.12 \\ \hline
+%    \end{tabular}
+%    \caption{Average distance (number of hops) between sources and destinations in 5 randome cases.}
+%    \label{table:randomdist}
+%\end{table}
+
+%\begin{table*}[!htbp]
+%   \centering
+%    \begin{tabular}{| l | p{0.4cm} | p{0.4cm} | p{0.4cm} | p{0.4cm} | p{0.4cm} | p{0.4cm} | p{0.4cm} | p{0.4cm} | p{0.4cm} |p{0.4cm} | p{0.4cm} |p{0.4cm} | p{0.4cm} |p{0.4cm} | p{0.4cm} | p{0.4cm} | p{0.5cm} |p{0.4cm} |}
+%    \hline
+%     Positions & \multicolumn{3}{ c | }{Rand 1} & \multicolumn{3}{ c| }{Rand 2} & \multicolumn{3}{ c| }{Rand 3} & \multicolumn{3}{ c| }{Rand 4} & \multicolumn{3}{ c| }{Rand 5} \\ \hline
+%     Patterns & Total & Max & Avg  & Total & Max & Avg  & Total & Max & Avg & Total & Max & Avg & Total & Max & Avg \\ \hline
+%     Disjoint & 1779 & 12 & 6.95 & 1726 & 12 & 6.74 & 1806 & 11 & 7.08 & 1790 & 12 & 7.05 & 1753 & 12 & 6.90 \\ \hline
+%     Overlap  & 1288 & 10 & 5.05 & 1291 & 10 & 5.06 & 1292 & 10 & 5.07 & 1295 & 10 & 5.08 & 1279 & 9 & 5.08 \\ \hline
+%     Subset   & 1289 & 10 & 5.04 & 1267 & 10 & 4.95 & 1306 & 11 & 5.10 & 1254 & 10 & 4.90 & 1310 & 10 & 5.12 \\ \hline
+%    \end{tabular}
+%    \caption{Distance between sources and destinations: Total, Maximum and Average number of hops in 5 randome cases}
+%    \label{table:randomdist}
+%\end{table*}
+
+As we see in the Table \ref{table:random_1024}, the varying average distance (Dist) between sources and destinations shows the random pairing in different configurations. In all cases, the performance of all 3 approaches in 3 patterns is varied. However, Optimization and Heuristic approaches both outperform MPI\_Alltoallv. The experiment shows that even we randomize pairing of sources and destination, we still are able to achieve better performance.

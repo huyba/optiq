@@ -12,14 +12,14 @@ In order to search for paths, we model the interconnect network as a graph. Each
 \begin{algorithm}[!htbp]
 \textbf{Input:} Set of pairs of source-destination (\textit{s$_i$, d$_i$}). Graph of nodes. Desired number of shortest paths $k$.\\
 \textbf{Output:} Set of paths: \textit{k} paths for each source-destination pair.\\
-\begin{algorithmic}
-\For {each pair of ($s_i$, $d_i$)}
-    \While{(Less than $k$ paths have been discovered and there are more paths available)}
-	\State Use Yen's algorithm to search for the shortest path $p$.
-        \State Add $p$ into $k\_paths$.
-    \EndWhile
-\EndFor
-\end{algorithmic}
+\For{ each pair of ($s_i$, $d_i$) }
+{ 
+  \While{(Less than $k$ paths have been discovered and there are more paths available)}
+	{ 
+ 		Use Yen's algorithm to search for the shortest path $p$\;
+  	Add $p$ into $k\_paths$\;
+	}
+}	
 \caption{$k$ shortest paths generation.}
 \label{alg:h1}
 \end{algorithm}
