@@ -1,6 +1,6 @@
 \subsubsection{Increasing sources-destinations distance}
 
-In this experiment, we show that when distance between sources and destination increases, we are able to find more path while not increasing maximum load on physical links, thus improve performance. The experiment is done in 2048-node partition with the first 256 nodes (0-255) fixed as sources communicating with 512 destination nodes. The destination nodes location is moving to increase the number of hops between sources and destinations.
+In this experiment we show that when the distance between sources and destinations increases we are able to find more paths while not increasing the maximum load on the physical links, thus improving performance. The experiment was done in a 2048-node partition with the first 256 nodes (0-255) fixed as sources communicating with 512 destination nodes. The destination nodes location is moving to increase the number of hops between sources and destinations.
 
 \begin{figure*}[!htbp]
         \centering
@@ -41,6 +41,6 @@ In this experiment, we show that when distance between sources and destination i
     \label{table:incrdist}
 \end{table*}
 
-As shown in Figure \ref{fig:incrdist}, both Optimization and Heuristcs approaches outperform MPI\_Alltoallv. 
+As shown in Figure \ref{fig:incrdist}, both Optimization and Heuristcs approaches outperform MPI\_Alltoallv.
 
 The number of paths produced by Optimization approach are 1105 to 1372, 1547 and 1672 respectively. With increasing number of paths, the hopbytes, number of copies per paths and data load per physical link decrease, thus increasing in performance as shown in Figure \ref{fig:incrdist}. The same trend is observed in the Heuristics approach.

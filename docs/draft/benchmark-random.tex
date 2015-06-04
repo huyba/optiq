@@ -1,6 +1,6 @@
 \subsubsection{Random pairing between sources and destinations}
 
-In this experiment, we randomized the pairing between sources and destination to shuffle the well-aligned pairing that we have in the previous experiment. To demonstrate the sustained performance, we did experiment for all 3 patterns at 1024 nodes, with 1 MPI/PAMI rank per node, 8 MB of data per communication. We used the same ratio 1/8 i.e 64 first nodes communicates with last 512 nodes. However, we randomized the pair of sources and destinations for 5 times to see the performance. The resuls are presented in Table \ref{table:random_1024}.
+In this experiment we randomized the pairing between sources and destinations to shuffle the well-aligned pairing that we have in the previous experiment. To demonstrate the sustained performance we did experiments for all three patterns at 1024 nodes, with 1 MPI/PAMI rank per node, 8 MB of data per communication. We used the same ratio of 1/8, i.e 64 first nodes communicates with last 512 nodes. However we randomized the pairs of sources and destinations for 5 times to see the performance. The resuls are presented in Table \ref{table:random_1024}.
 
 \begin{table*}[!htbp]
    \centering
@@ -60,4 +60,4 @@ In this experiment, we randomized the pairing between sources and destination to
 %    \label{table:randomdist}
 %\end{table*}
 
-As we see in the Table \ref{table:random_1024}, the varying average distance (Dist) between sources and destinations shows the random pairing in different configurations. In all cases, the performance of all 3 approaches in 3 patterns is varied. However, Optimization and Heuristic approaches both outperform MPI\_Alltoallv. The experiment shows that even we randomize pairing of sources and destination, we still are able to achieve better performance.
+As we see in the Table \ref{table:random_1024}, varying the average distance (Dist) between sources and destinations shows the random pairing in different configurations. In all cases the performance of all three approaches in three patterns is varied. However the Optimization and Heuristic approaches both outperform MPI\_Alltoallv. The experiment shows that even when we randomize the pairing of sources and destinations, we still are able to achieve better performance.
