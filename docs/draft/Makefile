@@ -1,4 +1,4 @@
-all: paper
+all: paper clean
 
 paper:
 	pdflatex hipc.tex
@@ -6,6 +6,7 @@ paper:
 	pdflatex hipc.tex
 	pdflatex hipc.tex
 
+clean:
 	rm hipc.aux
 	rm hipc.log
 	rm hipc.bbl

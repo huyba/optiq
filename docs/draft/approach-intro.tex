@@ -17,7 +17,10 @@ In order to search for paths, we model the interconnect network as a graph. Each
   \While{(Less than $k$ paths have been discovered and there are more paths available)}
 	{ 
  		Use Yen's algorithm to search for the shortest path $p$\;
-  	Add $p$ into $k\_paths$\;
+		\If {Number of hops of p $\leq$ partition's diameter}
+		{
+		    Add $p$ into $k\_paths$\;
+		}
 	}
 }	
 \caption{$k$ shortest paths generation.}
