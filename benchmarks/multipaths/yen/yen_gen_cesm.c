@@ -55,6 +55,8 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
 {
     char cesmfile[2048];
 
+    int job_id = 0;
+
     for (int i = mintestid; i < maxtestid; i++)
     {
 	sprintf(cesmfile, "%s/ca2xRearr.%05d", cesmFilePath, i);
@@ -73,7 +75,7 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
 	    return;
 	}
 
-	int job_id = 0, source_id, dest_id, num_points;
+	int source_id, dest_id, num_points;
 
 	char temp[256], name[256];
 	bool exist;
@@ -93,7 +95,9 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
 		    struct job new_job;
 		    new_job.job_id = job_id;
 		    new_job.source_id = source_id;
+		    new_job.source_rank = source_id;
 		    new_job.dest_id = dest_id;
+		    new_job.dest_rank = dest_id;
 		    new_job.demand = num_points * datasize;
 		    job_id++;
 
@@ -130,21 +134,21 @@ void gen_patterns_cesm (struct optiq_topology *topo, int datasize, char *graphFi
 
     int maxpaths = numpaths;
 
-    if (maxpaths > maxpathspertest/jobs.size())
+    /*if (maxpaths > maxpathspertest/jobs.size())
     {
 	maxpaths = maxpathspertest/jobs.size();
-    }
+    }*/
 
     sprintf(name, "Test %d number of jobs, with %d paths per job", jobs.size(), maxpaths);
     sprintf(jobs[0].name, "%s", name);
-    sprintf(jobfile, "test%d", jobs.size());
+    sprintf(jobfile, "test%d", maxpaths);
 
     if (rank == 0)
     {
 	optiq_job_print_jobs(jobs);
     }
 
-    //search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
+    search_and_write_to_file (jobs, jobfile, graphFilePath, maxpaths);
 
     testid++;
     jobs.clear();
