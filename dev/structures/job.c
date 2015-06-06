@@ -22,7 +22,7 @@ void optiq_job_write_to_file (std::vector<struct job> &jobs, char *filepath)
     {
 	for (int j = 0; j < jobs[i].paths.size(); j++)
 	{
-	    myfile << "J " << jobs[i].job_id << " " << jobs[i].paths[j]->path_id << " " << jobs[i].paths[j]->flow << " " << jobs[i].source_id << " " << jobs[i].dest_id << " " << jobs[i].source_rank << " " << jobs[i].dest_rank << std::endl;
+	    myfile << "J " << jobs[i].job_id << " " << jobs[i].paths[j]->path_id << " " << jobs[i].paths[j]->flow << " " << jobs[i].source_id << " " << jobs[i].dest_id << " " << jobs[i].source_rank << " " << jobs[i].dest_rank << " " << jobs[i].demand << std::endl;
 
 	    for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
 	    {
@@ -85,7 +85,7 @@ bool optiq_job_add_one_path_under_load (struct job &ajob, int maxload, int** &lo
     return false;
 }
 
-void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, int demand, char *modeldat, int max_num_paths)
+void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, int num_ranks_per_node, std::vector<int> *neighbors, int capacity, char *modeldat, int max_num_paths)
 {
     std::vector<struct job> jobs;
     std::vector<struct path*> paths;
@@ -146,7 +146,7 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 
     for (int i = 0; i < jobs.size(); i++)
     {
-        myfile << jobs[i].job_id << " " << demand << std::endl;
+        myfile << jobs[i].job_id << " " << jobs[i].demand << std::endl;
     }
 
     myfile << ";" << std::endl;
@@ -295,7 +295,7 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 	return false;
     }
 
-    int job_id = 0, path_id = 0, u, v, source_id, dest_id, source_rank, dest_rank;
+    int job_id = 0, path_id = 0, u, v, source_id, dest_id, source_rank, dest_rank, demand;
     int job_path_id = 0; /* This is to read the path_id in, but it is never used*/
 
     float flow;
@@ -309,7 +309,7 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 	if (line[0] == 'J')
 	{
 	    trim(line);
-	    sscanf(line, "%s %d %d %f %d %d %d %d", temp, &job_id, &job_path_id, &flow, &source_id, &dest_id, &source_rank, &dest_rank);
+	    sscanf(line, "%s %d %d %f %d %d %d %d %d", temp, &job_id, &job_path_id, &flow, &source_id, &dest_id, &source_rank, &dest_rank, &demand);
 	    /*printf("job_id = %d job_path_id = %d, flow = %f\n", job_id, job_path_id, flow);*/
 
 	    struct path *p = (struct path *) calloc (1, sizeof(struct path));
@@ -373,6 +373,7 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 		    new_job.source_rank = source_rank;
 		    new_job.dest_id = dest_id;
 		    new_job.dest_rank = dest_rank;
+		    new_job.demand = demand;
 		    new_job.paths.push_back(p);
 
 		    jobs.push_back(new_job);

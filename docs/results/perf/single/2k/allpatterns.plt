@@ -7,7 +7,7 @@ set output "allpatterns.ps"
 set title "Transfer bandwidth for MPI_Alltoallv and OPTIQ in 3 patterns 2K" font ",22"
 set logscale y 10
 set yrange [4096:2097152]
-set xrange [-1:91]
+set xrange [0:70]
 set xlabel "Test Id" font ",24"
 set ylabel "Total throughput(GB/s)" font ",24"
 set style line 1 lt rgb "blue" lw 7
@@ -24,10 +24,5 @@ set ytics font ",22"
 set key bottom left spacing 3
 set xtics () font ",23"
 set ytics ("16" 16384, "32" 32768, "64" 65536, "128" 131072, "256" 262144, "512" 524288, "1024" 1048576, "2048" 2097152) font ",23"
-plot "model30.dat" using 1:5 ls 1 title "     OPTIQ Maxload = 30" with linespoints, \
-"kpath.dat" using 1:5 ls 2 title "     OPTIQ K paths" with linespoints, \
-"kpath.dat" using 1:3 ls 6 title "   MPI_Alltoallv" with linespoints
-#"model20.dat" using 1:5 ls 1 title "          OPTIQ Maxload = 20" with linespoints, \
-#"model10.dat" using 1:5 ls 2 title "     OPTIQ Maxload = 10" with linespoints, \
-#"model7.dat" using 1:5 ls 3 title "     OPTIQ Maxload = 7" with linespoints, \
-#"model3.dat" using 1:5 ls 4 title "     OPTIQ Maxload = 3" with linespoints, \
+plot "opt_incr_64k.dat" using 2:12 ls 1 title "     OP" with linespoints, \
+"mpi_incr_64k.dat" using 2:12 ls 2 title "     mpi" with linespoints

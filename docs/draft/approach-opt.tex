@@ -1,83 +1,31 @@
 \subsection{Model Optimization Approach}
 \label{sec:optimization}
 
-In this approach, we need to search for an assignment of data amount for each path that result in highest performance of data movement. Inputs are a set of pairs of source and destination, for each pair we have an amount of data needed to transfer from the source to the destination and k shortest paths between the source and destination.
+In this approach, we are given a set of pairs of sources and destinations. For each pair there is an amount of data needed to transfer and a set of pre-computed k shortest paths that can be employed to transfer that data. We are also given the capacities of links that comprise the k shortest paths. We need to search for an assignment of capacities for the employed paths that results in the minimum tranfer time for all pairs. 
 
-We model the problem as searching for flow values in order to  minimize transfer time for multiple commodities using pre-determined multiple flows in a network given the amount of comodities and the capacities in links of the network. The model is written in AMPL (A Mathematical Programming Language). The model is descrbied in \textbf{Model} 1.
+Each data transfer request of a pair is denoted as a $job$. The set of all jobs is denoted as $Jobs$. Each job has an amount of data needed to transfer from the job's source to its destination. The amount of data is denoted as $Demand[job]$. In order to transfer the data a job can employ paths from a pre-computed set of paths (computed prior in \textbf{Algorithm \ref{alg:h1}}) denoted as $kpaths_{job}$. Each path is denoted as $p$. A path $p$ might comprise from one to many links. A flow of a job from its source to its destination on a path is the amount of capacity given for the job on the path, and it is denoted as $flow(job, p)$. All links ($i$, $j$) on path $p$ accomodate the same flow value for the job $flow(job, p)_{ij}$. $c(i,j)$ denotes the capacity of an edge from vertex $i$ to vertex $j$.
 
-\begin{algorithm}[!htbp]
+The time to transfer data for all jobs in $Jobs$ is $t$. Our goal is to minize time $t$ to transfer data for all jobs in $Jobs$ while satisfying the two constraints:
 
-\begingroup
-\fontsize{9pt}{9pt}\selectfont
+Objective function:
 
-\begin{verbatim}
+\begin{center}
+mininize $t$
+\end{center}
 
-set Nodes;
-set Arcs within Nodes cross Nodes;
-
-set Jobs;
-set Paths{Jobs};
-set Path_Arcs{job in Jobs, p in Paths[job]} 
-    within Arcs;
-
-param Capacity{Arcs} >= 0 default Infinity;
-param Demand {Jobs} default 0;
-
-var Flow {job in Jobs, Paths[job]} >= 0;
-var Z >= 0;
-
-maximize obj: Z;
-
-subject to
-
-demand_con {job in Jobs}: sum {p in Paths[job]} 
-	Flow[job,p] = Demand[job]*Z;
-
-capacity_con {(i,j) in Arcs}:
-  sum {job in Jobs, p in Paths[job]: 
-    (i,j) in = Path_Arcs[job,p]} Flow[job,p] 
-		<= Capacity[i,j];
-
-\end{verbatim}
-
-\endgroup
-
-\caption*{\textbf{Model 1} Data movement optimization}
-\label{mod:opt}
-
-\end{algorithm}
-
-The notions used in \textbf{Model} 1 are explained as follows:
-
+Constrainsts:
 \begin{itemize}
-    \item sets: 
-	\begin{itemize}
-	    \item \textit{Nodes}: set of nodes in the network, each node represent a compute node in the supercomputer.
-	    \item \textit{Arcs}: set of arcs in the network. Each arc represent a physical link in the supercomputer.
-	    \item \textit{Jobs}: set of jobs. Each jobs has a source and a destination.
-	    \item  \textit{Paths}: set of paths for each job.
-	    \item \textit{Path\_Arcs}: set of arcs on each path of each job.
-	\end{itemize}
-    \item params: 
-	\begin{itemize}
-	    \item {\it Capacity}: capacity of each arc i.e. bandwidth of the physical link.
-	    \item {\it Demand}: amount of data to be transferred of each job between a pair of source and destination.
-	\end{itemize}
-    \item vars:
-	 \begin{itemize}
-	    \item \textit{Flow}: flow of each job on a path. It can be seen as the proprotional bandwidth assigned for the job on that path.
-	    \item \textit{Z}: is reversed of total time.
-	\end{itemize}
-    \item objective function: we want to minimize the time or maximize its reversed value i.e. maximize \textit{Z}.
-    \item constraints(subject to): 
-	\begin{itemize}
-	    \item \textit{demand\_con}: flow of a job on equals to the demand of the job divided by the transfer time.
-	    \item \textit{capacity\_con}: total flow on an arc is less than its capacity.
-	\end{itemize}
+
+\item Total flow that a job needs equals the total flows given by its paths. For any $job$ in $Jobs$: 
+
+$$\sum_{\forall p \in kpaths_{job}} flow[job, p] = \frac{Demand[job]}{t}$$
+
+\item Total flow of an arc is less than its capacity: For any arc ($i$, $j$):
+
+$$\sum_{\forall job \in Jobs}\sum_{\forall p \in kpaths_{job}} flow[job, p]_{ij} \leq c(i, j) $$
+
 \end{itemize}
 
-The model takes a set of nodes, a set of arcs and their corresponding capacity, a set of jobs (source/destination pairs), a demand for each job, a set of paths for each job, and a set of arcs for each path as inputs. It searches for an assignment of flow values (proportional capacity) for paths of all the jobs such that the transfer time for demands of all jobs is minimum.
+%\input{approach-ampl}
 
-We feed the model into solvers together with data of nodes, arcs, capacity, paths for jobs and get the paths with given proportional bandwidth. Based on proportional bandwidth, each path can take proportional demand of a job.
-
-We realize algoirthms and other implementation in a framework named OPTIQ.
+In the next section, we present our experiments and results to demonstrate the efficacy of our approaches.

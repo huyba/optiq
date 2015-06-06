@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o
 
-all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_gather.x yen_model.x yen_stat.x cp
+all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_gather.x yen_model.x yen_stat.x yen_gen_cesm.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -91,45 +91,24 @@ cp:
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512_c8/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/1k/
+
+	 cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/all/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512_c8/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/all
+
+	cp yen_gen_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/2k/cesm/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/cesm/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/2k/
+	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/all/
+	
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/maxload4/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/maxload8/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/maxload16/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/8k/
 
-	 cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/all/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/mxload1/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/mxload2/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/mxload3/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/mxload7/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/mxload10/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512/mxload20/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512_c8/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/all/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/mxload1/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/mxload3/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/mxload7/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/mxload10/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/mxload20/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/all/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/mxload1/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/mxload3/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/mxload7/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/mxload10/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/mxload20/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/4k/all/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/4k/mxload1/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/4k/mxload3/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/4k/mxload7/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/4k/mxload10/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/4k/mxload20/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/8k/all/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/8k/mxload1/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/8k/mxload3/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/8k/mxload7/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/8k/mxload10/
-	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/8k/mxload20/
 
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/512/
 	cp perf_optiq_kpaths.x $(BENCHMARKS_DIR)/multipaths/yen/perf/1k/
