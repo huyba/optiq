@@ -1,6 +1,6 @@
 \subsubsection{Maxload value for heuristic approach}
 
-For the heuristic approach, we need to feed k shortest paths and a \textit{maxload} value to select a number of path used for data transfer. Depending on the number of \textit{maxload} value, we have different set of paths which can affect to the performance.  In this experiment, we show effectiveness of choosing the \textit{maxload} value and time to select paths based on the \textit{maxload} value. The expriment is carried out in 1024-node partition, with 1 MPI/PAMI rank per node, 8 MB message size, ratio 1/8 for all 3 patterns. The \textit{maxload} value varied from 1, 2, 4, 8, 16 to 32. The results are shown in Table \ref{table:maxload}.
+For the heuristic approach we need to feed k shortest paths and a \textit{maxload} value to select the number of paths used for data transfer. Depending on the  \textit{maxload} value we have a different set of paths which can affect performance. In this experiment we show effectiveness of choosing the \textit{maxload} value and time to select paths based on the \textit{maxload} value. The experiment was carried out in a 1024-node partition, with 1 MPI/PAMI rank per node, 8 MB message size, ratio 1/8 for all 3 patterns. The \textit{maxload} value varied from 1, 2, 4, 8, 16 to 32. The results are shown in Table \ref{table:maxload}.
 
 \begin{table}[!htbp]
    \centering
@@ -16,9 +16,9 @@ For the heuristic approach, we need to feed k shortest paths and a \textit{maxlo
     \label{table:maxload}
 \end{table}
 
-As shown in the Table \ref{table:maxload}, when the \textit{maxload} value is set to 1, 2 or 4, the performance is very much similar. They have the performance lower than MPI\_Alltoallv in Disjoint and Subset pattern. We gain the best performance with \textit{maxload} value set to 8 or 16. When the \textit{maxload} value is set to 32, the performance start to degrade in case of Overlap and Subset patterns while only increasing slightly in Disjoint pattern. This is because when the \textit{maxload} value is set to low values (1,2,4), the heuristic algorithm is not able to find enought paths to transfer data leading to fewer number of physical links being used, thus higher load on physical links. When the \textit{maxload} value set to high value (32), the heuristic algorihtm find too many paths leading to many paths sharing a physical link, thus higher load on physical links too. The performance is optimal with the \textit{maxload} value set to 8 or 16. With the values, we have appropriate number of links and the load is ditributed better on the physical links. For expriments in this paper, we set \textit{maxload} value to 16.
+As shown in Table \ref{table:maxload}, when the \textit{maxload} value is set to 1, 2 or 4, performance is very much similar. They have performance lower than MPI\_Alltoallv in Disjoint and Subset pattern. We gain the best performance with \textit{maxload} value set to 8 or 16. When the \textit{maxload} value is set to 32 performance starts to degrade in case of the Overlap and Subset patterns while only increasing slightly in the Disjoint pattern. This is because when the \textit{maxload} value is set to low values (1,2,4), the heuristic algorithm is not able to find enough paths to transfer data, leading to fewer number of physical links being used, thus higher load on those physical links. When the \textit{maxload} value set to a high value (32), the heuristic algorihtm finds too many paths, leading to many paths sharing a physical link, thus higher loads on the physical links as well. The performance is optimal with the \textit{maxload} value set to 8 or 16. With these values we have an appropriate number of links, and the load is ditributed better on the physical links. For the expriments in this paper we set \textit{maxload} value to 16.
 
-When we increase the \textit{maxload} value, it also takes more time to select paths from k shortest paths. The Table \ref{table:solvetime} shows the time for differnt \textit{maxload} values in deffernt patterns.
+When we increase the \textit{maxload} value, it also takes more time to select paths from k shortest paths. Table \ref{table:solvetime} shows the time for differnt \textit{maxload} values in defferent patterns.
 
 \begin{table}[!htbp]
    \centering
@@ -34,4 +34,4 @@ When we increase the \textit{maxload} value, it also takes more time to select p
     \label{table:solvetime}
 \end{table}
 
-The search time is short and thus, can be amortized over time when a pattern is used repeatedly.
+The search time is short and thus can be amortized over time when a pattern is used repeatedly.

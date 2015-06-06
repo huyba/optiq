@@ -1,6 +1,6 @@
 \subsubsection{Increasing destination size}
 
-In this experiment, we also use a partition of 2014 nodes. In which, we keep the number of source nodes constant (64 nodes) and increase the number of destination nodes starting from 128 to 256, 512 and 1024 nodes. Each source node communicates with k destination nodes with k = 2, 4, 8 and 16 respectively. In detail, a node id x communicates with node ids (k*x, k*x+1, ..., k*x+k-1). There is 1 MPI/PAMI rank per node. Each pair of communication transfers 8 MB of data. We experimented with 3 approaches Optimization, Heuristics and MPI\_Alltoallv for 3 patterns Disjoint, Overlap and Subset. The performance is shown in Figure \ref{fig:incrsize}.
+In this experiment we also use a partition of 2014 nodes. We keep the number of source nodes constant (64 nodes) and increase the number of destination nodes starting from 128 to 256, 512 and 1024 nodes. Each source node communicates with k destination nodes with k = 2, 4, 8 and 16 respectively. In detail, node id x communicates with node ids (k*x, k*x+1, ..., k*x+k-1). There is 1 MPI/PAMI rank per node. Each pair of communication transfers 8 MB of data. We experimented with three approaches: Optimization, Heuristics and MPI\_Alltoallv for 3 patterns: Disjoint, Overlap and Subset. The performance is shown in Figure \ref{fig:incrsize}.
 
 \begin{figure*}[!htbp]
         \centering
@@ -41,4 +41,5 @@ In this experiment, we also use a partition of 2014 nodes. In which, we keep the
     \label{table:incrsize}
 \end{table*}
 
-As Figure \ref{fig:incrsize} shows, as we increase the ration between the sources and destinations by increasing the destination sizes, both of Optimization and Heuristics have better performance than MPI\_Alltoallv. In addition, they work better at scale than MPI\_Alltoallv. The throughput of Optimization approach increases for destination sizes of 256 and 512 but slightly reduces at 1024 nodes while the throughtput of Heuristic approach increases as the destination size increases.  
+As Figure \ref{fig:incrsize} shows, as we increase the ratio between the sources and destinations by increasing the destination sizes, both Optimization and Heuristics have better performance than MPI\_Alltoallv. In addition, they work better at scale than MPI\_Alltoallv. The
+ throughput of Optimization approach increases for destination sizes of 256 and 512 but slightly reduces at 1024 nodes, while the throughtput of Heuristic approach increases as the destination size increases.

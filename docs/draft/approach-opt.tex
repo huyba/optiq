@@ -1,14 +1,22 @@
 \subsection{Model Optimization Approach}
 \label{sec:optimization}
 
-In this approach, we are given a set of pairs of sources and destinations. For each pair, there are an amount of data needed to transfer and a set of pre-computed k shortest paths that can be employed to transfer data. We are also given capacities of links that comprised of the k shortest paths. We need to search for an assignment of capacities for employed paths that results in minimum tranfer time for all pairs. 
+In this approach, we are given a set of pairs of sources and destinations. For each pair there is an amount of data needed to transfer and a set of pre-computed k shortest paths that can be employed to transfer that data. We are also given the capacities of links that comprise the k shortest paths. We need to search for an assignment of capacities for the employed paths that results in the minimum tranfer time for all pairs. 
 
-Each data transfering request of a pair is denoted as a $job$. Set of all jobs is denoted as $Jobs$. Each job has an amount of data needed to transfer from the job's source to its destination. The amount of data is denoted as $Demand[job]$. In order to transfer the data, a job can employ paths from a pre-computed set of paths (computed prior in \textbf{Algorithm \ref{alg:h1}}) denoted as $kpaths_{job}$. Each path is denoted as $p$. A path $p$ might comprise from one to many links. A flow of a job from its source to its destination on a path is an amount of capacity given for the job on the path, it is denoted as $flow(job, p)$. All links ($i$, $j$) on path $p$ accomdate the same flow value for the job $flow(job, p)_{ij}$. $c(i,j)$ denotes the capacity of an edge from vertex $i$ to vertex $j$.
+Each data transfer request of a pair is denoted as a $job$. The set of all jobs is denoted as $Jobs$. Each job has an amount of data needed to transfer from the job's source to its destination. The amount of data is denoted as $Demand[job]$. In order to transfer the data a job can employ paths from a pre-computed set of paths (computed prior in \textbf{Algorithm \ref{alg:h1}}) denoted as $kpaths_{job}$. Each path is denoted as $p$. A path $p$ might comprise from one to many links. A flow of a job from its source to its destination on a path is the amount of capacity given for the job on the path, and it is denoted as $flow(job, p)$. All links ($i$, $j$) on path $p$ accomodate the same flow value for the job $flow(job, p)_{ij}$. $c(i,j)$ denotes the capacity of an edge from vertex $i$ to vertex $j$.
 
-The time to transfer data for all jobs in $Jobs$ is $t$. Our goal is to minize the time $t$ to transfer data for all jobs in $Jobs$ while satisfying the two below conditions:
+The time to transfer data for all jobs in $Jobs$ is $t$. Our goal is to minize time $t$ to transfer data for all jobs in $Jobs$ while satisfying the two constraints:
 
+Objective function:
+
+\begin{center}
+mininize $t$
+\end{center}
+
+Constrainsts:
 \begin{itemize}
-\item Total flow that a job needs equals to total flows given by its paths. For any $job$ in $Jobs$: 
+
+\item Total flow that a job needs equals the total flows given by its paths. For any $job$ in $Jobs$: 
 
 $$\sum_{\forall p \in kpaths_{job}} flow[job, p] = \frac{Demand[job]}{t}$$
 
