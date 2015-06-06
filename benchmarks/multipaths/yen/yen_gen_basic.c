@@ -3,6 +3,141 @@
 
 #include "yen_gen_basic.h"
 
+int maxpathspertest = 50 * 1024;
+
+int maxtestid, mintestid;
+
+void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths)
+{
+    int rank, size;
+
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &size);
+    char pairfile[256];
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        if (rank == i % size)
+        {
+            optiq_alg_yen_k_shortest_paths_job (graphFilePath, jobs[i], num_paths);
+
+            sprintf(pairfile, "%s_%d", jobfile, jobs[i].job_id);
+            optiq_job_write_to_file (jobs, pairfile);
+
+            /*free paths*/
+            for (int j = 0; j < jobs[i].paths.size(); j++)
+            {
+                jobs[i].paths[j]->arcs.clear();
+                free (jobs[i].paths[j]);
+            }
+            jobs[i].paths.clear();
+        }
+    }
+}
+
+void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int datasize, char *cesmFilePath)
+{
+    char cesmfile[2048];
+
+    int job_id = 0;
+
+    for (int i = mintestid; i < maxtestid; i++)
+    {
+        sprintf(cesmfile, "%s/ca2xRearr.%05d", cesmFilePath, i);
+
+        FILE * fp;
+        char line[256];
+
+        if( access( cesmfile, F_OK ) == -1 )
+        {
+            return;
+        }
+
+        fp = fopen(cesmfile, "r");
+
+        if (fp == NULL) {
+            return;
+        }
+
+        int source_id, dest_id, num_points;
+
+        char temp[256], name[256];
+        bool exist;
+
+        while (fgets(line, 80, fp) != NULL)
+        {
+            if (line[1] == 'S')
+            {
+                fgets(line, 80, fp);
+
+                while (line[1] != 'R')
+                {
+                    trim(line);
+                    sscanf(line, "%d %d %d", &source_id, &dest_id, &num_points);
+                    /*printf("job_id = %d job_path_id = %d, flow = %f\n", job_id, job_path_id, flow);*/
+
+                    struct job new_job;
+                    new_job.job_id = job_id;
+                    new_job.source_id = source_id;
+                    new_job.source_rank = source_id;
+                    new_job.dest_id = dest_id;
+                    new_job.dest_rank = dest_id;
+                    new_job.demand = num_points * datasize;
+                    job_id++;
+
+                    jobs.push_back(new_job);
+
+                    fgets(line, 80, fp);
+                }
+            }
+        }
+
+        fclose(fp);
+
+    }
+}
+
+void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFilePath, int numpaths, char *cesmFilePath)
+{
+    int rank, numranks;
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &numranks);
+
+    std::vector<struct job> jobs;
+    char name[256];
+    int testid = 0;
+    int start_testid = 0;
+    char jobfile[256];
+
+    int size = topo->num_nodes * topo->num_ranks_per_node;
+
+    jobs.clear();
+
+    /* Subset Generate paths*/
+    optiq_job_read_jobs_from_ca2xRearr (jobs, datasize, cesmFilePath);
+
+    int maxpaths = numpaths;
+
+    /*if (maxpaths > maxpathspertest/jobs.size())
+ *     {
+ *             maxpaths = maxpathspertest/jobs.size();
+ *                 }*/
+
+    sprintf(name, "Test %d number of jobs, with %d paths per job", jobs.size(), maxpaths);
+    sprintf(jobs[0].name, "%s", name);
+    sprintf(jobfile, "test%d", maxpaths);
+
+    if (rank == 0)
+    {
+        optiq_job_print_jobs(jobs);
+    }
+
+    search_and_write_to_file (jobs, jobfile, graphFilePath, maxpaths);
+
+    testid++;
+    jobs.clear();
+}
+
 void gen_91_cases (struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths)
 {
     int rank, numranks;
