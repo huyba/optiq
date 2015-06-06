@@ -326,3 +326,123 @@ bool optiq_benchmark_jobs_from_file (char *jobfile, int datasize)
 
     return true;
 }
+
+
+bool optiq_benchmark_jobs (std::vector<struct job> &jobs)
+{
+    struct optiq_pami_transport *pami_transport = optiq_pami_transport_get();
+    int rank = pami_transport->rank;
+    int size = pami_transport->size;
+
+    if (odp.print_mem_avail) 
+    {
+	optiq_util_print_mem_info(rank);
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (rank == 0 && odp.print_path_rank)
+    {
+	optiq_path_print_paths(schedule->paths);
+    }
+
+    if (rank == 0 && odp.print_job)
+    {
+	optiq_job_print(jobs, rank);
+    }
+
+    if (rank == 0) 
+    {
+	printf("%s\n", jobs[0].name);
+    }
+
+    int *sendcounts, *sdispls, *recvcounts, *rdispls;
+    char *sendbuf = NULL, *recvbuf = NULL;
+
+    optiq_input_convert_jobs_to_alltoallv (jobs, &sendbuf, &sendcounts, &sdispls, &recvbuf, &recvcounts, &rdispls, size, rank);
+
+    if (rank == 0) 
+    {
+	sprintf(opi.prefix, "%s", "M");
+	opi.test_id = schedule->test_id;
+	sprintf(opi.name, "%s", "MPI_Alltoallv");
+	//opi.message_size = datasize;
+	opi.chunk_size = schedule->chunk_size;
+    }
+    
+    optiq_benchmark_mpi_perf(sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls);
+
+    if (rank == 0) {
+	//optiq_path_compute_link_load (opi.load_stat, datasize);
+	optiq_opi_print();
+    }
+
+    if (odp.print_mem_avail)
+    {
+	optiq_util_print_mem_info(rank);
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    optiq_scheduler_build_schedule (sendbuf, sendcounts, sdispls, recvbuf, recvcounts, rdispls, jobs, schedule->paths);
+
+    optiq_opi_jobs_stat(jobs);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    
+    if (odp.print_done_status) {
+	printf("Rank %d Schedule done.\n", rank);
+    }
+
+    optiq_pami_transport_exchange_memregions ();
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (odp.print_done_status) {
+        printf("Rank %d Memory exchange done.\n", rank);
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    optiq_pami_transport_execute_new ();
+
+    if (odp.print_done_status) {
+	printf("Rank %d done transport\n", rank);
+    }
+
+    optiq_pami_transport_clear();
+
+    optiq_schedule_clear ();
+
+    if (schedule->recv_len > 0) 
+    {
+	char *testbuf = (char *) malloc (schedule->recv_len);
+
+	for (int i = 0; i < schedule->recv_len; i++) {
+	    testbuf[i] = i % 128;
+	}
+
+	if (memcmp (recvbuf, testbuf, schedule->recv_len) != 0) {
+	    printf("Rank %d encounter data corrupted\n", rank);
+	}
+
+	free (testbuf);
+	free (recvbuf);
+    }
+    
+    free (sendcounts);
+    free (recvcounts);
+    free (rdispls);
+    free (sdispls);
+
+    if (schedule->send_len > 0) {
+	free (sendbuf);
+    }
+
+    if (odp.print_mem_avail)
+    {
+	optiq_util_print_mem_info(rank);
+    }
+
+    return true;
+}

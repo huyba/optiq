@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(MOD)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o
 
-all: bdev mpibm perf_bypathlen.x perf_jobs_fromfile.x extract_result.x groupdist.x cp
+all: bdev mpibm perf_bypathlen.x perf_jobs_fromfile.x extract_result.x groupdist.x perf_jobs_cesm.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -102,6 +102,7 @@ cp:
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/1k/mxload20/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/1k/mxload30/
 
+	cp perf_jobs_cesm.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/cesm/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multisize/2k/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/all/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/2k/maxpath4/

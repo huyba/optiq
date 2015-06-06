@@ -9,4 +9,6 @@ void optiq_benchmark_reconstruct_mpi_paths(int *sendcounts, std::vector<struct p
 
 bool optiq_benchmark_jobs_from_file (char *jobfile, int datasize);
 
+bool optiq_benchmark_jobs (std::vector<struct job> &jobs);
+
 #endif
