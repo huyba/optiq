@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o yen_gen_basic.o
 
-all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_gather.x yen_model.x yen_stat.x yen_gen_cesm.x cp
+all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_gather.x yen_model.x yen_stat.x yen_gen_rand_msg.x yen_gen_path_cesm.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -81,6 +81,7 @@ cp:
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/4k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/8k/
 	
+	cp yen_gen_rand_msg.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/msg/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512_c8/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/1k/
@@ -96,7 +97,7 @@ cp:
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/512_c8/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/1k/all
 
-	cp yen_gen_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/2k/cesm/
+	cp yen_gen_path_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/2k/cesm/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/cesm/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/2k/
 	cp yen_model.x $(BENCHMARKS_DIR)/multipaths/yen/modeldat/2k/all/

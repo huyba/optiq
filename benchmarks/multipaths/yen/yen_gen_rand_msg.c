@@ -33,15 +33,14 @@ int main(int argc, char **argv)
 
     int numpaths = atoi (argv[6]);
 
-    int datasize = atoi (argv[7]);
-
-    mintestid = atoi (argv[8]);
-    maxtestid = atoi (argv[9]);
+    mintestid = atoi (argv[7]);
+    maxtestid = atoi (argv[8]);
 
     optiq_topology_init_with_params(num_dims, psize, topo);
-    topo->num_ranks_per_node = atoi (argv[10]);
+    topo->num_ranks_per_node = atoi (argv[9]);
 
-    char *cesmfilepath = argv[11];
+    int minsize = atoi (argv[10]) * 1024;
+    int maxsize = atoi (argv[11]) * 1024;
 
     char graphFilePath[] = "graph";
 
@@ -52,5 +51,5 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    gen_paths_cesm (topo, datasize, graphFilePath, numpaths, cesmfilepath);
+    gen_paths_with_rand_msg (topo, graphFilePath, numpaths, minsize, maxsize);
 }

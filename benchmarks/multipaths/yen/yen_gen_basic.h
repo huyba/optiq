@@ -26,6 +26,8 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
 
 void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFilePath, int numpaths, char *cesmFilePath);
 
+void gen_paths_with_rand_msg(struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize);
+
 void gen_distance_increase_2k4k(struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths);
 
 void gen_91_cases (struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths);
