@@ -187,7 +187,6 @@ void gen_paths_with_rand_msg(struct optiq_topology *topo, char *graphFilePath, i
     jobs.clear();
 
     /* Overlap Generate paths */
-
     for (int l = m/8; l <= m/2; l *= 2)
     {
         if (mintestid <= testid && testid <=maxtestid)
@@ -239,7 +238,7 @@ void gen_paths_with_rand_msg(struct optiq_topology *topo, char *graphFilePath, i
                 maxpaths = maxpathspertest / numpairs;
             }
 
-            sprintf(name, "Test No. %d Subset %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, l, m-1, n, 0, n - 1, maxpaths);
+            sprintf(name, "Test No. %d Subset %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, l, m+l-1, n, 0, n - 1, maxpaths);
 
             sprintf(jobs[0].name, "%s", name);
             sprintf(jobfile, "test%d", testid);
