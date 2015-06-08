@@ -139,6 +139,123 @@ void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFileP
     jobs.clear();
 }
 
+void gen_1_16_to_1_2 (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing)
+{
+    int rank, numranks;
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &numranks);
+
+    std::vector<struct job> jobs;
+    char name[256];
+    char jobfile[256];
+
+    int size = topo->num_nodes * topo->num_ranks_per_node;
+
+    srand (time(NULL));
+
+    /* Generate disjoint First m send data to last n */
+    int m = size/16;
+    int n = size/2;
+
+    if (mintestid <= testid && testid <=maxtestid)
+    {
+        optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size-n, topo->num_ranks_per_node,  randompairing);
+
+        if (demand == 0)
+        {
+            for (int i = 0; i < jobs.size(); i++)
+            {
+                jobs[i].demand = (rand() + minsize) % maxsize;
+            }
+        }
+
+        /* Not allow to generate too many paths, leading to */
+        int numpairs = m > n ? m : n;
+        int maxpaths = numpaths;
+        if (maxpathspertest / numpairs < maxpaths) {
+            maxpaths = maxpathspertest / numpairs;
+        }
+
+        sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size-n, size -1, maxpaths);
+        sprintf(jobs[0].name, "%s", name);
+        sprintf(jobfile, "test%d", testid);
+
+        search_and_write_to_file (jobs, jobfile, graphFilePath, maxpaths);
+    }
+
+    testid++;
+    jobs.clear();
+
+    /* Overlap Generate paths */
+    for (int l = m/8; l <= m/2; l *= 2)
+    {
+        if (mintestid <= testid && testid <=maxtestid)
+        {
+            optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, m - l, topo->num_ranks_per_node, randompairing);
+
+            if (demand == 0)
+            {
+                for (int i = 0; i < jobs.size(); i++)
+                {
+                    jobs[i].demand = (rand() + minsize) % maxsize;
+                }
+            }
+
+            /* Not allow to generate too many paths, leading to */
+            int numpairs = m > n ? m : n;
+            int maxpaths = numpaths;
+            if (maxpathspertest / numpairs < maxpaths) {
+                maxpaths = maxpathspertest / numpairs;
+            }
+
+            sprintf(name, "Test No. %d Overlap %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, m-l, n + m -l -1, maxpaths);
+
+            sprintf(jobs[0].name, "%s", name);
+            sprintf(jobfile, "test%d", testid);
+
+            search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
+        }
+        testid++;
+        jobs.clear();
+    }
+
+    /* Subset Generate paths */
+    m = size/16;
+    n = size/2;
+
+    for (int l = 0; l <= n/2; l += n/4)
+    {
+        if (mintestid <= testid && testid <=maxtestid)
+        {
+            optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, l, n, 0, topo->num_ranks_per_node, randompairing);
+
+            if (demand == 0)
+            {
+                for (int i = 0; i < jobs.size(); i++)
+                {
+                    jobs[i].demand = (rand() + minsize) % maxsize;
+                }
+            }
+
+            /* Not allow to generate too many paths, leading to */
+            int numpairs = m > n ? m : n;
+            int maxpaths = numpaths;
+            if (maxpathspertest / numpairs < maxpaths) {
+                maxpaths = maxpathspertest / numpairs;
+            }
+
+            sprintf(name, "Test No. %d Subset %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, l, m+l-1, n, 0, n - 1, maxpaths);
+
+            sprintf(jobs[0].name, "%s", name);
+            sprintf(jobfile, "test%d", testid);
+
+            search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
+        }
+        testid++;
+        jobs.clear();
+    }
+}
+
 void gen_paths_with_rand_msg(struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize)
 {
     int rank, numranks;
@@ -245,6 +362,50 @@ void gen_paths_with_rand_msg(struct optiq_topology *topo, char *graphFilePath, i
 
             search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
         }
+        testid++;
+        jobs.clear();
+    }
+
+    /*CESM-like pattern 87.5% of nodes communicate, 1 source talks to 3 dests, arbitrary selected, data size is also arbitrary selected*/
+    {
+        int job_id = 0;
+
+        int num_nodes = size * 0.875;
+        int num_pairs = 3;
+        for (int source = 0; source < num_nodes; source++)
+        {
+            for (int i = 0; i < num_pairs; i++)
+            {
+                int dest = rand() % num_nodes;
+                int demand = (rand() % 28) * 64 * 4096;
+
+                struct job new_job;
+                new_job.job_id = job_id;
+                new_job.source_id = source;
+                new_job.source_rank = source;
+                new_job.dest_id = dest;
+                new_job.dest_rank = dest;
+                new_job.demand = demand;
+                jobs.push_back(new_job);
+
+                job_id++;
+            }
+        }
+
+        /* Not allow to generate too many paths, leading to */
+        int numpairs = num_nodes * num_pairs;
+        int maxpaths = numpaths;
+        if (maxpathspertest / numpairs < maxpaths) {
+            maxpaths = maxpathspertest / numpairs;
+        }
+
+        sprintf(name, "Test No. %d CESM-like pattern %d ranks from %d to %d send data within the group with %d pairs per node with %d maxpaths", testid, num_nodes, 0, num_nodes-1, num_pairs, maxpaths);
+
+        sprintf(jobs[0].name, "%s", name);
+        sprintf(jobfile, "test%d", testid);
+
+        search_and_write_to_file (jobs, jobfile, graphFilePath, numpaths);
+
         testid++;
         jobs.clear();
     }

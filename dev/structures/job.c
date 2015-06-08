@@ -105,6 +105,24 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
     
     myfile << ";" << std::endl;
 
+    myfile << "param SourceRank :=" << std::endl;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        myfile << jobs[i].job_id << " " << jobs[i].source_rank << std::endl;
+    }
+
+    myfile << ";" << std::endl;
+
+    myfile << "param DestRank :=" << std::endl;
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        myfile << jobs[i].job_id << " " << jobs[i].dest_rank << std::endl;
+    }
+
+    myfile << ";" << std::endl;
+
     myfile << "set Arcs :=" << std::endl;
 
     for (int i = 0; i < size; i++)
@@ -337,13 +355,17 @@ bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struc
 	    }
 
 	    /* Data reading from model-based approach currently doesn't have those info*/
-	    if (source_id == 0 && dest_id == 0 && source_rank == 0 && dest_rank == 0)
+	    if (source_id == 0 && dest_id == 0)
 	    {
 		source_id = p->arcs.front().u;
-		source_rank = source_id;
 		dest_id = p->arcs.back().v;
-		dest_rank = dest_id;
 	    }
+
+            if (source_rank == 0 && dest_rank == 0)
+            {
+                source_rank = source_id;
+                dest_rank = dest_id;
+            }
 
 	    /*Sometimes the path is disrupted*/
 	    if (p->arcs.size() > 0 && p->arcs.front().u == source_id && p->arcs.back().v == dest_id)

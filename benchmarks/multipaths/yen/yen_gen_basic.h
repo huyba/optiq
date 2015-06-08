@@ -32,4 +32,6 @@ void gen_distance_increase_2k4k(struct optiq_topology *topo, int demand, char *g
 
 void gen_91_cases (struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths);
 
+void gen_1_16_to_1_2 (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing);
+
 #endif
