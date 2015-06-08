@@ -1,51 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#include "yen.h"
+#include <vector>
+
 #include <mpi.h>
+
+#include "yen.h"
 #include "topology.h"
 #include "job.h"
 #include "util.h"
 #include "patterns.h"
-#include <vector>
-
-int maxpathspertest = 50 * 1024;
-
-int maxtestid, mintestid;
-
-void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char *graphFilePath, int num_paths)
-{
-    int rank, size;
-
-    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &size);
-    char pairfile[256];
-
-    for (int i = 0; i < jobs.size(); i++)
-    {
-	if (rank == i % size)
-	{
-	    //printf("Rank %d avail mem before call yen\n", rank);
-	    //optiq_util_print_mem_info(rank);
-
-	    optiq_alg_yen_k_shortest_paths_job (graphFilePath, jobs[i], num_paths);
-
-	    //printf("Rank %d avail mem after call yen\n", rank);
-	    //optiq_util_print_mem_info(rank);
-
-	    sprintf(pairfile, "%s_%d", jobfile, jobs[i].job_id);
-	    optiq_job_write_to_file (jobs, pairfile);
-
-	    /*free paths*/
-	    for (int j = 0; j < jobs[i].paths.size(); j++) 
-	    {
-		jobs[i].paths[j]->arcs.clear();
-		free (jobs[i].paths[j]);
-	    }
-	    jobs[i].paths.clear();
-	}
-    }
-}
+#include "yen_gen_basic.h"
 
 void aggregate_paths_from_file (std::vector<struct job> &jobs, char*jobfile, struct optiq_topology *topo, int maxload)
 {
