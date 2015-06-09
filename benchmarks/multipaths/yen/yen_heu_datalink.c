@@ -20,10 +20,7 @@ int main(int argc, char **argv)
 
     int start = atoi (argv[2]);
     int end = atoi (argv[3]);
-
-    int maxload = atoi (argv[4]);
-    int num_nodes = atoi (argv[5]);
-    int num_ranks_per_node = atoi(argv[6]);
+    int num_nodes = atoi (argv[4]);
 
     char filepath[256];
 
@@ -45,7 +42,7 @@ int main(int argc, char **argv)
 
             gettimeofday(&t2, NULL);
 
-            optiq_job_read_and_assign_flow_value(jobs, paths, filepath, maxload, num_nodes, num_ranks_per_node);
+            optiq_job_read_and_assign_flow_value(jobs, paths, filepath, num_nodes);
 
             gettimeofday(&t3, NULL);
 
@@ -62,7 +59,7 @@ int main(int argc, char **argv)
 
     if (rank == 0)
     {
-	printf("Time to build paths with max load = %d is %8.0f\n", maxload, t);
+	printf("Time to build paths with max paths = %d to %d is %8.0f\n", start, end, t);
     }
 
     return 0;

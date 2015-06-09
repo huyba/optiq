@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <algorithm>
+#include <limits.h>
 
 #include "util.h"
 #include "job.h"
@@ -204,37 +205,106 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 }
 
 
-void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int maxload, int size, int num_ranks_per_node)
+void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int size)
 {
     optiq_job_read_from_file (jobs, paths, filepath);
 
+    /* Load of links */
     int **load = (int **) calloc (1, sizeof(int *) * size);
-
     for (int i = 0; i < size; i++)
     {
 	load[i] = (int *) calloc (1, sizeof(int) * size);
     }
 
+    /* Paths that use links */
+    std::vector<struct path*> **link_paths = (std::vector<struct path*> **) calloc (1, sizeof(std::vector<struct path*> *) * size);
+    for (int i = 0; i < size; i++)
+    {
+        link_paths[i] = (std::vector<struct path*> *) calloc (1, sizeof(std::vector<struct path*>) * size);
+    }
+
+    /* Init the list of paths that use links */
     for (int i = 0; i < jobs.size(); i++)
     {
-	jobs[i].kpaths.clear();
+        for (int j = 0; j < jobs[i].paths.size(); j++)
+        {
+            for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
+            {
+                int u = jobs[i].paths[j]->arcs[k].u;
+                int v = jobs[i].paths[j]->arcs[k].v;
+
+                link_paths[u][v].push_back(jobs[i].paths[j]);
+            }
+        }
     }
 
     std::vector<struct job> temp_jobs = jobs;
 
     jobs.clear();
 
+    /* Make heap of job by the demand */
+    std::make_heap(temp_jobs.begin(), temp_jobs.end(), JobDemandComp());
+
     while (temp_jobs.size() > 0)
     {
-        std::make_heap(jobs.begin(), jobs.end(), JobDemandComp());
+        int unit = 8;
 
-        /* Pop the job with highest demand */
+        /* The the first job which has the max demand*/
+        struct job& tj = temp_jobs[0];
 
-        /* Make the heap of path to get path with least demand */
+        if (tj.demand < unit) {
+            unit = tj.demand;
+        }
 
-        /* Assign part of demand to a path and subtract from path, put it back/make the heap again */
+        tj.demand -= unit;
 
-        /* Recompute the max_load of paths */
+        /* Look for path with the minimum max_load */
+        int max_load = INT_MAX, index = 0;
+        for (int i = 0; i < tj.paths.size(); i++)
+        {
+            if (tj.paths[i]->max_load < max_load)
+            {
+                max_load = tj.paths[i]->max_load;
+                index = i;
+            }
+        }
+        tj.paths[index]->assigned_len += unit;
+        tj.paths[index]->flow ++;
+
+        /* Updated the link load and paths of jobs */
+        for (int i = 0; i < tj.paths[index]->arcs.size(); i++)
+        {
+            int u = tj.paths[index]->arcs[i].u;
+            int v = tj.paths[index]->arcs[i].v;
+
+            load[u][v] += unit;
+
+            for (int j = 0; j < link_paths[u][v].size(); j++)
+            {
+                if (link_paths[u][v][j]->max_load < load[u][v])
+                {
+                    link_paths[u][v][j]->max_load = load[u][v];
+                }
+            }
+        }
+
+        /* Update heap of jobs */
+        std::pop_heap (temp_jobs.begin(), temp_jobs.end(),  JobDemandComp());
+
+        if (tj.demand <= 0) 
+        {
+            for (int i = 0; i < tj.paths.size(); i++)
+            {
+                tj.demand += tj.paths[i]->assigned_len;
+            }
+
+            jobs.push_back(tj);
+            temp_jobs.pop_back();
+        }
+        else 
+        {
+            std::push_heap (temp_jobs.begin(), temp_jobs.end(),  JobDemandComp());
+        }
     }
 }
 

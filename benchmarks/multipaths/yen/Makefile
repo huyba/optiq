@@ -90,6 +90,7 @@ cp:
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/4k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/8k/
 
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/cesm/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512_c8/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/1k/
