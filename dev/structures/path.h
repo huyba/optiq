@@ -64,4 +64,12 @@ void optiq_path_reverse_paths (std::vector<struct path *> &complete_paths);
 
 void optiq_path_creat_path_ids_from_path_ranks(std::vector<struct path *> &path_ids, std::vector<struct path *> &path_ranks, int num_ranks_per_node);
 
+struct PathLinkLoadComp
+{
+   bool operator()(const path& p1, const path& p2)
+   {
+       return p1.max_load < p2.max_load;
+   }
+};
+
 #endif

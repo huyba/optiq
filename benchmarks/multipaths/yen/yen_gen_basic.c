@@ -42,7 +42,7 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
 
     int job_id = 0;
 
-    for (int i = mintestid; i < maxtestid; i++)
+    for (int i = mintestid; i <= maxtestid; i++)
     {
         sprintf(cesmfile, "%s/ca2xRearr.%05d", cesmFilePath, i);
 
@@ -60,7 +60,7 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
             return;
         }
 
-        int source_id, dest_id, num_points;
+        int source_rank, dest_rank, num_points;
 
         char temp[256], name[256];
         bool exist;
@@ -74,15 +74,15 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
                 while (line[1] != 'R')
                 {
                     trim(line);
-                    sscanf(line, "%d %d %d", &source_id, &dest_id, &num_points);
-                    /*printf("job_id = %d job_path_id = %d, flow = %f\n", job_id, job_path_id, flow);*/
+                    sscanf(line, "%d %d %d", &source_rank, &dest_rank, &num_points);
+                    /*printf("job_id = %d source_rank = %d, dest_rank = %d\n", job_id, source_rank, dest_rank);*/
 
                     struct job new_job;
                     new_job.job_id = job_id;
-                    new_job.source_id = source_id;
-                    new_job.source_rank = source_id;
-                    new_job.dest_id = dest_id;
-                    new_job.dest_rank = dest_id;
+                    new_job.source_id = 0;
+                    new_job.source_rank = source_rank;
+                    new_job.dest_id = 0;
+                    new_job.dest_rank = dest_rank;
                     new_job.demand = num_points * datasize;
                     job_id++;
 
@@ -117,12 +117,18 @@ void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFileP
     /* Subset Generate paths*/
     optiq_job_read_jobs_from_ca2xRearr (jobs, datasize, cesmFilePath);
 
+    for (int i = 0; i < jobs.size(); i++)
+    {
+        jobs[i].source_id = jobs[i].source_rank/topo->num_ranks_per_node;
+        jobs[i].dest_id = jobs[i].dest_rank/topo->num_ranks_per_node;
+    }
+
     int maxpaths = numpaths;
 
     /*if (maxpaths > maxpathspertest/jobs.size())
-     *     {
-     *             maxpaths = maxpathspertest/jobs.size();
-     *                 }*/
+    {
+        maxpaths = maxpathspertest/jobs.size();
+    }*/
 
     sprintf(name, "Test %d number of jobs, with %d paths per job", jobs.size(), maxpaths);
     sprintf(jobs[0].name, "%s", name);

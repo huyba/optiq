@@ -44,4 +44,14 @@ void optiq_jobs_convert_ids_to_ranks (std::vector<struct job> &jobs, std::vector
 
 void optiq_opi_jobs_stat(std::vector<struct job> &jobs);
 
+struct JobDemandComp
+{
+   bool operator()(const job& s1, const job& s2)
+   {
+       return s1.demand > s2.demand;
+   }
+};
+
+void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int maxload, int size, int num_ranks_per_node);
+
 #endif

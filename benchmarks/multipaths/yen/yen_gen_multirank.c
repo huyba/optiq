@@ -54,6 +54,9 @@ int main(int argc, char **argv)
 
     int testid = 0;
     bool randompairing = false;
+    if (argc > 13) {
+        randompairing = (atoi (argv[13]) == 1);
+    }
 
     gen_1_16_to_1_2 (topo, graphFilePath, numpaths, minsize, maxsize, testid, demand, randompairing);
 }

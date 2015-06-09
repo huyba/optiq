@@ -203,6 +203,41 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
     myfile.close();
 }
 
+
+void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int maxload, int size, int num_ranks_per_node)
+{
+    optiq_job_read_from_file (jobs, paths, filepath);
+
+    int **load = (int **) calloc (1, sizeof(int *) * size);
+
+    for (int i = 0; i < size; i++)
+    {
+	load[i] = (int *) calloc (1, sizeof(int) * size);
+    }
+
+    for (int i = 0; i < jobs.size(); i++)
+    {
+	jobs[i].kpaths.clear();
+    }
+
+    std::vector<struct job> temp_jobs = jobs;
+
+    jobs.clear();
+
+    while (temp_jobs.size() > 0)
+    {
+        std::make_heap(jobs.begin(), jobs.end(), JobDemandComp());
+
+        /* Pop the job with highest demand */
+
+        /* Make the heap of path to get path with least demand */
+
+        /* Assign part of demand to a path and subtract from path, put it back/make the heap again */
+
+        /* Recompute the max_load of paths */
+    }
+}
+
 void optiq_job_read_and_select (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int maxload, int size, int num_ranks_per_node)
 {
     optiq_job_read_from_file (jobs, paths, filepath);
