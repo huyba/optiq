@@ -228,6 +228,8 @@ void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::v
     {
         for (int j = 0; j < jobs[i].paths.size(); j++)
         {
+            jobs[i].paths[j]->assigned_len = 0;
+            jobs[i].paths[j]->flow = 0;
             for (int k = 0; k < jobs[i].paths[j]->arcs.size(); k++)
             {
                 int u = jobs[i].paths[j]->arcs[k].u;
@@ -250,13 +252,11 @@ void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::v
         int unit = 8;
 
         /* The the first job which has the max demand*/
-        struct job& tj = temp_jobs[0];
+        struct job tj = temp_jobs[0];
 
         if (tj.demand < unit) {
             unit = tj.demand;
         }
-
-        tj.demand -= unit;
 
         /* Look for path with the minimum max_load */
         int max_load = INT_MAX, index = 0;
@@ -268,6 +268,10 @@ void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::v
                 index = i;
             }
         }
+
+        /*printf("job %d %d %d %d %d %d %d %d\n", tj.job_id, tj.paths[index]->path_id, tj.paths[index]->flow, tj.source_id, tj.dest_id, tj.source_rank, tj.dest_rank, tj.demand);*/
+
+        tj.demand -= unit;
         tj.paths[index]->assigned_len += unit;
         tj.paths[index]->flow ++;
 
@@ -290,19 +294,27 @@ void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::v
 
         /* Update heap of jobs */
         std::pop_heap (temp_jobs.begin(), temp_jobs.end(),  JobDemandComp());
+        temp_jobs.pop_back();
 
         if (tj.demand <= 0) 
         {
             for (int i = 0; i < tj.paths.size(); i++)
             {
                 tj.demand += tj.paths[i]->assigned_len;
+
+                if (tj.paths[i]->flow == 0)
+                {
+                    tj.paths.erase(tj.paths.begin() + i);
+                    i--;
+                }
             }
 
+            printf("job %d %d %d %d %d %d %d %d\n", tj.job_id, tj.paths[index]->path_id, tj.paths[index]->flow, tj.source_id, tj.dest_id, tj.source_rank, tj.dest_rank, tj.demand);
             jobs.push_back(tj);
-            temp_jobs.pop_back();
         }
         else 
         {
+            temp_jobs.push_back(tj);
             std::push_heap (temp_jobs.begin(), temp_jobs.end(),  JobDemandComp());
         }
     }

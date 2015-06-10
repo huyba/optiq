@@ -48,7 +48,7 @@ struct JobDemandComp
 {
    bool operator()(const job& s1, const job& s2)
    {
-       return s1.demand > s2.demand;
+       return s1.demand < s2.demand;
    }
 };
 
