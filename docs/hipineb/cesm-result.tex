@@ -1,0 +1,23 @@
+
+The result of the expriment is shown in Table \ref{table:cesm_results}
+
+\begin{table*}[!htbp]
+   \centering
+    \begin{tabular}{| l | l | r | r | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |}
+    \hline
+    \multirow{3}{*}{Coupling} & \multirow{3}{*}{Type} & \multirow{3}{1cm}{BW (GB/s)} & \multicolumn{3}{ c| }{Num. of Paths} & \multicolumn{2}{ c| }{Hopbytes} & \multicolumn{2}{ c| }{Num of copies}& \multicolumn{2}{ c| }{Num of paths} & \multicolumn{2}{ c| }{Total data} \\ \cline{4-6}
+    & & & \multirow{2}{0.5cm}{Total Paths} & \multicolumn{2}{ c| }{Per Job} & \multicolumn{2}{ c| }{Per Path (MB)} & \multicolumn{2}{ c| }{Per Path}& \multicolumn{2}{ c| }{Per Link}& \multicolumn{2}{ c| }{Per Link (MB)} \\ \cline{5-14}
+    & & & & {Max} & Avg & Max & Avg & Max & Avg & Max & Avg & Max & Avg\\ \hline
+    \multirow{3}{*}{CPL-ATM} & OPT    & 352.24 & 3987 & 5 & 1.37 & 72 & 20.61 & 480 & 128.50 & 20 & 5.21 & 44.62 & 22.81 \\ \cline{2-14}
+    & HEU & 327.66 & 15022 & 15 & 5.16 & 12.90 & 1.37 & 162 & 17.22 & 75 & 16.73 & 13.18 & 5.00 \\ \cline{2-14}
+    & MPI    & 276.71 & 2911 & 1 & 1.00 & 0.14 & 0.07 &  &  & 18 & 3.71 &  & \\ \hline
+    \multirow{3}{*}{CPL-LND} & OPT    & 343.5 & 4004 & 7 & 1.38 & 70 & 20.85 & 448 & 130.54 & 18 & 5.24 & 44.62 & 22.77 \\ \cline{2-14}
+    & HEU &  332.40 & 15107 & 14 & 5.19 & 12.90 & 1.36 & 168 & 17.12 & 75 & 16.81 & 13.31 & 5.00 \\ \cline{2-14}
+    & MPI    & 278.90 & 2911 & 1 & 1.00 & 0.14 & 0.07 & 0 & 0.00 & 18 & 3.71 & 0 & 0 \\ \hline
+    \multirow{3}{*}{CPL-OCN} & OPT    & 135.16 & 987 & 5 & 1.97 & 864 & 252.51 & 6048 & 1626.19 & 11 & 2.47 & 253.62 & 120.46\\ \cline{2-14}
+    & HEU &  136.06 & 5924 & 35 & 11.80 & 157.06 & 9.98 & 2148 & 126.98 & 78 & 9.47 & 64.75 & 19.1346 \\ \cline{2-14}
+    & MPI    & 104.44 & 502 & 1 & 1.00 & 0.14 & 0.07 & 0 & 0.00 & 9 & 3.12 & 0 & 0 \\ \hline
+    \end{tabular}
+    \caption{Throughput, total num of paths, number of paths per job, maximum and average values of hopbytes, number of copies, number of paths per link and amount of data per link for 3 couplings in 512 nodes (4 ranks/node) experiments.}
+    \label{table:cesm_results}
+\end{table*}
