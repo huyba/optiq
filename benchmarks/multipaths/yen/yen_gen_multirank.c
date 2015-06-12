@@ -58,5 +58,5 @@ int main(int argc, char **argv)
         randompairing = (atoi (argv[13]) == 1);
     }
 
-    gen_1_16_to_1_2 (topo, graphFilePath, numpaths, minsize, maxsize, testid, demand, randompairing);
+    gen_multiranks (topo, graphFilePath, numpaths, minsize, maxsize, testid, demand, randompairing);
 }

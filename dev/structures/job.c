@@ -205,7 +205,7 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 }
 
 
-void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int size)
+void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int size, int unit)
 {
     optiq_job_read_from_file (jobs, paths, filepath);
 
@@ -249,8 +249,6 @@ void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::v
 
     while (temp_jobs.size() > 0)
     {
-        int unit = 8;
-
         /* The the first job which has the max demand*/
         struct job tj = temp_jobs[0];
 

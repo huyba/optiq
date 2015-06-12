@@ -36,7 +36,7 @@ void search_and_write_to_file (std::vector<struct job> &jobs, char*jobfile, char
     }
 }
 
-void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int datasize, char *cesmFilePath)
+void optiq_job_read_jobs_from_cesm (std::vector<struct job> &jobs, int datasize, char *cesmFilePath)
 {
     char cesmfile[2048];
 
@@ -44,7 +44,7 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
 
     for (int i = mintestid; i <= maxtestid; i++)
     {
-        sprintf(cesmfile, "%s/ca2xRearr.%05d", cesmFilePath, i);
+        sprintf(cesmfile, "%s2xRearr.%05d", cesmFilePath, i);
 
         FILE * fp;
         char line[256];
@@ -90,6 +90,42 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
 
                     fgets(line, 80, fp);
                 }
+
+                if (line[1] == 'R')
+                {
+                    while (fgets(line, 80, fp) != NULL)
+                    {
+                        trim(line);
+                        sscanf(line, "%d %d %d", &dest_rank, &source_rank, &num_points);
+                        /*printf("job_id = %d source_rank = %d, dest_rank = %d\n", job_id, source_rank, dest_rank);*/
+
+                        bool exist = false;
+                        for (int i = 0; i < jobs.size(); i++)
+                        {
+                            if (jobs[i].source_rank == source_rank && jobs[i].dest_rank == dest_rank)
+                            {
+                                exist = true;
+                                break;
+                            }
+                        }
+
+                        if (!exist)
+                        {
+                            struct job new_job;
+                            new_job.job_id = job_id;
+                            new_job.source_id = 0;
+                            new_job.source_rank = source_rank;
+                            new_job.dest_id = 0;
+                            new_job.dest_rank = dest_rank;
+                            new_job.demand = num_points * datasize;
+                            job_id++;
+
+                            jobs.push_back(new_job);
+                        }
+                    }
+                }
+
+                break;
             }
         }
 
@@ -98,7 +134,7 @@ void optiq_job_read_jobs_from_ca2xRearr (std::vector<struct job> &jobs, int data
     }
 }
 
-void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFilePath, int numpaths, char *cesmFilePath)
+void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFilePath, int numpaths, char *cesmFilePath, bool gather)
 {
     int rank, numranks;
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);
@@ -115,7 +151,7 @@ void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFileP
     jobs.clear();
 
     /* Subset Generate paths*/
-    optiq_job_read_jobs_from_ca2xRearr (jobs, datasize, cesmFilePath);
+    optiq_job_read_jobs_from_cesm (jobs, datasize, cesmFilePath);
 
     for (int i = 0; i < jobs.size(); i++)
     {
@@ -123,12 +159,35 @@ void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFileP
         jobs[i].dest_id = jobs[i].dest_rank/topo->num_ranks_per_node;
     }
 
+    /*If gather job from rank to node*/
+    if (gather)
+    {
+        for (int i = 0; i < jobs.size(); i++)
+        {
+            for (int j = 0; j < i; j++)
+            {
+                if (jobs[i].source_id == jobs[j].source_id && jobs[i].dest_id == jobs[j].dest_id)
+                {
+                    jobs[j].demand += jobs[i].demand;
+                    jobs.erase (jobs.begin() + i);
+                    i--;
+                }
+            }
+        }
+
+        for (int i = 0; i < jobs.size(); i++)
+        {
+            jobs[i].source_rank = jobs[i].source_id;
+            jobs[i].dest_rank = jobs[i].dest_id;
+        }
+    }
+
     int maxpaths = numpaths;
 
     /*if (maxpaths > maxpathspertest/jobs.size())
-    {
-        maxpaths = maxpathspertest/jobs.size();
-    }*/
+      {
+      maxpaths = maxpathspertest/jobs.size();
+      }*/
 
     sprintf(name, "Test %d number of jobs, with %d paths per job", jobs.size(), maxpaths);
     sprintf(jobs[0].name, "%s", name);
@@ -143,6 +202,62 @@ void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFileP
 
     testid++;
     jobs.clear();
+}
+
+
+
+void gen_multiranks (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing)
+{
+    int rank, numranks;
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &numranks);
+
+    std::vector<struct job> jobs;
+    char name[256];
+    char jobfile[256];
+
+    int size = topo->num_nodes * topo->num_ranks_per_node;
+
+    srand (time(NULL));
+
+    /* Generate disjoint First m send data to last n */
+    int m = 16;
+    int n = 16;
+
+    for (int m = 16; m <= 128; m *= 2)
+    {
+        for (int n = 16; n <= 128; n *= 2)
+        {
+            if (mintestid <= testid && testid <=maxtestid)
+            {
+                optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, 0, n, size/2, topo->num_ranks_per_node,  randompairing);
+
+                if (demand == 0)
+                {
+                    for (int i = 0; i < jobs.size(); i++)
+                    {
+                        jobs[i].demand = (rand() + minsize) % maxsize;
+                    }
+                }
+
+                /* Not allow to generate too many paths, leading to */
+                int numpairs = m > n ? m : n;
+                int maxpaths = numpaths;
+                if (maxpathspertest / numpairs < maxpaths) {
+                    maxpaths = maxpathspertest / numpairs;
+                }
+
+                sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size/2, n-1, maxpaths);
+                sprintf(jobs[0].name, "%s", name);
+                sprintf(jobfile, "test%d", testid);
+
+                search_and_write_to_file (jobs, jobfile, graphFilePath, maxpaths);
+            }
+
+            testid++;
+            jobs.clear();
+        }
+    }
 }
 
 void gen_1_16_to_1_2 (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing)

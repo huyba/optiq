@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o yen_gen_basic.o
 
-all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_heu_datalink.x yen_gather.x yen_model.x yen_stat.x yen_gen_rand_msg.x yen_gen_path_cesm.x yen_gen_multirank.x cp
+all: bdev mpibm yen_gen.x perf_optiq_kpaths.x yen_gen_parallel.x yen_heu_datalink.x yen_gather.x yen_model.x yen_stat.x yen_gen_rand_msg.x yen_gen_path_cesm.x yen_gather_gen_path_cesm.x yen_gen_multirank.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -77,15 +77,33 @@ cp:
 
 	cp yen_gen_multirank.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/c4/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/512/
+	cp yen_gather_gen_path_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/cesm_gather/co2x/
+	cp yen_gather_gen_path_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/cesm_gather/ci2x/
+	cp yen_gen_path_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/cesm/ca2x/
+	cp yen_gen_path_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/cesm/ci2x/
+	cp yen_gen_path_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/cesm/cl2x/
+	cp yen_gen_path_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/cesm/co2x/
+	cp yen_gen_rand_msg.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/msg/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/cesm/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/msg/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/1k/msg/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/2k/msg/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/msg/
+	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/
+	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512_c8/
+
+	cp yen_gen_rand_msg.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/1k/msg/
+	cp yen_gen_rand_msg.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/2k/msg/
+	cp yen_gen_rand_msg.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/4k/msg/
+	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/1k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/1k/
+	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/1k/
+
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/2k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/4k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yen_gen_parallel/8k/
-	
-	cp yen_gen_path_cesm.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/cesm/
-	cp yen_gen_rand_msg.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/msg/
-	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/
-	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/1k/
+
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/2k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/4k/
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/8k/

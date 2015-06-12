@@ -52,5 +52,7 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    gen_paths_cesm (topo, datasize, graphFilePath, numpaths, cesmfilepath);
+    bool gather = false;
+
+    gen_paths_cesm (topo, datasize, graphFilePath, numpaths, cesmfilepath, gather);
 }

@@ -80,7 +80,18 @@ cp:
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/maxload16
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/maxload32
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/all/
+	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/c4/
 	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/msg/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/cesm/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/cesm_gather/ci2x/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/cesm_gather/co2x/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/cesm_gather/cl2x/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/cesm_gather/ca2x/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/cesm/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/cesm_gather/ci2x/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/cesm_gather/ca2x/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/cesm_gather/co2x/
+	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/heuristics/512/cesm_gather/cl2x/
 
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/heuristics/1k/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/multiranks/heuristics/1k/

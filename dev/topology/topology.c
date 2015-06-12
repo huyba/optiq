@@ -83,6 +83,8 @@ void optiq_topology_print_basic(struct optiq_topology *topo)
 
     printf("num nodes = %d\n", topo->num_nodes);
 
+    printf("num ranks per node = %d\n", topo->num_ranks_per_node);
+
     printf("num physical links = %d\n", topo->num_edges);
 
     printf("torus: ");
