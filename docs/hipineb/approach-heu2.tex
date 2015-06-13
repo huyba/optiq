@@ -28,7 +28,7 @@ In order to reduce the total amount assigned on any physical link, we allow the 
 
 	\uIf {pair.demand $>$ 0}
 	{
-	    $heapP$.pushback(pair);
+	    $heapP$.pushback($pair$);
 	}
 	\Else
 	{
@@ -41,7 +41,9 @@ In order to reduce the total amount assigned on any physical link, we allow the 
 \label{alg:heu}
 \end{algorithm}
 
+In the Algorithm \ref{alg:heu}, we pick the pair with largest amount of remaining data first. This allows its paths and corresponding physical links being selected first. The pairs with lower remaining of data can select paths later.  Thus, load is balanced between pairs with higher load and pairs with lower load. Among all paths of a pair, the path with least $maxload$ is selected first. Thus, the load is balanced among paths belonging to the same pair.
 
+The data assignment in this heuristic approach is greedy and local optimization. In the next section, we present the second approach, in which we employ a mathematical model to optimize data movement by assign optimal amount of data to paths.
 
 
 %\begin{algorithm}%[!htbp]
