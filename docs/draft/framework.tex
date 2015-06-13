@@ -20,7 +20,7 @@ The functionality of each component is as follows:
 
 \item Schedule: Split a buffer of data that needs to be tranferred into smaller messages and put those messages into a queue of the Transport layer to be transferred. It also handles the order of sending and forwarding messages.
 
-\item Transport: actually transfer an amount of data from one point to another point in the system.
+\item Transport: actually transfer an amount of data from one point to another point in the system. As data moving along a path, we need to copy data at each intermediate nodes on the path and inject the data to the network to transfer to the next destination on the path.
 
 \end{itemize}
 
