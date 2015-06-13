@@ -1,9 +1,10 @@
-\subsection{Model Optimization Approach}
+%\subsection{Model Optimization Approach}
+\subsection{Optimization-based Approach}
 \label{sec:optimization}
 
 In this approach, we find the optimal assignment of data transfer along multiple paths from source nodes to destination nodes. Given the amount of data to be transferred, and the $k$ shortest paths from source to destination nodes (Algorithm~\ref{alg:h1}), we formulate the problem of finding paths for transferring data from sources to destinations as an optimization problem. The objective of the optimization problem is to minimize the total transfer time by finding paths that are uniformly loaded. Next, we describe the problem parameters.
 
-The data transfer request of a source-destination pair is denoted as a $job$. The set of all jobs is denoted by $Jobs$. Each job has an amount of data to be transferred from its source to its destination. This amount of data for job $job$ is denoted by $Demand[job]$, which can be transferred over selected paths from a pre-computed set of paths $kpaths_{job}$ (computed prior in Algorithm~\ref{alg:h1}). A path is denoted by $p$. The amount of data for $job$ on path $p$ is called a flow of the job and is denoted as $flow(job, p)$. A path $p$ might comprise of one or more links. ($i$, $j$) denotes a link from vertex $i$ to vertex $j$. All links on path $p$ accommodate the same flow. $flow(job, p)_{ij}$ denotes the flow over link ($i$, $j$) of path $p$. $c(i,j)$ denotes the capacity of link ($i$, $j$). The link capacities are known. We derive the link capacity from the link bandwidth as the data flow over the link in one second. The objective of the optimization problem is to minimize time $t$ to transfer data for all jobs in $Jobs$ subject to two constraints. We described our linear program formulation below.
+The data transfer request of a source-destination pair is denoted as a $job$. The set of all jobs is denoted by $Jobs$. Each job has an amount of data to be transferred from its source to its destination. This amount of data for job $job$ is denoted by $Demand[job]$, which can be transferred over selected paths from a pre-computed set of paths $kpaths_{job}$ (computed prior in Algorithm~\ref{alg:h1}). A path is denoted by $p$. The amount of data transferred per unit time for job $job$ on path $p$ is called a flow of the job and is denoted as $flow(job, p)$. A path $p$ might comprise of one or more links. ($i$, $j$) denotes a link from vertex $i$ to vertex $j$. All links on path $p$ accommodate the same flow. $flow(job, p)_{ij}$ denotes the flow over link ($i$, $j$) of path $p$. $c(i,j)$ denotes the capacity of link ($i$, $j$). The link capacities are known link bandwidths of the interconnect. The objective of the optimization problem is to minimize time $t$ to transfer data for all jobs in $Jobs$ subject to two constraints. The decision variables are set of selected paths for a job and flow along each path $flow(job, p)_{ij}$. We describe our linear program formulation below.
 
 Objective function:
 
@@ -14,14 +15,14 @@ minimize $t$
 Constraints:
 \begin{itemize}
 
-\item Total flow that a job needs equals the total flows given by its paths. For any $job$ in $Jobs$: 
+\item Total flow of a job is equal to the sum total of all its flows along its paths. For any $job$ in $Jobs$: 
 
 \begin{equation} 
 \label{eq:jobflow}
 \sum_{\forall p \in kpaths_{job}} flow[job, p]  = \frac{Demand[job]}{t}
 \end{equation}
 
-\item Total flow of an arc is less than its capacity: For any arc ($i$, $j$):
+\item Total flow of an arc is less than its capacity. For any arc ($i$, $j$):
 
 \begin{equation} 
 \label{eq:linkcapacity}
@@ -32,6 +33,7 @@ Constraints:
 
 %\input{approach-ampl}
 
-The first constraint in (\ref{eq:jobflow}) captures job's flow equality. The total amount of data of a job $Demand[job]$ is transferred in a time $t$ through a set of paths in $kpaths_{job}$. For each path, the job $job$ is given a throughput $flow[job, p]$. Thus, the job's throughput needs to be equal to combined throughput provided by its paths. The second constraint in (\ref{eq:linkcapacity}) captures link's capacity inequality, in which total throughput of all jobs on a certain links does not exceed the links' capacity.
+The first constraint in Equation \ref{eq:jobflow} captures a job's flow equality. The total amount of data of a job $Demand[job]$ is transferred in a time $t$ through a set of paths in $kpaths_{job}$. For each path, the job $job$ is assigned a throughput $flow[job, p]$. The total data transferred for a job must be less than $Demand[job]$. Thus, the job's throughput (rate of data transfer) needs to be equal to the combined throughput on all its paths. The second constraint in Equation \ref{eq:linkcapacity} captures bound for a link's capacity. The total throughput of all jobs on a link should not exceed the link's capacity.
 
-In the next section, we present our experiments and results to demonstrate the efficacy of our approaches.
+We used AMPL (A Modeling Language for Mathematical Programming) \cite{ampl-book} to model the optimization problem. We used the SNOPT solver to solve the linear program. The solution times are listed in Section \ref{sec:results}. In the next section, we present our experiments and results to demonstrate the efficacy of our approaches.
+
