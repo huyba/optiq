@@ -1,4 +1,4 @@
-Our experiment was carried on a partition of 512 nodes with 4 MPI/PAMI ranks per node. The positions of each component, and number of pairs of communication by rank and by node are shown in Table \ref{table:cesm_pair}
+Our experiment was carried on a partition of 512 nodes with 4 MPI/PAMI ranks per node. The positions of each component, and number of pairs of communication between ranks and between nodes are shown in Table \ref{table:cesm_pair}
 
 \begin{table}[!htbp]
    \centering
@@ -16,4 +16,4 @@ Our experiment was carried on a partition of 512 nodes with 4 MPI/PAMI ranks per
     \label{table:cesm_pair}
 \end{table}
 
-The Table \ref{table:cesm_pair} shows the ranges of ranks (start-end) that host the models and the coupler. It also shows the number of pairs of communication between the models and the coupler.
+The Table \ref{table:cesm_pair} shows the ranges of ranks (start-end) that host the models and the coupler. It also shows the number of pairs of communication between the models and the coupler. The number of pairs of communication are counted by MPI/PAMI rank or by node Id. If pairs of communication with source ranks in the same source node and destinations in the same destination node then we count them as 1 pair of communication between the source and the destination nodes with the data to transfer as total data of all the pairs . As the Table \ref{table:cesm_pair} shows, the number of pairs couting by node Id is much lower than the number of pair counting by MPI/PAMI rank. This shows that the MPI/PAMI ranks in the same source node tend to communicate with MPI/PAMI ranks the same destination node. We gather data of pairs with the same source and destination nodes and let only one pair transfer data. This helps to increase the data size per transfer and to reduce the number of pairs of communication that we need to compute paths thus, speed up path searching. Communication between MPI/PAMI within a node is carried on using OpenMP.
