@@ -2,6 +2,20 @@
 
 \subsection{Introduction}
 
+Community Earth System Model (CESM) is a coupled global climate model simulating the earth system consisting ice, land, ocean, atmospheric and other components \cite{CESM:Hurrell}. In order to provide flexibility in developing, models in CESM do not communicate directly with each other but via a coupler. The Figure \ref{fig:mct} shows the communication between 4 models: Atmosphere (ATM), Ice (ICE), Land (LND) and Ocean (OCN) with the Coupler (CPL).
+
+\begin{figure}[!htb]
+\vspace{-0.1in}
+\centering
+\includegraphics[scale=0.5]{figures/mct.pdf}
+\vspace{-0.1in}
+\caption{Model communicate with each other via a coupler}
+\vspace{-0.1in}
+\label{fig:mct}
+\end{figure}
+
+In this paper, we demonstate the efficacy of our framework via communication between the models and the coupler extracted from a real run of CESM.
+
 \subsection{Experiments and results}
 
 \input{cesm-setup}

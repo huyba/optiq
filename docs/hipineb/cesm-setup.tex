@@ -1,27 +1,19 @@
-\begin{itemize}
+Our experiment was carried on a partition of 512 nodes with 4 MPI/PAMI ranks per node. The positions of each component, and number of pairs of communication by rank and by node are shown in Table \ref{table:cesm_pair}
 
-\item Numer of nodes: 512
+\begin{table}[!htbp]
+   \centering
+    \begin{tabular}{| l | c | r | r |}
+    \hline
+     \multirow{2}{*}{Model} & \multirow{2}{*} {Location} & \multicolumn{2}{ c| }{Num. of pairs of communication with Coupler} \\ \cline{3-4}
+     & & Between Ranks & Between Nodes \\ \hline
+     ATM & 0 - 1791 & 5227 & 2911 \\ \hline
+     LND & 0 - 515 & 10390 & 2911\\ \hline
+     ICE & 516 - 1791 & 3018 & 765 \\ \hline
+     OCN & 1792 - 2047 & 2001 & 502 \\ \hline
+     CPL & 0 - 1791 & & \\ \hline
+    \end{tabular}
+    \caption{Locations and number of pairs of communication between models in CESM}
+    \label{table:cesm_pair}
+\end{table}
 
-\item Number of ranks per node: 4
-
-\item The 5 componens and their ranks:
-
-\begin{itemize}
-
-\item CPL (0 to 1791)
-\item ATM (0 to 1791)
-\item ICE (516 to 1791)
-\item LND (0 to 515)
-\item OCN (Ranks 1792 to 2047).
-\end{itemize}
-
-\item Number of pairs of communication:
-
-\begin{itemize}
-\item CPL - ATM: 5227 (ranks)- 2911 (nodes)
-\item CPL - ICE: 3018 - 765 (nodes)
-\item CPL - LND: 10390 - 2911 (nodes)
-\item CPL - OCN: 2001 - 502 (nodes)
-\end{itemize}
-
-\end{itemize}
+The Table \ref{table:cesm_pair} shows the ranges of ranks (start-end) that host the models and the coupler. It also shows the number of pairs of communication between the models and the coupler.
