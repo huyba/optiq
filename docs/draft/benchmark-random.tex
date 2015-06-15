@@ -7,10 +7,10 @@ In this experiment we randomized the pairing between sources and destinations to
     \begin{tabular}{| p{0.75cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} |p{0.3cm} | p{0.3cm} | p{0.3cm} | p{0.5cm} |p{0.3cm} |}
     \hline
      Configs & \multicolumn{4}{ c | }{Config 1} & \multicolumn{4}{ c| }{Config 2} & \multicolumn{4}{ c| }{Config 3} & \multicolumn{4}{ c| } {Config 4} & \multicolumn{4}{ c| }{Config 5} & \multicolumn{3}{ c| }{Average}\\ \hline
-     Patterns & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu & Dist & MPI & Opt & Heu \\ \hline
-     Disjoint & 50 &  83  & 71 &  8.41 & 54  & 81 & 75  & 8.35 & 55 &  85  & 77 &  8.32 & 62 &  89  & 88 &  8.50 & 59 &  84 & 71 & 8.45 & 56.0 & 84.4 & 76.4 \\ \hline
-     Overlap  & 52 &  89  & 72 &  6.54 & 60  & 86 & 67  & 6.53 & 64 &  94 & 71 &  6.55 & 57 &  98 & 68 &  6.50 & 59 &  88 & 78 & 6.43 & 58.4 & 91.0  & 71.2 \\ \hline
-     Subset   & 55 &  92  & 72 &  6.40 & 60  & 91 & 68  & 6.26 & 52 &  89  & 63 &  6.27 & 51 &  94  & 80 &  6.33 & 57 &  96  & 68 & 6.39 & 55.0 & 92.4 & 70.2 \\ \hline
+     Patterns & Opt & Heu & MPI & Dist & Opt & Heu & MPI & Dist & Opt & Heu & MPI & Dist & Opt & Heu & MPI & Dist & Opt & Heu & MPI & Dist & Opt & Heu & MPI \\ \hline
+     Disjoint & 83  & 71 & 50 & 8.41 & 81 & 75  & 54 & 8.35 & 85  & 77 &  55 & 8.32 & 89  & 88 &  62 & 8.50 &  84 & 71 & 59 & 8.45 & 84.4 & 76.4 & 56.0 \\ \hline
+     Overlap  & 89  & 72 & 52 & 6.54 & 86 & 67  & 60 & 6.53 & 94 & 71 &  64 & 6.55 & 98 & 68 &  57 & 6.50 & 88 & 78 & 59 & 6.43 & 91.0  & 71.2 & 58.4 \\ \hline
+     Subset   & 92  & 72 & 55 & 6.40 & 91 & 68  & 60 & 6.26 & 89  & 63 &  52 & 6.27 & 94  & 80 & 51 & 6.33 & 96  & 68 & 57 & 6.39 & 92.4 & 70.2 & 55.0 \\ \hline
     \end{tabular}
     \caption{Throughtput (GB/s) for MPI\_Alltoallv (MPI), Optimization (Opt), Heuristic (Heu) and average number of hops (Dist) between sources and destinations for 5 different random pairings (Config) of sources and destinations in 1024-node partition.}
     \label{table:random_1024}
