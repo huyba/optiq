@@ -1,4 +1,4 @@
-\subsection{Mira}
+\subsection{Experiment setup}
 \label{sec:system}
 
 We carried our experiments on Mira \cite{Chen:BGQ}, an IBM Blue Gene/Q supercomputer at the Argonne National Laboratory. It has 48 compute racks (48K nodes and 768K cores) and provides 10 PFlops theoretical peak performance. Each node has a 16-core processor and 16 GB of memory. Each compute rack has 2 midplanes. A job on Mira is executed in a partition comprising of one or more midplanes. 
@@ -8,5 +8,5 @@ BG/Q has a 5D torus network both for point-to-point and for collective communica
 For interconnect network traffic, BG/Q supports both deterministic and dynamic routing \cite{Chen:BGQ}. In dynamic routing, messages with different message size ranges can be routed differently. However, within a given message size range, routing is always deterministic, and its path is known before it is routed. These are the default routing algorithms and cannot be changed during run time. BG/Q uses single-path data routing, a message from a source to its destination traverses via the same path.
 %; for sending/receiving a message only one link of the ten available is used. The details of routing can be found in \cite{Chen:BGQ}.
 
-PAMI is a low-level communication library for BG/Q \cite{PAMI:Kumar}. PAMI provides low-overhead communication by using various techniques such as accelerating communication using threads, scalable atomic primitives, and lockless algorithms to increase the messaging rate. Since MPI is implemented on top of PAMI, direct use of PAMI would provide higher messaging rates as well as lower latencies in comparison with MPI. We used PAMI collectives in this work.
+PAMI is a low-level communication library for BG/Q \cite{PAMI:Kumar}. PAMI provides low-overhead communication by using various techniques such as accelerating communication using threads, scalable atomic primitives, and lockless algorithms to increase the messaging rate. Since MPI is implemented on top of PAMI, direct use of PAMI would provide higher messaging rates as well as lower latencies in comparison with MPI. We used PAMI\_Put for large messages and PAMI\_Send\_immediate for control messages.
 %PM: added the last line

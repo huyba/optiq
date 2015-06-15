@@ -1,4 +1,4 @@
-\section{Exeperiments and Results}
+\section{Experiments and Results}
 \label{sec:benchmark}
 
 In this section, we demonstrate the efficacy of our approaches through multiple experiments on a leadership-scale system. We describe the system, the implementation details, the experimental setup and present the results in the following sections.
@@ -9,11 +9,11 @@ In this section, we demonstrate the efficacy of our approaches through multiple 
 \input{benchmark-patterns}
 \input{benchmark-mpipath}
 
-\subsection{Experimental results}
+\subsection{Results}
 \label{sec:results}
 
-In the experiments we collected the throughput, total number fo paths, maximum and average values for number of paths per job, hopbytes (total bytes x number of hops) per path, number of copies per paths, number of paths per link, and total amount of data per link while varying communication patterns, source destination pairing, distance and sizes of sources and destinations, partition sizes, message sizes, and chunk size.
-In the next subsections we go into each communication and study in detail the system's behaviors and performance.
+In the experiments we measured throughput, total number of paths, maximum and average values for number of paths per job, hopbytes (total bytes $\times$ number of hops) per path, number of copies per paths, number of paths per link, and total amount of data per link for various communication patterns, source destination pairing, distance and sizes of sources and destinations, partition sizes, message sizes, and chunk size. In the next subsections, we present our results and detailed study of system behaviour and network performance for our benchmarks.
+%go into each communication and study in detail the system's behaviors and performance.
 
 \input{benchmark-partition}
 

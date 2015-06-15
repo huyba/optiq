@@ -1,13 +1,13 @@
-\subsection{Experiment setup}
+\subsection{Synthetic benchmarks}
 
 %We carried our experiments on Mira, a Blue Gene/Q supercomputer. 
-In our experiments, we varied the paritition size from 512 nodes up to 4096 nodes. %The experiments involved a subset or the entire set of nodes for each partition. 
-We varied the number of sources and destinations, and the distance between them. 
-We also varied the data sizes to be transferred. 
+We evaluated our approaches on Mira, varying the partition size from 512 nodes to 4096 nodes. %The experiments involved a subset or the entire set of nodes for each partition. 
+We varied the number of sources and destinations, and the average distance between them. 
+We also experimented with different data sizes to be transferred. 
 %We also varied the data sizes to be exchanged to find the effective data size.
 We show results for various combinations of source-destination pairs. 
 %Pairs of sources and destinations are randomized to show the efficacy of our work. 
-We varied the number of shortest paths used by our approaches. % solvers to measure the effectiveness of number of paths to throughput. 
+The number of shortest paths used by our approaches was varied from 16 -- 50. % solvers to measure the effectiveness of number of paths to throughput. 
 We also varied the maximum load $maxload$ for our heuristic approach. 
 %A similar benchmark with various max load is done for the heuristic approach. 
 %For searching optimal paths we used AMPL (A Modeling Language for Mathematical Programming) and its solvers \cite{AMPL} for modeling our problem, and to find solutions for optimal data movement.
