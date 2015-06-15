@@ -32,9 +32,10 @@ Figure \ref{fig:constantr} shows the throughput for OPT, HEU and MPI. As shown i
 
 Table \ref{table:constantr} shows the throughput, total number of paths per job, the hopbytes per path, the number of copies per path, number of paths per physical link and the total data per link for 1024 nodes. In all three cases, our greedy heuristic is able to find the highest number of paths for the entire data flow. HEU also has the highest maximum and average number of paths per job. However, the paths found by Heuristic are based on local optimization of load on the physical links, as explained in Section~\ref{sec:heuristic}. Therefore, there are higher number of paths per physical link, and higher amount of data per physical link in HEU as compared to OPT. OPT has lower number of paths per link because OPT globally load balances the data transfer on physical links.
 %TODO: table remove columns
+\begin{comment}
 \begin{table*}[!htbp]
    \centering
-    \begin{tabular}{| l | l | r | r | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.5cm} | p{0.5cm} |p{0.55cm} | p{0.5cm} |}
+    \begin{tabular}{| p{0.5cm} | l | r | r | p{0.5cm} | p{0.5cm} | p{0.5cm} | p{0.5cm} |p{0.4cm} | p{0.5cm} |p{0.4cm} | p{0.4cm} |p{0.50cm} | p{0.6cm} |}
     \hline
     \multirow{3}{*}{Pattern} & \multirow{3}{*}{Type} & \multirow{3}{1cm}{BW (GB/s)} & \multicolumn{3}{ c| }{Num. of Paths} & \multicolumn{2}{ c| }{Hopbytes} & \multicolumn{2}{ c| }{Num of copies}& \multicolumn{2}{ c| }{Num of paths} & \multicolumn{2}{ c| }{Total data} \\ \cline{4-6}
     & & & \multirow{2}{0.5cm}{Total Paths} & \multicolumn{2}{ c| }{Per Job} & \multicolumn{2}{ c| }{Per Path (MB)} & \multicolumn{2}{ c| }{Per Path}& \multicolumn{2}{ c| }{Per Link}& \multicolumn{2}{ c| }{Per Link (MB)} \\ \cline{5-14}
@@ -52,6 +53,28 @@ Table \ref{table:constantr} shows the throughput, total number of paths per job,
     \caption{Throughput, total number of paths, number of paths per job, maximum and average values of hopbytes, number of copies, number of paths per link and amount of data per link for 3 patterns in 1024 nodes experiments.}
     \label{table:constantr}
 \end{table*}
+\end{comment}
+
+\begin{table}[!htbp]
+   \centering
+    \begin{tabular}{| l | l | R{0.6cm} | r | R{0.3cm} | R{0.4cm} | R{0.4cm} | R{0.4cm} | r |}
+    \hline
+    \multirow{3}{*}{Pattern} & \multirow{3}{*}{Type} & \multirow{3}{1cm}{BW (GB/s)} & \multicolumn{3}{ c| }{Num. of Paths} & \multicolumn{2}{ c| }{Num of paths} & \multirow{3}{1.15cm}{Max amt. of data / link (MB)} \\ \cline{4-6}
+    & & & \multirow{2}{0.5cm}{Total Paths} & \multicolumn{2}{ c| }{Per Job} & \multicolumn{2}{ c| }{Per Link}& \\ \cline{5-8}
+    & & & & {Max} & Avg & Max & Avg & \\ \hline
+    \multirow{3}{*}{Disjont} & OPT    & 188.62 & 1169 & 6 & 2.28 & 11 & 2.53 & 18.28 \\ \cline{2-9}
+    & HEU & 74.88  & 3146 & 23 & 6.14 & 16 & 4.94 & 63.04 \\ \cline{2-9}
+    & MPI    & 45.18  & 512  & 1 & 1.00 & 16 & 3.07 & 134.21 \\ \hline
+    \multirow{3}{*}{Overlap} & OPT    & 200.03 & 1303 & 6 & 2.54 & 13 & 2.74 & 16.97 \\ \cline{2-9}
+    & HEU & 113.17  & 3273 & 26 & 6.39 & 16 & 5.17 & 38.66 \\ \cline{2-9}
+    & MPI    & 42.84 & 512 & 1 & 1.00 & 16 & 3.38 & 134.21 \\ \hline
+    \multirow{3}{*}{Subset} & OPT    & 199.20 & 1269 & 6 & 2.48 & 11 & 2.79 & 17.10 \\ \cline{2-9}
+    & HEU &  61.71 & 3238 & 26 & 6.32 & 16 & 5.28 & 45.08 \\ \cline{2-9}
+    & MPI    &  41.37 & 512  & 1 & 1.00 & 16 & 3.52 & 134.21 \\ \hline
+    \end{tabular}
+    \caption{Throughput, total number of paths, number of paths per job, maximum and average values number of paths per link and max amount of data per link for 3 patterns in 1024 nodes experiments.}
+    \label{table:constantr}
+\end{table}
 
 Figure \ref{fig:loaddata_histo} shows the distribution of data per link for OPT, HEU and MPI. Optimization approach considers the global load on the network and hence data is distributed among the paths in a more balanced way such that the physical links are load-balanced. Thus, OPT has the lowest maximum amount of data per physical link as shown in Figure \ref{fig:loaddata_histo}. MPI\_Alltoallv has the lowest number of paths. With 1 path per pair of communication, entire data is transferred using the single path, without utilizing the other idle links. %Thus it has the highest hopbytes per path as can be observed in Figure \ref{fig:hopbyte_histo}. 
 MPI has the highest amount of data per physical link as can be observed in Figure \ref{fig:loaddata_histo}. Thus MPI has the lowest throughput.
