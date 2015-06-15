@@ -9,10 +9,8 @@ In the Blue Gene Q supercomputer (BGQ), Chen et al. \cite{Chen:BGQ} proposed a h
 
 %The routing path is computed dynamically at the routing time based on coordinates of source and destination, partition shape and message size. BGQ routes a packet along the longest dimension of a partition first, shortest last. BGQ routes a message using single path. Different messages however might be routed using different paths. In other supercomputers, Garcia et al. in \cite{garcia2013:CrayDragonfly} proposed two deadlock-free routing mechanisms that support on-the-fly adaptive routing on Cray XC30 system for Dragonfly networks.
 
-Some optimizations are done based on system’s specific characteristics such as \cite{Kumar:Allreduce} proposed optimization for MPI\_Allreduce in BG/Q based on the observation on number links and other hardware supports on compute nodes.
+Some optimizations are done based on system’s specific characteristics such as \cite{Kumar:Allreduce} proposed optimization for MPI\_Allreduce in BG/Q based on the observation on number links and other hardware supports on compute nodes. Our work is also proposed for the BG/Q supercomputer. However, our work is for a broader range of communication patterns and it can be exteneded to other systems.
 
-Our previous works in \cite{Vishwanath:GLEAN} and \cite{SDAV:Bui2014b} addressed a problem of I/O data aggregation. In a more recent work \cite{hbui:bgq} we presented our approaches for improving the performance very sparse. 
-
-In this paper, we propose our approaches in balancing network load using oblivious routing with multiple paths on top of system's routing and its realization in a framework name OPTIQ. Our work in this paper differs from other works in the follows. While the previous works took the system routing and network topology into consideration, we improve the performance at the application space by taking both the application communication patterns and system routing, network topology into consideration. 
+Our previous works in \cite{Vishwanath:GLEAN} and \cite{SDAV:Bui2014b} addressed a problem of I/O data aggregation. In a more recent work \cite{hbui:bgq} we presented our approaches for improving the performance very sparse. In this paper, we propose our approaches in balancing network load using oblivious routing with multiple paths on top of system's routing and its realization in a framework name OPTIQ. 
 
 In the next section, we present an overview of the framework and functionalities of its components.
