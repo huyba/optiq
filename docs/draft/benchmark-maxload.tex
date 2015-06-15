@@ -18,6 +18,7 @@ For the heuristic approach we need to feed k shortest paths and a \textit{maxloa
 
 As shown in Table \ref{table:maxload}, when the \textit{maxload} value is set to 1, 2 or 4, performance is very much similar. They have performance lower than MPI\_Alltoallv in Disjoint and Subset pattern. We gain the best performance with \textit{maxload} value set to 8 or 16. When the \textit{maxload} value is set to 32 performance starts to degrade in case of the Overlap and Subset patterns while only increasing slightly in the Disjoint pattern. This is because when the \textit{maxload} value is set to low values (1,2,4), the heuristic algorithm is not able to find enough paths to transfer data, leading to fewer number of physical links being used, thus higher load on those physical links. When the \textit{maxload} value set to a high value (32), the heuristic algorihtm finds too many paths, leading to many paths sharing a physical link, thus higher loads on the physical links as well. The performance is optimal with the \textit{maxload} value set to 8 or 16. With these values we have an appropriate number of links, and the load is ditributed better on the physical links. For the expriments in this paper we set \textit{maxload} value to 16.
 
+\begin{comment}
 When we increase the \textit{maxload} value, it also takes more time to select paths from k shortest paths. Table \ref{table:solvetime} shows the time for differnt \textit{maxload} values in defferent patterns.
 
 \begin{table}[!htbp]
@@ -35,3 +36,4 @@ When we increase the \textit{maxload} value, it also takes more time to select p
 \end{table}
 
 The search time is short and thus can be amortized over time when a pattern is used repeatedly.
+\end{comment}
