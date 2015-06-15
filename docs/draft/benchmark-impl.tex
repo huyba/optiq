@@ -1,0 +1,4 @@
+\subsection{Implementation Details}
+
+PAMI is a low-level communication library for BG/Q \cite{PAMI:Kumar}. PAMI provides low-overhead communication by using various techniques such as accelerating communication using threads, scalable atomic primitives, and lockless algorithms to increase the messaging rate. Since MPI is implemented on top of PAMI, direct use of PAMI would provide higher messaging rates as well as lower latencies in comparison with MPI. We used PAMI\_Put for large messages and PAMI\_Send\_immediate for control messages.
+
