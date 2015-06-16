@@ -1,9 +1,7 @@
 \section{Related work}
 \label{sec:relatedwork}
 
-Improving data movement performance by balancing network load has been studied in previous works. 
-
-In \cite{singh2003:GOAL} Singh et al. proposed GOAL -- Globally Oblivious Adaptive Locally to balance load using adaptive routing algorithm for torus networks.
+Improving data movement performance by balancing network load has been studied in previous works. In \cite{singh2003:GOAL} Singh et al. proposed GOAL -- Globally Oblivious Adaptive Locally to balance load using adaptive routing algorithms for torus networks. GOAL balanced the load by choosing routing direction for each dimension randomly and routing in selected drieciton adaptively. The work routed data at system level and did not consider the applications' data movement patterns. Our work leverage system's routing and takes applications's data movement patterns in consideration.
 
 %In early work \cite{Valiant81:Routing}, Valiant proposed a randomized routing mechanism that was mathematically proved to be able to route data globally with no sharing links. However the routing mechanism did not work well with local traffic as shown in \cite{singh2003:GOAL} by Singh et al. In the work of Pifarre et al. \cite{Pifarre91}, authors proposed minimal routing optimization. However, it did not work well with global optimization. In order to address the limitation of both the approaches, in \cite{singh2003:GOAL} Singh et al. proposed GOAL -- Globally Oblivious Adaptive Locally to choose the routing direction randomly balance load using adaptive routing algorithm for torus networks. GOAL is 
 
