@@ -15,7 +15,7 @@ We did experiments for all three patterns on 1024 nodes, with 1 MPI/PAMI rank pe
      Overlap  & 89 & 72 & 52 & 86 & 67 & 60 & 94 & 71 & 64 & 98 & 68 & 57 & 88 & 78 & 59 & 91.0 & 71.2 & 58.4 \\ \hline
      Subset   & 92 & 72 & 55 & 91 & 68 & 60 & 89 & 63 & 52 & 94 & 80 & 51 & 96 & 68 & 57 & 92.4 & 70.2 & 55.0 \\ \hline
     \end{tabular}
-    \caption{Throughput (GB/s) for Optimization (OPT), Heuristic (HEU) and MPI\_Alltoallv (MPI) for 5 different random pairings between sources and destinations in 1024-node partition.}
+    \caption{\small Throughput (GB/s) for Optimization (OPT), Heuristic (HEU) and MPI\_Alltoallv (MPI) for 5 different random pairings between sources and destinations in 1024-node partition.}
     \vspace{-0.15in}
     \label{table:random_1024}
 \end{table*}
@@ -34,7 +34,7 @@ OPT and HEU outperform MPI in all cases due to better data distribution and load
      Overlap  & 89  & 72 & 52 & 6.54 & 86 & 67  & 60 & 6.53 & 94 & 71 &  64 & 6.55 & 98 & 68 &  57 & 6.50 & 88 & 78 & 59 & 6.43 & 91.0  & 71.2 & 58.4 \\ \hline
      Subset   & 92  & 72 & 55 & 6.40 & 91 & 68  & 60 & 6.26 & 89  & 63 &  52 & 6.27 & 94  & 80 & 51 & 6.33 & 96  & 68 & 57 & 6.39 & 92.4 & 70.2 & 55.0 \\ \hline
     \end{tabular}
-    \caption{Throughput (GB/s) for MPI\_Alltoallv (MPI), Optimization (Opt), Heuristic (Heu) and average number of hops (Dist) between sources and destinations for 5 different random pairings (Config) of sources and destinations in 1024-node partition.}
+    \caption{\small Throughput (GB/s) for MPI\_Alltoallv (MPI), Optimization (Opt), Heuristic (Heu) and average number of hops (Dist) between sources and destinations for 5 different random pairings (Config) of sources and destinations in 1024-node partition.}
     \label{table:random_1024}
 \end{table*}
 \end{comment}
@@ -49,7 +49,7 @@ OPT and HEU outperform MPI in all cases due to better data distribution and load
      Overlap  & 78 &  108 & 98 &  5.05 & 86  & 106 & 91  & 5.06 & 74 &  107 & 90 &  5.07 & 83 &  114 & 85 &  5.08 & 87 &  107 & 71 & 5.08 & 81.6 & 108.4 & 87.0\\ \hline
      Subset   & 44 &  90  & 76 &  5.04 & 41  & 83  & 85  & 4.95 & 46 &  93  & 86 &  5.10 & 40 &  95  & 81 &  4.90 & 40 &  85  & 74 & 5.12 & 42.2 & 89.2  & 80.4 \\ \hline
     \end{tabular}
-    \caption{Throughput (GB/s) for MPI\_Alltoallv (MPI), Optimization (Opt), Heuristic (Heu) and average number of hops (Dist) between sources and destinations for 5 different random pairings (Config) of sources and destinations in 512-node partition.}
+    \caption{\small Throughput (GB/s) for MPI\_Alltoallv (MPI), Optimization (Opt), Heuristic (Heu) and average number of hops (Dist) between sources and destinations for 5 different random pairings (Config) of sources and destinations in 512-node partition.}
     \label{table:random_512}
 \end{table*}
 \end{comment}
@@ -62,7 +62,7 @@ OPT and HEU outperform MPI in all cases due to better data distribution and load
 %     Overlap  & 5.05 & 5.06 & 5.07 & 5.08 & 5.08 \\ \hline
 %     Subset   & 5.04 & 4.95 & 5.10 & 4.90 & 5.12 \\ \hline
 %    \end{tabular}
-%    \caption{Average distance (number of hops) between sources and destinations in 5 randome cases.}
+%    \caption{Average distance (number of hops) between sources and destinations in 5 random cases.}
 %    \label{table:randomdist}
 %\end{table}
 
@@ -76,7 +76,7 @@ OPT and HEU outperform MPI in all cases due to better data distribution and load
 %     Overlap  & 1288 & 10 & 5.05 & 1291 & 10 & 5.06 & 1292 & 10 & 5.07 & 1295 & 10 & 5.08 & 1279 & 9 & 5.08 \\ \hline
 %     Subset   & 1289 & 10 & 5.04 & 1267 & 10 & 4.95 & 1306 & 11 & 5.10 & 1254 & 10 & 4.90 & 1310 & 10 & 5.12 \\ \hline
 %    \end{tabular}
-%    \caption{Distance between sources and destinations: Total, Maximum and Average number of hops in 5 randome cases}
+%    \caption{Distance between sources and destinations: Total, Maximum and Average number of hops in 5 random cases}
 %    \label{table:randomdist}
 %\end{table*}
 
