@@ -27,6 +27,7 @@ Figure \ref{fig:constantr} shows the throughput for OPT, HEU and MPI. As shown i
                 \label{fig:constantr_87}
         \end{subfigure}
         \caption{Varying the number of sources and destinations and total number of nodes while keeping the ratio constant (1:8).}
+	\vspace{-0.15in}
         \label{fig:constantr}
 \end{figure*}
 
@@ -73,18 +74,19 @@ Table \ref{table:constantr} shows the throughput, total number of paths per job,
     & MPI    &  41.37 & 512  & 1 & 1.00 & 16 & 3.52 & 134.21 \\ \hline
     \end{tabular}
     \caption{Throughput, total number of paths, number of paths per job, maximum and average values number of paths per link and max amount of data per link for 3 patterns in 1024 nodes experiments.}
+    \vspace{-0.15in}
     \label{table:constantr}
 \end{table}
 
 Figure \ref{fig:loaddata_histo} shows the distribution of data per link for OPT, HEU and MPI. Optimization approach considers the global load on the network and hence data is distributed among the paths in a more balanced way such that the physical links are load-balanced. Thus, OPT has the lowest maximum amount of data per physical link as shown in Figure \ref{fig:loaddata_histo}. MPI\_Alltoallv has the lowest number of paths. With 1 path per pair of communication, entire data is transferred using the single path, without utilizing the other idle links. %Thus it has the highest hopbytes per path as can be observed in Figure \ref{fig:hopbyte_histo}. 
 MPI has the highest amount of data per physical link as can be observed in Figure \ref{fig:loaddata_histo}. Thus MPI has the lowest throughput.
 \begin{figure}[!htb]
-\vspace{-0.1in}
+\vspace{-0.15in}
 \centering
-\includegraphics[scale=0.30]{figures/loaddata_histo.pdf}
-\vspace{-0.1in}
+\includegraphics[scale=0.27]{figures/loaddata_histo.pdf}
+\vspace{-0.15in}
 \caption{Distribution of total amount of data per link for Disjoint pattern in 1024-node partition.}
-\vspace{-0.1in}
+\vspace{-0.15in}
 \label{fig:loaddata_histo}
 \end{figure}
 
