@@ -224,9 +224,9 @@ void gen_multiranks (struct optiq_topology *topo, char *graphFilePath, int numpa
     int m = 16;
     int n = 16;
 
-    for (int m = 16; m <= 128; m *= 2)
+    for (int m = 16 * topo->num_ranks_per_node; m <= 128 * topo->num_ranks_per_node; m *= 2)
     {
-        for (int n = 16; n <= 128; n *= 2)
+        for (int n = 16 * topo->num_ranks_per_node; n <= 128 * topo->num_ranks_per_node; n *= 2)
         {
             if (mintestid <= testid && testid <=maxtestid)
             {
@@ -247,7 +247,7 @@ void gen_multiranks (struct optiq_topology *topo, char *graphFilePath, int numpa
                     maxpaths = maxpathspertest / numpairs;
                 }
 
-                sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size/2, n-1, maxpaths);
+                sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size/2, size/2 + n-1, maxpaths);
                 sprintf(jobs[0].name, "%s", name);
                 sprintf(jobfile, "test%d", testid);
 
