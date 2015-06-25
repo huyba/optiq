@@ -205,7 +205,7 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 }
 
 
-void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int size, int unit)
+void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int size, int unit, int demand)
 {
     optiq_job_read_from_file (jobs, paths, filepath);
 
@@ -226,6 +226,11 @@ void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::v
     /* Init the list of paths that use links */
     for (int i = 0; i < jobs.size(); i++)
     {
+	if (jobs[i].demand <= 0)
+	{
+	    jobs[i].demand = demand;
+	}
+
         for (int j = 0; j < jobs[i].paths.size(); j++)
         {
             jobs[i].paths[j]->assigned_len = 0;

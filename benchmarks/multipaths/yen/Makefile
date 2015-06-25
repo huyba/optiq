@@ -87,9 +87,13 @@ cp:
 	cp yen_gen_parallel.x $(BENCHMARKS_DIR)/multipaths/yen/yenpaths/512/
 	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/cesm/
 	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/msg/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/heu2/
 	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/1k/msg/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/1k/heu2/
 	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/2k/msg/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/2k/heu2/
 	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/msg/
+	cp yen_heu_datalink.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/4k/heu2/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512/
 	cp yen_gather.x $(BENCHMARKS_DIR)/multipaths/yen/heuristics/512_c8/
 

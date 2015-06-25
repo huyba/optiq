@@ -52,6 +52,6 @@ struct JobDemandComp
    }
 };
 
-void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int size, int unit);
+void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int size, int unit, int demand);
 
 #endif

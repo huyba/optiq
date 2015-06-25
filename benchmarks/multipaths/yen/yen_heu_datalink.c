@@ -22,7 +22,18 @@ int main(int argc, char **argv)
     int end = atoi (argv[3]);
     int num_nodes = atoi (argv[4]);
 
-    int unit = atoi (argv[5]);
+    int unit = 8192;
+    int demand = 8 * 1024 * 1024;
+
+    if (argc > 5) 
+    {
+	unit = atoi (argv[5]);
+    }
+
+    if (argc > 6)
+    {
+	demand = atoi (argv[6]);
+    }
 
     char filepath[256];
 
@@ -44,7 +55,7 @@ int main(int argc, char **argv)
 
             gettimeofday(&t2, NULL);
 
-            optiq_job_read_and_assign_flow_value(jobs, paths, filepath, num_nodes, unit);
+            optiq_job_read_and_assign_flow_value(jobs, paths, filepath, num_nodes, unit, demand);
 
             gettimeofday(&t3, NULL);
 
