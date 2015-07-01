@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     int num_ranks_per_node = 8;
     int job_id = 0;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = start; i < end; i++)
     {
 	sprintf(rankdemandfile, "%s_%d", path, i);
 	optiq_jobs_read_rank_demand(rankdemandfile, jobs, ion, num_ranks_per_node, job_id)
