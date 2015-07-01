@@ -71,18 +71,19 @@ int main(int argc, char **argv)
     for (int i = start; i < end; i++)
     {
 	sprintf(rankdemandfile, "%s_%d", path, i);
-	optiq_jobs_read_rank_demand(rankdemandfile, jobs, ion, num_ranks_per_node, job_id)
+	optiq_jobs_read_rank_demand(rankdemandfile, jobs, i, num_ranks_per_node, job_id);
     }
 
     /*Add the IO bridge node as the destination and generate paths, model files*/
     char pairfile[256], jobfile[256];
     sprintf(jobfile, "test0");
     
+    int num_paths= 50;
     for (int i = 0; i < jobs.size(); i++)
     {
 	if (jobs[i].source_id == rank)
 	{
-	    jobs[i].dest_id = optiq->bridge_id;
+	    jobs[i].dest_id = topo->bridge_id;
 
 	    optiq_alg_yen_k_shortest_paths_job (graphFilePath, jobs[i], num_paths);
 
