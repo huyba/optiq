@@ -20,6 +20,9 @@ struct optiq_topology {
     int torus[5];
     int order[5];
 
+    int bridge[5];
+    int bridge_id;
+
     int coord[5];
     int **all_coords;
     std::vector<int> *neighbors;
@@ -58,6 +61,8 @@ int optiq_topology_max_distance_2sets(std::vector<std::pair<int, std::vector<int
 int optiq_topology_max_distance_2sets_with_torus (std::vector<std::pair<int, std::vector<int> > > &source_dests);
 
 int optiq_topology_get_coord(int *coord);
+
+void optiq_topology_get_bridge_bgq(struct optiq_topology *topo);
 
 int optiq_topology_compute_node_id(int num_dims, int *size, int *coord);
 

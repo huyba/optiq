@@ -205,10 +205,8 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 }
 
 
-void optiq_job_read_and_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int size, int unit, int demand)
+void optiq_job_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, int size, int unit, int demand)
 {
-    optiq_job_read_from_file (jobs, paths, filepath);
-
     /* Load of links */
     int **load = (int **) calloc (1, sizeof(int *) * size);
     for (int i = 0; i < size; i++)
@@ -416,6 +414,66 @@ void optiq_job_read_from_file (std::vector<struct job> &jobs, std::vector<struct
 	exist = optiq_jobs_read_from_file(jobs, paths, fullfilename);
         printf("Tried to open file %s: %s\n", fullfilename, exist ? "Successful" : "Failed");
     //}
+}
+
+bool optiq_jobs_read_rank_demand(char *filepath, std::vector<struct job> &jobs, int ion, int num_ranks_per_node, int &job_id)
+{
+    FILE * fp;
+    char line[256];
+
+    if( access( filepath, F_OK ) == -1 ) {
+        return false;
+    }
+
+    fp = fopen(filepath, "r");
+
+    if (fp == NULL) {
+        return false;
+    }
+
+    int path_id = 0, u, v, source_id, dest_id, source_rank, demand;
+    int job_path_id = 0; /* This is to read the path_id in, but it is never used*/
+
+    float flow;
+    char temp[256], name[256];
+    bool exist;
+
+    fgets(name, 256, fp);
+
+    while (fgets(line, 80, fp) != NULL)
+    {
+	trim(line);
+        sscanf(line, "%d %d", &source_rank, &demand);
+        /*printf("job_id = %d job_path_id = %d, flow = %f\n", job_id, job_path_id, flow);*/
+
+	source_id = source_rank/num_ranks_per_node + ion * 128;
+	demand = demand * 38;
+
+	bool found = false;
+
+	for (int i = 0; i < jobs.size(); i++)
+	{
+	    if (jobs[i].source_id == source_id)
+	    {
+		jobs[i].demand += demand;
+		found = true;
+	    }
+	}
+
+	if (!found)
+	{
+	    struct job new_job;
+	    new_job.job_id = job_id;
+	    new_job.source_id = source_id;
+	    new_job.source_rank = source_rank;
+	    new_job.demand = demand;
+
+	    jobs.push_back(new_job);
+	    job_id++;
+	}
+    }
+
+    return true;
 }
 
 bool optiq_jobs_read_from_file (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath)

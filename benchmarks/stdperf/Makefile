@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(MOD)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o
 
-all: bdev mpibm perf_bypathlen.x perf_jobs_fromfile.x extract_result.x groupdist.x perf_jobs_cesm.x cp
+all: bdev mpibm perf_bypathlen.x perf_jobs_fromfile.x extract_result.x groupdist.x perf_jobs_cesm.x perf_jobs_hacc.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -82,6 +82,7 @@ cp:
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/all/
 	cp perf_jobs_fromfile.x $(BENCHMARKS_DIR)/stdperf/single/optimization/512/c4/
 	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/msg/
+	cp perf_jobs_hacc.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/hacc/
 	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/cesm/
 	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/cesm_gather/ci2x/
 	cp perf_jobs_cesm.x     $(BENCHMARKS_DIR)/stdperf/single/optimization/512/cesm_gather/co2x/

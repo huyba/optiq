@@ -55,7 +55,8 @@ int main(int argc, char **argv)
 
             gettimeofday(&t2, NULL);
 
-            optiq_job_read_and_assign_flow_value(jobs, paths, filepath, num_nodes, unit, demand);
+	    optiq_job_read_from_file (jobs, paths, filepath);
+            optiq_job_assign_flow_value(jobs, paths, num_nodes, unit, demand);
 
             gettimeofday(&t3, NULL);
 

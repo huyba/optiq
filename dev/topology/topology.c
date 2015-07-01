@@ -59,6 +59,8 @@ void optiq_topology_init_with_params(int num_dims, int *size, struct optiq_topol
 	topo->num_edges += topo->neighbors[i].size();
     }
 
+    optiq_topology_get_bridge_bgq(topo);
+
     optiq_topology_get_torus(topo->torus);
 
     optiq_topology_compute_routing_order_bgq(topo->num_dims, topo->size, topo->order);
@@ -816,3 +818,21 @@ void optiq_topology_write_graph(struct optiq_topology *topo, int cost, char *fil
 
     myfile.close();
 }
+
+void optiq_topology_get_bridge_bgq(struct optiq_topology *topo)
+{
+    Personality_t personality;
+    Kernel_GetPersonality(&personality, sizeof(personality));
+
+    topo->bridge[0] = personality.Network_Config.cnBridge_A;
+    topo->bridge[1] = personality.Network_Config.cnBridge_B;
+    topo->bridge[2] = personality.Network_Config.cnBridge_C;
+    topo->bridge[3] = personality.Network_Config.cnBridge_D;
+    topo->bridge[4] = personality.Network_Config.cnBridge_E;
+
+    int size[5];
+    optiq_topology_get_size_bgq(size);
+
+    topo->bridge_id = topo->bridge[4] + topo->bridge[3]*size[4] + topo->bridge[2]*size[3]*size[4] + topo->bridge[1]*size[2]*size[3]*size[4] + topo->bridge[0]*size[1]*size[2]*size[3]*size[4];
+}
+
