@@ -14,6 +14,8 @@ int main(int argc, char **argv)
     int rank = pami_transport->rank;
     int size = pami_transport->size;
 
+    printf("Rank %d Bridge %d\n", rank, topo->bridge_id);
+
     int demand = 8* 1024 * 1024;
     int mindemand = demand;
     int start = 0, end = 0;
@@ -68,7 +70,7 @@ int main(int argc, char **argv)
     int num_ranks_per_node = 8;
     int job_id = 0;
 
-    for (int i = start; i < end; i++)
+    for (int i = start; i <= end; i++)
     {
 	sprintf(rankdemandfile, "%s_%d", path, i);
 	optiq_jobs_read_rank_demand(rankdemandfile, jobs, i, num_ranks_per_node, job_id);
@@ -84,6 +86,7 @@ int main(int argc, char **argv)
 	if (jobs[i].source_id == rank)
 	{
 	    jobs[i].dest_id = topo->bridge_id;
+	    jobs[i].dest_rank = topo->bridge_id;
 
 	    optiq_alg_yen_k_shortest_paths_job (graphFilePath, jobs[i], num_paths);
 
@@ -100,6 +103,8 @@ int main(int argc, char **argv)
 	}
     }
 
+    jobs.clear();
+
     start = 0;
     end = 0;
 
@@ -111,24 +116,22 @@ int main(int argc, char **argv)
 	std::vector<struct path*> paths;
 	paths.clear();
 
-	for (int i = 0; i < jobs.size(); i++)
+	for (int i = 0; i < size; i++)
 	{
-	    sprintf(pairfile, "%s_%d", jobfile, jobs[i].job_id);
+	    sprintf(pairfile, "%s_%d", jobfile, i);
 	    optiq_jobs_read_from_file (jobs, paths, pairfile);
 	}
 
 	int unit = 64*1024;
-	paths.clear();
 
-	optiq_job_assign_flow_value (jobs, paths, size, unit, 0);
+	optiq_job_assign_flow_value (jobs, size, unit, 0);
 
-        optiq_job_write_to_file (jobs, jobfile);
+        optiq_job_write_to_file (jobs, "test0");
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     /*Every one can read data in now*/
-
     char filepath[256];
 
     if (rank == 0) {
@@ -141,7 +144,7 @@ int main(int argc, char **argv)
 	{
             schedule->test_id = i;
 
-	    sprintf(filepath, "%s/test%d", path, i);
+	    sprintf(filepath, "test%d", i);
 
 	    if (rank == 0) {
 		printf("Test No. %d\n", i);

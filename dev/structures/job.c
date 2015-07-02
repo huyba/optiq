@@ -205,7 +205,7 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 }
 
 
-void optiq_job_assign_flow_value (std::vector<struct job> &jobs, std::vector<struct path*> &paths, int size, int unit, int demand)
+void optiq_job_assign_flow_value (std::vector<struct job> &jobs, int size, int unit, int demand)
 {
     /* Load of links */
     int **load = (int **) calloc (1, sizeof(int *) * size);
@@ -465,7 +465,7 @@ bool optiq_jobs_read_rank_demand(char *filepath, std::vector<struct job> &jobs, 
 	    struct job new_job;
 	    new_job.job_id = job_id;
 	    new_job.source_id = source_id;
-	    new_job.source_rank = source_rank;
+	    new_job.source_rank = source_id;
 	    new_job.demand = demand;
 
 	    jobs.push_back(new_job);
