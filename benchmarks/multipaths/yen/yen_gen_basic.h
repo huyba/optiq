@@ -35,4 +35,7 @@ void gen_91_cases (struct optiq_topology *topo, int demand, char *graphFilePath,
 void gen_1_16_to_1_2 (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing);
 
 void gen_multiranks (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing);
+
+void gen_multiranks2 (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing, int start, int s1, int num_node1, int s2, int num_node2);
+
 #endif

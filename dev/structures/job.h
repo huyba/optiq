@@ -24,7 +24,7 @@ bool optiq_job_add_one_path_under_load (struct job &ajob, int maxload, int** &lo
 
 void optiq_job_read_from_file (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath);
 
-bool optiq_jobs_read_rank_demand(char *filepath, std::vector<struct job> &jobs, int ion, int num_ranks_per_node, int &job_id);
+bool optiq_jobs_read_rank_demand(char *filepath, std::vector<struct job> &jobs, int ion, int num_ranks_per_node, int &job_id, int element_size);
 
 void optiq_job_read_and_select (std::vector<struct job> &jobs, std::vector<struct path*> &paths, char *filepath, int maxload, int size, int num_ranks_per_node);
 

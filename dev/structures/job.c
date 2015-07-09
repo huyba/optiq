@@ -416,7 +416,7 @@ void optiq_job_read_from_file (std::vector<struct job> &jobs, std::vector<struct
     //}
 }
 
-bool optiq_jobs_read_rank_demand(char *filepath, std::vector<struct job> &jobs, int ion, int num_ranks_per_node, int &job_id)
+bool optiq_jobs_read_rank_demand(char *filepath, std::vector<struct job> &jobs, int ion, int num_ranks_per_node, int &job_id, int element_size)
 {
     FILE * fp;
     char line[256];
@@ -447,7 +447,7 @@ bool optiq_jobs_read_rank_demand(char *filepath, std::vector<struct job> &jobs, 
         /*printf("job_id = %d job_path_id = %d, flow = %f\n", job_id, job_path_id, flow);*/
 
 	source_id = source_rank/num_ranks_per_node + ion * 128;
-	demand = demand * 38;
+	demand = demand * element_size;
 
 	bool found = false;
 

@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 
     int minsize = atoi (argv[10]) * 1024;
     int maxsize = atoi (argv[11]) * 1024;
-    int demand = atoi (argv[12]) * 1024;
+    int demand = atai (argv[12]) * 1024;
 
     char graphFilePath[] = "graph";
 
@@ -58,5 +58,23 @@ int main(int argc, char **argv)
         randompairing = (atoi (argv[13]) == 1);
     }
 
-    gen_multiranks (topo, graphFilePath, numpaths, minsize, maxsize, testid, demand, randompairing);
+    int s1 = 0, source_node = 0;
+    int s2 = 0, dest_node = 0;
+
+    if (argc > 14)
+    {
+        s1 = atoi (argv[14]);
+        source_nodes = atoi (argv[15]);
+        s2 = atoi (argv[16]);
+        dest_nodes = atoi (argv[17]);
+    }
+
+    if (argc < 14)
+    {
+        gen_multiranks (topo, graphFilePath, numpaths, minsize, maxsize, testid, demand, randompairing);
+    }
+    else
+    {
+        gen_multiranks2 (topo, graphFilePath, numpaths, minsize, maxsize, testid, demand, randompairing, s1, source_nodes, s2, dest_nodes);
+    }
 }

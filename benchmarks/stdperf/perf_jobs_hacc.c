@@ -33,12 +33,17 @@ int main(int argc, char **argv)
 	end = atoi(argv[3]);
     }
 
+    int element_size = 38;
     if (argc > 4) {
-	mindemand = atoi(argv[4]) * 1024;
+        end = atoi(argv[4]);
     }
 
     if (argc > 5) {
-	demand = atoi (argv[5]) * 1024;
+	mindemand = atoi(argv[5]) * 1024;
+    }
+
+    if (argc > 6) {
+	demand = atoi (argv[6]) * 1024;
     }
 
     int minchunksize = 32 * 1024;
@@ -73,7 +78,7 @@ int main(int argc, char **argv)
     for (int i = start; i <= end; i++)
     {
 	sprintf(rankdemandfile, "%s_%d", path, i);
-	optiq_jobs_read_rank_demand(rankdemandfile, jobs, i, num_ranks_per_node, job_id);
+	optiq_jobs_read_rank_demand(rankdemandfile, jobs, i, num_ranks_per_node, job_id, element_size);
     }
 
     /*Add the IO bridge node as the destination and generate paths, model files*/
@@ -186,7 +191,17 @@ int main(int argc, char **argv)
 		//odp.print_recv_rput_done_msg = true;
 		//odp.print_pami_transport_status = true;
 
-		bool ret = optiq_benchmark_jobs_from_file (filepath, nbytes);
+		std::vector<struct job> &jobs = schedule->jobs;
+                jobs.clear();
+                std::vector<struct path *> &path_ids = opi.paths, &path_ranks = schedule->paths;
+                path_ranks.clear();
+
+                /* When reading from file, always return jobs with path of node ids, not ranks */
+                optiq_jobs_read_from_file (jobs, path_ranks, jobfile);
+
+                MPI_Barrier(MPI_COMM_WORLD);
+
+		bool ret = optiq_benchmark_jobs (jobs);
 
                 if (!ret) {
                     break;
