@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o yen_gen_basic.o
 
-all: bdev mpibm yen_gen_parallel.x heuristic1.x heuristic2.x opt_model.x cp
+all: bdev mpibm yen_paths.x heuristic1.x heuristic2.x opt_model.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
@@ -64,7 +64,10 @@ realclean: clean
 	$(RM) $(RMFLAGS) core.*
 
 M = mira
-BENCHMARKS_DIR = /gpfs/$(M)-fs0/projects/Performance/abui/optiq/benchmarks
+DEMO_DIR = /gpfs/$(M)-fs0/projects/Performance/abui/optiq/demo
 
 cp:
-	cp yen_stat.x $(BENCHMARKS_DIR)/multipaths/yen/stat/
+	cp yen_paths.x $(DEMO_DIR)/yen_paths/
+	cp heuristic1.x $(DEMO_DIR)/heuristic1/
+	cp heuristic2.x $(DEMO_DIR)/heuristic2/
+	cp opt_model.x $(DEMO_DIR)/opt_model/

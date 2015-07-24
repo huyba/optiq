@@ -206,45 +206,7 @@ void gen_paths_cesm (struct optiq_topology *topo, int datasize, char *graphFileP
 
 void gen_multiranks2 (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing, int start, int s1, int num_node1, int s2, int num_node2)
 {
-    for (int i = s1; i < s1+num_node1; i *= 2)
-    {
-        for (int j = s2; j < s2+num_node2; j *= 2)
-        {
-            int m = i * topo->num_ranks_per_node;
-            int n = j * topo->num_ranks_per_node;
-            int start1 = s1 * topo->num_ranks_per_node;
-            int start2 = s2 * topo->num_ranks_per_node;
-                
-            if (mintestid <= testid && testid <=maxtestid)
-            {
-                optiq_pattern_m_to_n_to_jobs (jobs, size, demand, m, start1, n, start2, num_ranks,  randompairing);
 
-                if (demand == 0)
-                {
-                    for (int i = 0; i < jobs.size(); i++)
-                    {
-                        jobs[i].demand = (rand() + minsize) % maxsize;
-                    }
-                }
-
-                /* Not allow to generate too many paths, leading to */
-                int numpairs = m > n ? m : n;
-                int maxpaths = numpaths;
-                if (maxpathspertest / numpairs < maxpaths) {
-                    maxpaths = maxpathspertest / numpairs;
-                }
-
-                sprintf(name, "Test No. %d Disjoint %d ranks from %d to %d send data to %d ranks from %d to %d total %d paths", testid, m, 0, m-1, n, size/2, size/2 + n-1, maxpaths);
-                sprintf(jobs[0].name, "%s", name);
-                sprintf(jobfile, "test%d", testid);
-
-                search_and_write_to_file (jobs, jobfile, graphFilePath, maxpaths);
-            }
-
-            testid++;
-            jobs.clear();
-        }
-    }
 }
 
 void gen_multiranks (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing)

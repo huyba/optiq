@@ -54,6 +54,6 @@ struct JobDemandComp
    }
 };
 
-void optiq_job_assign_flow_value (std::vector<struct job> &jobs, int size, int unit, int demand);
+void optiq_job_assign_flow_value (std::vector<struct job> &jobs, int num_nodes, int unit, int demand);
 
 #endif

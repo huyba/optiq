@@ -205,20 +205,20 @@ void optiq_job_write_jobs_model_format (char *filekpath, int maxload, int size, 
 }
 
 
-void optiq_job_assign_flow_value (std::vector<struct job> &jobs, int size, int unit, int demand)
+void optiq_job_assign_flow_value (std::vector<struct job> &jobs, int num_nodes, int unit, int demand)
 {
     /* Load of links */
-    int **load = (int **) calloc (1, sizeof(int *) * size);
-    for (int i = 0; i < size; i++)
+    int **load = (int **) calloc (1, sizeof(int *) * num_nodes);
+    for (int i = 0; i < num_nodes; i++)
     {
-	load[i] = (int *) calloc (1, sizeof(int) * size);
+	load[i] = (int *) calloc (1, sizeof(int) * num_nodes);
     }
 
     /* Paths that use links */
-    std::vector<struct path*> **link_paths = (std::vector<struct path*> **) calloc (1, sizeof(std::vector<struct path*> *) * size);
-    for (int i = 0; i < size; i++)
+    std::vector<struct path*> **link_paths = (std::vector<struct path*> **) calloc (1, sizeof(std::vector<struct path*> *) * num_nodes);
+    for (int i = 0; i < num_nodes; i++)
     {
-        link_paths[i] = (std::vector<struct path*> *) calloc (1, sizeof(std::vector<struct path*>) * size);
+        link_paths[i] = (std::vector<struct path*> *) calloc (1, sizeof(std::vector<struct path*>) * num_nodes);
     }
 
     /* Init the list of paths that use links */
