@@ -41,7 +41,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ = $(UTIL)/*.o $(STRUCT)/*.o $(TOPOLOGY)/*.o $(ALG)/*.o $(HEU)/*.o $(YEN)/*.o $(PAT)/*.o $(SCHED)/*.o $(TRANS)/*.o $(DEV)/optiq.o $(BM)/mpi/*.o $(BM)/optiq/optiq_benchmark.o $(MOD)/*.o yen_gen_basic.o
 
-all: bdev mpibm yen_paths.x heuristic1.x heuristic2.x opt_model.x cp
+all: bdev mpibm yen_paths.x heuristic1.x heuristic2.x opt_model.x perf_jobs_fromfile.x cp
 
 bdev:
 	cd $(DEV) && $(MAKE) -f Makefile
