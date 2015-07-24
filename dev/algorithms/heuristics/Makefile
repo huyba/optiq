@@ -34,7 +34,7 @@ CFLAGS += -DPROGRESS_THREAD
 
 OBJ =
 
-all: heuristic2.o multibfs.o manytomany.o alltomany.o multipaths.o mpiplus.o search_util.o
+all: heuristic1.o heuristic1.o multibfs.o manytomany.o alltomany.o multipaths.o mpiplus.o search_util.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

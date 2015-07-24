@@ -36,18 +36,25 @@ struct optiq_topology {
 
 extern "C" struct optiq_topology *topo;
 
+/* Init the topology */
 void optiq_topology_init();
 
+/* Init with parameters if not running on a given topology*/
 void optiq_topology_init_with_params(int num_dims, int *size, struct optiq_topology *topo);
 
+/* Get the topology after init */
 struct optiq_topology* optiq_topology_get();
 
+/* Print the basic topology's information */
 void optiq_topology_print(struct optiq_topology *topo);
 
+/* Print the basic information */
 void optiq_topology_print_basic(struct optiq_topology *topo);
 
+/* Get the size of the partition such as 2 x 2 x 4 x 4 x2 */
 void optiq_topology_get_size_bgq(int *size);
 
+/* Get the node id*/
 int optiq_topology_get_node_id(int world_rank);
 
 int optiq_topology_get_random_rank (int node_id);

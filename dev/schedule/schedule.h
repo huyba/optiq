@@ -93,8 +93,10 @@ void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls
 
 void optiq_schedule_compute_assinged_len_for_path (std::vector<struct optiq_job> &jobs);
 
+/* Split the data of jobs into multiple paths */
 void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
 
+/*  */
 void optiq_schedule_compute_path_hopbyte_copy_stat(std::vector<struct optiq_job> &jobs);
 
 void optiq_schedule_mem_destroy(struct optiq_schedule *schedule, struct optiq_pami_transport *pami_transport);

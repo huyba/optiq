@@ -7,6 +7,7 @@
 #include "job.h"
 #include "util.h"
 #include "patterns.h"
+#include "algorithm.h"
 #include <vector>
 
 int main(int argc, char **argv)
@@ -45,7 +46,8 @@ int main(int argc, char **argv)
 
             gettimeofday(&t2, NULL);
 
-            optiq_job_read_and_select(jobs, paths, filepath, maxload, num_nodes, num_ranks_per_node);
+            optiq_job_read_from_file (jobs, paths, filepath);
+            optiq_alg_heuristic1 (jobs, paths, maxload, num_nodes, num_ranks_per_node);
 
             gettimeofday(&t3, NULL);
 
