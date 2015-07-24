@@ -8,6 +8,7 @@
 #include "yen.h"
 #include "mpiplus.h"
 #include "topology.h"
+#include "heuristic1.h"
 #include "heuristic2.h"
 
 enum search_algorithm {
@@ -18,8 +19,8 @@ enum search_algorithm {
     OPTIQ_ALG_MODEL_PATH_BASED,
     OPTIQ_ALG_MODEL_JOB_BASED,
     OPTIQ_ALG_MPIPLUS,
-    OPTIQ_ALG_HEU2,
-    OPTIQ_ALG_HEU1
+    OPTIQ_ALG_HEU1,
+    OPTIQ_ALG_HEU2
 };
 
 struct optiq_algorithm {
