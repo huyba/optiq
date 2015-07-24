@@ -8,6 +8,7 @@
 #include "util.h"
 #include "patterns.h"
 #include <vector>
+#include <algorithm.h>
 
 int main(int argc, char **argv)
 {

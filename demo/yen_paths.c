@@ -686,7 +686,9 @@ int main(int argc, char **argv)
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    gen_patterns_new (topo, demand, graphFilePath, numpaths);
+    gen_91_cases (topo, demand, graphFilePath, numpaths);
+
+    //gen_patterns_new (topo, demand, graphFilePath, numpaths);
     //gen_jobs_paths_new (topo, demand, graphFilePath, numpaths);
     //gen_patterns (topo, demand, graphFilePath, numpaths);
     //gen_jobs_paths (topo, demand, graphFilePath, numpaths);
