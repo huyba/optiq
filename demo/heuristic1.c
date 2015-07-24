@@ -1,3 +1,8 @@
+/*
+ * This is an example of using heuristic 1 to select paths for data movement betweens nodes of jobs.
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
