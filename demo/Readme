@@ -3,11 +3,35 @@ To run the demo code:
 1. Run make to create executable files.
 2. Submit jobs for each of executable file:
 
+- To generate paths:
+
+yen_paths.x
+
+qsub -n 32 --mode c8 -t 60 -A Performance --env PAMI_CLIENTS=MPI,OPTIQ ./yen_paths.x 4 4 4 4 2 50 1024 0 90 1
+
+Parameters:
+arg1-arg5: size of the partition
+arg6: maximum number of paths per pair.
+arg7: Number of node
+arg8-arg9: start id and end id of generated tests.
+arg10: numer of ranks per node.
+
+
+- To select paths based on heuristic1
+
 heuristic1.x
 
 qsub -n 128 -t 20 -A Performance --env PAMI_CLIENTS=MPI,OPTIQ ./heuristic1.x ../yen_paths 0 90 16 512 1
 
+- To select paths based on heuristic2
+
 heuristic2.x
 
+qsub -n 32 --mode c4 -t 60 -A Performance --env PAMI_CLIENTS=MPI,OPTIQ ./heuristic2.x ../yen_paths 0 90 512 8192
 
+- To generate models to be solved by solvers:
+
+opt_model.x
+
+qsub -n 32 --mode c4 -t 20 -A Performance --env PAMI_CLIENTS=MPI,OPTIQ ./opt_model.x ../yen_paths/512 0 90 1 512 1 4 4 4 4 2 2048 2048
 
