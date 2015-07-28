@@ -1,0 +1,13 @@
+To run the demo code:
+
+1. Run make to create executable files.
+2. Submit jobs for each of executable file:
+
+heuristic1.x
+
+qsub -n 128 -t 20 -A Performance --env PAMI_CLIENTS=MPI,OPTIQ ./heuristic1.x ../yen_paths 0 90 16 512 1
+
+heuristic2.x
+
+
+
