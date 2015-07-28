@@ -3,7 +3,7 @@ To run the demo code:
 1. Run make to create executable files.
 2. Submit jobs for each of executable file:
 
-- To generate paths:
+- To generate paths: The path generation is parallel, each rank will be repsonsible for one pair. There is one for each pair in each job. The file format will be test_testId_pairId e.g test_1_12 means paths for pairID 12 of jobID 1. Each file contains at most k paths (arg6). To put those paths of pairs of a job into 1 file, run the collect.sh script.You may need to change the range of testid in the collet.sh file.
 
 yen_paths.x
 
@@ -12,16 +12,23 @@ qsub -n 32 --mode c8 -t 60 -A Performance --env PAMI_CLIENTS=MPI,OPTIQ ./yen_pat
 Parameters:
 arg1-arg5: size of the partition
 arg6: maximum number of paths per pair.
-arg7: Number of node
+arg7: Demand (in KB). Will be * with 1K in the code. e.g. input is 1024, demand = 1024*1024 = 1M.
 arg8-arg9: start id and end id of generated tests.
 arg10: numer of ranks per node.
 
 
-- To select paths based on heuristic1
+- To select paths based on heuristic1. The heuristic1 chooses paths to minimize the number of paths using any physical links.
 
 heuristic1.x
 
 qsub -n 128 -t 20 -A Performance --env PAMI_CLIENTS=MPI,OPTIQ ./heuristic1.x ../yen_paths 0 90 16 512 1
+
+Parameters:
+arg1: folder containing files of paths of pairs of a job/test.
+arg2-arg3: min test id, max test id. The heuristic1.x scans the given folder for file in the format of test_testid with testid from min test id to max path id.
+arg4: maxload value i.e desired value of maximum number of paths per physical link.
+arg5: partition size
+arg6: number of ranks per node.
 
 - To select paths based on heuristic2
 
