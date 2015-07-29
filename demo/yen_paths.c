@@ -1,3 +1,7 @@
+/*
+ * This is an example of code to generate k shortest paths using Yen's algorithm. There is one output file for each pair of communication with maximum k paths. After paths generated, one can use collect.sh to gather paths of pairs of the same job/test id into one single file for heu1/heu2/opt_model
+ * */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>

@@ -1,3 +1,7 @@
+/*
+ * Schedule contains code for scheduling data movement, split buffer of data into queues. Each message contains necessary data for data movement from original source original dest and next destination. It also create routing table to route data from a node to the next node.
+ *
+ * */
 #ifndef OPTIQ_SCHEDULE_H
 #define OPTIQ_SCHEDULE_H
 
@@ -31,6 +35,7 @@ enum dequeue_mode {
     DQUEUE_ROUND_ROBIN			/* to transfer in the round robin fashion: one local message and then one forwarding message */
 };
 
+/* Schedule structure */
 struct optiq_schedule {
     int schedule_id;
 
@@ -77,34 +82,52 @@ struct optiq_schedule {
     int test_id;
 };
 
+/* 
+ * Global single pointer variable for schedule 
+ * */
 extern "C" struct optiq_schedule *schedule;
 
+/*
+ * Initialize schedule, allocate memories and necessary resources.
+ * */
 void optiq_schedule_init();
 
+/* Get the currently used schedule by return the ponter to schedule structure */
 struct optiq_schedule *optiq_schedule_get();
 
+/*
+ * Reassign path ids for each job to make sure that the path ids are unique at the runtime. Path ids are used to route data.
+ * */
 void optiq_schedule_assign_path_ids_to_jobs (std::vector<struct path *> &path_ids, std::vector<struct job> &jobs, std::vector<struct path *> &path_ranks, int ranks_per_node);
 
+/* Build a list of nodes that are notified when a job is done so everyone can finish and exit waiting for transfer complete */
 void build_notify_lists(std::vector<struct path *> &complete_paths, std::vector<std::pair<int, std::vector<int> > > &notify_list, std::vector<std::pair<int, std::vector<int> > > &intermediate_notify_list, int &num_active_paths, int world_rank);
 
+/*Register a memory region */
 void optiq_mem_reg(void *buf, int *counts, int *displs, pami_memregion_t &mr);
 
+/* Schedule's memory register for all necessary buffers */
 void optiq_schedule_memory_register(void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls,  struct optiq_schedule *schedule);
 
+/* Compute the assigned length of memories, offsets for each paths */
 void optiq_schedule_compute_assinged_len_for_path (std::vector<struct optiq_job> &jobs);
 
 /* Split the data of jobs into multiple paths */
 void optiq_schedule_split_jobs_multipaths (struct optiq_pami_transport *pami_transport, std::vector<struct optiq_job> &jobs, int chunk_size);
 
-/*  */
+/* Compute the path hopbyte for data movement a long paths */
 void optiq_schedule_compute_path_hopbyte_copy_stat(std::vector<struct optiq_job> &jobs);
 
+/* Destroy the memory allocated for data movement registered by schedule */
 void optiq_schedule_mem_destroy(struct optiq_schedule *schedule, struct optiq_pami_transport *pami_transport);
 
+/* Set variable for schedle */
 void optiq_schedule_set(struct optiq_schedule *schedule, int world_size);
 
+/* Return the currently used chunk size */
 int optiq_schedule_get_chunk_size(struct optiq_job &ojob);
 
+/* Print the jobs with current schedule */
 void optiq_schedule_print_optiq_jobs (std::vector<struct optiq_job> &local_jobs);
 
 /* Will do the follows:
@@ -117,8 +140,14 @@ void optiq_schedule_print_optiq_jobs (std::vector<struct optiq_job> &local_jobs)
  * */
 void optiq_scheduler_build_schedule (void *sendbuf, int *sendcounts, int *sdispls, void *recvbuf, int *recvcounts, int *rdispls, std::vector<struct job> &jobs, std::vector<struct path *> &path_ranks);
 
+/* 
+ * Clear current schedule, some variable may also be clear 
+ */
 void optiq_schedule_clear();
 
+/*
+ * Free all schedule's memory and resources, ready to terminate 
+ * */
 void optiq_schedule_finalize();
 
 #endif

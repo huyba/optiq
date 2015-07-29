@@ -71,3 +71,4 @@ cp:
 	cp heuristic1.x $(DEMO_DIR)/heuristic1/
 	cp heuristic2.x $(DEMO_DIR)/heuristic2/
 	cp opt_model.x $(DEMO_DIR)/opt_model/
+	cp perf_jobs_fromfile.x $(DEMO_DIR)/perf/

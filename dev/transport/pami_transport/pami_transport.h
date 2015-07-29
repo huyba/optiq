@@ -1,3 +1,7 @@
+/*
+ * Data movement using PAMI.
+ * */
+
 #ifndef OPTIQ_PAMI_TRANSPORT_H
 #define OPTIQ_PAMI_TRANSPORT_H
 
@@ -15,6 +19,7 @@
 #include "optiq_struct.h"
 #include "schedule.h"
 
+/* Constant values for PAMI data movement */
 #define OPTIQ_MEM_REQUEST 0
 #define OPTIQ_MEM_RESPONSE 1
 
@@ -117,48 +122,70 @@ struct optiq_pami_transport {
 
 extern "C" struct optiq_pami_transport *pami_transport;
 
+/* Init pami */
 void optiq_pami_transport_init();
 
+/* Init pami with some transport info */
 void optiq_transport_info_init(struct optiq_pami_transport *pami_transport);
 
+/* Clean pami transport */
 void optiq_pami_transport_clear();
 
+/* Print out the info status */
 void optiq_pami_transport_info_status(struct optiq_transport_info &transport_info, int rank);
 
+/* Exchange mem region before actually transfer data*/
 void optiq_pami_transport_exchange_memregions ();
 
+/* Transfer data using rput */
 void optiq_pami_transport_rput_message (struct optiq_message_header *header);
 
+/* Check if a queue for completed messages */
 void optiq_pami_transport_check_completion_queue ();
 
+/* Check if all data is transferred and notify all nodes */
 void optiq_pami_transport_check_and_notify ();
 
+/* Currently used method for data movement execution*/
 void optiq_pami_transport_execute_new();
 
+/* Obsolete metho for data movement execution */
 void optiq_pami_transport_execute(struct optiq_pami_transport *pami_transport);
 
+/* Finalize data movement, free resources and data */
 int optiq_pami_transport_finalize();
 
+/* Finalize transport info */
 void optiq_transport_info_finalize(struct optiq_pami_transport *pami_transport);
 
+/* Print pami structures for data movement */
 void optiq_pami_transport_print();
 
+/* Transport data using get method */
 struct optiq_pami_transport* optiq_pami_transport_get();
 
+/* Request for a memory region for remote data movement */
 void optiq_pami_transport_mem_request(struct optiq_message_header *header);
 
+/* Simple notification method when some action is done */
 void optiq_pami_decrement (pami_context_t context, void *cookie, pami_result_t result);
 
+/* Transfer data using pami rput */
 int optiq_pami_rput(pami_client_t client, pami_context_t context, pami_memregion_t *local_mr, size_t local_offset, size_t nbytes, pami_endpoint_t &endpoint, pami_memregion_t *remote_mr, size_t remote_offset, void *cookie, void (*rput_done_fn)(void*, void*, pami_result_t), void (*rput_rdone_fn)(void*, void*, pami_result_t));
 
+/* Notificaton when rput is done */
 void optiq_pami_rput_rdone_fn(pami_context_t context, void *cookie, pami_result_t result);
 
+/* Send data intermediate, used for small messages < 128 Bytes */
 int optiq_pami_send_immediate(pami_context_t &context, int dispatch, void *header_base, int header_len, void *data_base, int data_len, pami_endpoint_t &endpoint);
 
+/* Transport using pami send */
 int optiq_pami_transport_send(void *buf, int count, int dest);
 
+/* Transport using pami recv*/
 int optiq_pami_transport_recv(void *buf, int count, int source);
 
+/* Transport using rput */
 int optiq_pami_transport_rput(void *local_buf, int rput_bytes, int local_rank, void *remote_buf, int remote_rank);
 
 void optiq_recv_mem_request_fn (

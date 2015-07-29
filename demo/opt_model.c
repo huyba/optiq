@@ -1,3 +1,7 @@
+/*
+ * This is a example of code to read paths from files in folder to execute data movement between a set of nodes with given paths.
+ * */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>

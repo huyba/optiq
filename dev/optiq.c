@@ -1,3 +1,5 @@
+/* Implementation for optiq where contain the highest level functions */
+
 #include "optiq.h"
 #include <mpi.h>
 
