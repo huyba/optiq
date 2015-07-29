@@ -56,11 +56,11 @@ benchmark:
 	cd $(TEST) && $(MAKE) -f Makefile
 
 clean: $(OBJ)
-	rm $(OBJ)
-	rm *.o
+    rm $(OBJ)
+    rm *.o
 
 realclean: clean
-	$(RM) $(RMFLAGS) *.x
-	$(RM) $(RMFLAGS) core.*
+    $(RM) $(RMFLAGS) *.x
+    $(RM) $(RMFLAGS) core.*
 
 cp:
