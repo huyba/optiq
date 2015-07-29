@@ -1,3 +1,7 @@
+/* 
+ * OPI or optiq performance index contains all the code that does performance index for the framework 
+ * */
+
 #ifndef OPTIQ_PERFORMANCE_INDEX
 #define OPTIQ_PERFORMANCE_INDEX
 
@@ -19,12 +23,14 @@
 #define OPTIQ_EVENT_RPUT_DONE_NOTIFY 22
 #define OPTIQ_EVENT_RECV_RPUT_DONE 23
 
+/* Time stamp for events */
 struct timestamp {
     int eventtype;
     int eventid;
     timeval tv;
 };
 
+/* OPTIQ statistic values */
 struct optiq_stat {
     int max;
     int min;
@@ -33,6 +39,7 @@ struct optiq_stat {
     double total;
 };
 
+/* Performance index */
 struct optiq_performance_index {
     double transfer_time;
     double build_path_time;
@@ -74,6 +81,7 @@ struct optiq_performance_index {
     std::map<int, int> path_copy;
 };
 
+/* Variable to turn on the flags print index */
 struct optiq_debug_print {
     bool print_path_id;
     bool print_path_rank;
@@ -107,20 +115,28 @@ extern "C" struct optiq_performance_index opi, max_opi;
 
 extern "C" struct optiq_debug_print odp;
 
+/* Init opi */
 void optiq_opi_init();
 
+/* Get the performance index */
 struct optiq_performance_index * optiq_opi_get();
 
+/* Collect the performance index to one node */
 void optiq_opi_collect();
 
+/* Print the OPI */
 void optiq_opi_print();
 
+/* Print the path hopbyte and number of copies values */
 void optiq_opi_print_path_hopbyte_copy_stat();
 
+/* Compute stat */
 void optiq_opi_compute_stat();
 
+/* Clear the opi */
 void optiq_opi_clear();
 
+/* Print timestamp of events */
 void optiq_opi_timestamp_print(int rank);
 
 #endif
