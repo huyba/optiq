@@ -11,7 +11,7 @@
 
 \subsection{Experiments and Results}
 
-We carried out a set of experiments and measured the follows: throughput of data transfer, total number of paths found, number of paths per pair of source-destination (a job), hopbytes (multiplication of an amount of data and a number of hops it travels on a path) values on a path, number of paths that shares a physical link, and amount data that passes through a physical link.
+We carried out a set of experiments and measured the follows: throughput of data transfer, total number of paths found, number of paths per pair of source-destination (a job), hopbytes (multiplication of an amount of data and a number of hops it travels on a path) values on a path, number of paths that shares a physical link, and amount data that passes through a physical link. We used our framework OPTIQ and MPI\_Alltoallv to transfer data and compare 2 ways to show the efficacy of our framework. MPI\_Alltoallv is typical way to transfer data between a set of sources and a set of destinations. It uses default routing algorithms i.e. both dynamic and static routing can be employed.
 
 \input{../draft/benchmark-partition}
 
