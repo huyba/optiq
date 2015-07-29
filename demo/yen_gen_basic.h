@@ -40,11 +40,13 @@ void gen_distance_increase_2k4k(struct optiq_topology *topo, int demand, char *g
 /* Generate paths for 91 cases for 3 patterns */
 void gen_91_cases (struct optiq_topology *topo, int demand, char *graphFilePath, int numpaths);
 
-/* Generate paths for 1/16 part*/
+/* Generate paths for 1/16 partition to send data to 1/2 partition */
 void gen_1_16_to_1_2 (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing);
 
+/* For multi-ranks paths gereration*/
 void gen_multiranks (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing);
 
+/* For multi rank paths generation with more parameters */
 void gen_multiranks2 (struct optiq_topology *topo, char *graphFilePath, int numpaths, int minsize, int maxsize, int &testid, int demand, bool randompairing, int start, int s1, int num_node1, int s2, int num_node2);
 
 #endif
