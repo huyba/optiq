@@ -1,3 +1,7 @@
+/* 
+ * Algorithms are used to search for paths to move data between a set of sources and destination. There are a set of algorithms can be used. Heuristic 1, Heuristic 2 and Optimization based approaches.
+ * */
+
 #ifndef OPTIQ_ALGORITHM_H
 #define OPTIQ_ALGORITHM_H
 
