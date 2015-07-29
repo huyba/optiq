@@ -1,3 +1,5 @@
+/*Header for optiq file.*/
+
 #ifndef OPTIQ_H
 #define OPTIQ_H
 

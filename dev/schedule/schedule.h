@@ -1,3 +1,7 @@
+/*
+ * Schedule contains code for scheduling data movement, split buffer of data into queues. Each message contains necessary data for data movement from original source original dest and next destination. It also create routing table to route data from a node to the next node.
+ *
+ * */
 #ifndef OPTIQ_SCHEDULE_H
 #define OPTIQ_SCHEDULE_H
 
