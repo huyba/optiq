@@ -5,18 +5,13 @@
 
 \input{benchmark-setup}
 
-%\input{../hipc/benchmark-mpipath}
-
 \input{benchmark-patterns}
 
 \subsection{Experiments and Results}
 
-We carried out a set of 91 experiments in which we varied total number of nodes, number of sources, number of destinations, distance between source nodes and destination nodes. We measured the follows: throughput of data transfer, total number of paths found, number of paths per pair of source-destination (a job), hopbytes (multiplication of an amount of data and a number of hops it travels on a path) values on a path, number of paths that shares a physical link, and amount data that passes through a physical link. We used our framework OPTIQ and MPI\_Alltoallv to transfer data and compare 2 ways to show the efficacy of our framework. MPI\_Alltoallv is typical way to transfer data between a set of sources and a set of destinations. It uses default routing algorithms i.e. both dynamic and static routing can be employed. We report some of the resuts in this paper.
+We carried out a set of 91 experiments in which we varied total number of nodes, number of sources, number of destinations, distance between source nodes and destination nodes. We measured the follows: throughput of data transfer, total number of paths found, number of paths per pair of source-destination (a job), hopbytes (multiplication of an amount of data and a number of hops it travels on a path) values on a path, number of paths that shares a physical link, and amount data that passes through a physical link. We used our framework OPTIQ and MPI\_Alltoallv to transfer data and compare 2 ways to show the efficacy of our framework. MPI\_Alltoallv is typical way to transfer data between a set of sources and a set of destinations. It uses default routing algorithms i.e. both dynamic and static routing can be employed. We report some of the results in this paper.
 
 \input{benchmark-partition}
 
 \subsubsection {Three communication patterns with random message sizes}
 \input{benchmark-multimessagesizes}
-
-%\subsubsection {Multiple ranks}
-%\input{benchmark-multiranks}

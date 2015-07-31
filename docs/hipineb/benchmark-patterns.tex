@@ -15,8 +15,5 @@ We demonstrate the data movement performance of our OPTIQ framework and existing
 \vspace{-0.15in}
 \label{fig:patterns}
 \end{figure}
-%\item Disjoint: is many-to-many communication pattern where the sources and destinations are separated. It is a typical pattern in many applications.
-%\item Overlap: is a many-to-many pattern where sources and destinations are overlapped sets. CESM uses this communication patterns for its coupling communications.
-%\item Subset: is a many-to-many pattern where sources or destinations are a subset of the other. This pattern can be found CESM or in I/O aggregation.
+
 We demonstrate throughput improvement in a complex network like 5D torus through the above diverse communication patterns. We compare the efficacy of our algorithms with MPI\_Alltoallv, which is the most commonly used MPI collective for the data movement patterns considered in our work.
-%We carried out a set of experiments to study the system's behavior in various patterns and to demonstrate throughput improvement.
