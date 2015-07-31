@@ -35,5 +35,5 @@ Constraints:
 
 The first constraint in Equation \ref{eq:jobflow} captures a job's flow distribution. The total amount of data of a job $Demand[job]$ is transferred in a time $t$ through a set of paths in $kpaths_{job}$. For each path, the job $job$ is assigned a throughput $flow[job, p]$. The total data transferred for a job must be less than $Demand[job]$. Thus, the job's throughput (rate of data transfer) needs to be equal to the combined throughput on all its paths. The second constraint in Equation \ref{eq:linkcapacity} captures bound for a link's capacity. The total throughput of all jobs on a link should not exceed the link's capacity.
 
-We used AMPL (A Modeling Language for Mathematical Programming) \cite{ampl-book} to model the optimization problem. We used the SNOPT solver to solve the linear program. The solution times are listed in Section \ref{sec:results}. In the next section, we present our experiments and results to demonstrate the efficacy of our approaches.
+We used AMPL (A Modeling Language for Mathematical Programming) \cite{ampl-book} to model the optimization problem. We used the SNOPT solver to solve the linear program. In the next section, we present our experiments and results to demonstrate the efficacy of our approaches.
 
