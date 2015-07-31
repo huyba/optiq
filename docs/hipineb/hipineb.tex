@@ -349,7 +349,9 @@
 
 \usepackage[pdftex]{graphicx}
 
-\usepackage[boxed,linesnumbered]{algorithm2e}
+\usepackage[boxed,linesnumbered,procnumbered]{algorithm2e}
+\usepackage{algpseudocode}
+\algrenewcommand\textproc{}
 \setlength{\algomargin}{1.5em}
 %\usepackage{algorithm}
 %\usepackage{algorithmic}
@@ -367,7 +369,7 @@
 \usepackage{amsmath}
 \usepackage{tabularx}
 
-\graphicspath{{../hipc/}}
+%\graphicspath{{../hipc/}}
 
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 
@@ -466,13 +468,13 @@ Email: leigh@hawaii.edu}}
 
 \input{relatedwork}
 
-\input{../hipc/framework}
+\input{framework}
 
-\input{../hipc/approach-intro}
+\input{approach-intro}
 
 \input{approach-heu2}
 
-\input{../hipc/approach-opt}
+\input{approach-opt}
 
 \input{benchmark}
 
