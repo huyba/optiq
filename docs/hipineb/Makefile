@@ -11,7 +11,6 @@ clean:
 	rm hipineb.log
 	rm hipineb.bbl
 	rm hipineb.blg
-	rm hipineb.out
 
 open:
 	open hipineb.pdf
