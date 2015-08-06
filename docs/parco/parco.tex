@@ -169,9 +169,7 @@ we present our conclusions.
 \section{Related work}
 \label{sec:relatedwork}
 Bandwidth optimization for data movement has been studied in great detail.
-%in the literature.
-To optimize throughput,
-many researchers have considered a particular system's interconnection information and application's communication patterns. Essentially, these two characteristics can be used to map an application's processes to specific processors so that interprocessor communication can take advantage of that network to maximize throughput of data movement.
+To optimize throughput, many researchers have considered a particular system's interconnection information and application's communication patterns. Essentially, these two characteristics can be used to map an application's processes to specific processors so that interprocessor communication can take advantage of that network to maximize throughput of data movement.
 
 In an MPI-enabled environment, bandwidth optimization can be done via mapping the application's MPI processes to the system's processors/cores. In \cite{Bhatele:mapping}, the authors provided a tool for performing a wide variety of mappings for structured communication patterns. The mappings increased the bandwidth and reduced the latency and congestion. The tool did not take sparse communication patterns into account, however, and thus did not realize that multiple paths could be made available for data movement.
 
@@ -184,9 +182,9 @@ In addition, researchers have investigated adaptive routing for current supercom
 %More on load balancing network.
 
 In the context of I/O forwarding and staging, many studies have been done to improve I/O performance.   
-A scalable I/O forwarding framework for high-performance computing systems was presented in \cite{Ali:IOForwarding,Iskra:IOForwarding}.
-The authors in \cite{Vishwanath:IOForwarding,Vishwanath:GLEAN} proposed an augmentation for I/O forwarding and asynchronous data staging for Blue Gene/P and Blue Gene/Q systems, and the authors in \cite{ADIOS} proposed similar methods for Cray systems. However, those studies assumed that data is dense and uniformly distributed.
-Our work in this paper extends our previous work \cite{Vishwanath:GLEAN} to deal with sparse data movement patterns and extends our work in \cite{Multipath:BGQ} by employing a pipeline technique to reduce overhead and large memory usage caused by copying and injecting large messages. Our work also uses PAMI to improve the transfer of small messages.
+A scalable I/O forwarding framework for high-performance computing systems was presented in \cite{Ali:IOForwarding,Iskra:IOForwarding}. The authors in \cite{Vishwanath:IOForwarding,Vishwanath:GLEAN} proposed an augmentation for I/O forwarding and asynchronous data staging for Blue Gene/P and Blue Gene/Q systems, and the authors in \cite{ADIOS} proposed similar methods for Cray systems. However, those studies assumed that data is dense and uniformly distributed.
+
+In our previous works in \cite{hbui:bgq, SDAV:Bui2014b, hbui:optiq} we focused on data movement for relatively dense communication patterns. Our work in this paper extends our previous work \cite{Vishwanath:GLEAN} to deal with sparse data movement patterns and extends our work in \cite{Multipath:BGQ} by employing a pipeline technique to reduce overhead and large memory usage caused by copying and injecting large messages. Our work also uses PAMI to improve the transfer of small messages.
 
 \section{Systems for experiments}
 \label{sec:system}
@@ -254,7 +252,7 @@ In the following sections, we describe our approach and associated techniques in
 \subsection{Multipath computation algorithms}
 We model our data movement problem as a multipath computation problem when the interconnect network is given as a directed graph where vertices represent compute nodes and edges represent links connecting compute nodes. The bandwidth on each link is the capacity of the corresponding edge. On BG/Q where the compute nodes are allocated in a contiguous block, we can easily create a directed graph model for the allocated partition.
 
-The model can have single or multiple sources and destinations. If more than one node is acting as source nodes and/or destination nodes, we create a {\em logical} source and/or a {\em logical} destination node and connect the logical node with real ones using {\em logical} links with infinite capacity. Our goal is to find disjoint paths that connect sources to destinations, yielding the highest possible throughput. To find such disjoint paths resulting in maximum flow, we use the Ford-Fulkerson algorithm extended with a breadth-first search (BFS). The algorithm has the runtime $\mathcal{O}(|V|^2*|E|)$, with $|V|$ being the number of vertices and $|E|$ being the number of edges. The runtime of the algorithm scales well with interconnect networks of supercomputers where $|E| >> |V|$.
+The model can have single or multiple sources and destinations. If more than one node is acting as source nodes and/or destination nodes, we create a {\em logical} source and/or a {\em logical} destination node and connect the logical node with real ones using {\em logical} links with infinite capacity. Our goal is to find disjoint paths that connect sources to destinations, yielding the highest possible throughput. To find such disjoint paths resulting in maximum flow, we use the Ford-Fulkerson algorithm \cite{ford1987maximal} extended with a breadth-first search (BFS). The algorithm has the runtime $\mathcal{O}(|V|^2*|E|)$, with $|V|$ being the number of vertices and $|E|$ being the number of edges. The runtime of the algorithm scales well with interconnect networks of supercomputers where $|E| >> |V|$.
 
 In our work, we assume that the size of the data at the nodes that needs to be transferred out is approximately the same. Data has the same priority across all the nodes. The network is clean, so the capacity on each edge is entirely dedicated to our data movements.
 
@@ -507,7 +505,7 @@ We thank the ALCF team for discussions and help related to this paper.
 %% bibitems, please use
 %%
 \bibliographystyle{elsarticle-num} 
-\bibliography{sigproc}
+\bibliography{ref}
 
 %% else use the following coding to input the bibitems directly in the
 %% TeX file.
