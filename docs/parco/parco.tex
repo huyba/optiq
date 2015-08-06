@@ -52,6 +52,15 @@
 
 \journal{Parallel Computing}
 
+\newif\ifdraft
+%\drafttrue
+\draftfalse
+\ifdraft
+ \newcommand{\eunsungnote}[1]{ {\textcolor{red}    { ***Eunsung:      #1 }}}
+\else
+ \newcommand{\eunsungnote}[1]{}
+\fi
+
 \begin{document}
 
 \begin{frontmatter}
@@ -76,7 +85,7 @@
 %% \address{Address\fnref{label3}}
 %% \fntext[label3]{}
 
-\title{Improving Data Movement Performance for Sparse Data Patterns on the Blue Gene/Q Supercomputer}
+\title{Improving Sparse Data Movement Performance Using Multiple Paths on the Blue Gene/Q Supercomputer}
 
 %% use optional labels to link authors explicitly to addresses:
 %% \author[label1,label2]{}
@@ -85,19 +94,21 @@
 
 \author[evl]{Huy Bui}
 \author[mcs]{Eun-Sung Jung}
+%\author[mcs]{Preeti Malakar}
 \author[mcs]{Venkatram Vishwanath}
 \author[evl]{Andrew Johnson}
-\author[evl]{Jason Leigh}
+\author[lava]{Jason Leigh}
 \author[alcf,niu]{Michael E. Papka}
 
-\address[evl]{Electronic Visualization Laboratory (EVL), University of Illinois at Chicago, 842 W Taylor St, Chicago, IL 60607, USA}
-\address[mcs]{Mathematics and Computer Science, Argonne National Laboratory, 9700 S Cass Ave, Lemont, IL 60439, USA}
-\address[alcf]{Argonne Leadership Computing Facility, Argonne National Laboratory, 9700 S Cass Ave, Lemont, IL 60439, IL, USA}
+\address[evl]{Electronic Visualization Laboratory, University of Illinois at Chicago, 842 W. Taylor St., Chicago, IL 60607, USA}
+\address[mcs]{Mathematics and Computer Science, Argonne National Laboratory, 9700 S. Cass Ave., Argonne, IL 60439, USA}
+\address[alcf]{Argonne Leadership Computing Facility, Argonne National Laboratory, 9700 S. Cass Ave., Argonne, IL 60439, IL, USA}
+\address[lava]{Laboratory for Advanced Visualization \& Applications (LAVA), University of Hawai'i at M{\~a}noa, 1680 East-West Road, Honolulu, HI 96822}
 \address[niu]{Northern Illinois University, 300 Normal Road, DeKalb, IL 60115, USA}
 
 \begin{abstract}
 
-In-situ analysis has been proposed as a promising solution to glean faster insight and to reduce the amount of data written out to storage. A critical challenge here is that the reduced dataset needed to visualize a specific region of interest as the simulation is running is typically held on a subset of the nodes and needs to be written out to storage. Coupled multiphysics simulations also produce a sparse data pattern wherein data movement occurs among a subset of nodes. We evaluate the performance of these data patterns and propose several mechanisms for improving performance. Our mechanisms introduce intermediate nodes to implement multiple paths to transfer data on top of default routing algorithms and utilize topology-aware data aggregation to avoid shared bottleneck links. The efficacy of our solutions is evaluated through microbenchmarks and application benchmarks on an IBM Blue Gene/Q system scaling up to 131,072 compute cores. The results show that our algorithms achieve up to a 2X improvement in achievable throughput compared to the default mechanisms.
+	In situ analysis has been proposed as a promising solution to glean faster insights and reduce the amount of data to storage. A critical challenge here is that the reduced dataset is typically located on a subset of the nodes and needs to be written out to storage. Data coupling in multiphysics codes also exhibits a sparse data movement pattern wherein data movement occurs among a subset of nodes. We evaluate the performance of data movement for sparse data patterns on the IBM Blue Gene/Q supercomputing system ``Mira'' and identify performance bottlenecks. We propose a multipath data movement algorithm for sparse data patterns based on an adaptation of a maximum flow algorithm together with breadth-first search that fully exploits all the underlying data paths and I/O nodes to improve data movement. We demonstrate the efficacy of our solutions through a set of microbenchmarks and application benchmarks on Mira scaling up to 131,072 compute cores. The results show that our approach achieves up to 5X improvement in achievable throughput compared with the default mechanisms.
 
 \end{abstract}
 
@@ -117,449 +128,371 @@ multiple paths \sep sparse data movement \sep topology-aware aggregation \sep da
 %% \linenumbers
 
 \section{Introduction}
+Data-intensive applications generate large volumes of data. Data storage  performance is considered one of the weakest links in extreme-scale computing. In order to mitigate this I/O bottleneck, computational science applications are embracing in situ analysis and visualization wherein the analysis computation is performed at simulation time and a reduced dataset instead of the entire dataset
+is written out to storage.
+This approach helps reduce the amount of data being written to storage and allows users to glean scientific insights faster. Several in situ analyses, such as identification of regions of turbulence and query-driven analysis, produce sparse data, which needs to be written out to the storage system.
+%GWP - WHY DOES IT NEED TO BE WRITTEN OUT? Almost immediately below you say that in many cases there may not be any data to write out!
+Sparse data is characterized by having a wide distribution of message sizes for I/O across the compute nodes. In many cases,
+because of the analyses performed and the data distribution,
+a majority of nodes
+may not have any data to write out to the storage system. This data movement pattern is called sparse in contrast to the dense data movement pattern, where data is evenly distributed among the compute nodes and data movement is carried out on a majority of compute nodes. 
 
-Data-intensive applications generate large volumes of data. Transferring the data usually burdens the underlying network and storage system. Storage performance is considered to be one of the weakest links in extreme-scale computing. To mitigate this I/O bottleneck, computational science applications use in-situ analysis and visualization wherein the analysis computation is done at simulation time, and a reduced dataset is written out to storage instead of the entire dataset. Such applications produce either evenly-distributed data among the compute nodes, called {\em dense data}, or concentrated data among a partial set of compute nodes, called {\em sparse data}. Several in-situ analyses such as finding regions of turbulence, query-driven analysis, etc., produce sparse data, which needs to be written out to the storage system. Sparse data has a wide distribution of message sizes for I/O across the compute nodes. In many cases, a majority of these nodes, due to the analyses performed, may not have any data to write out to the storage system.
+Sparse data is also being generated by multiphysics applications, where different physics modules are running on disjoint compute partitions. Each module may write out data at different frequencies, probably non-overlapping, leading to a situation where the entire I/O pipeline may not be utilized to write the data from any single physics module. Furthermore, sparse data can be seen in communication between data coupling modules in multiphysics applications when one physics module needs data from another physics module to complete a computational task. The data is transferred between these modules through a single path, even though multiple paths are available for data transfer.
 
-Sparse data is also generated by multiphysics applications wherein we have different physics modules running on disjointed compute partitions. Each module may write out data at differing frequencies, likely non-overlapping, leading to a situation where the entire I/O pipeline may not be utilized to write the data from any single physics module.
+Since sparse data patterns are of increasing importance for computational science applications on leadership-class computers, optimizing and improving sparse data transfers on such systems are becoming more important.
 
-Furthermore, sparse data can also be seen in communication between data coupling modules in multiphysics applications when two physics modules communicate while other modules are communication-free. On the IBM Blue Gene/Q system, the data is transferred between the two modules via a single path even though multiple paths are available.. In such cases, the network resources is underutilized and this leads to an increase in the time-to-solution. As we can see more sparse data movements in emerging data-intensive scientific applications, optimizing and improving sparse data transfers are getting more important for those applications.
+In order to support higher bandwidth and to lower the messaging latency, interconnects in supercomputers are becoming more complex in terms of topology as well as routing policies. Currently various types of interconnect networks exist, such as the 3D torus in Cray XE6, 5D torus in Blue Gene/Q, 6D torus in K-machine, and Dragonfly in Cray XE30.  Leveraging all the available network paths is key to improved performance. Such network paths are not always fully exploited, however, because of application communication patterns and underlying routing policies. Current interconnects for supercomputers route a message along a single path. Different messages may have different paths depending on adaptive routing policies.
+%GWP - It is not clear why having several options means restricting the paths - it seems better than one path. OR do you mean Nevertheless, such policies typically still route a message along one of the chosen paths, a reasonable strategy given the complexity of the interconnect networks ...
+%GWP I also don't see why using only one path (assuming that with adaptive policies one still winds up doing only one path) is reasonable given the network complexity. If it is reasonable, however, does that make your porposed use of multiple paths unreasonable?
+Adaptive routing gives several options to route data, resulting in only several paths to be selected. This is reasonable due to complexity of interconnect networks at scale under the assumption that all nodes carry on communication at a time. However, at user space, this leads to new opportunities for parallelizing message transfer and multi-path data movement for sparse data movement patterns.
 
-In this paper, we investigate the performance of sparse data movement on Argonne National Laboratory's IBM BG/Q supercomputer, Mira. More specifically, our contributions are two-fold: 1) we identify sparse data transfer problem in data-intensive applications and develop mechanisms for aggregating data efficiently, and 2) we propose multi-path algorithms leveraging intermediate nodes to improve data transfers among compute nodes. We evaluate the efficacy of the current data movement mechanisms in multiphysics and MPI-IO for sparse data patterns on these systems. We then introduce the intermediate nodes to allow data to be transferred concurrently on multiple data paths at the application level.
+In this paper, we propose a multipath data movement approach for sparse data patterns. Our approach is novel and practical in that it uses idle resources for handling sparse data movement through multiple paths. Moreover, it is implementable at the application level without needing modification of the underlying
+hardware/software infrastructure. To our knowledge, our work is the first that proposes multipath data movement on the Blue Gene/Q (BG/Q) supercomputer for sparse data movement. More specifically, our contributions include the following.
+\begin{itemize}
+\item We adapt a max flow algorithm to find the possible number of disjoint paths to move data. 
+We then use a breadth-first search (BFS) to find the paths. 
+\item We realize multipath data movement by introducing intermediate nodes onto these paths. This approach overcomes the single-path data movement approach in the BG/Q under the current routing policy.
+\item We leverage routing policies to reduce the number of intermediate nodes, in order to minimize overhead incurred by them.
+\item In addition to multipath data movement, we implement pipelined data movement with the Parallel Active Message Interface (PAMI) library to further improve the data movement throughput.
+\end{itemize}
 
-We developed heuristics to select the number and position of intermediate nodes to maximize data transfer throughput. We also developed a data movement mechanism that is aware of I/O node location to balance the I/O load. Finally, we evaluate the performance for a set of benchmarks on Mira scaling to 131,072 compute cores.
-
-The remainder of the paper is organized as follows: in Section \ref{sec:relatedwork}, we discuss related work in data movement and I/O performance improvement in high performance systems. In Section \ref{sec:systems} we briefly describe the supercomputing system that we used to investigate our approaches. We present our approaches in Section \ref{sec:approaches} and then demonstrate their efficacy through microbenchmarks in Section \ref{sec:microbenchmarks} and application benchmarks in Section \ref{sec:app_benchmarks}, respectively. Finally, we present our conclusions and future work in Section \ref{sec:conclusions}.
+The remainder of the paper is organized as follows. In Section \ref{sec:relatedwork} we present related work.
+In Section \ref{sec:system}
+we describe the IBM Blue Gene/Q system that we used in our study
+In Section \ref{sec:approach}
+we present our approach for multipaths data movement,
+with the details of our algorithms and techniques to realize our ideas.
+In Section \ref{sec:microbenchmark} and Section \ref{sec:appbenchmark} we demonstrate the efficacy of our solutions by using sets of microbenchmarks and application benchmarks, respectively.
+In Section \ref{sec:conclusion}
+we present our conclusions.
 
 \section{Related work}
 \label{sec:relatedwork}
+Bandwidth optimization for data movement has been studied in great detail.
+%in the literature.
+To optimize throughput,
+many researchers have considered a particular system's interconnection information and application's communication patterns. Essentially, these two characteristics can be used to map an application's processes to specific processors so that interprocessor communication can take advantage of that network to maximize throughput of data movement.
 
-Bandwidth optimization has been studied in great details in the literature. Many works consider a particular system's interconnection information and application's communication patterns to optimize throughput. Essentially, these two characteristics can be used to map an application's processes to specific processors so that interprocessor communication can take advantage of that network.
+In an MPI-enabled environment, bandwidth optimization can be done via mapping the application's MPI processes to the system's processors/cores. In \cite{Bhatele:mapping}, the authors provided a tool for performing a wide variety of mappings for structured communication patterns. The mappings increased the bandwidth and reduced the latency and congestion. The tool did not take sparse communication patterns into account, however, and thus did not realize that multiple paths could be made available for data movement.
 
-In an MPI-enabled environment, bandwidth optimization can be done via MPI processes mapping. In \cite{Bhatele:mapping}, the authors provide a tool for performing a wide variety of mappings for structured communication patterns. The tool provided mappings that were able to increase bandwidth and reduce latency and congestion. The tool did not take unstructured communication patterns into account, thus, did not realize that multiple paths could be made available for data movement.
+Kumar and Faraj \cite{Kumar:Allreduce} improved MPI\_Allreduce collective communication performance using multiple incoming and outgoing links per node communication on BG/Q. The work focused on MPI\_Allreduce collective communication, however, whereas our work targets sparse data movement among a subset of nodes.
 
-Multiple path data movement was realized in the work of Khanna et al. \cite{Proxies:Gaurav} by using intermediate nodes when an explicit path setup was not provided. This work focused on wide-area networks (WANs) where the exact network topology is hidden from users. Accordingly, shared links are identified through real experimental network throughputs. Our work is applied to the interconnection network and the I/O subsystem of supercomputers where the network topology and associated routing policies are known a priori and the size of the network is much larger than WANs. Our ideas come from the observation that compute nodes in the BG/Q system have 10 links for communication but usually only a single path is used for transferring data between nodes or between nodes and I/O nodes.
+Multipath data movement was established by Khanna et al. \cite{Proxies:Gaurav} by using intermediate nodes when an explicit path setup was not provided. This work focused on wide-area networks (WANs) where the exact network topology is hidden from users. Accordingly, shared links were identified through real experimental network throughput. In contrast, our work is applied to the interconnection network and the I/O subsystem of supercomputers where the network topology and associated routing policies are known a priori and the size of the network is much larger than that of WANs. Our ideas come from the observation that compute nodes in the BG/Q system have 10 links for communication but that usually only a single path is used for transferring data between nodes or between nodes and I/O nodes.
 
-Kumar and Faraj \cite{Kumar:Allreduce} proposed using multiple incoming and outgoing links per node for communication on the BG/Q. The work was focused on MPI Allreduce collective communication while our work targets sparse data movement among a subset of nodes.
+Adaptive routing for network load balancing has been also studied in \cite{Valiant:Routing,singh2003:goal}. 
+In addition, researchers have investigated adaptive routing for current supercomputers such as  Blue Gene/Q \cite{Chen:BGQ} and Cray Cascade \cite{garcia2013:CrayDragonfly}. These studies are for low-level networking, however, where they are able to route any packet in any path. In contrast, our study leverages underlying routing policies to implement multipath data movement in the user space where we have more detailed knowledge about the data flows and the patterns. 
+%More on load balancing network.
 
-Adaptive routing for network balancing has also been studied in \cite{Valiant:Routing,singh2003:goal}. In addition, there are works on adaptive routing for current supercomputers such as the BG/Q \cite{Chen:BGQ} and the Cray Cascade \cite{garcia2013:CrayDragonfly}. However, these works are for low-level networking, where any packet can be routed to any path. In contrast, our study leverages underlying routing policies to implement multipath data movement in the user space, where we have more detailed knowledge about the data flows and patterns.
+In the context of I/O forwarding and staging, many studies have been done to improve I/O performance.   
+A scalable I/O forwarding framework for high-performance computing systems was presented in \cite{Ali:IOForwarding,Iskra:IOForwarding}.
+The authors in \cite{Vishwanath:IOForwarding,Vishwanath:GLEAN} proposed an augmentation for I/O forwarding and asynchronous data staging for Blue Gene/P and Blue Gene/Q systems, and the authors in \cite{ADIOS} proposed similar methods for Cray systems. However, those studies assumed that data is dense and uniformly distributed.
+Our work in this paper extends our previous work \cite{Vishwanath:GLEAN} to deal with sparse data movement patterns and extends our work in \cite{Multipath:BGQ} by employing a pipeline technique to reduce overhead and large memory usage caused by copying and injecting large messages. Our work also uses PAMI to improve the transfer of small messages.
 
-I/O forwarding and staging is routinely used for improving I/O performance to storage. A scalable I/O forwarding framework for high-performance computing systems is presented in \cite{Ali:IOForwarding}. The authors in \cite{Vishwanath:IOForwarding,Vishwanath:GLEAN}  proposed an augmentation for I/O forwarding and asynchronous data staging for BG/P and /Q systems. However, those studies assumed that the data is dense and uniformly distributed. Our work in this paper extends on our previous work \cite{Vishwanath:GLEAN} to deal with sparse data movement patterns.
+\section{Systems for experiments}
+\label{sec:system}
 
-\section{Supercomputing Systems}
-\label{sec:systems}
-
-In this section, we describe the BG/Q resources at the Argonne Leadership Computing Facility (ALCF) on which we developed and tested our multipath sparse data movement algorithms.
-
-ACLF maintains several compute analysis systems that are used by the scientific community. Figure \ref{fig:alcf} depicts the architecture of ALCF’s primary resource, Mira, its data analysis cluster, Tukey, and the file server nodes.
+In this section, we describe the supercomputing systems in which we developed multipath sparse data movement algorithms and conducted our experiments. The Argonne Leadership Computing Facility (ALCF) maintains several compute-analysis systems used by the scientific community. Figure \ref{fig:alcf} depicts the architecture of the primary ALCF resources, consisting of the Blue Gene/Q compute cluster (Mira), the data analysis cluster (Tukey), and the file server nodes.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
-\includegraphics[scale=0.2]{figures/anl_facility}
+\includegraphics[scale=0.3]{anl_facility.pdf}
 \vspace{-0.1in}
-\caption{The ALCF maintains the 768K core Blue Gene/Q supercomputer (Mira), data analysis cluster (Tukey), and file server nodes.}
+\caption{The ALCF maintains the 768K core Blue Gene/Q compute cluster (Mira), data analysis cluster (Tukey), and file server nodes.}
 \vspace{-0.1in}
 \label{fig:alcf}
 \end{figure}
 
-Mira has 48K nodes and has a peak performance of 10 petaflops. Each node has 16 application cores and 16 GB of memory.
-Mira’s I/O and interprocessor communications (both point-to-point and collectives) travel on a 5D torus network. This 5D torus interconnects each compute node with its 10 neighbors at 2 GB/s theoretical peak over each link in each direction, making a total of 40 GB/s bandwidth in both directions for one single compute node. However, due to packet and protocol overheads, up to 90\% of the raw data rate (1.8GB/s) is available for user data. The machine can be partitioned into non-overlapping rectangular sub-machines for certain applications upon request. These sub-machines do not interfere with each other except for I/O nodes and the corresponding storage system.
 
-An overview of the network is also given in \cite{Chen:MessagingUnit}. Each compute node has 11 send units and 11 receive units (10 for the links of the torus and one for the I/O link). All packets are injected in and pulled out of network injection/reception FIFOs by Messaging Unit (MU). The number of FIFOs is enough to saturate all links. Outgoing packets can be put in any injection FIFOs and may go out to any link. However, incoming packets at a receiver is placed only in its reception FIFO.
+Mira \cite{Chen:BGQ}, with 48 compute racks (48K nodes and 768K cores) at the ALCF, provides 10 PFlops theoretical peak performance. Each node has a 16-core, 64-bit PowerPC A2 processor, together with 32 KB cached L1, 32 MB cache L2, and 16 GB of memory.
 
-For interconnect network traffic, the BG/Q supports both deterministic and dynamic routing \cite{Chen:BGQ}. Deterministic routing uses only one path to route packets from a source to a destination and packets are routed longest to shortest using a commonly used dimension-order routing algorithm. In dynamic routing, routing is still dimension ordered, but the packet routes are programmable, enabling different routing algorithms to be used. This is called ``zone routing''. There are four zone IDs from 0 to 3. The routing algorithm selects a zone ID based on a flexibility metric and the message size. The flexibility value is computed based on the torus size and hop distance between the two communicating nodes. The selection of zone ID based on these values is experiment-based and is hard coded in low-level libraries \cite{BGQRedbook:Gilge}. Among the four routing zones, routing zone ID 1 is unrestricted, and packets route in a random order. Routing zone ID 0 is longest-to-shortest. However, dimensions with the same lengths can be chosen randomly. Routing zone IDs 2 and 3 are deterministic. For these two routing zone IDs, given a certain message size, routing is always the same and its path is known before it is routed. These are default routing algorithms and are not changeable. However, we can set a routing zone ID by using a PAMI ROUTING environment variable. As BG/Q uses single path data routing, only one of ten available links are used for message sending and receiving a message, so one reception FIFO is used at receiver.
+The I/O and interprocess communications of Blue Gene/Q travel on a 5D torus network both for point-to-point and for collective communications. This 5D torus interconnects a compute node with its 10 neighbors at 2 GB/s theoretical peak over each link in each direction, making a total of 40 GB/s bandwidth in both directions for a single compute node. Because of packet and protocol overheads, however, only up to 90\% of the raw data rate (1.8 GB/s) is available for user data. The machine can be partitioned into non-overlapping rectangular submachines; these submachines do not interfere with each other except for I/O nodes and the corresponding storage system.
 
-With respect to I/O traffic, the compute nodes connect to an analysis cluster and the file servers through I/O nodes and a QDR IB Switch Complex. Every 128 compute nodes (forming a pset) has two bridge nodes, which are among the compute nodes. Each bridge node has an 11th 2GB/s-bandwidth link connecting to an I/O node, making total 4 GB/s bandwidth for I/O per pset at most. I/O traffic is routed from compute nodes to bridge nodes over the torus network deterministically, and then traverses over the 11th links from bridge nodes to the I/O nodes \cite{Chen:BGQInterconnection}. In the next section, we describe novel multipath routing mechanisms that leverage default routings on the BG/Q to improve data movement performance.
+For interconnect network traffic, BG/Q supports both deterministic and dynamic routing \cite{Chen:BGQ}. In deterministic routing, packets are routed based on dimension-ordered routing, from the longest first to the shortest last. In dynamic routing, routing is still dimension-ordered, but it is programmable, enabling different routing algorithms to be used. This approach is called ``zone routing.'' There are four zone ids, from 0 to 3. The routing algorithm selects a zone id based on the flexibility metric and message size. The flexibility value is computed based on the torus size and hop distance between two nodes doing communication. The selection of the zone id given the values is experiment-based and is hard coded in the low-level library \cite{BGQRedbook:Gilge}.
+Routing zone id 0 is longest-to-shortest routing; however, dimensions with the same lengths can be chosen randomly. 
+Routing zone id 1 is unrestricted routing, in which packets are routed in a random order.
+Routing zone ids 2 and 3 are deterministic routing. For these two routing zone ids, given the size of a certain message, routing is always the same, and its path is known before it is routed. These are the default routing algorithms and cannot be changed during run time. However, one can set which routing zone id to use by using the PAMI\_ROUTING environment variable. Since BG/Q uses single-path data routing, for sending/receiving a message only one link of the ten available is used; hence, there is one reception FIFO at the receiver. In addition, for point-to-point communication, the number of hops between two nodes has negligible effect on performance.
 
-\section{Sparse data movement optimization}
-\label{sec:approaches}
-We start this section by presenting inefficiencies in current systems in the support of sparse data movement. We propose novel approaches for multipath data movement to overcome these inefficiencies.
+On Mira, the compute nodes connect to an analysis cluster and file servers through I/O nodes and the QDR IB Switch Complex. Every 128 compute nodes (forming a pset) have two bridge nodes; two nodes in the pset have an additional functionality of a bridge node. Each bridge node has an 11th 2 GB/s bandwidth link connecting to an I/O node, making total 4 GB/s bandwidth for I/O per pset. I/O traffic is routed from the compute nodes to the bridge nodes over the torus network deterministically and then traverses over the 11th links from the bridge nodes to the I/O nodes.
 
-\subsection{Inefficiency in current data movements}
-For data transfers between compute nodes on the BG/Q, a message from a source to a destination traverses a single path. In the absence of congestion and network failures, default routing algorithms are used, causing the message to traverse a deterministic and single path. Figure \ref{fig:multiply}(a) depicts the single path data movement, in which one path is used other paths are idle. With dense, uniform data movement patterns where a majority of nodes and network links are involved in communications, the utilization of system resources is high. Whereas with sparse data movement patterns, only specific regions of the system are involved in communications, resulting in a low utilization of the resources.
+PAMI is a low-level communication library for BG/Q \cite{PAMI:Kumar}. PAMI provides low-overhead communication by using various techniques such as accelerating communication using threads, scalable atomic primitives, and lockless algorithms to increase the messaging rate. Since MPI is implemented on top of PAMI, direct use of PAMI would provide higher messaging rates as well as lower latencies in comparison with MPI.
 
-Similarly, I/O messages such as writes as shown in Figure \ref{fig:multiply}(b) travel along a default path to default I/O nodes. When the writes  have a uniform distribution on data size and location, I/O nodes allocated for applications are used efficiently. However in sparse data movements, due to uneven distribution of data movement requests, I/O nodes and the interconnect networks suffer from an unbalanced load. The current MPI-IO implementation aggregates data to intermediate nodes, but these nodes are neither uniformly distributed nor balanced to connect to all I/O nodes. 
 
-We next present a general approach to improve resource utilization for data movement. We then present two sub-algorithms for sparse data movements, one for among compute nodes and the other for between compute nodes and I/O nodes.
+\section{Approach}
+\label{sec:approach}
+In this section, we present our multipath approach for sparse data movement in the leadership systems. We are able to use multiple paths for data movement through intermediate nodes called proxies while conforming to default routing policy enforced by the underlying infrastructure. We find multiple paths by adapting the maximum flow algorithm on the graph representing an interconnect network. We then improve performance by implementing pipeline techniques and using the PAMI low-level communication library.
+
+We start by describing the inefficiencies of sparse data movement in the current systems. To overcome such inefficiencies, we propose novel approaches based on multipaths for sparse data movement.
+
+\subsection{Inefficiency in current data movement}
+For data transfer between compute nodes on BG/Q, a message traverses from a source to a destination node using a single path. In the absence of congestion and network failures, the default routing algorithm forces the message to traverse a deterministic single path. Figure \ref{fig:multiply}(a) depicts the single-path data movement, in which one path is used while the other paths are idle. With dense, uniform data movement patterns where the majority of nodes and network links involve communications, the utilization of system resources is high. With sparse data movement patterns, however, only specific regions of the system involve communications, resulting in a low utilization of the allocated resources.
+
+Similarly, I/O messages (e.g., writes) from a compute node travel along a single path to a default I/O node, as shown in Figure \ref{fig:multiply}(b). When the writes  have a uniform distribution of data size and location, I/O nodes allocated for applications are used efficiently. With sparse data movements, however, I/O nodes and interconnect networks suffer from an unbalanced load. Current MPI-IO aggregates data into intermediate nodes, but these nodes are neither uniformly distributed nor balanced among all I/O nodes.
+
+We next present a general approach to improve resource utilization for data movement. We then present our approach for sparse data movements.
 
 \subsection{Data movement using multiple paths}
-One way to improve the utilization is to employ multiple paths. We can assign non-overlapping multiple paths for multiple messages going out from a node. Theoretically, each message would concurrently follow a non-overlapping path and the data movement therefore promises to achieve  improvement. However, at programming level, the current BG/Q system has no ability to set up paths for messages explicitly. However, we can still leverage disclosed default routing algorithms to implement concurrent data movement via multiple paths in the user-space. Thus, we can greatly simplify the deployment of our heuristics.
+One way to improve the utilization is to employ multiple paths.
+%To employ multiple path, 
+We can assign multiple routing paths for multiple messages from a node. Theoretically, multiple messages would concurrently follow multiple non-overlapping paths, 
+and the data movement therefore would achieve multifold improvement. At the programming level, however, the BG/Q supercomputer does not allow paths for messages to be set up explicitly. Nevertheless, we can still implement concurrent data movements via multiple paths in user space by using proxies while following disclosed default routing policies. Doing so greatly simplifies the deployment of our heuristics and provides us with valuable validation and feedback for our approaches.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
-\includegraphics[scale=0.5]{figures/multiply}
-\vspace{-0.2in}
+\hspace*{-0.4cm}\includegraphics[scale=0.5]{multiply.pdf}
+\vspace{-0.3in}
 \caption{Data transfer with and without proxies}
 \vspace{-0.1in}
 \label{fig:multiply}
 \end{figure}
 
-In order to route data along multiple paths on a single-path-allowed system, we introduce intermediate nodes which are compute nodes where the application runs to serve an additional purpose of routing data. Leveraging the default routing, we first route data from sources to the intermediate nodes and then from intermediate nodes to destinations. As shown in Figure \ref{fig:multiply}(c), by adding intermediate nodes we increase the number of paths to move data between nodes, overcoming the system limitation of a deterministic single path for data movement. The  routing function on the intermediate nodes does introduce little additional overheads, and we assume that future systems might provide such functionality at the node level for a multipath routing.  Knowing the routing policy a priori, we choose the locations of intermediate nodes to minimize the shared links and therefore maximize the data movement throughput. In Figure \ref{fig:multiply}(d), by adding the intermediate nodes we increase the number of I/O nodes and accordingly balance I/O workload. 
-We also propose a mechanism that leverages interconnect topology and distributes intermediate nodes dynamically among all I/O nodes to achieve significant improvement in I/O. 
+To route data using multiple paths on a single-path-allowed system, we introduce intermediate nodes that are also compute nodes running the application and routing data at the same time. Following the default routing policy, we first route data from sources to the intermediate nodes and then from intermediate nodes to destinations. As shown in Figure \ref{fig:multiply}(c), by adding intermediate nodes, we make sure that we use as many I/O nodes as possible. Currently our routing function on the intermediate nodes causes overhead. We expect, however, that future systems will provide the functionality on nodes needed to achieve higher data movement throughput.  Knowing the routing policy, we should choose the locations of intermediate nodes to minimize the shared links and therefore maximize the throughput of data movement. Similarly, in Figure \ref{fig:multiply}(d), by adding the intermediate nodes, we can increase the number of I/O nodes and accordingly balance I/O workload. Clearly, using multiple paths in sparse data movement is critical for utilizing resources efficiently and subsequently for improving performance.
 
-Implementing multipath data movement using intermediate nodes requires several steps.
-\begin{itemize}
-\item Calculate the message sizes to see if using intermediate nodes benefits performance and how to use them.
-\item Determine the number and location of intermediate nodes.
-\item Transfer data using multipaths from sources to destinations via intermediate nodes.
-\end{itemize}
+In the following sections, we describe our approach and associated techniques in detail.
 
-In the next sections, we realize the above steps for sparse data movement among compute nodes and sparse data movement to I/O.
+\subsection{Multipath computation algorithms}
+We model our data movement problem as a multipath computation problem when the interconnect network is given as a directed graph where vertices represent compute nodes and edges represent links connecting compute nodes. The bandwidth on each link is the capacity of the corresponding edge. On BG/Q where the compute nodes are allocated in a contiguous block, we can easily create a directed graph model for the allocated partition.
 
-\subsection{Sparse data movement between groups of compute nodes}
-In this subsection, we present an algorithm to select the number and the locations of intermediate nodes together with multipath data movement between two groups of compute nodes. This is critical for data coupling in multiphysics codes. Intermediate nodes will be referred to as proxies for the rest of the paper. 
+The model can have single or multiple sources and destinations. If more than one node is acting as source nodes and/or destination nodes, we create a {\em logical} source and/or a {\em logical} destination node and connect the logical node with real ones using {\em logical} links with infinite capacity. Our goal is to find disjoint paths that connect sources to destinations, yielding the highest possible throughput. To find such disjoint paths resulting in maximum flow, we use the Ford-Fulkerson algorithm extended with a breadth-first search (BFS). The algorithm has the runtime $\mathcal{O}(|V|^2*|E|)$, with $|V|$ being the number of vertices and $|E|$ being the number of edges. The runtime of the algorithm scales well with interconnect networks of supercomputers where $|E| >> |V|$.
 
-We start with selecting number of proxies. Each proxy adds an additional non-overlapping data movement path,. Adding more paths reduces congestion and improves the transfer time. However, as we introduce proxies, additional overhead, and hence time, is also introduced due to the additional processing and buffering at the proxy. Therefore performance gained by introducing proxies needs to be at least enough to compensate the extra time caused by introducing them. We model the time for data movement from one node's memory to another node's memory using remote direct memory access (RDMA) as follows.
+In our work, we assume that the size of the data at the nodes that needs to be transferred out is approximately the same. Data has the same priority across all the nodes. The network is clean, so the capacity on each edge is entirely dedicated to our data movements.
 
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.5]{figures/transfer_time.pdf}
-\vspace{-0.2in}
-\caption{Time to transfer in case of with and w/o proxies}
-\vspace{-0.1in}
-\label{fig:proxies}
-\end{figure}
-For data transfer, communication delay is composed of processing delay, transmission delay, queueing delay and propagation delay. To make it simple, we model the delays into 3 variables: time for processing, queueing and injecting at sender node t$_s$, time to transfer data t$_t$ and time for processing, queueing and storing at receiver node t$_r$. The time is depicted in Figure \ref{fig:proxies}. The total time to transfer a message of size d from sender u to receiver v therefore is:
+Our implementation of the Ford-Fulkerson algorithm is as follows. We create a residual graph with full capacity and update it as we traverse the graph to find a path from a source node to a destination node. We use BFS to travel on the graph. We start at the source node and expand unvisited neighbors along each outgoing edge with positive capacities. The neighbors are then added to a queue and marked visited. As we travel, we record the previous node of each visited node. We continue the process until we reach the destination. As soon as we reach the destination, we traverse back to the source and update the residual graph. We continue the process until there is no path to go from source to destination with positive capacity.
 
-\begin{equation}
-t = t_s + t_t + t_r
-\end{equation}
-
-In which:
-\begin{itemize}
-\item $t$: Total time to transfer.
-\item $t_s$: Time to process, queue and inject a message of size d into the network at sender
-\item $t_t$: Time to actually transfer a message of size d from sender' network interface to receiver's network interface.
-\item $t_r$: Time to process, queue and store a message of size $d$ from network to memory at receiver.
-\end{itemize}
-
-In the case of using k paths with k proxies, the data size each path carries would be $\frac{d}{k}$, assuming equal split. Data is transferred in two steps from the sender to proxies, completely stored at the proxies, and then moved from the proxies to the receiver. Each proxy becomes an extra sender and receiver. Thus, we need to account for this additional processing and buffering at proxy endpoints. The time for transfer in each hop can be considered approximately the same. Hence, total time to transfer data is:
-\begin{equation}
-t' = 2(t'_s + t'_t + t'_r) %2(\frac{t'_i}{k} + \frac{t'_t}{k} + \frac{t'_s}{k}) = 2\frac{t'_i + t'_t + t'_s}{k}
-\end{equation}
-
-In which:
-\begin{itemize}
-\item $t'$: Total time to transfer.
-\item $t'_s$: Time to process, queue and inject a message of size d/k into the network at sender
-\item $t'_t$: Time to actually transfer a message of size d/k from sender's network interface to receiver's network interface.
-\item $t'_r$: Time to process, queue and store a message of size d/k from network to memory at receiver.
-\end{itemize}
-
-The ratio of total time for two data transfer methods is:
-\begin{equation}
-\frac{t'}{t} = \frac{2(t'_s + t'_t + t'_r)}{t_s + t_t + t_r} 
-\end{equation}
-
-As we split a message into k messages, time to transfer data is reduced linearly. However, the time to inject and  to store do not. Actually the total time to inject or store $k$ messages of size d/k each is at least the time for one single message size $d$. This is due to overheads to process and buffer the data. Therefore:
-
-\begin{equation}
-t'_s \ge \frac{t_s}{k}; \; 
-t'_t = \frac{t_t}{k}; \; 
-t'_r \ge \frac{t_r}{k}\; 
-\end{equation}
-
-The equalities happen only when message size is greater than a threshold. For the message size greater than  the threshold, we have:
-\begin{equation}
-\frac{t'}{t} = \frac{2(t'_s + t'_t + t'_r)}{t_s + t_t + t_r} = \frac{2(\frac{t_s}{k} + \frac{t_t}{k} + \frac{t_r}{k})}{t_s + t_t + t_r} = \frac{2}{k}
-\end{equation}
-
-Thus, to get benefit from setting up proxies, we need to have at least 3 proxies per data transfer, and we can improve $k/2$ times throughput.
-
-For small messages, as $t'_s \gg t_s/k$ and $t'_r t_r/k$, we need a much greater value of k to get benefit from setting up proxies, which is usually not feasible. In Section \ref{sec:microbenchmarks}, we show threshold values computed based on experiments at which for smaller messages, direct transfer is better than proxy-based transfer, and for bigger messages, proxy-based transfer is better. Therefore, proxy-based techniques should be used for intensive sparse data movements when the size of message is greater than a threshold.
-
-With respect to the placement of the proxies, we need to choose positions of the proxies to minimize link sharing since we know routing paths in advance. It is difficult and sometimes impossible to choose proxies as the number of nodes involved in data movement increases. We develop an heuristic algorithm to check if it is feasible to implement proxies and to find the number and position of these proxies. The BG/Q is connected via 5D torus, however to simplify the algorithm illustration and description, we depict the data movement of the algorithm for 2D mesh as in Figure \ref{fig:groxies}. The 5D torus or any k-D torus would work in the same way. In our work, we assume that regions of a cluster that need to communicate data are contiguous. This assumption is valid under many multi-physics applications such as Community Earth System Model \cite{CESM:Collins} as processes of an application are usually mapped contiguously to improve intra-group communication. We also assume that the network is dedicated with no background communication from other applications.
-
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.5]{figures/groxies.pdf}
-\vspace{-0.1in}
-\caption{Using 4 groups of proxies at 4 directions to transfer data between 2 groups in 2 steps}
-\vspace{-0.2in}
-\label{fig:groxies}
-\end{figure}
-
-The Figure \ref{fig:groxies} depicts a 2D allocation of \textit{a} x \textit{b} mesh topology for multi-physics application. In the 2D mesh, data is routed horizontally (A direction) first and then vertically (B direction). Two physics codes S and T running at 2 regions of the cluster are data coupled (i.e., T needs data from S to complete a computation.) Region S has the size \textit{m} x \textit{n}, while T has the size \textit{g} x \textit{h}. We assume that each node has approximately the same amount of data and each destination receives approximately the same amount of data.
-
-\begin{itemize}
-\item S: Set of source nodes, size $|S|$ = m*n = M
-\item T: Set of destination nodes, size $|T|$ = g*h = N
-\item P$_i$: Proxies nodes of source node s$_i$.
-\item L: Number of dimensions of the network.
-\item $coord_{il}$: Coordinate of a node i, dimension l
-\item Each s$_i$ $\in$ S:
-\begin{itemize}
-\item Has targets T$_i$ and proxies P$_i$.
-\item Data size d$_i$ at s$_i$ is sent to set of t$_i$ in T$_i$. s$_i$ sends d$_{i}$ to t$_i$ through p$_i$
-
-\end{itemize}
-\end{itemize}
-
-Here we develop a heuristic algorithm for data movement between multiple sources and multiple destinations using multiple paths leveraging known  data routing algorithms. Note that the default routing algorithms here is order-based and given the torus size of the allocation, message size and coordinates of source and destination are known a priori. The algorithm is described in Algorithm \ref{Alg:groxies}.
+Our modified Ford-Fulkerson algorithm produces the maximum flow together with paths that achieved that maximum flow. From the result,  we know at most how many paths a source may have. We assign paths to each source node in an incremental way, as described in Algorithm \ref{Alg:multipath}.
 
 \begin{algorithm}
-\caption{Algorithm for data movement between 2 groups of nodes}
+\caption{Multipath computation algorithm}
 \begin{algorithmic}
-
-\STATE \textbf{I. Init}
-\STATE Exchange coordinations of the sources and destinations.
-\FOR {each node s$_i$ in S with i = 1..M}
-\STATE P$_i$ = $\varnothing$, T$_i$ = $\varnothing$.
-\STATE Adding its destination nodes t$_j$ into T$_i$.
-\ENDFOR
-
-\STATE \textbf{II. Find Proxies}
-\FOR {each source node s$_i(\{coord_{il}\})$ in S}
-\FOR {each its destination node $t_j({coord_{jl}})$ in T$_i$}
-\STATE Sort the dimensions by routing order.
-\FOR{each dimension l with l = 1..L in the sorted order}
-\STATE Check 2 candidates: c$_p$ and c$_n$ on the + and - on the l direction of the s$_i$. %$(a_i, b_j), (a_i+\epsilon, b_j), (a_i, b_i+\delta), (a_i+\theta, b_i+\sigma$) w.r.t $(a_j-a_i)*(a_j-(a_i+\epsilon)) < 0, (b_i-b_j)*(b_i-(b_i+\delta)) < 0, (b_j-b_i)*(b_j-(b_i+\sigma)) < 0, (a_i-a_j)*(a_i-(a_i+\theta)) < 0$.
-\STATE If a candidate is available, add it into P$_i$.
-\ENDFOR
-\ENDFOR
-\IF {$|Pi| < 3$} \STATE Exit. \ENDIF
-\ENDFOR
-
-\STATE \textbf{III. Multipath Data Movement}
-\STATE Phase 1: At each node s$_i$ in S:
-\FOR{\textbf{each} p$_{ij}$ in P$_i$}
-\STATE Send data to p$_{ij}$ with size d$_{ij}$.
-\ENDFOR
-\STATE Phase 2: At each proxy p$_{ij}$:
-\STATE Send data to the destination.
+	\STATE Use Ford-Fulkerson to find total number of disjoint paths P.
+	\FOR {int i = 0; i $<$ P; i++}
+	\FOR {each s in set of sources S}
+	\STATE Find a path to one of its destinations, using BFS.
+	\STATE When reaching its destination, go back and update the residual graph.
+	\STATE Save the path for later transfers.
+	\ENDFOR
+	\ENDFOR
 \end{algorithmic}
-\label{Alg:groxies}
+\label{Alg:multipath}
 \end{algorithm}
 
-Our algorithm includes 3 parts: In the \textbf{Init} part, we exchange the coordinates of all sources and destinations. After that, each node s$_i$ initializes its empty sets of proxies P$_i$ and destinations T$_i$. The destinations of s$_i$ are then added to the T$_i$. If the set of sources and destinations are known a priori, an application only needs to run \textbf{Init} once. In the \textbf{Find Proxies} part, each source node checks 2*L possible candidates along L destinations. In the 2-dimension mesh, each node has 4 directions of +A, -A, +B and -B to send/receive data. There are 4 regions marked from I to IV in Figure \ref{fig:groxies}(a) to search for possible proxies that guarantee non-overlapping concurrent data movements. We can search for 4 proxies in the 4 regions with offsets from the source and the destination represented by values of $\epsilon, \delta, \theta, \sigma$. This is to make sure that 4 proxies are in the 4 distinct directions for both outgoing and incoming transfers.  Due to small torus size, searching for these values are not time consuming. If those values exist, we then add the proxies into the list P$_i$. If each source node can have at least 3 proxies then we continue the next part. Otherwise, we discard since there is no benefit to setup proxies. In the last part, \textbf{Multipath Data Movement}, we first move data from source nodes to proxies and then from proxies to destination nodes. To extend for L dimensions, we need to search for 2L directions (both negative and positive directions per each dimension) to find at most 2L proxies.
+In this algorithm, we iterate through the set of source nodes. For each source node, we find a path from source to destination and update the residual graph. We repeat the process until we run out of paths. In this way, paths are given in the increasing order of paths to the sources iteratively. By doing so, both short paths and long paths are distributed among the sources. Some sources may have more paths or have longer paths. Balancing between sources will be considered in future work. In a dense data movement pattern, there is usually one path for a source, but for a sparse data movement, multiple paths can be found. For symmetric data movement where all nodes move data in the same way, we can always find the maximum number of paths. However, if the data movement paths at source nodes are not the same, it may not return the maximum number of paths, resulting in less than maximum flow, but multiple paths can still be found.
 
-The algorithm is distributed and runs at every node. Except for gathering all coordinates at the beginning, the remainder of the algorithm executes without waiting (synchronizing) for all other nodes. The running time of the algorithm is O(M*N*L). However, due to small sizes of most networks, the actual time to compute the routes is small. Overall, the overhead for searching for proxies is negligible.
+The modified Ford-Fulkerson algorithm produces the maximum flow between two groups of nodes, as well as arbitrary paths resulting in maximum flow. However, these paths do not conform with default routing policies implemented in supercomputers. Therefore, to use the paths, we need to adjust the flow at every vertex on the paths; that is, we need to send data from one vertex to another one, make a copy, and send it to the next vertex on the paths. This implementation slows the data movement rather than speeding it. With a certain number of proxies introduced the performance gained is lower than the single-path data movement performance. Therefore, the number of paths as well as number of proxies is important in multiple-paths data movement.
+%Next we present our approach of leveraging default routings to reduce the number of proxies.
 
-\subsection{Sparse data movement between compute nodes and I/O nodes}
-\label{sec:stagingandio}
-Each compute node is associated with a default I/O node. Therefore, we need to have at least one intermediate node for each I/O node available in the allocated partition to use the I/O node.
-Depending on the data size, we may need more than one intermediate node per I/O node. Also, these intermediate nodes need to be uniformly distributed to avoid data congestion when sending data from compute nodes to intermediate nodes. Thus, to calculate the number of intermediate nodes needed, we need to know total size of data, available I/O nodes, location of compute nodes and their default I/O node. We uniformly distribute these intermediate nodes to the I/O nodes. Data is then aggregated from compute nodes to these intermediate nodes. In this way, an I/O node for which all of its compute nodes do not have data or have small size of data still receives I/O requests with approximately equal amount of data as intermediate nodes are chosen among its compute nodes. As these intermediate nodes aggregate data from a large number of nodes, we call them aggregators. The approach is presented in Algorithm \ref{Alg:aggregation}.
+\subsection{Leveraging routing policies to reduce number of proxies}
+To route data between nodes in BG/Q, we use a default routing policy. On multiple paths we found that if the data movement between any two nodes on the path conforms with the default routing policies, we can remove nodes between the two nodes. By doing so, we can  still guarantee that data is moved along the desired path while reducing the number of proxies introduced, therefore increasing the performance. Our goal is to find as many subpaths as possible that conform with the default routing paths, thereby minimizing the number of proxies. To this end, We introduce routing rules into the maximum flow algorithm that we use.
 
-\begin{algorithm}
-\caption{Algorithm for I/O data movement}
-\begin{algorithmic}
-\STATE \textbf{I. Init}
-\STATE Define the smallest size of data aggregated at each aggregator S.
-\STATE Each node queries its coordinates and its default I/O node.
-\STATE Calculate total number of IO nodes for the partition: n$_{io}$.
-\STATE List number of aggregators may be needed per I/O nodes: P = \{1,2,4..., 128\}.
-\FOR {each value num\_agg in the list P}
-\STATE Calculate the positions of aggregators based on the number of aggregators (num\_agg):
-\STATE Divide the pset along 5 dimensions by factors nA, nB, nC, nD, nE such as nA*nB*nC*nD*nE = num\_agg to create blocks.
-\STATE For each block, choose the first one as the aggregator.
-\STATE Save the aggregators for later use.
-\ENDFOR
+In our algorithm, to go from a source node to a destination node, we explore unvisited neighbors and add them to a queue. As we explore and add next vertices in arbitrary order, the paths produced are also arbitrary. To make them conform with default routing policies, we use the routing policies to control the order in which we add the neighbors into the queue. Besides the constraint of routing, we also have another constraint for the number of proxies used along a path. As the number of proxies increases to certain number the discovering path degrades the performance, therefore being no longer useful. We need to discard the path to find a new one. In the following, we explain how to leverage routing policies on BG/Q.
 
-\STATE \textbf{II. Redistribute data}
-\STATE Reduce and broadcast the total size of data need to be written: T = $\sum_{i=1}^{n}d_i$.
-\STATE Calculate the number of aggregators needed per pset: num\_agg = T/S/n$_{io}$.
-\STATE Based on num\_agg select the list of the aggregators from pre-created list and broadcast it to nodes having data.
-\STATE Each nodes having data sends its data to its chosen aggregator(s).
-\STATE Selected aggregators send data out through I/O nodes.
-\end{algorithmic}
-\label{Alg:aggregation}
-\end{algorithm}
+In the Blue Gene/Q system, data is routed by the longest-dimension first and the shortest-dimension last policy. As soon as a message moves out from a source node, it routes along the highest dimension; it may need to change dimensions five times at most. For a message routing along a desired path, whenever the message routes from a higher to lower dimension, we do not need a proxy. But if we route a message from lower to higher dimension, we would need a proxy. We introduce the routing constraint and number-of-proxies constraint of BG/Q into breadth-first search as follows:
 
-In the first part of the algorithm, \textbf{Init}, the algorithm queries all the information of I/O nodes, coordinates of compute nodes and its default I/O node. It then precomputes all possible aggregators and their location at all processes. The data is stored in list P, used later for redistributing data. To compute P, it divides the partition into equal blocks. It can create a subcomm using MPI\_Comm\_create for each sub-network and select the MPI rank 0 of the subcomm as the aggregator of the subnetwork. In the second part, \textbf{Redistribute data}, depending on total size of data for each I/O request, it selects appropriate aggregators and then carries multipath data movement.
-
-Since all the necessary information is queried and computed once at the beginning, we save time at each I/O request. At each I/O request, the only information needed to gather is total size of data. The aggregators are chosen dynamically and distributed uniformly to balance the load among I/O nodes.
+\begin{itemize}
+\item The order of edges to add into the queue of BFS is reverse-of-routing orders. This is to make sure that the lowest-priority dimension can be discovered first. The lowest-dimension-first path would need more proxies; being able to select the next nodes first would reduce the number of proxies along the path. By doing so, we can balance the number of proxies among multiple paths.
+\item If it is possible, do not use proxies. Whenever we need to add an edge that data moving by that edge has higher priority that the previous edge, we need to add a proxy.
+\item Constraint on total number of proxies: if the number of proxies used is more than the constraints, no longer explore that direction.
+\end{itemize}
 
 \subsection{Pipeline technique for data movement}
-In the graph model, data is transferred from a source to destination through proxies without extra delay. As we have to transfer data from the source node to proxies first, then from the proxies to the destination, we need to store data at a proxy. If we store entire message at the proxy, it takes time to wait until the entire message arrives and  then start injecting the message into network to the next proxy. To reduce the time to wait, we cut the message into smaller messages and transfer messages using pipeline such that storing messages and sending messages at a proxy can run concurrently. %Figure \ref{} depicts the process.
+Since we have to transfer data from the source node to the proxies first, and then from the proxies to the destination, we need to store data at a proxy. If we store the entire message at the proxy, it takes time to wait until the entire message arrives and  then start injecting the message into the network to the next proxy. To reduce the time to wait, we split the message into smaller messages and transfer the messages using a pipeline such that storing messages and sending messages at a proxy can run concurrently.
 
-%\begin{figure}[!htb]
-%\centering
-%\includegraphics[scale=0.5]{figures/pipeline.pdf}
-%\caption{Using pipelining technique to eliminate the waiting time at proxy}
-%\label{fig:pipeline}
-%\end{figure}
+For each proxy, requests to wait for data are posted at the beginning. After that, the proxy needs to iterate through the list of requests while checking whether data is ready to forward. To implement the pipeline, we create two threads at each proxy: one thread for receiving data and the other for forwarding data. A message is split into smaller messages with a certain size called the window size. The size of the window depends on the message size and is determined based on experiments. Within each message we embed the information of how data will be processed at the next node such as destination, address of the message in the destination's buffer, and the path Id that the next node should use to forward the message. The pipeline technique can be used in any system and yields significant improvement as we show in Section \ref{sec:microbenchmark}. With small messages, however, we still suffer performance degradation. The reason is that the control overhead in small messages is significantly large compared with the message size itself. Using low-level communication libraries can help reduce the control overheads. On BG/Q, PAMI is a low-level library for communication that improves the transfer of small messages. In the next subsection, we present our work of using PAMI on BG/Q to improve data movement throughput.
 
-For each proxy, requests to wait for data is posted at the beginning. After that, the proxy needs to iterate through the list of requests while checking if data is ready to forward. To implement the pipeline, we create two threads at each proxy: one thread for receiving data and the other for forwarding data. A message is cut into smaller message with certain size called window size. The size of window depends on message size and is determined based on experiments. Within each message we embed the information of how data would be process at the next node such as destination, address of the message in the destination's buffer, the path Id that next node should use to forward the message. The pipeline technique can be used in any system and yields significant improvement as we show in section \ref{sec:microbenchmark}. However, with small messages, we still suffer performance degradation. This is because the control overhead in small message is significantly large compared to the message size itself.
+\subsection{Improving data movement performance using PAMI}
+PAMI supports both one-sided and two-sided communication. It supports both small immediate communication and rendezvous large-message communication. In our study, we use one-sided communication for messages transfer and immediate send for control data. In sending and receiving data events, PAMI supports a callback function to let a sender and receiver know whether the event of sending/receiving has been done at either side.
 
-In the following sections, we present our study on Mira Blue Gene/Q to show the efficacy of our solutions.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.5]{pami_pipeline.pdf}
+\caption{Using pipelining technique with PAMI to eliminate the waiting time at proxy and reduce control overheads}
+\label{fig:pami_pipeline}
+\end{figure}
+
+As depicted in \ref{fig:pami_pipeline}, in the main thread of the source, we keep transferring data to windows of its proxies using \textit{PAMI\_Put}. Its comm thread running on the background is notified whenever the data is completely put on a proxy's side. The comm thread then uses \textit{PAMI\_Send\_immediate} to lets the proxy know that the data is ready. It also sends the control data of where and how to process the data with the \textit{PAMI\_Send\_immediate}. Each proxy needs to set up a callback function to process the control data sent to it. The callback function copies control data to a queue and informs the main thread. The main thread at each proxy plays the same role as the main thread of the source node. The size of the window for each message size is also determined empirically.
+
+In the next section, we present the efficacy of our solution on Mira through a set of microbenchmarks.
 
 \section{Microbenchmarks}
-\label{sec:microbenchmarks}
-In this section, we show the efficacy of our solutions through a set of microbenchmarks for 2 cases: data movement for data coupling nodes and data movement between compute nodes and I/O.
+\label{sec:microbenchmark}
+In this section, we elucidate the efficacy of our approaches using a set of microbenchmarks.
+%As mentioned in the previous section,
+We introduce proxy nodes to implement multiple paths for data movement in the user space. By doing so, we introduce extra processing time at the proxies to receive, buffer, and forward the data. We can mitigate the effect of this at the proxies by using a pipelining mechanism to overlap these stages; and we further improve the performance by overcoming the overhead in MPI's data movement by leveraging PAMI, the lower-level BG/Q messaging layer.
+%GWP - do you really still need to state that PAMI is low-level 
+In the following subsections we show that we can achieve close to peak achievable bandwidth when transferring data between two nodes, with data being forwarded by using an intermediate node. For most of the experiments below, we used MPI\_Put/PAMI\_Put (one-sided communication) to transfer data with 1 MPI/PAMI rank per node. For each data transfer we vary the data size in powers of 2. Each experiment was repeated 20 times, and the average of the results are reported. We start with benchmarks showing the efficacy of pipeline technique using MPI.
 
 \subsection{Efficacy of proxies and pipeline technique}
 
-%On BG/Q, we tested the system with 16 cores per node all communicate with 16 cores on another node, they transferred in all same links, resulting in 1.7GB/s at most. Due to the symmetry of mapping, it's more likely to all cores belonging to a nodes to connect with all cores belonging another nodes than connect with cores at different nodes. With 20 links per nodes, using multiple paths for data movement on BG/Q can results in significant throughput improvement. 
-
-In this microbenchmark, we transfer data between two nodes through an intermediate nodes using pipelining and compare results with transferring data without using pipeline and with a direct transfer (default) scheme. We varied the data size from 1K  to 128MB.
+In this microbenchmark we transfer data between two nodes through an intermediate nodes using pipelining, and we compare results with transferring data without using the pipeline and with a direct transfer (default) scheme. We varied the data size from 1K  to 128 MB.
 
 \begin{figure}[!htb]
 \centering
-\includegraphics[scale=0.3]{figures/pipeline_mpi.pdf}
+\includegraphics[scale=0.3]{pipeline_mpi.pdf}
 \caption{Using pipelining technique to mitigate the waiting time at proxy nodes}
 \label{fig:pipeline_mpi}
 \end{figure}
 
-Fig. \ref{fig:pipeline_mpi} shows that transferring data through a proxy without using pipelining results a 50\% hit in performance over a direct transfer. This is because the proxy needs to wait until entire data is ready before forwarding it to the destination. By using pipelining, for message less than 64KB,  pipelining does not improve performance, however, for a message size larger than 64KB, pipelining demonstrates an improve performance. At a  message size of 1MB, 2MB, and 4MB, we achieve 70\%, 80\%, and  90\% respectively of the direct transfer bandwidth, and with larger size messages, we achieved a similar performance. Thus, with large size messages, pipelining technique can be used to transfer data through proxies. However, with small size messages, the performance gained is insignificant. Much of the performance overhead is due to the underlying rendezvous protocol design in MPI on the BG/Q. Next, we use PAMI to improve the performance for small messages. The next subsection, we show the efficacy of using PAMI on transferring small size messages.
+Figure \ref{fig:pipeline_mpi} shows that transferring data through a proxy without using pipelining results in a 50\% hit in performance over a direct transfer. The reason is that the proxy needs to wait until all the data is ready before forwarding it to the destination. By using pipelining, for a message less than 64 KB,  pipelining does not improve performance; however, for a message size larger than 64 KB, pipelining demonstrates an improved performance. At a  message size of 1 MB, 2 MB, and 4 MB, we achieve 70\%, 80\%, and  90\%, respectively, of the direct transfer bandwidth; and with larger messages, we achieved a similar performance. Thus, with large messages, the pipelining technique can be used to transfer data through proxies. With small messages, however, the performance gained is insignificant. Much of the performance overhead is due to the underlying rendezvous protocol design in MPI on BG/Q. 
+%ext, we use PAMI to improve the performance for small messages.
+In the next subsection, we show the efficacy of using PAMI on transferring small messages.
 
-\subsection{Quantifying computation used for data movement at proxies}
-In this section, we quantify the time spent by the CPU for data movement, and we show that it is so small that it has no effect on the total time.
-
-\subsection{Data movement for data coupling nodes}
-In this benchmark, we show feasibility of the approach using proxies to increase transfer throughput between 2 compute nodes. We choose the first and the last node of a partition of 128 compute nodes with 2x2x4x4x2 torus. As the partition is large enough we are able to choose 4 proxies to transfer data in 4 directions +B, +C, +D, +E . In each node, only one MPI rank is used (when we use multiple MPI ranks per node to send data to the same destination, they all take the same output link, thus using one MPI rank is still valid and making the experiment easier). The data is transferred in increasing size from 1KB up to 128MB of data, with the size doubled each time. We use MPI\_Put to transfer data from source node to proxy nodes and then from proxy nodes to destination node. Each transfer is repeated multiple times with different data to eliminate any cache effect and achieve stable performance. The average transfer throughput between 2 nodes is reported in Figure \ref{fig:4proxies}.
-
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.3]{figures/4proxies}
-\vspace{-0.2in}
-\caption{Using 4 proxies to improve data transfer throughput between 2 nodes}
-\vspace{-0.1in}
-\label{fig:4proxies}
-\end{figure}
-
-As the figure shows, for the small messages, direct transfer yields better performance. With large message, proxy-based transfers outruns direct transfer with $2\times$ better performance. This is foreseen with the reasons we mentioned before: with small messages, extra time caused by injecting and copying messages is significantly larger than the transferring time. It happens in the opposite way with large messages. The message size threshold to switch from direction transfer to proxy-based transfer is 256KB, yielding 1.4GB/s per link. After the threshold, direct transfer slowly reaches to maximum ~1.6BG/s while proxy-based transfer continue to thrive until ~3.2GB/s. Thus, the benchmark shows that proxy-based approach is feasible and can result significant improvement.
-
-As data movement in multiphysics applications is done by more than 2 single nodes, the second benchmark elucidates the feasibility and achievable throughput for data movement between two groups of nodes. In this experiment, we transfer data between two groups of nodes, wherein each group has 256 nodes in a 4x4x4x16x2 torus of a 2K nodes partition. One group is at one corner of the partition, the other one is at the other end of the partition. The data size is also from 1KB to 128MB with doubled size each step. The experiment is repeated for a number of times. We are able to choose 3 proxies for each node. The Figure \ref{fig:3groxies} shows the average throughput measured.
+\subsection{Efficacy of PAMI on multiple paths data movement}
+In this subsection, we demonstrate that with the optimal window size for pipelining and PAMI we can gain near-maximum performance by direct transfer.
 
 \begin{figure}[!htb]
-\vspace{-0.1in}
 \centering
-\includegraphics[scale=0.3]{figures/3groxies}
-\vspace{-0.2in}
-\caption{Using 3 group of proxies to improve data transfer bandwidth between 2 group of nodes}
-\vspace{-0.1in}
-\label{fig:3groxies}
+\includegraphics[scale=0.3]{pipeline_pami.pdf}
+\caption{Using PAMI with pipeline technique to mitigate the waiting time at proxy and reduce overheads}
+\label{fig:pipeline_pami}
 \end{figure}
 
-In the figure, we once again see that with small messages, direct transfer is better than proxy-based transfer. The threshold for this case increases to 512KB. At that message size, direct transfer also reaches to its maximum throughput, while the proxy-based transfer still has big room to increase up to 2.4GB/s. The performance increases $1.5\times$ as predicted since 3 proxies are used for each nodes. This benchmark shows that proxy-based data transfer is feasible for data transfer between groups of nodes. And we can achieve significant improvement in certain cases.
+In this experiment, we transfer data from a source node to a destination node through a proxy with pipelining  and use PAMI with 1 proxy compared with the previous approach using MPI. We use PAMI\_Put to transfer data and PAMI\_Send\_immediate to transfer control information. We vary the data size from 1 KB to 128 MB. The results are shown in Fig. \ref{fig:pipeline_pami}.
 
-As we have mentioned in Section \ref{sec:approaches}, we need at least k $>$ 2 proxies per each data transfer to benefit from proxies. The more proxies we can use the better performance we can gain. However, as the size of communicating groups increases, the number of proxies we can set up decreases. If we add more proxies beyond the maximum possible proxies, data movements by extra proxies intervene existing ones and eventually degrade overall performance. The Figure \ref{fig:num_groxies} demonstrates the situation.
+As the figure shows, for message sizes less than 16 KB, using PAMI and pipeline results in a better throughput than does direct transfer using MPI. The reason is that PAMI has less control overhead than does MPI. With messages having sizes from 32 KB to 2 MB, our solution's throughput is close to direct transfer using MPI. With messages larger than 2 MB, the performance is similar to that with MPI and achieves the maximum of ~1.7 GB/s that one can achieve using a single link/route on BG/Q. Thus, using pipelining together with PAMI is an attractive alternative for data movement using a proxy node.
+
+So far, we have demonstrated that with a pipeline technique and PAMI we can gain near-maximum throughput for a single path. Next, we evaluate the efficacy of using multiple paths for data movement between a source and a destination. In this experiment, we use a partition of 512 nodes on BG/Q and transfer data between two nodes.  With this allocation (and larger ones) we start to see the benefit of a full torus on all dimensions where each node has 9 neighbors (10th link is on the same node). 
 
 \begin{figure}[!htb]
-\vspace{-0.1in}
 \centering
-\includegraphics[scale=0.3]{figures/num_groxies}
-\vspace{-0.2in}
-\caption{Performance variance with number of proxies}
-\label{fig:num_groxies}
-\vspace{-0.1in}
+\includegraphics[scale=0.3]{pami_multipaths.pdf}
+\caption{Using 9 paths to transfer data between two nodes}
+\label{fig:pipeline_proxies}
 \end{figure}
 
-With the torus 4x4x4x4x2 and 2 groups of 32 nodes each, we can set up at most 4 groups of proxies along A+, A-, B+, B- dimensions. The 5th proxy is the source node itself. As Figure \ref{fig:num_groxies} shows, when we increases the number groups of proxies from 2 to 3 and to 4, the throughput increases from no-improvement, to 1.5$\times$ and to 2$\times$. Thus, with large message sizes, we can gain k/2 times performance with k being the number of proxies. However, when we increase number of proxies to 5, the performance starts to drop due to intervention among concurrent data movements. Therefore, choosing number of proxies together with their locations is important to maximize throughput.
+In our experiment, we increase the number of paths used for transferring data from one path to nine paths as we vary the message size from 1 KB to 128 MB split equally among all paths. As Fig. \ref{fig:pipeline_proxies} shows, by exploiting all 9 links to transfer data we achieve a throughput of 12 GB/s  or ~80\% of 15.3 GB/s max achievable throughput per transfer by exploiting all nine links. For messages larger than 32 KB, ss we increase the number of paths, the performance increases linearly from 2$\times$ to 7.8$\times$ over the default direct transfer used by MPI. We can also see that with small messages, using all nine paths actually degrades performance because of the control overhead. The number of paths should be chosen according to message size: that is, if the message size is less than 4 KB, we need a single path; between 4 KB and 16 KB we need two paths; between 16 KB and 32 KB we need three paths; and so on. Thus, depending on the message size, we should choose an appropriate number of paths to achieve the best performance.
 
-The above three benchmarks demonstrate the efficaty of our solutions for data movement between compute nodes. In the next subsection, we evaluate our approaches in the case of data movement between compute nodes and I/O nodes. 
+The microbenchmarks show that using multiple paths for data movement with pipelining and PAMI can achieve significant improvement on BG/Q. To achieve the best performance (i.e., highest throughput), we need to dynamically choose several factors, including the optimal window size and the number of paths; and we need to adjust the size of data for each path since some paths are longer with more proxies than others. The microbenchmarks also show that the performance gained would suffer significantly when the number of proxies increases. In the next section, we show how our solution effectively leverages routing policies in order  to reduce the number of proxies needed and thereby increase total performance.
 
-%\subsection{Sparse data patterns}
+\subsection{Efficacy of leveraging routing policy on performance}
+In this experiment, we use nine paths to transfer data from a source node to a destination node. The number of proxies in between the 2 nodes on different paths varies from one to four. By applying our algorithm for leveraging routing policies we can reduce the number of proxies on the longest paths to three. The performance results are shown in Fig. \ref{fig:pami_shorterpaths}.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.3]{pami_shorterpaths.pdf}
+\caption{Leveraging of the routing policy to reduce number of proxies introduced}
+\label{fig:pami_shorterpaths}
+\end{figure}
+
+The performance gained is modes, only $\sim$10\% for medium-sized messages. This is due to the small number of proxies removed in comparison with number of proxies remaining. For small messages, control overhead dominates and cancels the improvement. With large messages, the time to transfer the actual data makes the improvement negligible. In certain cases where longer paths exist, however, we believe that performance gains can be improved further with this scheme. 
 
 
-%In the next subsection, we present our benchmarks on the two data patterns generated.
-%\subsection{Staging}
+\subsection{Optimization of window size}
 
-\subsection{Data Movement to I/O nodes}
-We perform a weak scaling study with two sparse data patterns, and scale the number of cores from 2,048 to 131,072 cores on the Mira BG/Q system. 
+To use pipeline efficiently, we need to determine optimal size of transfer window for pipelining for each message size; A single message is split into a number of transfers.  Figure \ref{fig:pipeline_winsize} depicts the effect of transfer sizes on data movement. In this experiment, we vary the message size from 16 KB to 32 MB and the transfer size from 512 bytes up to 2 MB or the message size if the message size is less than 2 MB.
+%GWP - not sure about the "or the message size..." - what does it go with in the sentence?
+We increase the transfer size and message size twice after each step. We transfer the data using PAMI\_Put from the source node to a proxy node and then to a destination node in a partition of 32 nodes, using only one process per node. These nodes were 2 hops away from each other, but a different selection of nodes would produce the same results. The results are shown in Fig. \ref{fig:pipeline_winsize}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.3]{winsize_pami.pdf}
+\caption{Window size and performance when using PAMI}
+\label{fig:pipeline_winsize}
+\end{figure}
+
+We can see that for messages with size less than 16 KB, direct transfer results in better throughput. The reason is that control overhead is higher when transferring a few small messages instead of transferring a single message. With messages with size 16 KB or larger, the pipeline technique results in better performance with an optimal transfer size. Depending on message size the optimal size varies; that is, to transfer a 2 MB message, a transfer size of 128 KB results in the best throughput. From the figure we also see that if we choose a nonoptimal transfer size, the performance drops significantly. Thus, the transfer size for pipelining is critical in order to achieve the highest bandwidth in multipath data movement.
+
+\subsection{Efficacy of multipath data movement between two groups of nodes}
+In this subsection, we show the efficacy of our solution in moving data between two groups of nodes in Mira. This is typically the case for coupling the data between multiple physics modules.
+
+In BG/Q compute nodes are allocated as a contiguous block. In this experiment, we transfer data from a contiguous block of 64 nodes to another contiguous block of 64 nodes in a 512-node partition using multiple paths and a single path with MPI\_Put. We use one process per node, and each node from the source block transfers a message to its corresponding node in destination block in a symmetric way. We vary the message size from 1 KB up to 128 MB. The results are shown on Fig. \ref{fig:mncoupling_mira}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=0.3]{mncoupling_mira.pdf}
+\caption{Data movement throughput between two groups of 64 nodes each in a 512-node partition on Mira}
+\label{fig:mncoupling_mira}
+\end{figure}
+
+With the data movement requirement, the Ford-Fulkerson algorithm returned maximum flow with at most three paths per node. As the figure shows, with a message size more than 2 MB we can achieve ~4.7 GB/s or almost 3$\times$ better than single-path data movement. This result shows that our solution can work well for data movement between two blocks of nodes when the data movement paths are symmetric.
+
+\section{Synthetic and application I/O benchmarks}
+\label{sec:appbenchmark}
+In this section, we demonstrate the efficacy of our approaches using a set of synthetic benchmarks and application-level benchmarks.
+
+\subsection{Synthetic benchmarks}
+We perform a weak-scaling study with two sparse data patterns, and we scale the number of cores from 2,048 to 131,072 cores on the Mira BG/Q system. We use a synthetic I/O benchmark wherein the I/O distribution has the following patterns:
 
 \begin{itemize}
-\item Pattern 1: Uniform distribution data where data size of a MPI rank is uniformly distributed between 0 and 8MB.  Data is generated by using \textit{srand()} and \textit{rand()} functions in C/C++ and using \textit{time(NULL)} as a seed.  Total data size is about 50\% of the dense data. The distribution of the data size is shown in Figure \ref{fig:uniform}.
-\item Pattern 2: Pareto distribution data where many of MPI ranks have data size of 0 bytes or very low size, and a few of MPI ranks have data size of 8MB or close by. The total data size is about 20\% of the dense pattern. The distribution of the data is shown in Figure \ref{fig:pareto}
+\item Pattern 1: Uniform distribution of data, where the data size of an MPI rank is uniformly distributed between 0 and 8 MB.  Data is generated by using the \textit{srand()} and \textit{rand()} functions in C/C++ and using the \textit{time(NULL)} as a seed.  The total data size is about 50\% of the dense data size. The distribution of the data is shown in Fig. \ref{fig:uniform}
+\item Pattern 2: Pareto distribution of data, where most of the MPI ranks have a data size of 0 bytes or very small size, and a few of MPI ranks have a data size of approximately 8 MB. The total data size written out is about 20\% of the dense pattern size. The distribution of the data is shown in Fig. \ref{fig:pareto}
 \end{itemize}
 
-In the data pattern 1, data sizes are uniformly distributed among nodes. This data pattern can be seen when we want to analyze data from different regions with different resolutions. Depending on the resolution, data sizes may vary accordingly.
+Pattern 1
+%data sizes are uniformly distributed among nodes.
+is typical of applying an analysis to the entire dataset; depending on the result of the analysis, we might have sparse patterns across the entire volume.
 
 \begin{figure}[!htb]
 \vspace{-0.2in}
 \centering
-\includegraphics[scale=0.3]{figures/uniform.pdf}
-\caption{Pattern 1: Histogram of data sizes for 1,024 processes using time(NULL) function with size from 0 to 8MB}
+\includegraphics[scale=0.3]{uniform.pdf}
+\caption{Pattern 1: Histogram of data sizes for 1,024 processes using the time(NULL) function with size from 0 to 8 MB}
 \label{fig:uniform}
 \vspace{-0.1in}
 \end{figure}
 
-On the other hand, the data pattern 2 represents the case where data are sparse but not uniformly distributed. There are many nodes with almost no data while some nodes have large volume of data. This data pattern happens where we want to write out data from a region of contiguous MPI ranks while ignoring other regions.
+Pattern 2, on the other hand, represents an in situ analysis applied to a region of interest, such as a  region of turbulence, that spans a small subset of MPI ranks and needs to be written out to storage.
 
 \begin{figure}[!htb]
 \vspace{-0.1in}
 \centering
-\includegraphics[scale=0.3]{figures/pareto.pdf}
+\includegraphics[scale=0.3]{pareto.pdf}
 \vspace{-0.1in}
-\caption{Pattern 2: Histogram of data sizes of 1,024 processes using Pareto distribution function with size from 0B to 8MB}
+\caption{Pattern 2: Histogram of data sizes of 1,024 processes using Pareto distribution function with size from 0 B to 8 MB}
 \label{fig:pareto}
 \vspace{-0.1in}
 \end{figure}
 
-On data pattern 1, we write roughly 8GB at 2,048 cores and 274GB of data at 131,072 cores. On data pattern 2, we write 3.4GB at 2,048 cores to 119GB of data at 131,072 cores. We compare the performance of performing aggregation for 2 data patterns using our approach and default MPI Collective I/O.
+%\subsection{Efficacy of using multiple paths to move data between compute nodes and I/O nodes}
+
+On BG/Q, I/O data is routed from the compute nodes to the I/O nodes through a set of special compute nodes called bridge nodes. In this benchmark, we use our multipath data movement heuristic to transfer data along multiple paths from the compute nodes to the bridge nodes and then write this data out. We perform two experiments. First, we write the data to /dev/null on the I/O nodes so as to mitigate the effects of the storage systems and understand the efficacy of our data movement algorithm. Next, we write the data out to the GPFS parallel file system to get the overall end-to-end I/O performance. In the benchmark, we use the two sparse data patterns. For Pattern 1, we select 10\% of the nodes to write data out, while the other nodes do not write out any data. For Pattern 2, every node has data, but the data size varies: some nodes have a lot more data than other. On Pattern 1, we write roughly 8 GB at 2,048 cores and 274 GB of data at 131,072 cores. On Pattern 2, we write ~3.4 GB at 2,048 cores and 119 GB of data at 131,072 cores. We compare the performance of performing I/O for the two data patterns using our approach and default MPI collective I/O.
 
 \begin{figure}[!htb]
-\vspace{-0.1in}
 \centering
-\includegraphics[scale=0.3]{figures/mira_agg.pdf}
-\vspace{-0.2in}
-\caption{Aggregation throughputs on Mira}
-\vspace{-0.2in}
+\includegraphics[scale=0.3]{mira_agg.pdf}
+\caption{Efficacy of the approaches to move the data to /dev/null on the I/O nodes}
 \label{fig:mira_agg}
 \end{figure}
 
-Figure \ref{fig:mira_agg} depicts the performance of our topology-aware multipath data movement approach in comparison to the default MPI-I/O for the two sparse data patterns as we scale from 2,048 cores to 131,072 cores on the Mira BG/Q system. On the data pattern 1 (uniformly distributed data), we observe  $2\times$ improvement at 2,048 cores. The performance increases as we scale and we achieve up to $3\times$ at 131,072 cores. On the data pattern 2 (pareto distributed data), we gain $1.5\times$ improvement at 2,048 cores and $2\times$ improvement at 131,072 cores. Thus, we observe that leveraging network interconnect topology and multipaths plays an important role at small scale and is critical at large scale. With the increased use of in-situ analysis for supercomputing,  sparse data patterns for I/O are becoming increasingly important and our approaches help provide more insights for improved performance.
+Figure \ref{fig:mira_agg} depicts the performance of our topology-aware multipath data movement approach in comparison with the default MPI-I/O for the two sparse data patterns as we scale from 2,048 cores to 131,072 cores on the Mira BG/Q system. On Pattern 1 (uniformly distributed data), we observe a $2\times$ improvement at 2,048 cores. The performance increases as we scale, and we achieve up to $3\times$ at 131,072 cores. On Pattern 2 (Pareto distributed data), we gain $1.5\times$ improvement at 2,048 cores and $2\times$ improvement at 131,072 cores. In the default MPI collective I/O case, the data movement uses a single deterministic path from the compute node to the bridge node and is unable to fully exploit all the available paths in the 5D torus of BG/Q for sparse data. Thus, we observe that leveraging network interconnect topology and multiple paths plays an important role at small scale and is critical at large scale. With the increased use of in situ analysis for supercomputing,  sparse data patterns for I/O are becoming increasingly important, and our approaches help provide more insights for improved performance.
 
-\section{Application I/O benchmark}
-\label{sec:app_benchmarks}
-In this section, we demonstrate our solution on HACC I/O representing data movement between compute nodes and I/O nodes.
-
-\subsection {HACC I/O}
-HACC (Hardware/Hybrid Accelerated Cosmology Code) \cite{Habib:HACC} is a large-scale cosmology code suite that simulates the evolution of the universe through the first 13 billion years after the Big Bang. The simulation tracks the movement of trillions of particles as they collide and interact with each other, forming structure that transform into galaxies. During the runtime, HACC writes data periodically to storage system. The data can also be transferred from Mira to Tukey for data analysis and visualization. In both ways, data needs to go from compute nodes to I/O nodes first. In this benchmark, we use HACC I/O, an I/O benchmark written to evaluate performance of the I/O system for HACC, to show the data transfer performance from compute nodes to I/O nodes by writing to /dev/null. We compare the throughput of our mechanism to default MPI collective write on HACC I/O.
-%\subsection{Staging}
-%Presenting staging data from Mira to vis cluster Tukey. Analyze the results.
-
-\subsection{Transferring data to I/O nodes}
-In this experiments, we scale our experiments from 8,192 up to 131,072 compute cores to simulate the collision of $768^3$ to $2,816^3$ particles. We write only 10\% of the generated data with the amount of 2GB to 85GB of data. The data is written from processes with MPI ranks within the range [4*num\_processes/10, 5*num\_processes/10] with the num\_processes being the total number of MPI ranks in our application. We collect the bandwidth information and report the average. The results are shown in Figure \ref{fig:hacc_agg}
+Figure \ref{fig:mira_file} depicts the end-to-end performance of our topology-aware multipath data movement approach in comparison to the default MPI-I/O for the two sparse data patterns as we scale from 2,048 cores to 131,072 cores on the Mira BG/Q system to write this data out to the GPFS storage system. For both patterns, we observe a $2\times$ improvement in performance at lower core counts and up to $5\times$ improvement as we scale to larger core counts to 128K cores. This is primarily due to the fact that our  multi-path fully exploits all the available network paths to the I/O nodes and hence the storage systems for sparse data movement wherein multiple resources are potentially idle as in the case of the default MPI-I/O; data is routed along a deterministic single path. Thus, we observe the benefits of our approaches at scale for end-to-end data movement to the storage system.
 
 \begin{figure}[!htb]
-\vspace{-0.1in}
 \centering
-\includegraphics[scale=0.3]{figures/hacc_agg.pdf}
-\vspace{-0.1in}
-\caption{Write throughput of HACC application to I/O nodes /dev/null}
-\vspace{-0.1in}
-\label{fig:hacc_agg}
+\includegraphics[scale=0.3]{mira_file.pdf}
+\caption{End-to-end I/O throughput to the Mira GPFS parallel filesystem for the sparse patterns}
+\label{fig:mira_file}
 \end{figure}
 
-The results show that in both cases, the number of I/O nodes employed is more than default I/O nodes. However, in our case, the position and location of aggregators are chosen dynamically and are distributed uniformly brought in better performance. Overall we can get up to 50\% throughput improvement. Thus, dynamic selection of number of and location of aggregators based on size of data and interconnect topology is of paramount importance for sparse data movement.
 
-\subsection{Energy consumption comparison}
-In these micro-benchmarks, we show that when using multi-path data movement for sparse data patterns, we not only increase bandwidth but also save energy consumption by the system.
+\subsection{HACC I/O Application Benchmark}
+HACC (Hardware/Hybrid Accelerated Cosmology Code) \cite{Habib:HACC} is a large-scale cosmology code suite that simulates the evolution of the universe through the first 13 billion years after the Big Bang. The simulation tracks the movement of trillions of particles as they collide and interact with each other, forming structures that transform into galaxies. During runtime, HACC writes data periodically to the storage system both for checkpoints and for I/O of the in situ analysis performed at simulation time. 
+In this benchmark, we use HACC I/O, an I/O benchmark written to evaluate the performance of the I/O system for HACC.
+We first evaluate the data movement performance from compute nodes to I/O nodes by writing to /dev/null. Next, we compare the end-to-end throughput of our mechanisms to default MPI collective I/O on HACC I/O to write the data to the GPFS parallel filesystem of Mira.  In this experiment, we scale our experiments from 2,048 up to 131,072 compute cores to simulate the collision of $768^3$ to $2,816^3$ particles. We write only 10\% of the generated data, which varies from 2 GB to 85 GB. The data is written from processes with MPI ranks within the range [4*num\_processes/10, 5*num\_processes/10], with the num\_processes being the total number of MPI ranks in our application. We collect the bandwidth information and report the average of 10 runs. Figure \ref{fig:hacc_file} depicts the achievable performance of writing the data to the GPFS parallel filesystem on Mira. 
+
+
+From the figure we observe an overall improvement of 50\% throughput improvement for I/O. On GPFS, the locking overhead of the filesystem limits the achievable performance of a single shared file I/O. However, our multipath algorithm improves the overall data movement performance to the I/O node and hence improves the end-to-end performance. As a result of the in situ analysis, applications will tend to perform more I/O operations with significantly reduced data sizes. Thus multipath data movement will be of paramount importance for sparse I/O.
+
 
 \begin{figure}[!htb]
-\vspace{-0.1in}
 \centering
-\includegraphics[scale=0.3]{figures/power_cat.pdf}
-\vspace{-0.1in}
-\caption{Energy consumption by category at a node}
-\vspace{-0.1in}
-\label{fig:hacc_agg}
+\includegraphics[scale=0.3]{hacc_agg.pdf}
+\caption{End-to-end achievable throughput for in situ analysis of HACC I/O to Mira GPFS parallel filesystem }
+\label{fig:hacc_file}
 \end{figure}
 
-\begin{figure}[!htb]
-\vspace{-0.1in}
-\centering
-\includegraphics[scale=0.3]{figures/power_ncp.pdf}
-\vspace{-0.1in}
-\caption{Total energy consumption at scale}
-\vspace{-0.1in}
-\label{fig:hacc_agg}
-\end{figure}
+\section{Conclusion} %and Future Work}
+\label{sec:conclusion}
+In this paper, we present our solution of using multipath data movement on leadership-class computer systems to improve the performance of sparse data movement. We present our graph models for different interconnect networks. We then use and enhanced Ford-Fulkerson algorithm to find the maximum flow and multiple paths, in order to gain the maximum flow in transferring data between two nodes or two groups of nodes. The data movement throughput is then improved further with pipelining techniques and using PAMI.  We demonstrate the efficacy of our solutions through a set of microbenchmarks and application benchmarks. On the Mira Blue Gene/Q system, we achieve up to $5\times$ improvement in performance for data movement using our approach for sparse data patterns.
 
-\section{Conclusions and future works}
-\label{sec:conclusions}
-
-In this paper, we present a scalable mechanism for improving sparse data movement, which often takes place in scientific applications such as  in-situ analysis and multiphysics applications, by utilizing underlying resources. Our approaches introduce intermediate nodes to increase data transfer throughput. Our solutions work for both sparse data movement between data coupling groups of nodes and sparse data movement between compute nodes and I/O nodes. We demonstrate the efficacy of our solutions through microbenchmarks and application benchmarks showing up to $2\times$ data movement throughput improvement. Our work shows that network topology aware data movement utilizing all available network resources helps improve the performance of data-intensive applications.
-In the future, we plan to employ pipeline technique in which data will be split into small messages to be transferred. Thus, we will need only 2 proxies at least to get benefit from proxies-based method. We will come up with an analytical model for the achievable throughput and explore graph models for data movement in different network topologies and with different shapes of partitions given for physics modules.
+%In future, we plan to work on adaptive routing at user space. When multiple paths are used, some may have longer paths with more proxies, or some may be in "hot-spot" communication of the systems, data size at source nodes may varied. In these cases, we need to route data dynamically and adaptively to gain stable performance improvement.
 
 \section*{Acknowledgments}
 
-This research used resources of the Argonne Leadership Computing Facility (ALCF) at Argonne National Laboratory, and is supported by the Office of Science of the U.S. Department of Energy under contract DE-AC02-06CH11357. We thank the ALCF team for discussions and help related to this paper.
+This material is based upon work supported by the U.S. Department of Energy, Office of Science, under contract DE-AC02-06CH11357.
+This research used resources of the Argonne Leadership Computing Facility (ALCF) at Argonne National Laboratory.
+We thank the ALCF team for discussions and help related to this paper.
 
 %% The Appendices part is started with the command \appendix;
 %% appendix sections are then done as normal sections
