@@ -290,7 +290,7 @@ In the Blue Gene/Q system, data is routed by the longest-dimension first and the
 
 \begin{itemize}
 \item The order of edges to add into the queue of BFS is reverse-of-routing orders. This is to make sure that the lowest-priority dimension can be discovered first. The lowest-dimension-first path would need more proxies; being able to select the next nodes first would reduce the number of proxies along the path. By doing so, we can balance the number of proxies among multiple paths.
-\item If it is possible, do not use proxies. Whenever we need to add an edge that data moving by that edge has higher priority that the previous edge, we need to add a proxy.
+\item If a message travels from an edge to another edge with lower routing priority, do not use proxies. Whenever a message travels from an edge to another edge with higher routing priority, we need to add a proxy (the shared node between the 2 edges).
 \item Constraint on total number of proxies: if the number of proxies used is more than the constraints, no longer explore that direction.
 \end{itemize}
 
@@ -311,7 +311,7 @@ PAMI supports both one-sided and two-sided communication. It supports both small
 
 As depicted in \ref{fig:pami_pipeline}, in the main thread of the source, we keep transferring data to windows of its proxies using \textit{PAMI\_Put}. Its comm thread running on the background is notified whenever the data is completely put on a proxy's side. The comm thread then uses \textit{PAMI\_Send\_immediate} to let the proxy know that the data is ready. It also sends the control data of where and how to process the data with the \textit{PAMI\_Send\_immediate}. Each proxy needs to set up a callback function to process the control data sent to it. The callback function copies control data to a queue and informs the main thread. The main thread at each proxy plays the same role as the main thread of the source node. The size of the window for each message size is also determined empirically.
 
-Our approach is implemented at user space, on top of system's routing algorithms. It takes advantage of routings provided by system and other provided mechanisms such as fault tolerant and thus relies on system to provide stability or to reroute messages if errors occur.
+Our approach is implemented at user space, on top of system's routing algorithms. It takes advantage of routing algorithms provided by the system and other provided mechanisms such as fault tolerant and thus relies on the system to provide stability or to reroute messages if errors occur.
 
 In the next section, we present the efficacy of our solution on Mira through a set of microbenchmarks.
 
