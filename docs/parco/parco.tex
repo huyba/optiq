@@ -50,6 +50,8 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 
+\biboptions{numbers,sort&compress}
+
 \journal{Parallel Computing}
 
 \newif\ifdraft
@@ -179,12 +181,11 @@ Multipath data movement was established by Khanna et al. \cite{Proxies:Gaurav} b
 
 Adaptive routing for network load balancing has been also studied in \cite{Valiant:Routing,singh2003:goal}. 
 In addition, researchers have investigated adaptive routing for current supercomputers such as  Blue Gene/Q \cite{Chen:BGQ} and Cray Cascade \cite{garcia2013:CrayDragonfly}. These studies are for low-level networking, however, where they are able to route any packet in any path. In contrast, our study leverages underlying routing policies to implement multipath data movement in the user space where we have more detailed knowledge about the data flows and the patterns. 
-%More on load balancing network.
 
 In the context of I/O forwarding and staging, many studies have been done to improve I/O performance.   
 A scalable I/O forwarding framework for high-performance computing systems was presented in \cite{Ali:IOForwarding,Iskra:IOForwarding}. The authors in \cite{Vishwanath:IOForwarding,Vishwanath:GLEAN} proposed an augmentation for I/O forwarding and asynchronous data staging for Blue Gene/P and Blue Gene/Q systems, and the authors in \cite{ADIOS} proposed similar methods for Cray systems. However, those studies assumed that data is dense and uniformly distributed.
 
-In our previous works in \cite{hbui:bgq, SDAV:Bui2014b, hbui:optiq} we focused on data movement for relatively dense communication patterns. Our work in this paper extends our previous work \cite{Vishwanath:GLEAN} to deal with sparse data movement patterns and extends our work in \cite{Multipath:BGQ} by employing a pipeline technique to reduce overhead and large memory usage caused by copying and injecting large messages. Our work also uses PAMI to improve the transfer of small messages.
+In our previous works in \cite{hbui:bgq, SDAV:Bui2014b, hbui:optiq} we focused on data movement for relatively dense communication patterns. Our work in this paper extends our previous work \cite{Vishwanath:GLEAN} to deal with sparse data movement patterns and extends our work in \cite{SDAV:Bui2014b} by employing a pipeline technique to reduce overhead and large memory usage caused by copying and injecting large messages. Our work also uses PAMI to improve the transfer of small messages.
 
 \section{Systems for experiments}
 \label{sec:system}
