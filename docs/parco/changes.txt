@@ -1,7 +1,19 @@
 Here are changes that we have made to this version of our paper submitted to PARCO.
 
+Changes:
+
 1. Ford-Fulkerson algorithm:
 - We explained more clearly our choice of max flow algorithm: We chose Ford-Fulkerson due to its simplicity and scalability at runtime.
-- 
+- We cited Ford-Fulkerson as recommended.
+- We also explained that Ford-Fulkerson is our choice of algorithm to find paths. However, there are other algorithms can also be employed such as "An Almost-Linear-Time Algorithm for Approximate Max Flow in Undirected Graphs, and its Multicommodity Generalizations" as recommended by Reviewer #1.
+- Scalability is good because the complexity of algorithm is |V|^2|E|.
+
+
+4. Fault tolerant communication:
+We explained that your approach is implemented at user space on top of system's routings. We thus take advantage of the system's routing algorithms. We also rely on system for handling faults and message blocking. 
+
+ 
 
 10. We fixed a number of typo raised by reviewers.
+
+11. Energy consumption: 
