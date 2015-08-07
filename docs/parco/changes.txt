@@ -1,0 +1,7 @@
+Here are changes that we have made to this version of our paper submitted to PARCO.
+
+1. Ford-Fulkerson algorithm:
+- We explained more clearly our choice of max flow algorithm: We chose Ford-Fulkerson due to its simplicity and scalability at runtime.
+- 
+
+10. We fixed a number of typo raised by reviewers.
