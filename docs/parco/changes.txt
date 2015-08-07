@@ -1,19 +1,18 @@
-Here are changes that we have made to this version of our paper submitted to PARCO.
-
-Changes:
+Here are changes that we have made/answers to address reviews raised by reviewers.
 
 1. Ford-Fulkerson algorithm:
+- Max flow algorithm is used to maximize the throughput of data movement.
 - We explained more clearly our choice of max flow algorithm: We chose Ford-Fulkerson due to its simplicity and scalability at runtime.
 - We cited Ford-Fulkerson as recommended.
 - We also explained that Ford-Fulkerson is our choice of algorithm to find paths. However, there are other algorithms can also be employed such as "An Almost-Linear-Time Algorithm for Approximate Max Flow in Undirected Graphs, and its Multicommodity Generalizations" as recommended by Reviewer #1.
-- Scalability is good because the complexity of algorithm is |V|^2|E|.
+- Scalability is good because the complexity of algorithm is |V|^2|E|. In the supercomputers, we have E >> V i.e. the algorithm's complexity is linearly increased with E, which leads to closely linear complexity or good scalability.
+- We use Ford-Fulkerson's algorithm for each pair of source-destination to find paths. We take advantage of it, thus no comparison is needed between our approach and Ford-Fulkerson's algorithm.
 
+2. The algorithm has already deal with multiple sources, we simply iterate through list of sources.
 
-4. Fault tolerant communication:
+3. Fault tolerant communication:
 We explained that your approach is implemented at user space on top of system's routings. We thus take advantage of the system's routing algorithms. We also rely on system for handling faults and message blocking. 
 
- 
+4. The power consumption is out of discussion. In supercomputers, if a node is idle it still consumes energy almost as it is busy. Thus, our approach while increasing number of nodes involving data movement, unlikely increase the total power consumption. At the same time, with higher throughput, we are likely to finish data movement earlier, which can lead to lower total power consumption.
 
-10. We fixed a number of typo raised by reviewers.
-
-11. Energy consumption: 
+5. We fixed a number of typo raised by reviewers and rewrote some paragraphs to make them easier to understand.
